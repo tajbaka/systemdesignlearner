@@ -37,6 +37,7 @@ export default function SystemDesignEditor() {
   const [worldCenter, setWorldCenter] = useState<{ x: number; y: number } | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [focusCenter, setFocusCenter] = useState<{ x: number; y: number } | null>(null);
+  const [failAttemptsByScenario, setFailAttemptsByScenario] = useState<Record<string, number>>({});
 
   const scenario = useMemo(
     () => SCENARIOS.find((s) => s.id === scenarioId)!,
@@ -51,6 +52,12 @@ export default function SystemDesignEditor() {
   // Parse share hash on load → read-only view
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Load persisted fail attempts
+    try {
+      const raw = localStorage.getItem("sds_fail_attempts");
+      if (raw) setFailAttemptsByScenario(JSON.parse(raw));
+    } catch {}
+
     const hash = window.location.hash || "";
     const params = new URLSearchParams(hash.startsWith("#") ? hash.slice(1) : hash);
     const d = params.get("d");
@@ -215,6 +222,18 @@ export default function SystemDesignEditor() {
     const rng = mulberry32(seed);
     const r = simulate(scenario, nodeIds, nodes, edges, chaosMode, rng);
     setResult(r);
+
+    // Outcome + attempts persistence
+    const isPass = !r.failedByChaos && r.meetsLatency && r.meetsRps;
+    if (!isPass) {
+      setFailAttemptsByScenario((prev) => {
+        const next = { ...prev, [scenarioId]: (prev[scenarioId] ?? 0) + 1 };
+        try {
+          localStorage.setItem("sds_fail_attempts", JSON.stringify(next));
+        } catch {}
+        return next;
+      });
+    }
   }
 
   const selected = nodes.find((n) => n.id === selectedNode) || null;
@@ -277,6 +296,7 @@ export default function SystemDesignEditor() {
           onChaosModeChange={setChaosMode}
           onRunSimulation={runSimulation}
           simulationResult={result}
+          failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
         />
         <SelectedNodePanel
           selectedNode={selected}
