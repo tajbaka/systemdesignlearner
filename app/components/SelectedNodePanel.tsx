@@ -20,7 +20,7 @@ export default function SelectedNodePanel({
   if (!selectedNode) return null;
 
   return (
-    <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2">
+    <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2 text-zinc-300">
       <h2 className="text-lg text-zinc-300">Selected</h2>
       <div className="text-sm">
         <div className="font-medium">{selectedNode.spec.label}</div>

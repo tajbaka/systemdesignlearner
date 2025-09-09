@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { NodeId, PlacedNode } from "./types";
 import { handleClass, isoClass } from "./styles";
+import { iconFor } from "./icons";
 
 interface NodeCardProps {
   node: PlacedNode;
@@ -30,7 +31,13 @@ export default function NodeCard({
     >
       <div className={handleClass}>{node.spec.kind}</div>
       <div className="p-4">
-        <div className="text-sm font-semibold tracking-wide">{node.spec.label}</div>
+        <div className="flex items-center gap-2">
+          {(() => {
+            const Icon = iconFor(node.spec.kind);
+            return <Icon className="text-zinc-200" size={18} />;
+          })()}
+          <div className="text-sm font-semibold tracking-wide">{node.spec.label}</div>
+        </div>
         <div className="text-[11px] text-zinc-300 mt-1">
           {node.spec.baseLatencyMs}ms · {node.spec.capacityRps} rps
         </div>
