@@ -32,7 +32,7 @@ export default function ScenarioPanel({
   const selectedScenario = scenarios.find((s) => s.id === selectedScenarioId)!;
 
   return (
-    <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2">
+    <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2 text-zinc-300">
       <h2 className="text-lg text-zinc-300">Scenario</h2>
       <select
         value={selectedScenarioId}

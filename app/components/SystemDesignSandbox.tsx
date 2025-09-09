@@ -1,13 +1,16 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { ComponentKind, Edge, NodeId, PlacedNode } from "./types";
-import { COMPONENT_LIBRARY, SCENARIOS } from "./data";
+import { COMPONENT_LIBRARY } from "./data";
+import { SCENARIOS } from "@/lib/scenarios";
 import { uid, findScenarioPath } from "./utils";
 import { simulate } from "./simulation";
+import { mulberry32 } from "@/lib/rng";
 import Palette from "./Palette";
 import ScenarioPanel from "./ScenarioPanel";
 import SelectedNodePanel from "./SelectedNodePanel";
 import Board from "./Board";
+import { UndoStack } from "@/lib/undo";
 
 // ------------------------------------------------------------
 // System Design Sandbox – modular architecture
@@ -18,6 +21,7 @@ import Board from "./Board";
 
 // Main Component
 export default function SystemDesignSandbox() {
+  const undo = React.useRef(new UndoStack());
   const [nodes, setNodes] = useState<PlacedNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [dragging, setDragging] = useState<NodeId | null>(null);
@@ -27,7 +31,9 @@ export default function SystemDesignSandbox() {
   const [result, setResult] = useState<ReturnType<typeof simulate> | null>(null);
   const [lastPath, setLastPath] = useState<NodeId[]>([]);
   const [linkingFrom, setLinkingFrom] = useState<NodeId | null>(null);
+  const [linkingFromPort, setLinkingFromPort] = useState<"N" | "E" | "S" | "W" | null>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
+  const [worldCenter, setWorldCenter] = useState<{ x: number; y: number } | null>(null);
 
   const scenario = useMemo(
     () => SCENARIOS.find((s) => s.id === scenarioId)!,
@@ -39,14 +45,47 @@ export default function SystemDesignSandbox() {
     runDevTests();
   }, []);
 
+  const snapshot = React.useCallback(() => ({
+    nodes: structuredClone(nodes),
+    edges: structuredClone(edges),
+  }), [nodes, edges]);
+
+  // Keyboard shortcuts: Undo / Redo
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        if (e.shiftKey) {
+          const next = undo.current.redo(snapshot());
+          if (next) {
+            setNodes(next.nodes);
+            setEdges(next.edges);
+          }
+        } else {
+          const prev = undo.current.undo(snapshot());
+          if (prev) {
+            setNodes(prev.nodes);
+            setEdges(prev.edges);
+          }
+        }
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [snapshot]);
+
+  const snap = (v: number) => Math.round(v / 24) * 24;
+
   function spawn(kind: ComponentKind) {
     const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
     const n: PlacedNode = {
       id: uid(),
       spec,
-      x: 100 + Math.random() * 600,
-      y: 120 + Math.random() * 350,
+      x: snap(worldCenter?.x ?? 400),
+      y: snap(worldCenter?.y ?? 300),
     };
+    undo.current.push(snapshot());
     setNodes((prev) => [...prev, n]);
   }
 
@@ -56,13 +95,10 @@ export default function SystemDesignSandbox() {
     setSelectedNode(id);
   }
 
-  function onMouseMoveBoard(e: React.MouseEvent) {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
+  function onMouseMoveBoard(_e: React.MouseEvent, world: { x: number; y: number }) {
+    const { x, y } = world;
     if (dragging) {
-      setNodes((prev) => prev.map((n) => (n.id === dragging ? { ...n, x, y } : n)));
+      setNodes((prev) => prev.map((n) => (n.id === dragging ? { ...n, x: snap(x), y: snap(y) } : n)));
     }
     if (linkingFrom) {
       setCursor({ x, y });
@@ -73,6 +109,7 @@ export default function SystemDesignSandbox() {
     setDragging(null);
     if (linkingFrom) {
       setLinkingFrom(null);
+      setLinkingFromPort(null);
       setCursor(null);
     }
   }
@@ -87,11 +124,13 @@ export default function SystemDesignSandbox() {
       to,
       linkLatencyMs: 8 + Math.round(Math.random() * 12), // small jitter
     };
+    undo.current.push(snapshot());
     setEdges((prev) => [...prev, e]);
   }
 
   function removeSelected() {
     if (!selectedNode) return;
+    undo.current.push(snapshot());
     setEdges((prev) => prev.filter((e) => e.from !== selectedNode && e.to !== selectedNode));
     setNodes((prev) => prev.filter((n) => n.id !== selectedNode));
     setSelectedNode(null);
@@ -114,8 +153,9 @@ export default function SystemDesignSandbox() {
       alert("Place and connect at least two components to form a path.");
       return;
     }
-
-    const r = simulate(scenario, nodeIds, nodes, edges, chaosMode);
+    const seed = 12345;
+    const rng = mulberry32(seed);
+    const r = simulate(scenario, nodeIds, nodes, edges, chaosMode, rng);
     setResult(r);
   }
 
@@ -126,6 +166,32 @@ export default function SystemDesignSandbox() {
       {/* Sidebar */}
       <div className="flex flex-col gap-3">
         <Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={spawn} />
+        <div className="flex gap-2">
+          <button
+            className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
+            onClick={() => {
+              const prev = undo.current.undo(snapshot());
+              if (prev) {
+                setNodes(prev.nodes);
+                setEdges(prev.edges);
+              }
+            }}
+          >
+            Undo (⌘Z)
+          </button>
+          <button
+            className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
+            onClick={() => {
+              const next = undo.current.redo(snapshot());
+              if (next) {
+                setNodes(next.nodes);
+                setEdges(next.edges);
+              }
+            }}
+          >
+            Redo (⇧⌘Z)
+          </button>
+        </div>
         <ScenarioPanel
           scenarios={SCENARIOS}
           selectedScenarioId={scenarioId}
@@ -149,6 +215,7 @@ export default function SystemDesignSandbox() {
         edges={edges}
         lastPath={lastPath}
         linkingFrom={linkingFrom}
+        linkingFromPort={linkingFromPort}
         cursor={cursor}
         onMouseMove={onMouseMoveBoard}
         onMouseUp={onMouseUpBoard}
@@ -160,14 +227,17 @@ export default function SystemDesignSandbox() {
             e.stopPropagation();
             connect(linkingFrom, id);
             setLinkingFrom(null);
+            setLinkingFromPort(null);
             setCursor(null);
           }
         }}
-        onPortMouseDown={(e, id) => {
+        onPortMouseDown={(e, id, side) => {
           e.stopPropagation();
           setSelectedNode(id);
           setLinkingFrom(id);
+          setLinkingFromPort(side);
         }}
+        onWorldCenterChange={(c) => setWorldCenter(c)}
       />
     </div>
   );
