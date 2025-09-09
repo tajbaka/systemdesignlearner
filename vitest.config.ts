@@ -6,6 +6,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     include: ["__tests__/**/*.{test,spec}.ts?(x)"],
+    passWithNoTests: true,
   },
 });
 
