@@ -26,6 +26,7 @@ interface BoardProps {
   onNodeMouseUp: (e: React.MouseEvent, id: NodeId) => void;
   onPortMouseDown: (e: React.MouseEvent, id: NodeId, side: PortSide) => void;
   onWorldCenterChange?: (center: { x: number; y: number }) => void;
+  focusCenter?: { x: number; y: number } | null;
 }
 
 export default function Board({
@@ -43,6 +44,7 @@ export default function Board({
   onNodeMouseUp,
   onPortMouseDown,
   onWorldCenterChange,
+  focusCenter = null,
 }: BoardProps) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const transformStateRef = useRef<{ positionX: number; positionY: number; scale: number }>({
@@ -50,6 +52,7 @@ export default function Board({
     positionY: 0,
     scale: 1,
   });
+  const setTransformRef = useRef<null | ((x: number, y: number, scale: number) => void)>(null);
 
   const emitWorldCenter = () => {
     const rect = boardRef.current?.getBoundingClientRect();
@@ -90,8 +93,13 @@ export default function Board({
           if (!wrapper) return;
           const rect = wrapper.getBoundingClientRect();
           const scale = 1;
-          const x = (rect.width - GRID_WIDTH * scale) / 2;
-          const y = (rect.height - GRID_HEIGHT * scale) / 2;
+          let x = (rect.width - GRID_WIDTH * scale) / 2;
+          let y = (rect.height - GRID_HEIGHT * scale) / 2;
+          if (focusCenter) {
+            // center the viewport on the provided world coords
+            x = rect.width / 2 - focusCenter.x * scale;
+            y = rect.height / 2 - focusCenter.y * scale;
+          }
           ref.setTransform(x, y, scale);
           transformStateRef.current = { positionX: x, positionY: y, scale };
           emitWorldCenter();
@@ -102,6 +110,7 @@ export default function Board({
           const handlers = ref as unknown as Handlers;
           const resetTransform = handlers.resetTransform ?? (() => {});
           const setTransform = handlers.setTransform ?? (() => {});
+          setTransformRef.current = handlers.setTransform ?? null;
 
           const centerToGrid = () => {
             const rect = boardRef.current?.getBoundingClientRect();

@@ -36,6 +36,7 @@ export default function SystemDesignEditor() {
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [worldCenter, setWorldCenter] = useState<{ x: number; y: number } | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
+  const [focusCenter, setFocusCenter] = useState<{ x: number; y: number } | null>(null);
 
   const scenario = useMemo(
     () => SCENARIOS.find((s) => s.id === scenarioId)!,
@@ -56,10 +57,17 @@ export default function SystemDesignEditor() {
     if (!d) return;
     try {
       const parsed = decodeDesign<{ nodes: PlacedNode[]; edges: Edge[]; scenarioId: string }>(d);
-      setNodes(parsed.nodes || []);
-      setEdges(parsed.edges || []);
+      const loadedNodes = parsed.nodes || [];
+      const loadedEdges = parsed.edges || [];
+      setNodes(loadedNodes);
+      setEdges(loadedEdges);
       setScenarioId(parsed.scenarioId || SCENARIOS[0].id);
       setIsReadOnly(true);
+      if (loadedNodes.length > 0) {
+        const cx = loadedNodes.reduce((s, n) => s + n.x, 0) / loadedNodes.length;
+        const cy = loadedNodes.reduce((s, n) => s + n.y, 0) / loadedNodes.length;
+        setFocusCenter({ x: cx, y: cy });
+      }
       setSelectedNode(null);
       setLinkingFrom(null);
       setLinkingFromPort(null);
@@ -167,7 +175,8 @@ export default function SystemDesignEditor() {
 
   function shareDesign() {
     const design = { nodes, edges, scenarioId };
-    const url = `${location.origin}${location.pathname}#d=${encodeDesign(design)}`;
+    const payload = encodeDesign(design);
+    const url = `${location.origin}${location.pathname}#d=${encodeURIComponent(payload)}`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard
         .writeText(url)
@@ -307,6 +316,7 @@ export default function SystemDesignEditor() {
           setLinkingFromPort(side);
         }}
         onWorldCenterChange={(c) => setWorldCenter(c)}
+        focusCenter={focusCenter}
       />
     </div>
   );
