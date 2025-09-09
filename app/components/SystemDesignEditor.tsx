@@ -6,6 +6,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 import { uid, findScenarioPath } from "./utils";
 import { simulate } from "./simulation";
 import { mulberry32 } from "@/lib/rng";
+import { encodeDesign, decodeDesign } from "@/lib/shareLink";
 import Palette from "./Palette";
 import ScenarioPanel from "./ScenarioPanel";
 import SelectedNodePanel from "./SelectedNodePanel";
@@ -20,7 +21,7 @@ import { UndoStack } from "@/lib/undo";
 // ------------------------------------------------------------
 
 // Main Component
-export default function SystemDesignSandbox() {
+export default function SystemDesignEditor() {
   const undo = React.useRef(new UndoStack());
   const [nodes, setNodes] = useState<PlacedNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -34,6 +35,7 @@ export default function SystemDesignSandbox() {
   const [linkingFromPort, setLinkingFromPort] = useState<"N" | "E" | "S" | "W" | null>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [worldCenter, setWorldCenter] = useState<{ x: number; y: number } | null>(null);
+  const [isReadOnly, setIsReadOnly] = useState(false);
 
   const scenario = useMemo(
     () => SCENARIOS.find((s) => s.id === scenarioId)!,
@@ -45,6 +47,28 @@ export default function SystemDesignSandbox() {
     runDevTests();
   }, []);
 
+  // Parse share hash on load → read-only view
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash || "";
+    const params = new URLSearchParams(hash.startsWith("#") ? hash.slice(1) : hash);
+    const d = params.get("d");
+    if (!d) return;
+    try {
+      const parsed = decodeDesign<{ nodes: PlacedNode[]; edges: Edge[]; scenarioId: string }>(d);
+      setNodes(parsed.nodes || []);
+      setEdges(parsed.edges || []);
+      setScenarioId(parsed.scenarioId || SCENARIOS[0].id);
+      setIsReadOnly(true);
+      setSelectedNode(null);
+      setLinkingFrom(null);
+      setLinkingFromPort(null);
+      setCursor(null);
+    } catch (err) {
+      console.error("Failed to parse shared design", err);
+    }
+  }, []);
+
   const snapshot = React.useCallback(() => ({
     nodes: structuredClone(nodes),
     edges: structuredClone(edges),
@@ -53,6 +77,7 @@ export default function SystemDesignSandbox() {
   // Keyboard shortcuts: Undo / Redo
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (isReadOnly) return;
       const meta = e.metaKey || e.ctrlKey;
       if (meta && e.key.toLowerCase() === "z") {
         e.preventDefault();
@@ -73,11 +98,12 @@ export default function SystemDesignSandbox() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [snapshot]);
+  }, [snapshot, isReadOnly]);
 
   const snap = (v: number) => Math.round(v / 24) * 24;
 
   function spawn(kind: ComponentKind) {
+    if (isReadOnly) return;
     const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
     const n: PlacedNode = {
       id: uid(),
@@ -91,6 +117,7 @@ export default function SystemDesignSandbox() {
 
   function onMouseDownNode(e: React.MouseEvent, id: NodeId) {
     e.stopPropagation();
+    if (isReadOnly) return;
     setDragging(id);
     setSelectedNode(id);
   }
@@ -115,6 +142,7 @@ export default function SystemDesignSandbox() {
   }
 
   function connect(from: NodeId, to: NodeId) {
+    if (isReadOnly) return;
     if (from === to) return;
     const exists = edges.some((e) => e.from === from && e.to === to);
     if (exists) return;
@@ -129,11 +157,32 @@ export default function SystemDesignSandbox() {
   }
 
   function removeSelected() {
+    if (isReadOnly) return;
     if (!selectedNode) return;
     undo.current.push(snapshot());
     setEdges((prev) => prev.filter((e) => e.from !== selectedNode && e.to !== selectedNode));
     setNodes((prev) => prev.filter((n) => n.id !== selectedNode));
     setSelectedNode(null);
+  }
+
+  function shareDesign() {
+    const design = { nodes, edges, scenarioId };
+    const url = `${location.origin}${location.pathname}#d=${encodeDesign(design)}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard
+        .writeText(url)
+        .then(() => alert("Share URL copied to clipboard"))
+        .catch(() => alert(url));
+    } else {
+      alert(url);
+    }
+  }
+
+  function forkDesign() {
+    setIsReadOnly(false);
+    try {
+      history.replaceState(null, "", location.pathname + location.search);
+    } catch {}
   }
 
   function runSimulation() {
@@ -143,7 +192,7 @@ export default function SystemDesignSandbox() {
     if (missingKinds.length > 0) {
       setResult(null);
       alert(
-        `Missing components for this scenario: ${missingKinds.join(", ")}.\nHint: wire edges in order so requests can flow.`
+        `Missing components for this scenario: ${missingKinds.join(", ")}\.\nHint: wire edges in order so requests can flow.`
       );
       return;
     }
@@ -170,6 +219,7 @@ export default function SystemDesignSandbox() {
           <button
             className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
             onClick={() => {
+              if (isReadOnly) return;
               const prev = undo.current.undo(snapshot());
               if (prev) {
                 setNodes(prev.nodes);
@@ -182,6 +232,7 @@ export default function SystemDesignSandbox() {
           <button
             className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
             onClick={() => {
+              if (isReadOnly) return;
               const next = undo.current.redo(snapshot());
               if (next) {
                 setNodes(next.nodes);
@@ -191,7 +242,24 @@ export default function SystemDesignSandbox() {
           >
             Redo (⇧⌘Z)
           </button>
+          <button
+            className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
+            onClick={shareDesign}
+          >
+            Share
+          </button>
+          {isReadOnly && (
+            <button
+              className="px-3 py-1.5 rounded-xl border border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20 text-xs text-emerald-200"
+              onClick={forkDesign}
+            >
+              Fork
+            </button>
+          )}
         </div>
+        {isReadOnly && (
+          <div className="text-[11px] text-amber-300/90">Read-only view from shared link. Click Fork to edit.</div>
+        )}
         <ScenarioPanel
           scenarios={SCENARIOS}
           selectedScenarioId={scenarioId}
@@ -233,6 +301,7 @@ export default function SystemDesignSandbox() {
         }}
         onPortMouseDown={(e, id, side) => {
           e.stopPropagation();
+          if (isReadOnly) return;
           setSelectedNode(id);
           setLinkingFrom(id);
           setLinkingFromPort(side);
@@ -280,3 +349,5 @@ function runDevTests() {
   log(r.meetsLatency === true, "Latency within budget", r);
   log(r.meetsRps === false, "RPS requirement not met (1500 > 1200)", r);
 }
+
+

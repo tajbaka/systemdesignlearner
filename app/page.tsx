@@ -1,9 +1,9 @@
-import SystemDesignSandbox from "./components/SystemDesignSandbox";
+import SystemDesignEditor from "./components/SystemDesignEditor";
 
 export default function Page() {
   return (
     <main className="h-screen">
-      <SystemDesignSandbox />
+      <SystemDesignEditor />
     </main>
   );
 }
