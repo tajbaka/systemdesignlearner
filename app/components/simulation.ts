@@ -7,7 +7,8 @@ export function simulate(
   pathNodeIds: NodeId[],
   nodes: PlacedNode[],
   edges: Edge[],
-  chaos: boolean
+  chaos: boolean,
+  rng: () => number = Math.random
 ) {
   // Sum intrinsic latencies + link latencies along the path
   let latency = 0;
@@ -18,7 +19,7 @@ export function simulate(
     const n = findNode(nodes, pathNodeIds[i]);
     if (!n) continue;
     // chaos failure
-    if (chaos && Math.random() < n.spec.failureRate) {
+    if (chaos && rng() < n.spec.failureRate) {
       failedByChaos = true;
     }
     latency += n.spec.baseLatencyMs;

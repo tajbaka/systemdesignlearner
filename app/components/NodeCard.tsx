@@ -5,12 +5,14 @@ import { NodeId, PlacedNode } from "./types";
 import { handleClass, isoClass } from "./styles";
 import { iconFor } from "./icons";
 
+type PortSide = "N" | "E" | "S" | "W";
+
 interface NodeCardProps {
   node: PlacedNode;
   isInPath: boolean;
   onMouseDown: (e: React.MouseEvent, id: NodeId) => void;
   onMouseUp: (e: React.MouseEvent, id: NodeId) => void;
-  onPortMouseDown: (e: React.MouseEvent, id: NodeId) => void;
+  onPortMouseDown: (e: React.MouseEvent, id: NodeId, side: PortSide) => void;
 }
 
 export default function NodeCard({
@@ -29,28 +31,52 @@ export default function NodeCard({
       whileHover={{ translateZ: 20 }}
       onMouseUp={(e) => onMouseUp(e, node.id)}
     >
-      <div className={handleClass}>{node.spec.kind}</div>
+      <div className={`${handleClass} text-zinc-200`}>{node.spec.kind}</div>
       <div className="p-4">
         <div className="flex items-center gap-2">
           {(() => {
             const Icon = iconFor(node.spec.kind);
             return <Icon className="text-zinc-200" size={18} />;
           })()}
-          <div className="text-sm font-semibold tracking-wide">{node.spec.label}</div>
+          <div className="text-sm font-semibold tracking-wide text-zinc-100">{node.spec.label}</div>
         </div>
         <div className="text-[11px] text-zinc-300 mt-1">
           {node.spec.baseLatencyMs}ms · {node.spec.capacityRps} rps
         </div>
       </div>
-      {/* Port handle for connecting */}
-            <div
-              className="absolute -right-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-emerald-400/80 ring-2 ring-emerald-300/40 shadow cursor-crosshair"
-              title="Drag to another node to connect"
-              onMouseDown={(e) => {
-                e.stopPropagation();
-                onPortMouseDown(e, node.id);
-              }}
-            />
+      {/* Port handles: N / E / S / W */}
+      <div
+        className="absolute left-1/2 -translate-x-1/2 -top-1 w-3 h-3 rounded-full bg-emerald-400/80 ring-2 ring-emerald-300/40 shadow cursor-crosshair"
+        title="Drag to connect (N)"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          onPortMouseDown(e, node.id, "N");
+        }}
+      />
+      <div
+        className="absolute -right-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-emerald-400/80 ring-2 ring-emerald-300/40 shadow cursor-crosshair"
+        title="Drag to connect (E)"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          onPortMouseDown(e, node.id, "E");
+        }}
+      />
+      <div
+        className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-3 h-3 rounded-full bg-emerald-400/80 ring-2 ring-emerald-300/40 shadow cursor-crosshair"
+        title="Drag to connect (S)"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          onPortMouseDown(e, node.id, "S");
+        }}
+      />
+      <div
+        className="absolute -left-1 top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-emerald-400/80 ring-2 ring-emerald-300/40 shadow cursor-crosshair"
+        title="Drag to connect (W)"
+        onMouseDown={(e) => {
+          e.stopPropagation();
+          onPortMouseDown(e, node.id, "W");
+        }}
+      />
       {/* Glow if last simulated path used this node */}
       {isInPath && (
         <div className="absolute inset-0 rounded-2xl ring-2 ring-emerald-400/40 pointer-events-none" />
