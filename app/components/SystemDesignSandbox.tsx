@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { ComponentKind, Edge, NodeId, PlacedNode } from "./types";
-import { COMPONENT_LIBRARY, SCENARIOS } from "./data";
+import { COMPONENT_LIBRARY } from "./data";
+import { SCENARIOS } from "@/lib/scenarios";
 import { uid, findScenarioPath } from "./utils";
 import { simulate } from "./simulation";
 import Palette from "./Palette";

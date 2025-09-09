@@ -48,4 +48,5 @@ export interface Scenario {
   requiredRps: number;
   latencyBudgetMsP95: number;
   flow: FlowStep[]; // ordered hints to validate a plausible path
+  hints?: string[];
 }
