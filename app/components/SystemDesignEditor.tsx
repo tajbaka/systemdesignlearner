@@ -285,7 +285,7 @@ export default function SystemDesignEditor() {
   const selected = nodes.find((n) => n.id === selectedNode) || null;
 
   return (
-    <div className="w-full h-screen grid grid-cols-[280px_1fr] gap-4 p-4 bg-zinc-950 overflow-hidden">
+    <div className="w-full h-screen grid grid-cols-[340px_1fr] gap-4 p-4 bg-zinc-950 overflow-hidden">
       {/* Sidebar */}
       <div className="flex flex-col gap-3 h-full overflow-hidden">
         <Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={spawn} />

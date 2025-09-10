@@ -81,7 +81,7 @@ export default function ScenarioTabs({ scenario }: ScenarioTabsProps) {
           <h4 className="text-sm font-semibold text-zinc-300">API Endpoints</h4>
           
           {/* API Endpoints Table */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto scrollbar-hide">
             <table className="w-full text-xs border-collapse">
               <thead>
                 <tr className="border-b border-white/10">
