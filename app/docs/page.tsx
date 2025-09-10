@@ -15,6 +15,9 @@ export default function DocsPage() {
           <Link href="/" className="text-zinc-300 hover:text-white transition-colors">
             Home
           </Link>
+          <Link href="/feedback" className="text-zinc-300 hover:text-white transition-colors">
+            Feedback
+          </Link>
           <Link
             href="/play"
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-medium transition-colors"

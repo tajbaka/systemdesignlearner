@@ -15,6 +15,9 @@ export default function HomePage() {
           <Link href="/docs" className="text-zinc-300 hover:text-white transition-colors">
             Docs
           </Link>
+          <Link href="/feedback" className="text-zinc-300 hover:text-white transition-colors">
+            Feedback
+          </Link>
           <Link
             href="/play"
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-medium transition-colors"
@@ -170,6 +173,9 @@ export default function HomePage() {
             <div className="flex items-center space-x-6">
               <Link href="/docs" className="text-zinc-400 hover:text-white transition-colors">
                 Documentation
+              </Link>
+              <Link href="/feedback" className="text-zinc-400 hover:text-white transition-colors">
+                Feedback
               </Link>
               <Link href="/play" className="text-zinc-400 hover:text-white transition-colors">
                 Start Designing
