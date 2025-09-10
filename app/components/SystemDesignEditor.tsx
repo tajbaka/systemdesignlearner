@@ -136,6 +136,20 @@ export default function SystemDesignEditor() {
     setNodes((prev) => [...prev, n]);
   }
 
+  function spawnAt(kind: ComponentKind, world: { x: number; y: number }) {
+    if (isReadOnly) return;
+    const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
+    const n: PlacedNode = {
+      id: uid(),
+      spec,
+      x: snap(world.x),
+      y: snap(world.y),
+      replicas: 1,
+    };
+    undo.current.push(snapshot());
+    setNodes((prev) => [...prev, n]);
+  }
+
   function updateReplicas(nodeId: NodeId, replicas: number) {
     if (isReadOnly) return;
     undo.current.push(snapshot());
@@ -401,6 +415,7 @@ export default function SystemDesignEditor() {
         }}
         onWorldCenterChange={(c) => setWorldCenter(c)}
         focusCenter={focusCenter}
+        onDrop={(kind, world) => spawnAt(kind, world)}
       />
 
       {/* Tutorial Overlay */}

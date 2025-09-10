@@ -23,6 +23,12 @@ export default function Palette({ componentLibrary, onSpawn }: PaletteProps) {
                 key={c.kind}
                 className={`${buttonBase} text-left flex-shrink-0`}
                 onClick={() => onSpawn(c.kind)}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("application/x-sds-kind", c.kind);
+                  e.dataTransfer.setData("text/plain", c.kind);
+                  e.dataTransfer.effectAllowed = "copy";
+                }}
                 title={`latency ~${c.baseLatencyMs}ms, cap ~${c.capacityRps} rps`}
               >
                 <div className="flex items-center justify-between min-w-0">

@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef } from "react";
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchContentRef } from "react-zoom-pan-pinch";
-import { Edge, NodeId, PlacedNode } from "./types";
+import { ComponentKind, Edge, NodeId, PlacedNode } from "./types";
 import { findNode, linePath } from "./utils";
 import NodeCard from "./NodeCard";
 
@@ -27,6 +27,7 @@ interface BoardProps {
   onPortMouseDown: (e: React.MouseEvent, id: NodeId, side: PortSide) => void;
   onWorldCenterChange?: (center: { x: number; y: number }) => void;
   focusCenter?: { x: number; y: number } | null;
+  onDrop: (kind: ComponentKind, world: { x: number; y: number }) => void;
 }
 
 export default function Board({
@@ -45,6 +46,7 @@ export default function Board({
   onPortMouseDown,
   onWorldCenterChange,
   focusCenter = null,
+  onDrop,
 }: BoardProps) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const transformStateRef = useRef<{ positionX: number; positionY: number; scale: number }>({
@@ -70,6 +72,29 @@ export default function Board({
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
       onMouseDown={onMouseDown}
+      onDragOver={(e) => {
+        // Allow dropping from palette
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "copy";
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        const kind =
+          (e.dataTransfer?.getData("application/x-sds-kind") ||
+            e.dataTransfer?.getData("text/plain") ||
+            "") as ComponentKind;
+        if (!kind) return;
+        const rect = boardRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        const clientX = e.clientX - rect.left;
+        const clientY = e.clientY - rect.top;
+        const { positionX, positionY, scale } = transformStateRef.current;
+        const world = {
+          x: (clientX - positionX) / scale,
+          y: (clientY - positionY) / scale,
+        };
+        onDrop(kind, world);
+      }}
       className="relative rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-900 to-black overflow-hidden"
       style={{ minHeight: 560 }}
     >
