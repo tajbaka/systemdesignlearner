@@ -16,7 +16,7 @@ const SystemDesignEditor = dynamic(() => import("../components/SystemDesignEdito
 
 export default function PlayPage() {
   return (
-    <main className="h-screen">
+    <main className="h-screen overflow-hidden">
       <SystemDesignEditor />
     </main>
   );
