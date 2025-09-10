@@ -12,6 +12,7 @@ import ScenarioPanel from "./ScenarioPanel";
 import SelectedNodePanel from "./SelectedNodePanel";
 import Board from "./Board";
 import { UndoStack } from "@/lib/undo";
+import { track } from "@/lib/analytics";
 
 // ------------------------------------------------------------
 // System Design Sandbox – modular architecture
@@ -39,10 +40,7 @@ export default function SystemDesignEditor() {
   const [focusCenter, setFocusCenter] = useState<{ x: number; y: number } | null>(null);
   const [failAttemptsByScenario, setFailAttemptsByScenario] = useState<Record<string, number>>({});
 
-  const scenario = useMemo(
-    () => SCENARIOS.find((s) => s.id === scenarioId)!,
-    [scenarioId]
-  );
+  const scenario = useMemo(() => SCENARIOS.find((s) => s.id === scenarioId)!, [scenarioId]);
 
   // --- Dev tests: run once on mount ---
   useEffect(() => {
@@ -84,10 +82,13 @@ export default function SystemDesignEditor() {
     }
   }, []);
 
-  const snapshot = React.useCallback(() => ({
-    nodes: structuredClone(nodes),
-    edges: structuredClone(edges),
-  }), [nodes, edges]);
+  const snapshot = React.useCallback(
+    () => ({
+      nodes: structuredClone(nodes),
+      edges: structuredClone(edges),
+    }),
+    [nodes, edges]
+  );
 
   // Keyboard shortcuts: Undo / Redo
   useEffect(() => {
@@ -140,7 +141,9 @@ export default function SystemDesignEditor() {
   function onMouseMoveBoard(_e: React.MouseEvent, world: { x: number; y: number }) {
     const { x, y } = world;
     if (dragging) {
-      setNodes((prev) => prev.map((n) => (n.id === dragging ? { ...n, x: snap(x), y: snap(y) } : n)));
+      setNodes((prev) =>
+        prev.map((n) => (n.id === dragging ? { ...n, x: snap(x), y: snap(y) } : n))
+      );
     }
     if (linkingFrom) {
       setCursor({ x, y });
@@ -192,6 +195,13 @@ export default function SystemDesignEditor() {
     } else {
       alert(url);
     }
+
+    // Track share event
+    track("share_design", {
+      scenarioId,
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+    });
   }
 
   function forkDesign() {
@@ -199,6 +209,13 @@ export default function SystemDesignEditor() {
     try {
       history.replaceState(null, "", location.pathname + location.search);
     } catch {}
+
+    // Track fork event
+    track("fork_design", {
+      scenarioId,
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+    });
   }
 
   function runSimulation() {
@@ -222,6 +239,22 @@ export default function SystemDesignEditor() {
     const rng = mulberry32(seed);
     const r = simulate(scenario, nodeIds, nodes, edges, chaosMode, rng);
     setResult(r);
+
+    // Track simulation run
+    track("run_sim", {
+      scenarioId,
+      nodeCount: nodes.length,
+      edgeCount: edges.length,
+      chaosMode,
+      outcome:
+        !r.failedByChaos && r.meetsLatency && r.meetsRps
+          ? "pass"
+          : r.failedByChaos
+            ? "chaos_fail"
+            : r.meetsLatency || r.meetsRps
+              ? "partial"
+              : "fail",
+    });
 
     // Outcome + attempts persistence
     const isPass = !r.failedByChaos && r.meetsLatency && r.meetsRps;
@@ -286,7 +319,9 @@ export default function SystemDesignEditor() {
           )}
         </div>
         {isReadOnly && (
-          <div className="text-[11px] text-amber-300/90">Read-only view from shared link. Click Fork to edit.</div>
+          <div className="text-[11px] text-amber-300/90">
+            Read-only view from shared link. Click Fork to edit.
+          </div>
         )}
         <ScenarioPanel
           scenarios={SCENARIOS}
@@ -379,5 +414,3 @@ function runDevTests() {
   log(r.meetsLatency === true, "Latency within budget", r);
   log(r.meetsRps === false, "RPS requirement not met (1500 > 1200)", r);
 }
-
-
