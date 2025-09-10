@@ -1,5 +1,14 @@
+declare global {
+  interface Window {
+    plausible?: (
+      eventName: string,
+      options?: { props?: Record<string, unknown> }
+    ) => void;
+  }
+}
+
 export const track = (name: string, props?: Record<string, unknown>) => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (typeof window !== "undefined" && (window as any).plausible)
-    (window as any).plausible(name, { props });
+  if (typeof window !== "undefined" && typeof window.plausible === "function") {
+    window.plausible(name, { props });
+  }
 };
