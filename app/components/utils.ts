@@ -1,4 +1,5 @@
-import { ComponentKind, Edge, NodeId, PlacedNode, Scenario } from "./types";
+import { Edge, NodeId, PlacedNode } from "./types";
+import type { Scenario } from "@/lib/scenarios";
 
 // Utility helpers
 export const uid = () => Math.random().toString(36).slice(2, 9);
@@ -21,13 +22,13 @@ export function findScenarioPath(
   scenario: Scenario,
   nodes: PlacedNode[],
   edges: Edge[]
-): { nodeIds: NodeId[]; missingKinds: ComponentKind[] } {
+): { nodeIds: NodeId[]; missingKinds: string[] } {
   const remainingKinds = [...scenario.flow];
   const nodeIds: NodeId[] = [];
-  const missingKinds: ComponentKind[] = [];
+  const missingKinds: string[] = [];
 
   // Build index: kind -> list of node ids
-  const byKind = new Map<ComponentKind, NodeId[]>();
+  const byKind = new Map<string, NodeId[]>();
   for (const n of nodes) {
     const arr = byKind.get(n.spec.kind) || [];
     arr.push(n.id);

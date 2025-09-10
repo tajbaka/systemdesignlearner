@@ -13,6 +13,7 @@ import SelectedNodePanel from "./SelectedNodePanel";
 import Board from "./Board";
 import { UndoStack } from "@/lib/undo";
 import { track } from "@/lib/analytics";
+import Tutorial, { useTutorial } from "./Tutorial";
 
 // ------------------------------------------------------------
 // System Design Sandbox – modular architecture
@@ -41,6 +42,9 @@ export default function SystemDesignEditor() {
   const [failAttemptsByScenario, setFailAttemptsByScenario] = useState<Record<string, number>>({});
 
   const scenario = useMemo(() => SCENARIOS.find((s) => s.id === scenarioId)!, [scenarioId]);
+  
+  // Tutorial state
+  const tutorial = useTutorial();
 
   // --- Dev tests: run once on mount ---
   useEffect(() => {
@@ -126,9 +130,18 @@ export default function SystemDesignEditor() {
       spec,
       x: snap(worldCenter?.x ?? 400),
       y: snap(worldCenter?.y ?? 300),
+      replicas: 1,
     };
     undo.current.push(snapshot());
     setNodes((prev) => [...prev, n]);
+  }
+
+  function updateReplicas(nodeId: NodeId, replicas: number) {
+    if (isReadOnly) return;
+    undo.current.push(snapshot());
+    setNodes((prev) =>
+      prev.map((n) => (n.id === nodeId ? { ...n, replicas } : n))
+    );
   }
 
   function onMouseDownNode(e: React.MouseEvent, id: NodeId) {
@@ -317,6 +330,17 @@ export default function SystemDesignEditor() {
               Fork
             </button>
           )}
+          {!isReadOnly && (
+            <button
+              className="px-3 py-1.5 rounded-xl border border-blue-400/40 bg-blue-400/10 hover:bg-blue-400/20 text-xs text-blue-200"
+              onClick={() => {
+                setScenarioId("spotify-play"); // Start with Spotify tutorial scenario
+                tutorial.resetTutorial();
+              }}
+            >
+              Tutorial
+            </button>
+          )}
         </div>
         {isReadOnly && (
           <div className="text-[11px] text-amber-300/90">
@@ -338,6 +362,7 @@ export default function SystemDesignEditor() {
           nodes={nodes}
           onDelete={removeSelected}
           onConnect={connect}
+          onUpdateReplicas={updateReplicas}
         />
       </div>
 
@@ -372,6 +397,14 @@ export default function SystemDesignEditor() {
         }}
         onWorldCenterChange={(c) => setWorldCenter(c)}
         focusCenter={focusCenter}
+      />
+
+      {/* Tutorial Overlay */}
+      <Tutorial
+        isVisible={tutorial.isVisible}
+        onClose={tutorial.onClose}
+        onStepComplete={tutorial.onStepComplete}
+        currentStep={tutorial.currentStep}
       />
     </div>
   );

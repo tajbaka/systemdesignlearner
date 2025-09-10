@@ -11,4 +11,17 @@ export const COMPONENT_LIBRARY: ComponentSpec[] = [
   { kind: "DB (Postgres)", label: "DB (Postgres)", baseLatencyMs: 4, capacityRps: 1200, failureRate: 0.001, costPerHour: 0.35 },
   { kind: "Object Store (S3)", label: "Object Store (S3)", baseLatencyMs: 35, capacityRps: 5000, failureRate: 0.0008, costPerHour: 0.25 },
   { kind: "Message Queue (Kafka Topic)", label: "Kafka Topic", baseLatencyMs: 5, capacityRps: 20000, failureRate: 0.001, costPerHour: 0.18 },
+  // New components from Appendix 1
+  { kind: "Search Index (Elastic)", label: "Search Index", baseLatencyMs: 15, capacityRps: 6000, failureRate: 0.0015, costPerHour: 0.30 },
+  { kind: "Read Replica", label: "Read Replica", baseLatencyMs: 6, capacityRps: 1500, failureRate: 0.001, costPerHour: 0.25 },
+  { kind: "Object Cache (Memcached)", label: "Memcached", baseLatencyMs: 1, capacityRps: 20000, failureRate: 0.0015, costPerHour: 0.12 },
+  { kind: "Auth", label: "Auth Service", baseLatencyMs: 10, capacityRps: 4000, failureRate: 0.002, costPerHour: 0.20 },
+  { kind: "Rate Limiter", label: "Rate Limiter", baseLatencyMs: 2, capacityRps: 15000, failureRate: 0.001, costPerHour: 0.15 },
+  { kind: "Stream Processor (Flink)", label: "Stream Processor", baseLatencyMs: 25, capacityRps: 5000, failureRate: 0.002, costPerHour: 0.40 },
+  { kind: "Worker Pool", label: "Worker", baseLatencyMs: 12, capacityRps: 3000, failureRate: 0.002, costPerHour: 0.20 },
+  { kind: "ID Generator (Snowflake)", label: "ID Generator", baseLatencyMs: 1, capacityRps: 50000, failureRate: 0.0005, costPerHour: 0.15 },
+  { kind: "Shard Router", label: "Shard Router", baseLatencyMs: 2, capacityRps: 100000, failureRate: 0.0005, costPerHour: 0.08 },
+  { kind: "Tracing/Logging", label: "Telemetry", baseLatencyMs: 3, capacityRps: 40000, failureRate: 0.0008, costPerHour: 0.10 },
+  { kind: "Edge Function", label: "Edge Function", baseLatencyMs: 8, capacityRps: 8000, failureRate: 0.002, costPerHour: 0.18 },
+  { kind: "Origin Shield (CDN Proxy)", label: "CDN Origin Shield", baseLatencyMs: 4, capacityRps: 50000, failureRate: 0.0008, costPerHour: 0.18 },
 ];

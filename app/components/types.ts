@@ -11,7 +11,19 @@ export type ComponentKind =
   | "DB (Postgres)"
   | "Object Store (S3)"
   | "Message Queue (Kafka Topic)"
-  | "Load Balancer";
+  | "Load Balancer"
+  | "Search Index (Elastic)"
+  | "Read Replica"
+  | "Object Cache (Memcached)"
+  | "Auth"
+  | "Rate Limiter"
+  | "Stream Processor (Flink)"
+  | "Worker Pool"
+  | "ID Generator (Snowflake)"
+  | "Shard Router"
+  | "Tracing/Logging"
+  | "Edge Function"
+  | "Origin Shield (CDN Proxy)";
 
 export interface ComponentSpec {
   kind: ComponentKind;
@@ -27,6 +39,7 @@ export interface PlacedNode {
   spec: ComponentSpec;
   x: number; // board coords
   y: number; // board coords
+  replicas?: number; // number of replicas (default 1)
 }
 
 export interface Edge {
@@ -37,16 +50,6 @@ export interface Edge {
 }
 
 export interface FlowStep {
-  kind: ComponentKind; // node kind that should appear on the path
+  kind: string; // align with lib/scenarios schema
   optional?: boolean; // e.g. CDN might be optional
-}
-
-export interface Scenario {
-  id: string;
-  title: string;
-  description: string;
-  requiredRps: number;
-  latencyBudgetMsP95: number;
-  flow: FlowStep[]; // ordered hints to validate a plausible path
-  hints?: string[];
 }

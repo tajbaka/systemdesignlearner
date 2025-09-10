@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Scenario } from "./types";
+import type { Scenario } from "@/lib/scenarios";
 import { buttonBase } from "./styles";
 
 export interface ScenarioPanelProps {
@@ -54,7 +54,7 @@ export default function ScenarioPanel({
       >
         {scenarios.map((s) => (
           <option key={s.id} value={s.id}>
-            {s.title}
+            {s.title} [{s.category}] [{s.difficulty}]
           </option>
         ))}
       </select>

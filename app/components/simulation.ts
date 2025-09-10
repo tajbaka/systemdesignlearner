@@ -1,4 +1,5 @@
-import { Edge, NodeId, PlacedNode, Scenario } from "./types";
+import { Edge, NodeId, PlacedNode } from "./types";
+import type { Scenario } from "@/lib/scenarios";
 import { findNode } from "./utils";
 
 // Very simple simulation engine (single flow, bottleneck + latency sum)
