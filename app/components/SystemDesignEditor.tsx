@@ -361,7 +361,7 @@ export default function SystemDesignEditor() {
             Read-only view from shared link. Click Fork to edit.
           </div>
         )}
-        <div className="flex-shrink-0">
+        <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
           <ScenarioPanel
             scenarios={SCENARIOS}
             selectedScenarioId={scenarioId}
