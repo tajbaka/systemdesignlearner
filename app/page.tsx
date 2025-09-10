@@ -1,6 +1,15 @@
+"use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 export default function HomePage() {
+  const router = useRouter();
+  const warmPlay = useCallback(() => {
+    router.prefetch("/play");
+    // Warm heavy client chunk used on /play
+    import("./components/SystemDesignEditor").catch(() => {});
+  }, [router]);
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
       {/* Navigation */}
@@ -12,15 +21,17 @@ export default function HomePage() {
           <span className="text-xl font-bold text-white">System Design Sandbox</span>
         </div>
         <div className="flex items-center space-x-4">
-          <Link href="/docs" className="text-zinc-300 hover:text-white transition-colors">
+          <Link href="/docs" prefetch className="text-zinc-300 hover:text-white transition-colors" onMouseEnter={() => router.prefetch("/docs")}>
             Docs
           </Link>
-          <Link href="/feedback" className="text-zinc-300 hover:text-white transition-colors">
+          <Link href="/feedback" prefetch className="text-zinc-300 hover:text-white transition-colors" onMouseEnter={() => router.prefetch("/feedback")}>
             Feedback
           </Link>
           <Link
             href="/play"
+            prefetch
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-medium transition-colors"
+            onMouseEnter={warmPlay}
           >
             Try Sandbox
           </Link>
@@ -41,13 +52,17 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/play"
+              prefetch
               className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-semibold text-lg transition-colors"
+              onMouseEnter={warmPlay}
             >
               Start Designing
             </Link>
             <Link
               href="/docs"
+              prefetch
               className="px-8 py-4 border border-zinc-600 hover:border-zinc-500 text-zinc-300 hover:text-white rounded-lg font-semibold text-lg transition-colors"
+              onMouseEnter={() => router.prefetch("/docs")}
             >
               Learn More
             </Link>
@@ -153,7 +168,9 @@ export default function HomePage() {
         <div className="text-center mt-12">
           <Link
             href="/play"
+            prefetch
             className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-semibold text-lg transition-colors"
+            onMouseEnter={warmPlay}
           >
             Try All Scenarios
           </Link>
@@ -171,13 +188,13 @@ export default function HomePage() {
               <span className="text-xl font-bold text-white">System Design Sandbox</span>
             </div>
             <div className="flex items-center space-x-6">
-              <Link href="/docs" className="text-zinc-400 hover:text-white transition-colors">
+              <Link href="/docs" prefetch className="text-zinc-400 hover:text-white transition-colors" onMouseEnter={() => router.prefetch("/docs")}>
                 Documentation
               </Link>
-              <Link href="/feedback" className="text-zinc-400 hover:text-white transition-colors">
+              <Link href="/feedback" prefetch className="text-zinc-400 hover:text-white transition-colors" onMouseEnter={() => router.prefetch("/feedback")}>
                 Feedback
               </Link>
-              <Link href="/play" className="text-zinc-400 hover:text-white transition-colors">
+              <Link href="/play" prefetch className="text-zinc-400 hover:text-white transition-colors" onMouseEnter={warmPlay}>
                 Start Designing
               </Link>
             </div>

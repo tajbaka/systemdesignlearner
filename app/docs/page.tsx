@@ -1,26 +1,36 @@
+"use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 
 export default function DocsPage() {
+  const router = useRouter();
+  const warmPlay = useCallback(() => {
+    router.prefetch("/play");
+    import("../components/SystemDesignEditor").catch(() => {});
+  }, [router]);
   return (
     <div className="min-h-screen bg-zinc-900 text-white">
       {/* Navigation */}
       <nav className="flex items-center justify-between p-6 lg:px-8 border-b border-zinc-800">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href="/" prefetch className="flex items-center space-x-2" onMouseEnter={() => router.prefetch("/")}>
           <div className="w-8 h-8 bg-emerald-400 rounded-lg flex items-center justify-center">
             <span className="text-zinc-900 font-bold text-sm">SD</span>
           </div>
           <span className="text-xl font-bold text-white">System Design Sandbox</span>
         </Link>
         <div className="flex items-center space-x-4">
-          <Link href="/" className="text-zinc-300 hover:text-white transition-colors">
+          <Link href="/" prefetch className="text-zinc-300 hover:text-white transition-colors" onMouseEnter={() => router.prefetch("/")}>
             Home
           </Link>
-          <Link href="/feedback" className="text-zinc-300 hover:text-white transition-colors">
+          <Link href="/feedback" prefetch className="text-zinc-300 hover:text-white transition-colors" onMouseEnter={() => router.prefetch("/feedback")}>
             Feedback
           </Link>
           <Link
             href="/play"
             className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-medium transition-colors"
+            prefetch
+            onMouseEnter={warmPlay}
           >
             Try Sandbox
           </Link>
@@ -328,7 +338,9 @@ export default function DocsPage() {
         <div className="text-center">
           <Link
             href="/play"
+            prefetch
             className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-semibold text-lg transition-colors"
+            onMouseEnter={warmPlay}
           >
             Start Practicing Now
           </Link>
