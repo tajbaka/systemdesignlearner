@@ -2,6 +2,7 @@
 import React from "react";
 import type { Scenario } from "@/lib/scenarios";
 import { buttonBase } from "./styles";
+import ScenarioTabs from "./ScenarioTabs";
 
 export interface ScenarioPanelProps {
   scenarios: Scenario[];
@@ -17,6 +18,15 @@ export interface ScenarioPanelProps {
     meetsLatency: boolean;
     backlogGrowthRps: number;
     failedByChaos: boolean;
+    acceptanceResults?: Record<string, boolean>;
+    acceptanceScore?: number;
+    scoreBreakdown?: {
+      sloScore: number;
+      checklistScore: number;
+      costScore: number;
+      totalScore: number;
+      outcome: "pass" | "partial" | "fail" | "chaos_fail";
+    };
   } | null;
   failAttempts: number;
 }
@@ -34,6 +44,10 @@ export default function ScenarioPanel({
   const selectedScenario = scenarios.find((s) => s.id === selectedScenarioId)!;
   const outcome: "pass" | "partial" | "fail" | "chaos_fail" | null = (() => {
     if (!simulationResult) return null;
+    if (simulationResult.scoreBreakdown) {
+      return simulationResult.scoreBreakdown.outcome;
+    }
+    // Fallback to old logic if scoreBreakdown not available
     if (simulationResult.failedByChaos) return "chaos_fail";
     const both = simulationResult.meetsLatency && simulationResult.meetsRps;
     if (both) return "pass";
@@ -59,6 +73,8 @@ export default function ScenarioPanel({
         ))}
       </select>
       <p className="text-xs text-zinc-400 leading-relaxed">{selectedScenario.description}</p>
+      
+      <ScenarioTabs scenario={selectedScenario} />
 
       <div className="flex items-center gap-2 mt-2">
         <label className="text-xs text-zinc-300 flex items-center gap-2">
@@ -75,7 +91,7 @@ export default function ScenarioPanel({
       </div>
 
       {simulationResult && (
-        <div className="mt-3 text-sm rounded-xl p-3 border border-white/10 bg-white/5">
+        <div className="mt-3 text-sm rounded-xl p-3 border border-white/10 bg-white/5 space-y-3">
           <div className="flex flex-wrap gap-3 items-center">
             {outcome && (
               <span
@@ -90,24 +106,69 @@ export default function ScenarioPanel({
                     : "bg-red-500/15 text-red-300 border border-red-300/30")
                 }
               >
-                {outcome === "pass" && "pass"}
-                {outcome === "partial" && "partial"}
-                {outcome === "fail" && "fail"}
-                {outcome === "chaos_fail" && "chaos_fail"}
+                {outcome === "pass" && "PASS"}
+                {outcome === "partial" && "PARTIAL"}
+                {outcome === "fail" && "FAIL"}
+                {outcome === "chaos_fail" && "CHAOS FAIL"}
               </span>
             )}
+            {simulationResult.scoreBreakdown && (
+              <span className="font-bold text-zinc-200">
+                Score: {simulationResult.scoreBreakdown.totalScore}/100
+              </span>
+            )}
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2 text-xs">
             <span>
               Latency P95: <b>{simulationResult.latencyMsP95}ms</b> / {selectedScenario.latencyBudgetMsP95}ms
             </span>
             <span>
-              Capacity: <b>{simulationResult.capacityRps} rps</b> (need {selectedScenario.requiredRps} rps)
+              Capacity: <b>{simulationResult.capacityRps} rps</b> / {selectedScenario.requiredRps} rps
             </span>
           </div>
+
+          {simulationResult.scoreBreakdown && (
+            <div className="space-y-1 text-xs">
+              <div className="font-semibold text-zinc-300">Score Breakdown:</div>
+              <div className="grid grid-cols-3 gap-2">
+                <span>SLO: {simulationResult.scoreBreakdown.sloScore}/60</span>
+                <span>Checklist: {simulationResult.scoreBreakdown.checklistScore}/30</span>
+                <span>Cost: {simulationResult.scoreBreakdown.costScore}/10</span>
+              </div>
+            </div>
+          )}
+
+          {simulationResult.acceptanceResults && selectedScenario.acceptance && (
+            <div className="space-y-1">
+              <div className="font-semibold text-zinc-300 text-xs">Acceptance Criteria:</div>
+              <div className="space-y-1">
+                {selectedScenario.acceptance.map((criterion) => {
+                  const passed = simulationResult.acceptanceResults![criterion.id];
+                  return (
+                    <div
+                      key={criterion.id}
+                      className={`flex items-center gap-2 text-xs ${
+                        passed ? "text-emerald-300" : "text-rose-300"
+                      }`}
+                    >
+                      <span>{passed ? "✅" : "❌"}</span>
+                      <span>{criterion.text}</span>
+                      {criterion.required && (
+                        <span className="text-[10px] text-zinc-400">(required)</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {simulationResult.failedByChaos && (
-            <div className="mt-2 text-red-400">❌ Chaos failure: a component crashed.</div>
+            <div className="text-red-400 text-xs">❌ Chaos failure: a component crashed.</div>
           )}
           {!simulationResult.meetsRps && (
-            <div className="text-xs text-zinc-400 mt-2">
+            <div className="text-xs text-zinc-400">
               Bottleneck suspected. Try adding a cache, sharding, or another service replica. Backlog growth ~{" "}
               {simulationResult.backlogGrowthRps} rps.
             </div>

@@ -1,6 +1,8 @@
 import { Edge, NodeId, PlacedNode } from "./types";
 import type { Scenario } from "@/lib/scenarios";
 import { findNode } from "./utils";
+import { evaluateScenario, calculateAcceptanceScore } from "@/lib/evaluate";
+import { calculateScore } from "@/lib/scoring";
 
 // Very simple simulation engine (single flow, bottleneck + latency sum)
 export function simulate(
@@ -41,6 +43,22 @@ export function simulate(
   // very rough backlog growth if over capacity
   const backlogGrowthRps = Math.max(0, scenario.requiredRps - (isFinite(capacity) ? capacity : 0));
 
+  // Evaluate acceptance criteria
+  const acceptanceResults = evaluateScenario(scenario, pathNodeIds, nodes);
+  const acceptanceScore = calculateAcceptanceScore(scenario, acceptanceResults);
+
+  // Calculate overall score
+  const scoreBreakdown = calculateScore(
+    scenario,
+    {
+      meetsRps,
+      meetsLatency,
+      failedByChaos,
+      acceptanceScore,
+    },
+    nodes
+  );
+
   return {
     latencyMsP95: Math.round(latency),
     capacityRps: isFinite(capacity) ? Math.round(capacity) : 0,
@@ -48,5 +66,8 @@ export function simulate(
     meetsLatency,
     backlogGrowthRps,
     failedByChaos,
+    acceptanceResults,
+    acceptanceScore,
+    scoreBreakdown,
   };
 }

@@ -285,11 +285,11 @@ export default function SystemDesignEditor() {
   const selected = nodes.find((n) => n.id === selectedNode) || null;
 
   return (
-    <div className="w-full h-full grid grid-cols-[280px_1fr] gap-4 p-4 bg-zinc-950">
+    <div className="w-full h-screen grid grid-cols-[280px_1fr] gap-4 p-4 bg-zinc-950 overflow-hidden">
       {/* Sidebar */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 h-full overflow-hidden">
         <Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={spawn} />
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap flex-shrink-0">
           <button
             className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
             onClick={() => {
@@ -343,27 +343,31 @@ export default function SystemDesignEditor() {
           )}
         </div>
         {isReadOnly && (
-          <div className="text-[11px] text-amber-300/90">
+          <div className="text-[11px] text-amber-300/90 flex-shrink-0">
             Read-only view from shared link. Click Fork to edit.
           </div>
         )}
-        <ScenarioPanel
-          scenarios={SCENARIOS}
-          selectedScenarioId={scenarioId}
-          onScenarioChange={setScenarioId}
-          chaosMode={chaosMode}
-          onChaosModeChange={setChaosMode}
-          onRunSimulation={runSimulation}
-          simulationResult={result}
-          failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
-        />
-        <SelectedNodePanel
-          selectedNode={selected}
-          nodes={nodes}
-          onDelete={removeSelected}
-          onConnect={connect}
-          onUpdateReplicas={updateReplicas}
-        />
+        <div className="flex-shrink-0">
+          <ScenarioPanel
+            scenarios={SCENARIOS}
+            selectedScenarioId={scenarioId}
+            onScenarioChange={setScenarioId}
+            chaosMode={chaosMode}
+            onChaosModeChange={setChaosMode}
+            onRunSimulation={runSimulation}
+            simulationResult={result}
+            failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
+          />
+        </div>
+        <div className="flex-shrink-0">
+          <SelectedNodePanel
+            selectedNode={selected}
+            nodes={nodes}
+            onDelete={removeSelected}
+            onConnect={connect}
+            onUpdateReplicas={updateReplicas}
+          />
+        </div>
       </div>
 
       {/* Board */}

@@ -1,12 +1,11 @@
 import type { Scenario } from "@/lib/scenarios";
-import type { PlacedNode, Edge } from "@/app/components/types";
+import type { PlacedNode } from "@/app/components/types";
 
 // Evaluates scenario acceptance criteria based on the current design
 export function evaluateScenario(
   scenario: Scenario,
   pathIds: string[],
-  nodes: PlacedNode[],
-  _edges: Edge[] // using underscore to indicate intentionally unused
+  nodes: PlacedNode[]
 ) {
   // Build text representation of the path for pattern matching
   const textPath = pathIds.map(id => {

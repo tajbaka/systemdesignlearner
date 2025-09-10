@@ -175,6 +175,111 @@ export const SCENARIOS: Scenario[] = [
     version: "1.0",
     updatedAt: "2025-09-10"
   },
+  {
+    id: "webhook-delivery",
+    title: "Webhook Delivery",
+    description: "Reliable async callbacks with retries and DLQ.",
+    category: "Messaging",
+    difficulty: "medium",
+    requiredRps: 3000,
+    latencyBudgetMsP95: 300,
+    flow: [
+      { kind: "Web" },
+      { kind: "API Gateway" },
+      { kind: "Service" },
+      { kind: "Message Queue (Kafka Topic)" },
+      { kind: "Worker Pool" }
+    ],
+    hints: ["Add dead-letter queue for failed deliveries.", "Use message queue for async processing."],
+    acceptance: [
+      { id: "dlq", text: "Dead-letter path exists for failed deliveries", required: true }
+    ],
+    api: [
+      { method: "POST", path: "/events", bodyShape: "{ type, payload }" }
+    ],
+    suggestedComponents: ["Worker Pool", "Message Queue (Kafka Topic)"],
+    version: "1.0",
+    updatedAt: "2025-09-10"
+  },
+  {
+    id: "typeahead",
+    title: "Typeahead Search",
+    description: "Autocomplete results < 100ms P95.",
+    category: "Search",
+    difficulty: "medium",
+    requiredRps: 5000,
+    latencyBudgetMsP95: 100,
+    flow: [
+      { kind: "Web" },
+      { kind: "API Gateway" },
+      { kind: "Service" },
+      { kind: "Search Index (Elastic)" }
+    ],
+    hints: ["Use dedicated search index.", "Cache popular queries."],
+    acceptance: [
+      { id: "search-index", text: "Dedicated search index in path", required: true }
+    ],
+    api: [
+      { method: "GET", path: "/search", query: ["q", "limit", "offset"] }
+    ],
+    suggestedComponents: ["Search Index (Elastic)"],
+    version: "1.0",
+    updatedAt: "2025-09-10"
+  },
+  {
+    id: "leaderboard",
+    title: "Leaderboard",
+    description: "Top-N reads low latency; frequent score updates.",
+    category: "Realtime",
+    difficulty: "easy",
+    requiredRps: 4000,
+    latencyBudgetMsP95: 120,
+    flow: [
+      { kind: "Web" },
+      { kind: "API Gateway" },
+      { kind: "Service" },
+      { kind: "Cache (Redis)" },
+      { kind: "DB (Postgres)" }
+    ],
+    hints: ["Use Redis sorted sets for top-N queries.", "Cache leaderboard in memory."],
+    acceptance: [
+      { id: "redis-zset", text: "In-memory store used for top-N (e.g., Redis)", required: true }
+    ],
+    api: [
+      { method: "GET", path: "/leaderboard", query: ["limit", "offset"] },
+      { method: "POST", path: "/score", bodyShape: "{ user_id, delta }" }
+    ],
+    suggestedComponents: ["Cache (Redis)"],
+    version: "1.0",
+    updatedAt: "2025-09-10"
+  },
+  {
+    id: "pastebin",
+    title: "Pastebin",
+    description: "Create/view text pastes; serve in <150ms P95.",
+    category: "Storage",
+    difficulty: "easy",
+    requiredRps: 2000,
+    latencyBudgetMsP95: 150,
+    flow: [
+      { kind: "Web" },
+      { kind: "API Gateway" },
+      { kind: "Service" },
+      { kind: "Object Store (S3)" },
+      { kind: "CDN", optional: true }
+    ],
+    hints: ["Add CDN for static content.", "Store pastes in object storage."],
+    acceptance: [
+      { id: "cdn-on-static", text: "CDN in front of static paste content", required: true }
+    ],
+    api: [
+      { method: "POST", path: "/pastes", bodyShape: "{ text: string }", responseShape: "{ id: string }" },
+      { method: "GET", path: "/pastes/:id" }
+    ],
+    suggestedComponents: ["CDN", "Object Store (S3)"],
+    version: "1.0",
+    updatedAt: "2025-09-10"
+  },
 ];
 
 

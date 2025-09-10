@@ -11,17 +11,17 @@ interface PaletteProps {
 
 export default function Palette({ componentLibrary, onSpawn }: PaletteProps) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10">
+    <div className="flex flex-col gap-3 min-h-0 flex-1">
+      <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col min-h-0 flex-1">
         <h2 className="text-lg text-zinc-300">Components</h2>
         <p className="text-xs text-zinc-400">Drag to board or click to spawn.</p>
-        <div className="mt-3 grid grid-cols-1 gap-2">
+        <div className="mt-3 grid grid-cols-1 gap-2 overflow-y-auto min-h-0 flex-1 pr-2">
           {componentLibrary.map((c) => {
             const Icon = iconFor(c.kind);
             return (
               <button
                 key={c.kind}
-                className={`${buttonBase} text-left`}
+                className={`${buttonBase} text-left flex-shrink-0`}
                 onClick={() => onSpawn(c.kind)}
                 title={`latency ~${c.baseLatencyMs}ms, cap ~${c.capacityRps} rps`}
               >
