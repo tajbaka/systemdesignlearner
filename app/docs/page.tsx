@@ -160,7 +160,7 @@ export default function DocsPage() {
                 </li>
                 <li>
                   <a
-                    href="https://martin.kleppmann.com/2021/08/05/realtime-analytics-snowflake.html"
+                    href="https://www.amazon.ca/Designing-Data-Intensive-Applications-Reliable-Maintainable/dp/1449373321"
                     className="text-emerald-300 hover:text-emerald-200 transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -212,7 +212,7 @@ export default function DocsPage() {
               <ul className="space-y-2 text-sm">
                 <li>
                   <a
-                    href="https://www.allthingsdistributed.com/2006/03/a_brief_history_of_amazon.html"
+                    href="https://www.scylladb.com/learn/dynamodb/introduction-to-dynamodb/"
                     className="text-emerald-300 hover:text-emerald-200 transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
@@ -232,7 +232,7 @@ export default function DocsPage() {
                 </li>
                 <li>
                   <a
-                    href="https://www.youtube.com/watch?v=g1yqX5SfRXI"
+                    href="https://blog.bytebytego.com/p/how-facebook-served-billions-of-requests"
                     className="text-emerald-300 hover:text-emerald-200 transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
