@@ -139,7 +139,7 @@ export const PracticeStepper = ({ current, locks, onStepChange, readOnly = false
                 aria-current={isCurrent ? "step" : undefined}
                 aria-disabled={step.disabled}
               >
-                <span className={`flex items-center ${isCurrent ? 'gap-3' : 'gap-2'}`}>
+                <span className={`flex min-w-0 items-center ${isCurrent ? 'gap-3' : 'gap-2'}`}>
                   <span
                     aria-hidden
                     className={`flex items-center justify-center rounded-full border font-semibold ${
@@ -154,11 +154,11 @@ export const PracticeStepper = ({ current, locks, onStepChange, readOnly = false
                   >
                     {stepNumber}
                   </span>
-                  <span className="flex flex-col">
-                    <span className={`font-semibold uppercase tracking-wide ${
+                  <span className="flex min-w-0 w-full flex-col">
+                    <span className={`block w-full font-semibold uppercase truncate tracking-tight sm:tracking-wide ${
                       isCurrent ? 'text-sm' : 'text-xs'
                     }`}>{step.label}</span>
-                    <span className={`text-zinc-400 ${
+                    <span className={`block w-full text-zinc-400 truncate ${
                       isCurrent ? 'text-xs' : 'text-xs hidden sm:block'
                     }`}>{step.description}</span>
                   </span>
