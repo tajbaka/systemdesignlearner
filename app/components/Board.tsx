@@ -106,7 +106,7 @@ export default function Board({
         centerZoomedOut={true}
         limitToBounds={false}
         wheel={{ step: 0.15 }}
-        doubleClick={{ disabled: true }}
+        doubleClick={{ mode: "zoomIn" }}
         alignmentAnimation={{ disabled: true }}
         onTransformed={(_ref, state) => {
           transformStateRef.current = state;
@@ -167,10 +167,34 @@ export default function Board({
           return (
           <>
             {/* Controls */}
-            <div className="absolute z-10 top-3 left-3 flex gap-2">
-              <button className="px-2 py-1 rounded-md bg-white/10 border border-white/15 text-xs text-zinc-200" onClick={() => { zoomCentered(0.85); }}>-</button>
-              <button className="px-2 py-1 rounded-md bg-white/10 border border-white/15 text-xs text-zinc-200" onClick={() => { centerToGrid(); }}>reset</button>
-              <button className="px-2 py-1 rounded-md bg-white/10 border border-white/15 text-xs text-zinc-200" onClick={() => { zoomCentered(1.15); }}>+</button>
+            <div className="absolute z-10 top-2 sm:top-3 left-2 sm:left-3 flex gap-1 sm:gap-2">
+              <button
+                className="px-3 py-2 sm:px-2 sm:py-1 rounded-lg sm:rounded-md bg-white/10 border border-white/15 text-xs text-zinc-200 min-h-[44px] min-w-[44px] touch-manipulation haptic-feedback"
+                onClick={() => {
+                  if ('vibrate' in navigator) navigator.vibrate(50);
+                  zoomCentered(0.85);
+                }}
+              >
+                -
+              </button>
+              <button
+                className="px-3 py-2 sm:px-2 sm:py-1 rounded-lg sm:rounded-md bg-white/10 border border-white/15 text-xs text-zinc-200 min-h-[44px] min-w-[44px] touch-manipulation haptic-feedback"
+                onClick={() => {
+                  if ('vibrate' in navigator) navigator.vibrate(50);
+                  centerToGrid();
+                }}
+              >
+                reset
+              </button>
+              <button
+                className="px-3 py-2 sm:px-2 sm:py-1 rounded-lg sm:rounded-md bg-white/10 border border-white/15 text-xs text-zinc-200 min-h-[44px] min-w-[44px] touch-manipulation haptic-feedback"
+                onClick={() => {
+                  if ('vibrate' in navigator) navigator.vibrate(50);
+                  zoomCentered(1.15);
+                }}
+              >
+                +
+              </button>
             </div>
 
             {/* Content */}

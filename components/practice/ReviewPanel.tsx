@@ -67,20 +67,20 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
   };
 
   return (
-    <div className="space-y-6">
-      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm border-zinc-700 bg-zinc-900">
-        <header className="mb-4 flex flex-col gap-1">
-          <h2 className="text-lg font-semibold text-white">Design brief</h2>
+    <div className="space-y-4 sm:space-y-6">
+      <section className="rounded-xl border border-zinc-200 bg-white p-3 sm:p-4 shadow-sm border-zinc-700 bg-zinc-900">
+        <header className="mb-3 sm:mb-4 flex flex-col gap-1">
+          <h2 className="text-lg sm:text-xl font-semibold text-white">Design brief</h2>
           <p className="text-sm text-zinc-400">
             Review the generated Markdown. Export it for your notes or validate it in the sandbox.
           </p>
         </header>
 
         {/* Score Display */}
-        <div className="mb-4 rounded-lg border border-zinc-700 bg-zinc-900/50 p-4">
-          <div className="flex items-center justify-between mb-3">
+        <div className="mb-4 rounded-lg border border-zinc-700 bg-zinc-900/50 p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
             <h3 className="text-sm font-semibold text-white">Design Score</h3>
-            <div className={`rounded-full px-3 py-1 text-xs font-semibold ${
+            <div className={`rounded-full px-3 py-1 text-xs font-semibold self-start ${
               score.outcome === 'pass' ? 'bg-emerald-900/60 text-emerald-200' :
               score.outcome === 'partial' ? 'bg-amber-900/60 text-amber-200' :
               'bg-red-900/60 text-red-200'
@@ -89,7 +89,7 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="grid grid-cols-3 gap-3 sm:gap-4 text-sm">
             <div>
               <div className="text-xs text-zinc-400">SLO Alignment</div>
               <div className="font-semibold text-white">{score.sloScore}/60</div>
@@ -111,23 +111,23 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
                 {score.hints.map((hint, index) => (
                   <li key={index} className="flex items-start gap-2">
                     <span className="text-zinc-500 mt-0.5">•</span>
-                    <span>{hint}</span>
+                    <span className="leading-relaxed">{hint}</span>
                   </li>
                 ))}
               </ul>
             </div>
           )}
         </div>
-        <pre className="max-h-[60vh] overflow-y-auto rounded-lg bg-zinc-900 p-4 text-sm leading-relaxed text-zinc-100">
+        <pre className="max-h-[50vh] sm:max-h-[60vh] overflow-y-auto rounded-lg bg-zinc-900 p-3 sm:p-4 text-sm leading-relaxed text-zinc-100">
           {markdown}
         </pre>
       </section>
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-end pt-2">
         <button
           type="button"
           onClick={handleShare}
           disabled={readOnly}
-          className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-6 text-sm font-semibold text-zinc-100 transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-6 text-sm font-semibold text-zinc-100 transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 min-h-[44px] touch-manipulation"
         >
           Share Link
         </button>
@@ -135,7 +135,7 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
           type="button"
           onClick={handleExport}
           disabled={readOnly}
-          className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-6 text-sm font-semibold text-zinc-100 transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-6 text-sm font-semibold text-zinc-100 transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 min-h-[44px] touch-manipulation"
         >
           Export .md
         </button>
@@ -143,7 +143,7 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
           type="button"
           onClick={handleOpenSandbox}
           disabled={!canDeepLink || readOnly}
-          className="inline-flex h-12 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-semibold text-white shadow transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-zinc-400"
+          className="inline-flex h-12 items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-semibold text-white shadow transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-zinc-400 min-h-[44px] touch-manipulation"
         >
           Validate in Sandbox
         </button>

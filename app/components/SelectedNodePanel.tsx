@@ -22,7 +22,7 @@ export default function SelectedNodePanel({
   if (!selectedNode) return null;
 
   return (
-    <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2 text-zinc-300">
+    <div className="p-3 sm:p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2 text-zinc-300">
       <h2 className="text-lg text-zinc-300">Selected</h2>
       <div className="text-sm">
         <div className="font-medium">{selectedNode.spec.label}</div>
@@ -30,13 +30,13 @@ export default function SelectedNodePanel({
           lat {selectedNode.spec.baseLatencyMs}ms · cap {selectedNode.spec.capacityRps} rps
         </div>
       </div>
-      
+
       {/* Replica Controls */}
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex items-center justify-between gap-2 text-sm">
         <span className="text-zinc-400">Replicas:</span>
         <div className="flex items-center gap-1">
           <button
-            className="w-6 h-6 rounded bg-zinc-700 hover:bg-zinc-600 flex items-center justify-center text-xs"
+            className="w-8 h-8 sm:w-6 sm:h-6 rounded bg-zinc-700 hover:bg-zinc-600 flex items-center justify-center text-sm sm:text-xs min-h-[44px] min-w-[44px] touch-manipulation"
             onClick={() => {
               const current = selectedNode.replicas || 1;
               if (current > 1) {
@@ -50,7 +50,7 @@ export default function SelectedNodePanel({
             {selectedNode.replicas || 1}
           </span>
           <button
-            className="w-6 h-6 rounded bg-zinc-700 hover:bg-zinc-600 flex items-center justify-center text-xs"
+            className="w-8 h-8 sm:w-6 sm:h-6 rounded bg-zinc-700 hover:bg-zinc-600 flex items-center justify-center text-sm sm:text-xs min-h-[44px] min-w-[44px] touch-manipulation"
             onClick={() => {
               const current = selectedNode.replicas || 1;
               if (current < 10) { // reasonable max
@@ -62,11 +62,13 @@ export default function SelectedNodePanel({
           </button>
         </div>
       </div>
-      <div className="flex items-center gap-2">
-        <button className={buttonBase} onClick={onDelete}>
+      <div className="flex flex-col sm:flex-row gap-2">
+        <button className={`${buttonBase} flex-1`} onClick={onDelete}>
           Delete
         </button>
-        <ConnectMenu nodes={nodes} selectedId={selectedNode.id} onConnect={onConnect} />
+        <div className="flex-1">
+          <ConnectMenu nodes={nodes} selectedId={selectedNode.id} onConnect={onConnect} />
+        </div>
       </div>
     </div>
   );

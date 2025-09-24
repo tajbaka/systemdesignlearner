@@ -7,4 +7,4 @@ export const handleClass =
   "absolute -top-2 -left-2 px-2 py-0.5 text-[10px] rounded-full bg-white/10 backdrop-blur border border-white/20";
 
 export const buttonBase =
-  "px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition";
+  "px-3 py-2 sm:py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition min-h-[44px] touch-manipulation";

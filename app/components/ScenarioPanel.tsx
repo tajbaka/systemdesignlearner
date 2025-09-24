@@ -59,12 +59,12 @@ export default function ScenarioPanel({
   const hintsToShow = Math.min(failAttempts, hints.length);
 
   return (
-    <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2 text-zinc-300">
+    <div className="p-3 sm:p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2 text-zinc-300">
       <h2 className="text-lg text-zinc-300">Scenario</h2>
       <select
         value={selectedScenarioId}
         onChange={(e) => onScenarioChange(e.target.value)}
-        className="bg-zinc-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300"
+        className="bg-zinc-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300 min-h-[44px] touch-manipulation"
       >
         {scenarios.map((s) => (
           <option key={s.id} value={s.id}>
@@ -76,16 +76,17 @@ export default function ScenarioPanel({
       
       <ScenarioTabs scenario={selectedScenario} />
 
-      <div className="flex items-center gap-2 mt-2">
-        <label className="text-xs text-zinc-300 flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
+        <label className="text-xs text-zinc-300 flex items-center gap-2 min-h-[44px]">
           <input
             type="checkbox"
             checked={chaosMode}
             onChange={(e) => onChaosModeChange(e.target.checked)}
+            className="min-h-[44px] min-w-[44px] touch-manipulation"
           />
           Chaos mode
         </label>
-        <button className={`${buttonBase} text-zinc-300`} onClick={onRunSimulation}>
+        <button className={`${buttonBase} text-zinc-300 flex-1 sm:flex-initial`} onClick={onRunSimulation}>
           Run ▶
         </button>
       </div>

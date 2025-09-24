@@ -299,13 +299,13 @@ export default function SystemDesignEditor() {
   const selected = nodes.find((n) => n.id === selectedNode) || null;
 
   return (
-    <div className="w-full h-screen grid grid-cols-[340px_1fr] gap-4 p-4 bg-zinc-950 overflow-hidden">
+    <div className="w-full h-screen grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-2 sm:gap-4 p-2 sm:p-4 bg-zinc-950 overflow-hidden">
       {/* Sidebar */}
-      <div className="flex flex-col gap-3 h-full overflow-hidden">
+      <div className="flex flex-col gap-2 sm:gap-3 h-full lg:h-full overflow-hidden lg:max-h-full">
         <Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={spawn} />
-        <div className="flex gap-2 flex-wrap flex-shrink-0">
+        <div className="flex gap-1 sm:gap-2 flex-wrap flex-shrink-0">
           <button
-            className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
+            className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 min-h-[44px] touch-manipulation"
             onClick={() => {
               if (isReadOnly) return;
               const prev = undo.current.undo(snapshot());
@@ -315,10 +315,11 @@ export default function SystemDesignEditor() {
               }
             }}
           >
-            Undo (⌘Z)
+            <span className="hidden sm:inline">Undo (⌘Z)</span>
+            <span className="sm:hidden">Undo</span>
           </button>
           <button
-            className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
+            className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 min-h-[44px] touch-manipulation"
             onClick={() => {
               if (isReadOnly) return;
               const next = undo.current.redo(snapshot());
@@ -328,17 +329,18 @@ export default function SystemDesignEditor() {
               }
             }}
           >
-            Redo (⇧⌘Z)
+            <span className="hidden sm:inline">Redo (⇧⌘Z)</span>
+            <span className="sm:hidden">Redo</span>
           </button>
           <button
-            className="px-3 py-1.5 rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200"
+            className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 min-h-[44px] touch-manipulation"
             onClick={shareDesign}
           >
             Share
           </button>
           {isReadOnly && (
             <button
-              className="px-3 py-1.5 rounded-xl border border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20 text-xs text-emerald-200"
+              className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20 text-xs text-emerald-200 min-h-[44px] touch-manipulation"
               onClick={forkDesign}
             >
               Fork
@@ -346,7 +348,7 @@ export default function SystemDesignEditor() {
           )}
           {!isReadOnly && (
             <button
-              className="px-3 py-1.5 rounded-xl border border-blue-400/40 bg-blue-400/10 hover:bg-blue-400/20 text-xs text-blue-200"
+              className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-blue-400/40 bg-blue-400/10 hover:bg-blue-400/20 text-xs text-blue-200 min-h-[44px] touch-manipulation"
               onClick={() => {
                 setScenarioId("spotify-play"); // Start with Spotify tutorial scenario
                 tutorial.resetTutorial();
@@ -361,7 +363,7 @@ export default function SystemDesignEditor() {
             Read-only view from shared link. Click Fork to edit.
           </div>
         )}
-        <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
+        <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide max-h-[40vh] lg:max-h-none">
           <ScenarioPanel
             scenarios={SCENARIOS}
             selectedScenarioId={scenarioId}
