@@ -32,7 +32,7 @@ export default function PracticeSlugPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
       <Navbar />
       <PracticeFlow sharedState={sharedState} />
     </div>

@@ -5,15 +5,13 @@
   --foreground: #171717;
 }
 
-* {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
 body {
@@ -21,6 +19,7 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
 
 /* Hide scrollbars while maintaining functionality */
 .scrollbar-hide {

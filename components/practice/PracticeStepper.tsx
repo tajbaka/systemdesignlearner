@@ -77,7 +77,7 @@ export const PracticeStepper = ({ current, locks, onStepChange, readOnly = false
   return (
     <nav
       aria-label="Practice steps"
-      className="sticky top-0 z-20 border-b border-zinc-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/80 dark:border-zinc-800 dark:bg-zinc-900/90"
+      className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/80"
     >
       <ol className="mx-auto flex w-full max-w-5xl flex-col gap-2 px-3 py-3 sm:flex-row sm:items-stretch">
         {steps.map((step, index) => {
@@ -97,10 +97,10 @@ export const PracticeStepper = ({ current, locks, onStepChange, readOnly = false
                 disabled={step.disabled || readOnly}
                 className={`group flex w-full flex-col rounded-lg border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 ${
                   isCurrent
-                    ? "border-blue-500 bg-blue-50 text-blue-900 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-100"
+                    ? "border-blue-400 bg-blue-950 text-blue-100"
                     : step.completed
-                      ? "border-emerald-400 bg-emerald-50 text-emerald-900 dark:border-emerald-400/70 dark:bg-emerald-950/70 dark:text-emerald-100"
-                      : "border-zinc-200 bg-white text-zinc-900 transition hover:border-blue-400 hover:bg-blue-50/60 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:border-blue-300 dark:hover:bg-blue-900/40"
+                      ? "border-emerald-400/70 bg-emerald-950/70 text-emerald-100"
+                      : "border-zinc-700 bg-zinc-900 text-zinc-100 transition hover:border-blue-300 hover:bg-blue-900/40"
                 }`}
                 aria-current={isCurrent ? "step" : undefined}
                 aria-disabled={step.disabled}
@@ -110,17 +110,17 @@ export const PracticeStepper = ({ current, locks, onStepChange, readOnly = false
                     aria-hidden
                     className={`flex h-10 w-10 items-center justify-center rounded-full border text-base font-semibold ${
                       isCurrent
-                        ? "border-blue-500 bg-white text-blue-600 dark:border-blue-400 dark:bg-blue-950"
+                        ? "border-blue-400 bg-blue-950 text-blue-100"
                         : step.completed
-                          ? "border-emerald-400 bg-white text-emerald-600 dark:border-emerald-400/80 dark:bg-emerald-950/80"
-                          : "border-zinc-300 bg-white text-zinc-600 dark:border-zinc-600 dark:bg-zinc-900"
+                          ? "border-emerald-400/80 bg-emerald-950/80 text-emerald-100"
+                          : "border-zinc-600 bg-zinc-900 text-zinc-400"
                     }`}
                   >
                     {index + 1}
                   </span>
                   <span className="flex flex-col">
                     <span className="text-sm font-semibold uppercase tracking-wide">{step.label}</span>
-                    <span className="text-xs text-zinc-600 dark:text-zinc-400">{step.description}</span>
+                    <span className="text-xs text-zinc-400">{step.description}</span>
                   </span>
                 </span>
                 <span className="sr-only">Step {position}, {statusLabel}</span>

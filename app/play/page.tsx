@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { Navbar } from "../../components/Navbar";
 
 const SystemDesignEditor = dynamic(() => import("../components/SystemDesignEditor"), {
   ssr: false,
@@ -16,8 +17,11 @@ const SystemDesignEditor = dynamic(() => import("../components/SystemDesignEdito
 
 export default function PlayPage() {
   return (
-    <main className="h-screen overflow-hidden">
-      <SystemDesignEditor />
-    </main>
+    <div className="h-screen flex flex-col overflow-hidden">
+      <Navbar />
+      <main className="flex-1 overflow-hidden">
+        <SystemDesignEditor />
+      </main>
+    </div>
   );
 }

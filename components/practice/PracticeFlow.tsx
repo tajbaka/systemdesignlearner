@@ -194,11 +194,12 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
 
   const nextRenderableStep = useMemo(() => deriveCurrentStep(state), [state]);
   useEffect(() => {
-    if (currentStep === "review" || !hydrated) return;
+    if (!hydrated) return;
     if (currentStep !== nextRenderableStep) {
       setCurrentStep(nextRenderableStep);
     }
-  }, [nextRenderableStep, currentStep, hydrated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nextRenderableStep, hydrated]);
 
   const handleExport = () => {
     track("practice_brief_exported", { slug: PRACTICE_SLUG });
@@ -218,11 +219,11 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
         onStepChange={handleStepChange}
         readOnly={isReadOnly}
       />
-      <section className="rounded-3xl border border-zinc-200 bg-white p-4 shadow-sm transition-all dark:border-zinc-700 dark:bg-zinc-900 sm:p-6">
+      <section className="rounded-3xl border border-zinc-700 bg-zinc-900 p-4 shadow-sm transition-all sm:p-6">
         {currentStep === "req" ? (
           <ReqForm
             value={state.requirements ?? makeDefaultRequirements()}
-            locked={state.locked.req || isReadOnly}
+            locked={isReadOnly}
             onChange={handleRequirementsChange}
             onContinue={completeRequirements}
             readOnly={isReadOnly}
@@ -231,7 +232,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
         {currentStep === "high" ? (
           <HighLevelPresets
             value={state.high}
-            locked={state.locked.high || isReadOnly}
+            locked={isReadOnly}
             onChange={handleHighLevelChange}
             onContinue={completeHighLevel}
             readOnly={isReadOnly}
@@ -240,7 +241,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
         {currentStep === "low" ? (
           <LowLevelEditor
             value={state.low}
-            locked={state.locked.low || isReadOnly}
+            locked={isReadOnly}
             onChange={handleLowLevelChange}
             onContinue={completeLowLevel}
             readOnly={isReadOnly}

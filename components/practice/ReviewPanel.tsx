@@ -68,22 +68,22 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm border-zinc-700 bg-zinc-900">
         <header className="mb-4 flex flex-col gap-1">
-          <h2 className="text-lg font-semibold">Design brief</h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <h2 className="text-lg font-semibold text-white">Design brief</h2>
+          <p className="text-sm text-zinc-400">
             Review the generated Markdown. Export it for your notes or validate it in the sandbox.
           </p>
         </header>
 
         {/* Score Display */}
-        <div className="mb-4 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900/50">
+        <div className="mb-4 rounded-lg border border-zinc-700 bg-zinc-900/50 p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold">Design Score</h3>
+            <h3 className="text-sm font-semibold text-white">Design Score</h3>
             <div className={`rounded-full px-3 py-1 text-xs font-semibold ${
-              score.outcome === 'pass' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200' :
-              score.outcome === 'partial' ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200' :
-              'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-200'
+              score.outcome === 'pass' ? 'bg-emerald-900/60 text-emerald-200' :
+              score.outcome === 'partial' ? 'bg-amber-900/60 text-amber-200' :
+              'bg-red-900/60 text-red-200'
             }`}>
               {score.outcome === 'pass' ? 'Pass' : score.outcome === 'partial' ? 'Partial' : 'Fail'} ({score.totalScore}/100)
             </div>
@@ -91,26 +91,26 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
 
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-400">SLO Alignment</div>
-              <div className="font-semibold">{score.sloScore}/60</div>
+              <div className="text-xs text-zinc-400">SLO Alignment</div>
+              <div className="font-semibold text-white">{score.sloScore}/60</div>
             </div>
             <div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-400">Requirements</div>
-              <div className="font-semibold">{score.checklistScore}/30</div>
+              <div className="text-xs text-zinc-400">Requirements</div>
+              <div className="font-semibold text-white">{score.checklistScore}/30</div>
             </div>
             <div>
-              <div className="text-xs text-zinc-600 dark:text-zinc-400">Efficiency</div>
-              <div className="font-semibold">{score.costScore}/10</div>
+              <div className="text-xs text-zinc-400">Efficiency</div>
+              <div className="font-semibold text-white">{score.costScore}/10</div>
             </div>
           </div>
 
           {score.hints.length > 0 && (
-            <div className="mt-3 pt-3 border-t border-zinc-200 dark:border-zinc-700">
-              <div className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-2">Improvement Hints:</div>
-              <ul className="text-xs text-zinc-600 dark:text-zinc-400 space-y-1">
+            <div className="mt-3 pt-3 border-t border-zinc-700">
+              <div className="text-xs font-semibold text-zinc-300 mb-2">Improvement Hints:</div>
+              <ul className="text-xs text-zinc-400 space-y-1">
                 {score.hints.map((hint, index) => (
                   <li key={index} className="flex items-start gap-2">
-                    <span className="text-zinc-400 dark:text-zinc-500 mt-0.5">•</span>
+                    <span className="text-zinc-500 mt-0.5">•</span>
                     <span>{hint}</span>
                   </li>
                 ))}
@@ -118,7 +118,7 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
             </div>
           )}
         </div>
-        <pre className="max-h-[60vh] overflow-y-auto rounded-lg bg-zinc-950/5 p-4 text-sm leading-relaxed text-zinc-800 dark:bg-zinc-900 dark:text-zinc-100">
+        <pre className="max-h-[60vh] overflow-y-auto rounded-lg bg-zinc-900 p-4 text-sm leading-relaxed text-zinc-100">
           {markdown}
         </pre>
       </section>
@@ -127,7 +127,7 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
           type="button"
           onClick={handleShare}
           disabled={readOnly}
-          className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-300 px-6 text-sm font-semibold text-zinc-800 transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-100"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-6 text-sm font-semibold text-zinc-100 transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Share Link
         </button>
@@ -135,7 +135,7 @@ export const ReviewPanel = ({ state, sandboxAvailable = false, onExport, onOpenS
           type="button"
           onClick={handleExport}
           disabled={readOnly}
-          className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-300 px-6 text-sm font-semibold text-zinc-800 transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-100"
+          className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-700 px-6 text-sm font-semibold text-zinc-100 transition hover:border-blue-400 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
           Export .md
         </button>

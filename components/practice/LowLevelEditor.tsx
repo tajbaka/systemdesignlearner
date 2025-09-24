@@ -87,7 +87,7 @@ const parseJson = (raw: string) => {
   try {
     JSON.parse(raw);
     return true;
-  } catch (error) {
+  } catch {
     return false;
   }
 };
@@ -197,19 +197,19 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
 
   return (
     <div className="space-y-6">
-      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm border-zinc-700 bg-zinc-900">
         <header className="mb-4 flex flex-col gap-1">
-          <h2 className="text-lg font-semibold">Schemas</h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <h2 className="text-lg font-semibold text-white">Schemas</h2>
+          <p className="text-sm text-zinc-400">
             Capture the core entities. Update JSON if you plan to persist more metadata.
           </p>
         </header>
         <div className="grid gap-4 md:grid-cols-2">
           {Object.entries(lowLevel.schemas).map(([name, schema]) => (
             <label key={name} className="flex flex-col gap-2">
-              <span className="text-sm font-semibold">{name}</span>
+              <span className="text-sm font-semibold text-white">{name}</span>
               <textarea
-                className="h-48 w-full rounded-lg border border-zinc-300 bg-white p-3 font-mono text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                className="h-48 w-full rounded-lg border border-zinc-300 bg-white p-3 font-mono text-xs leading-relaxed focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 border-zinc-700 bg-zinc-900 text-zinc-100"
                 spellCheck={false}
                 value={schema}
                 onChange={(event) => setSchemas(name, event.target.value)}
@@ -217,37 +217,37 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
                 aria-invalid={Boolean(schemaErrors[name])}
               />
               {schemaErrors[name] ? (
-                <span className="text-xs text-red-600 dark:text-red-400">{schemaErrors[name]}</span>
+                <span className="text-xs text-red-600 text-red-400">{schemaErrors[name]}</span>
               ) : null}
             </label>
           ))}
         </div>
       </section>
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm border-zinc-700 bg-zinc-900">
         <header className="mb-4 flex flex-col gap-1">
-          <h2 className="text-lg font-semibold">APIs</h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <h2 className="text-lg font-semibold text-white">APIs</h2>
+          <p className="text-sm text-zinc-400">
             Flesh out contracts and add notes about caching or validation.
           </p>
         </header>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-zinc-200 text-sm dark:divide-zinc-700">
-            <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+          <table className="min-w-full divide-y divide-zinc-200 text-sm divide-zinc-700">
+            <thead className="bg-zinc-50 text-xs uppercase text-zinc-500 bg-zinc-900 text-zinc-400">
               <tr>
                 <th className="px-3 py-2 text-left">Method</th>
                 <th className="px-3 py-2 text-left">Path</th>
                 <th className="px-3 py-2 text-left">Notes</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <tbody className="divide-y divide-zinc-200 divide-zinc-800">
               {lowLevel.apis.map((api, index) => (
                 <tr key={`${api.method}-${api.path}`} className="align-top">
-                  <td className="px-3 py-2 font-mono text-xs uppercase text-zinc-600 dark:text-zinc-300">{api.method}</td>
-                  <td className="px-3 py-2 font-mono text-xs text-blue-600 dark:text-blue-300">{api.path}</td>
+                  <td className="px-3 py-2 font-mono text-xs uppercase text-zinc-300">{api.method}</td>
+                  <td className="px-3 py-2 font-mono text-xs text-blue-300">{api.path}</td>
                   <td className="px-3 py-2">
                     <textarea
-                      className="w-full rounded-md border border-zinc-300 bg-white p-2 text-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+                      className="w-full rounded-md border border-zinc-300 bg-white p-2 text-xs focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 border-zinc-700 bg-zinc-900 text-zinc-100"
                       rows={3}
                       value={api.notes ?? ""}
                       onChange={(event) => updateApiNote(index, event.target.value)}
@@ -260,14 +260,14 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
           </table>
         </div>
         {apiLintMessages.length > 0 && (
-          <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/50">
+          <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 bg-amber-900/20 border-amber-800/50">
             <div className="flex items-center gap-2 mb-2">
-              <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-4 h-4 text-amber-600 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
-              <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">API Design Suggestions</span>
+              <span className="text-sm font-semibold text-amber-800 text-amber-200">API Design Suggestions</span>
             </div>
-            <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+            <ul className="text-sm text-amber-700 text-amber-300 space-y-1">
               {apiLintMessages.map((msg, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <span className="text-amber-500 mt-0.5">•</span>
@@ -279,15 +279,15 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
         )}
       </section>
 
-      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
+      <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm border-zinc-700 bg-zinc-900">
         <header className="mb-4 flex flex-col gap-1">
-          <h2 className="text-lg font-semibold">Capacity mini-calc</h2>
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <h2 className="text-lg font-semibold text-white">Capacity mini-calc</h2>
+          <p className="text-sm text-zinc-400">
             Use this to reason about cache pressure and DB load.
           </p>
         </header>
         <div className="grid gap-4 sm:grid-cols-3">
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex flex-col gap-1 text-sm text-white">
             <span>Read throughput (redirects /s)</span>
             <input
               type="number"
@@ -296,10 +296,10 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
               value={lowLevel.capacityAssumptions.readRps}
               onChange={(event) => updateCapacity("readRps", event.target.value)}
               disabled={locked || readOnly}
-              className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+              className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 border-zinc-600 bg-zinc-800 text-zinc-100"
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex flex-col gap-1 text-sm text-white">
             <span>Cache hit rate (%)</span>
             <input
               type="number"
@@ -309,10 +309,10 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
               value={lowLevel.capacityAssumptions.cacheHit}
               onChange={(event) => updateCapacity("cacheHit", event.target.value)}
               disabled={locked || readOnly}
-              className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+              className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 border-zinc-600 bg-zinc-800 text-zinc-100"
             />
           </label>
-          <label className="flex flex-col gap-1 text-sm">
+          <label className="flex flex-col gap-1 text-sm text-white">
             <span>Writes per create</span>
             <input
               type="number"
@@ -321,11 +321,11 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
               value={lowLevel.capacityAssumptions.avgWritesPerCreate}
               onChange={(event) => updateCapacity("avgWritesPerCreate", event.target.value)}
               disabled={locked || readOnly}
-              className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
+              className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 border-zinc-600 bg-zinc-800 text-zinc-100"
             />
           </label>
         </div>
-        <div className="mt-4 grid gap-2 rounded-lg bg-blue-50 p-4 text-sm text-blue-900 dark:bg-blue-950/60 dark:text-blue-100">
+        <div className="mt-4 grid gap-2 rounded-lg bg-blue-950/60 p-4 text-sm text-blue-100">
           <p>
             Derived DB reads: <strong>{dbReads.toLocaleString()}</strong> per second (~{Math.round(dbReads)} /s).
           </p>
@@ -337,7 +337,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
         </div>
       </section>
 
-      {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-red-600 text-red-400">{error}</p> : null}
 
       <div className="flex justify-end">
         <button

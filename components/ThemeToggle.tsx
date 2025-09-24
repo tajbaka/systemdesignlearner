@@ -5,12 +5,15 @@ import { useTheme } from "./ThemeProvider";
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
 
+  const handleClick = () => {
+    toggleTheme();
+  };
+
   return (
     <button
-      onClick={toggleTheme}
+      onClick={handleClick}
       className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
       aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-      suppressHydrationWarning
     >
       {theme === 'light' ? (
         <svg className="w-5 h-5 text-zinc-600 dark:text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

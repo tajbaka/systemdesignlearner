@@ -24,21 +24,21 @@ export default function FeedbackPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
       <Navbar />
       <div className="max-w-4xl mx-auto px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-zinc-900 dark:text-white mb-4">Feedback</h1>
-          <p className="text-xl text-zinc-600 dark:text-zinc-400">
+          <h1 className="text-4xl font-bold text-white mb-4">Feedback</h1>
+          <p className="text-xl text-zinc-300">
             We&apos;d love to hear your thoughts. Tell us what worked, what didn&apos;t, and what you&apos;d like to see next.
           </p>
         </div>
 
         {/* Form */}
-        <div className="bg-white dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl p-8">
+        <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
-            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-4">Contact form</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Contact form</h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <input
@@ -48,7 +48,7 @@ export default function FeedbackPage() {
                 required
                 value={formData.firstName}
                 onChange={handleChange}
-                className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-transparent px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
               />
               <input
                 type="text"
@@ -57,7 +57,7 @@ export default function FeedbackPage() {
                 required
                 value={formData.lastName}
                 onChange={handleChange}
-                className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-transparent px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
               />
             </div>
 
@@ -69,7 +69,7 @@ export default function FeedbackPage() {
                 required
                 value={formData.phone}
                 onChange={handleChange}
-                className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-transparent px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
               />
               <input
                 type="email"
@@ -78,7 +78,7 @@ export default function FeedbackPage() {
                 required
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-transparent px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
               />
             </div>
 

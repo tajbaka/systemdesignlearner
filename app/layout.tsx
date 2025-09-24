@@ -25,8 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}>
+    <html lang="en" className="h-full dark">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}>
         <Script
           defer
           data-domain="system-design-sandbox.vercel.app"

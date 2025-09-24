@@ -66,12 +66,12 @@ const Diagram = ({ components }: { components: string[] }) => (
             width={208}
             height={28}
             rx={8}
-            className="fill-blue-100 stroke-blue-400 dark:fill-blue-950 dark:stroke-blue-400/80"
+            className="fill-blue-950 stroke-blue-400/80"
           />
           <text
             x={12}
             y={18}
-            className="fill-blue-900 text-[12px] font-medium dark:fill-blue-200"
+            className="fill-blue-200 text-[12px] font-medium"
           >
             {component}
           </text>
@@ -109,7 +109,7 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly
 
   return (
     <div className="space-y-6">
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-zinc-400">
         Choose the architecture that best fits the redirect workload. Cards are keyboard focusable and clickable.
       </p>
       <div className="grid gap-4 md:grid-cols-3">
@@ -124,14 +124,14 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly
               aria-pressed={isSelected}
               className={`relative flex h-full flex-col rounded-2xl border p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                 isSelected
-                  ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-950"
-                  : "border-zinc-200 bg-white hover:border-blue-300 hover:bg-blue-50/60 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-blue-400/60 dark:hover:bg-blue-950/40"
+                  ? "border-blue-400 bg-blue-950"
+                  : "border-zinc-700 bg-zinc-900 hover:border-blue-400/60 hover:bg-blue-950/40"
               } ${(locked || readOnly) ? "opacity-60" : ""}`}
             >
               <span className="flex items-start justify-between gap-2">
                 <span>
-                  <span className="block text-base font-semibold">{preset.title}</span>
-                  <span className="block text-sm text-zinc-600 dark:text-zinc-400">{preset.tagline}</span>
+                  <span className="block text-base font-semibold text-white">{preset.title}</span>
+                  <span className="block text-sm text-zinc-400">{preset.tagline}</span>
                 </span>
                 {preset.highlight ? (
                   <span className="rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold text-white">
@@ -140,7 +140,7 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly
                 ) : null}
               </span>
               <Diagram components={preset.components} />
-              <ul className="mt-4 list-disc space-y-1 pl-5 text-xs text-zinc-600 dark:text-zinc-400">
+              <ul className="mt-4 list-disc space-y-1 pl-5 text-xs text-zinc-400">
                 {preset.notes?.map((note) => (
                   <li key={note}>{note}</li>
                 ))}
@@ -149,7 +149,7 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly
           );
         })}
       </div>
-      {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-red-400">{error}</p> : null}
       <div className="flex justify-end">
         <button
           type="button"

@@ -12,14 +12,20 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Check for saved theme preference or default to system preference
-    const savedTheme = typeof window !== "undefined" ? localStorage.getItem("theme") as Theme : null;
-    const systemTheme = typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    const initialTheme = savedTheme || systemTheme;
+    const initialTheme: Theme = "dark";
+
+    if (typeof window !== "undefined") {
+      const root = window.document.documentElement;
+      const body = window.document.body;
+      root.classList.add("dark");
+      body.classList.add("dark");
+      localStorage.setItem("theme", initialTheme);
+      console.log('Applied dark class to html and body');
+    }
 
     setTheme(initialTheme);
     setMounted(true);
@@ -29,13 +35,31 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (!mounted) return;
 
     const root = window.document.documentElement;
+    const body = window.document.body;
     root.classList.remove("light", "dark");
+    body.classList.remove("light", "dark");
     root.classList.add(theme);
+    body.classList.add(theme);
     localStorage.setItem("theme", theme);
   }, [theme, mounted]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === "light" ? "dark" : "light");
+    setTheme(prevTheme => {
+      const newTheme = prevTheme === "light" ? "dark" : "light";
+
+      // Apply the new theme immediately
+      if (typeof window !== "undefined") {
+        const root = window.document.documentElement;
+        const body = window.document.body;
+        root.classList.remove("light", "dark");
+        body.classList.remove("light", "dark");
+        root.classList.add(newTheme);
+        body.classList.add(newTheme);
+        localStorage.setItem("theme", newTheme);
+      }
+
+      return newTheme;
+    });
   };
 
   return (
