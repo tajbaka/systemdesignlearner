@@ -1,0 +1,132 @@
+import type { HighLevelChoice, LowLevel, PracticeState, Requirements } from "./types";
+
+export const FUNCTIONAL_TOGGLES = [
+  {
+    id: "create-short-url",
+    label: "Create short URL",
+    description: "Generate short links via API/UI",
+    default: true,
+  },
+  {
+    id: "redirect-by-slug",
+    label: "Redirect by slug",
+    description: "Resolve slug to destination",
+    default: true,
+  },
+  {
+    id: "custom-alias",
+    label: "Custom alias",
+    description: "Allow requester to choose slug",
+    default: false,
+  },
+  {
+    id: "basic-analytics",
+    label: "Basic click analytics",
+    description: "Track total clicks and last seen",
+    default: false,
+  },
+  {
+    id: "rate-limiting",
+    label: "Rate limiting",
+    description: "Throttle abusive clients",
+    default: false,
+  },
+  {
+    id: "admin-delete",
+    label: "Admin delete",
+    description: "Admin can revoke short links",
+    default: false,
+  },
+] as const;
+
+export const makeDefaultRequirements = (): Requirements => ({
+  functional: FUNCTIONAL_TOGGLES.reduce<Requirements["functional"]>((acc, toggle) => {
+    acc[toggle.id] = toggle.default;
+    return acc;
+  }, {}),
+  nonFunctional: {
+    readRps: 5000,
+    writeRps: 100,
+    p95RedirectMs: 100,
+    availability: "99.9",
+  },
+});
+
+export const PRESET_CHOICES: HighLevelChoice[] = [
+  {
+    presetId: "db_only",
+    components: ["Web", "Service", "DB (Postgres)"],
+    notes: ["Fast to ship but DB handles every redirect.", "Add read replicas later if traffic climbs."],
+  },
+  {
+    presetId: "cache_primary",
+    components: ["Web", "API Gateway", "Service", "Cache (Redis)", "DB (Postgres)"],
+    notes: [
+      "Redirect path MUST hit cache; DB only on miss.",
+      "Write-through: on create, write DB then invalidate or warm cache.",
+      "Optional CDN for redirect endpoint if edge needed.",
+    ],
+  },
+  {
+    presetId: "global_edge_cache",
+    components: ["Web", "Edge Worker", "Service", "Cache (Redis)", "DB (Postgres)"],
+    notes: [
+      "More complex; use when latency budget is extremely tight.",
+      "Requires global invalidation and key propagation.",
+    ],
+  },
+];
+
+export const URL_SCHEMA = `{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"Url","type":"object","required":["slug","long_url","created_at"],
+  "properties":{"slug":{"type":"string"},"long_url":{"type":"string","format":"uri"},"created_at":{"type":"string","format":"date-time"},"ttl":{"type":"integer","minimum":0},"owner_id":{"type":"string"}}
+}`;
+
+export const CLICK_SCHEMA = `{
+  "$schema":"https://json-schema.org/draft/2020-12/schema",
+  "title":"ClickEvent","type":"object","required":["slug","ts"],
+  "properties":{"slug":{"type":"string"},"ts":{"type":"string","format":"date-time"},"ua":{"type":"string"},"ip_hash":{"type":"string"}}
+}`;
+
+export const makeDefaultLowLevel = (): LowLevel => ({
+  schemas: {
+    Url: URL_SCHEMA,
+    ClickEvent: CLICK_SCHEMA,
+  },
+  apis: [
+    {
+      method: "POST",
+      path: "/urls",
+      notes: "Body: { long_url, custom? } → returns { short }",
+    },
+    {
+      method: "GET",
+      path: "/:slug",
+      notes: "Redirect 302 to long URL; hit cache first",
+    },
+    {
+      method: "GET",
+      path: "/urls/:slug/stats",
+      notes: "Optional analytics view; guard behind auth",
+    },
+  ],
+  capacityAssumptions: {
+    cacheHit: 95,
+    avgWritesPerCreate: 1,
+    readRps: 5000,
+  },
+});
+
+export const makeInitialPracticeState = (): PracticeState => ({
+  slug: "url-shortener",
+  requirements: makeDefaultRequirements(),
+  high: undefined,
+  low: makeDefaultLowLevel(),
+  locked: {
+    req: false,
+    high: false,
+    low: false,
+  },
+  updatedAt: Date.now(),
+});
