@@ -79,11 +79,11 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
             Select what your MVP must support. Core flows are pre-selected.
           </p>
         </header>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
           {FUNCTIONAL_TOGGLES.map((toggle) => (
             <label
               key={toggle.id}
-              className={`flex min-h-[3.5rem] sm:min-h-[3.25rem] items-start gap-3 rounded-lg border px-3 py-3 sm:py-2 transition focus-within:ring-2 focus-within:ring-blue-500 touch-manipulation ${
+              className={`flex min-h-[2.5rem] sm:min-h-[2.25rem] items-start gap-2 rounded-lg border px-2 py-2 sm:py-1.5 transition focus-within:ring-2 focus-within:ring-blue-500 touch-manipulation ${
                 requirements.functional[toggle.id]
                   ? "border-blue-400 bg-blue-950/50"
                   : "border-zinc-700"
@@ -91,7 +91,7 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
             >
               <input
                 type="checkbox"
-                className="mt-1 h-4 w-4 sm:h-5 sm:w-5 shrink-0 rounded border-zinc-600 text-blue-600 focus:ring-blue-500"
+                className="mt-0.5 h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0 rounded border-zinc-600 text-blue-600 focus:ring-blue-500"
                 checked={Boolean(requirements.functional[toggle.id])}
                 onChange={(event) => handleToggle(toggle.id, event.target.checked)}
                 disabled={locked || readOnly}
