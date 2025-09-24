@@ -9,6 +9,7 @@ type HighLevelPresetsProps = {
   locked: boolean;
   onChange: (value: HighLevelChoice) => void;
   onContinue: (value: HighLevelChoice) => void;
+  readOnly?: boolean;
 };
 
 type Preset = HighLevelChoice & {
@@ -80,7 +81,7 @@ const Diagram = ({ components }: { components: string[] }) => (
   </svg>
 );
 
-export const HighLevelPresets = ({ value, locked, onChange, onContinue }: HighLevelPresetsProps) => {
+export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly = false }: HighLevelPresetsProps) => {
   const [error, setError] = useState<string | null>(null);
 
   const currentPresetId = value?.presetId;
@@ -91,6 +92,7 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue }: HighLe
   }, [currentPresetId, value]);
 
   const handleSelect = (preset: Preset) => {
+    if (readOnly) return;
     const selection = makeSelection(preset);
     onChange(selection);
     setError(null);
@@ -118,13 +120,13 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue }: HighLe
               key={preset.presetId}
               type="button"
               onClick={() => handleSelect(preset)}
-              disabled={locked}
+              disabled={locked || readOnly}
               aria-pressed={isSelected}
               className={`relative flex h-full flex-col rounded-2xl border p-4 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
                 isSelected
                   ? "border-blue-500 bg-blue-50 dark:border-blue-400 dark:bg-blue-950"
                   : "border-zinc-200 bg-white hover:border-blue-300 hover:bg-blue-50/60 dark:border-zinc-700 dark:bg-zinc-900 dark:hover:border-blue-400/60 dark:hover:bg-blue-950/40"
-              } ${locked ? "opacity-60" : ""}`}
+              } ${(locked || readOnly) ? "opacity-60" : ""}`}
             >
               <span className="flex items-start justify-between gap-2">
                 <span>
@@ -152,7 +154,7 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue }: HighLe
         <button
           type="button"
           onClick={handleContinue}
-          disabled={locked}
+          disabled={locked || readOnly}
           className="inline-flex h-12 min-w-[140px] items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-semibold text-white shadow transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
           Continue

@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { track } from "@/lib/analytics";
+import { Navbar } from "@/components/Navbar";
 
 const PROBLEMS = [
   {
@@ -11,7 +15,9 @@ const PROBLEMS = [
 
 export default function PracticePage() {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-900">
+      <Navbar />
+      <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <header>
           <h1 className="text-3xl font-semibold">Practice</h1>
@@ -53,6 +59,11 @@ export default function PracticePage() {
                 <td className="px-4 py-4 text-right">
                   <Link
                     href={`/practice/${problem.slug}`}
+                    onClick={() => track("practice_problem_selected", {
+                      slug: problem.slug,
+                      difficulty: problem.difficulty,
+                      topic: problem.topic
+                    })}
                     className="inline-flex h-10 items-center justify-center rounded-full bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                   >
                     Start
@@ -63,6 +74,7 @@ export default function PracticePage() {
           </tbody>
         </table>
       </div>
-    </main>
+      </main>
+    </div>
   );
 }

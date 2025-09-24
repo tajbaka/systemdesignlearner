@@ -1,13 +1,4 @@
-import { Buffer } from "node:buffer";
 import type { HighLevelChoice } from "./types";
-
-const encodeBase64 = (input: string): string => {
-  if (typeof window !== "undefined" && typeof window.btoa === "function") {
-    return window.btoa(input);
-  }
-
-  return Buffer.from(input, "utf-8").toString("base64");
-};
 
 export const encodeDesign = (preset: HighLevelChoice): string => {
   const payload = {
@@ -16,5 +7,9 @@ export const encodeDesign = (preset: HighLevelChoice): string => {
     notes: preset.notes ?? [],
   };
 
-  return encodeBase64(JSON.stringify(payload));
+  const json = JSON.stringify(payload);
+  return btoa(json)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
 };

@@ -13,6 +13,7 @@ type PracticeStepperProps = {
   current: PracticeStep;
   locks: StepperLocks;
   onStepChange: (step: PracticeStep) => void;
+  readOnly?: boolean;
 };
 
 type StepConfig = {
@@ -60,7 +61,7 @@ const isCompleted = (step: PracticeStep, locks: StepperLocks) => {
   }
 };
 
-export const PracticeStepper = ({ current, locks, onStepChange }: PracticeStepperProps) => {
+export const PracticeStepper = ({ current, locks, onStepChange, readOnly = false }: PracticeStepperProps) => {
   const steps = useMemo<StepConfig[]>(
     () =>
       PRACTICE_STEPS.map((id) => ({
@@ -89,11 +90,11 @@ export const PracticeStepper = ({ current, locks, onStepChange }: PracticeSteppe
               <button
                 type="button"
                 onClick={() => {
-                  if (!step.disabled) {
+                  if (!step.disabled && !readOnly) {
                     onStepChange(step.id);
                   }
                 }}
-                disabled={step.disabled}
+                disabled={step.disabled || readOnly}
                 className={`group flex w-full flex-col rounded-lg border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 ${
                   isCurrent
                     ? "border-blue-500 bg-blue-50 text-blue-900 dark:border-blue-400 dark:bg-blue-950 dark:text-blue-100"

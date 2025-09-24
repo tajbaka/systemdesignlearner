@@ -2,13 +2,64 @@
 
 import { useMemo, useState } from "react";
 import type { LowLevel } from "@/lib/practice/types";
-import { makeDefaultLowLevel, URL_SCHEMA, CLICK_SCHEMA } from "@/lib/practice/defaults";
+import { makeDefaultLowLevel, URL_SCHEMA } from "@/lib/practice/defaults";
+
+// Simple API linting for practice APIs
+function lintPracticeApi(apis: LowLevel["apis"]): string[] {
+  const msgs: string[] = [];
+
+  for (const api of apis) {
+    // Path should start with "/"
+    if (!api.path.startsWith("/")) {
+      msgs.push(`Path "${api.path}" should start with "/".`);
+    }
+
+    // Avoid trailing slash
+    if (api.path.endsWith("/") && api.path !== "/") {
+      msgs.push(`Avoid trailing slash in "${api.path}".`);
+    }
+
+    // Path should use nouns, not verbs
+    const pathParts = api.path.split("/").filter(Boolean);
+    const lastPart = pathParts[pathParts.length - 1];
+    if (lastPart && !lastPart.startsWith(":") && isVerb(lastPart)) {
+      msgs.push(`Path "${api.path}" should use nouns, not verbs. Consider restructuring.`);
+    }
+
+    // Suggest proper HTTP methods
+    if (api.path.includes("/create") && api.method !== "POST") {
+      msgs.push(`Create operation "${api.path}" should use POST method.`);
+    }
+    if (api.path.includes("/update") && api.method !== "POST") {
+      msgs.push(`Update operation "${api.path}" should use POST method (since only GET/POST are available).`);
+    }
+    if (api.path.includes("/delete") && api.method !== "POST") {
+      msgs.push(`Delete operation "${api.path}" should use POST method (since only GET/POST are available).`);
+    }
+
+    // POST endpoints should mention body in notes
+    if (api.method === "POST" && (!api.notes || !api.notes.toLowerCase().includes("body"))) {
+      msgs.push(`POST endpoint "${api.path}" should specify request body in notes.`);
+    }
+  }
+
+  return msgs;
+}
+
+function isVerb(word: string): boolean {
+  const commonVerbs = [
+    "create", "update", "delete", "get", "fetch", "send", "post", "put",
+    "add", "remove", "insert", "modify", "change", "save", "load", "retrieve"
+  ];
+  return commonVerbs.includes(word.toLowerCase());
+}
 
 type LowLevelEditorProps = {
   value?: LowLevel;
   locked: boolean;
   onChange: (value: LowLevel) => void;
   onContinue: (value: LowLevel) => void;
+  readOnly?: boolean;
 };
 
 const DEFAULT_APIS: LowLevel["apis"] = makeDefaultLowLevel().apis;
@@ -63,7 +114,7 @@ const buildCapacityHints = (readRps: number, cacheHit: number) => {
   return { dbReads, hints };
 };
 
-export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevelEditorProps) => {
+export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly = false }: LowLevelEditorProps) => {
   const [schemaErrors, setSchemaErrors] = useState<Record<string, string | null>>({});
   const [error, setError] = useState<string | null>(null);
 
@@ -72,8 +123,10 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
     () => buildCapacityHints(lowLevel.capacityAssumptions.readRps, lowLevel.capacityAssumptions.cacheHit),
     [lowLevel.capacityAssumptions.cacheHit, lowLevel.capacityAssumptions.readRps]
   );
+  const apiLintMessages = useMemo(() => lintPracticeApi(lowLevel.apis), [lowLevel.apis]);
 
   const setSchemas = (key: string, nextValue: string) => {
+    if (readOnly) return;
     const next: LowLevel = {
       ...lowLevel,
       schemas: {
@@ -89,6 +142,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
   };
 
   const updateApiNote = (index: number, notes: string) => {
+    if (readOnly) return;
     const next: LowLevel = {
       ...lowLevel,
       apis: lowLevel.apis.map((api, i) => (i === index ? { ...api, notes } : api)),
@@ -97,6 +151,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
   };
 
   const updateCapacity = (key: keyof LowLevel["capacityAssumptions"], raw: string) => {
+    if (readOnly) return;
     const parsed = Number(raw);
     const next: LowLevel = {
       ...lowLevel,
@@ -158,7 +213,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
                 spellCheck={false}
                 value={schema}
                 onChange={(event) => setSchemas(name, event.target.value)}
-                disabled={locked}
+                disabled={locked || readOnly}
                 aria-invalid={Boolean(schemaErrors[name])}
               />
               {schemaErrors[name] ? (
@@ -196,7 +251,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
                       rows={3}
                       value={api.notes ?? ""}
                       onChange={(event) => updateApiNote(index, event.target.value)}
-                      disabled={locked}
+                      disabled={locked || readOnly}
                     />
                   </td>
                 </tr>
@@ -204,6 +259,24 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
             </tbody>
           </table>
         </div>
+        {apiLintMessages.length > 0 && (
+          <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/50">
+            <div className="flex items-center gap-2 mb-2">
+              <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span className="text-sm font-semibold text-amber-800 dark:text-amber-200">API Design Suggestions</span>
+            </div>
+            <ul className="text-sm text-amber-700 dark:text-amber-300 space-y-1">
+              {apiLintMessages.map((msg, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <span className="text-amber-500 mt-0.5">•</span>
+                  <span>{msg}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </section>
 
       <section className="rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-700 dark:bg-zinc-900">
@@ -222,7 +295,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
               step={100}
               value={lowLevel.capacityAssumptions.readRps}
               onChange={(event) => updateCapacity("readRps", event.target.value)}
-              disabled={locked}
+              disabled={locked || readOnly}
               className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
             />
           </label>
@@ -235,7 +308,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
               step={1}
               value={lowLevel.capacityAssumptions.cacheHit}
               onChange={(event) => updateCapacity("cacheHit", event.target.value)}
-              disabled={locked}
+              disabled={locked || readOnly}
               className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
             />
           </label>
@@ -247,7 +320,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
               step={1}
               value={lowLevel.capacityAssumptions.avgWritesPerCreate}
               onChange={(event) => updateCapacity("avgWritesPerCreate", event.target.value)}
-              disabled={locked}
+              disabled={locked || readOnly}
               className="h-12 rounded-lg border border-zinc-300 px-3 text-base focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-zinc-100 dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100"
             />
           </label>
@@ -270,7 +343,7 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue }: LowLevel
         <button
           type="button"
           onClick={handleContinue}
-          disabled={locked}
+          disabled={locked || readOnly}
           className="inline-flex h-12 min-w-[140px] items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-semibold text-white shadow transition hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:bg-zinc-400"
         >
           Continue
