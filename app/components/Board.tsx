@@ -17,6 +17,7 @@ export interface BoardApi {
   getTransform(): { positionX: number; positionY: number; scale: number };
   getViewportWorldRect(): { left: number; top: number; width: number; height: number };
   centerTo(worldPoint: { x: number; y: number }): void;
+  centerToGrid(): void;
 }
 
 interface BoardProps {
@@ -31,7 +32,9 @@ interface BoardProps {
   dragging?: NodeId | null;
   deletingNode?: NodeId | null;
   onMouseMove: (e: React.MouseEvent, world: { x: number; y: number }) => void;
+  onTouchMove?: (e: React.TouchEvent, world: { x: number; y: number }) => void;
   onMouseUp: () => void;
+  onTouchEnd?: () => void;
   onMouseLeave: () => void;
   onMouseDown: () => void;
   onNodeMouseDown: (e: React.MouseEvent, id: NodeId) => void;
@@ -60,7 +63,9 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
   dragging = null,
   deletingNode = null,
   onMouseMove,
+  onTouchMove,
   onMouseUp,
+  onTouchEnd,
   onMouseLeave,
   onMouseDown,
   onNodeMouseDown,
@@ -164,7 +169,41 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
       emitWorldCenter();
       setTransformTick((t) => t + 1);
     },
-  }), [emitWorldCenter]);
+
+    centerToGrid(): void {
+      const rect = boardRef.current?.getBoundingClientRect();
+      if (!rect || !setTransformRef.current) {
+        return;
+      }
+
+      if (nodes.length > 0) {
+        // Center on barycenter (average position) of all nodes without changing scale
+        const totalX = nodes.reduce((sum, node) => sum + node.x, 0);
+        const totalY = nodes.reduce((sum, node) => sum + node.y, 0);
+        const barycenterX = totalX / nodes.length;
+        const barycenterY = totalY / nodes.length;
+
+        // Use the corrected positioning formula (same as onInit)
+        const currentScale = transformStateRef.current.scale;
+        const x = 200 - barycenterX * currentScale;
+        const y = 350 - barycenterY * currentScale;
+
+        setTransformRef.current(x, y, currentScale);
+        transformStateRef.current = { positionX: x, positionY: y, scale: currentScale };
+        emitWorldCenter();
+      } else {
+        // No nodes, center to board center (same as initial positioning)
+        const boardCenterX = GRID_WIDTH / 2;
+        const boardCenterY = GRID_HEIGHT / 2;
+        const x = 500 - boardCenterX * 2; // Use scale = 2 like initial
+        const y = 500 - boardCenterY * 2;
+        setTransformRef.current(x, y, 2);
+        transformStateRef.current = { positionX: x, positionY: y, scale: 2 };
+        emitWorldCenter();
+      }
+      setTransformTick((t) => t + 1);
+    },
+  }), [emitWorldCenter, nodes]);
 
   // Expose emitWorldCenter to parent via callback
   React.useEffect(() => {
@@ -249,6 +288,7 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
       ref={boardRef}
       data-board
       onMouseUp={onMouseUp}
+      onTouchEnd={onTouchEnd}
       onMouseLeave={onMouseLeave}
       onMouseDown={() => {
         // Force update worldCenter when user interacts with board
@@ -297,7 +337,7 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
         wheel={{ disabled: true }}
         doubleClick={{ disabled: true }}
         alignmentAnimation={{ disabled: true }}
-        panning={{ disabled: false }}
+        panning={{ disabled: dragging !== null }}
         onTransformed={(_ref, state) => {
           transformStateRef.current = state;
           emitWorldCenter();
@@ -391,9 +431,9 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
               </button>
             </div>
 
-            {/* Delete Bin - shown when dragging on desktop */}
+            {/* Delete Bin - shown when dragging */}
             {dragging && (
-              <div className="absolute z-10 bottom-20 right-4 hidden sm:block">
+              <div className="absolute z-10 bottom-20 right-4 sm:bottom-20 sm:right-4 block">
                 <div
                   className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-400/60 flex items-center justify-center hover:bg-red-500/30 transition-colors cursor-pointer"
                   onDragOver={(e) => {
@@ -432,6 +472,21 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
                     y: (y - positionY) / scale,
                   };
                   onMouseMove(e, world);
+                }}
+                onTouchMove={(e) => {
+                  if (!onTouchMove) return;
+                  const rect = boardRef.current?.getBoundingClientRect();
+                  if (!rect) return;
+                  const touch = e.touches[0];
+                  if (!touch) return;
+                  const x = touch.clientX - rect.left;
+                  const y = touch.clientY - rect.top;
+                  const { positionX, positionY, scale } = transformStateRef.current;
+                  const world = {
+                    x: (x - positionX) / scale,
+                    y: (y - positionY) / scale,
+                  };
+                  onTouchMove(e, world);
                 }}
               >
                 {/* Grid */}

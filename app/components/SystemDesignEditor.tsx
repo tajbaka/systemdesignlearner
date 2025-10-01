@@ -242,17 +242,13 @@ export default function SystemDesignEditor() {
       return;
     }
 
-    // If already in delete mode for this node, don't start dragging
-    if (deletingNode === id) return;
-
-    // Mobile: Long press triggers delete mode
     // Exit any existing delete mode first
     if (deletingNode) {
       setDeletingNode(null);
     }
 
-    // Enter delete mode for this node
-    setDeletingNode(id);
+    // Start dragging immediately for mobile (don't wait for long press)
+    setDragging(id);
     setSelectedNode(id);
   }
 
@@ -280,7 +276,28 @@ export default function SystemDesignEditor() {
     }
   }
 
+  function onTouchMoveBoard(_e: React.TouchEvent, world: { x: number; y: number }) {
+    const { x, y } = world;
+    if (dragging) {
+      setNodes((prev) =>
+        prev.map((n) => (n.id === dragging ? { ...n, x: snap(x), y: snap(y) } : n))
+      );
+    }
+    if (linkingFrom) {
+      setCursor({ x, y });
+    }
+  }
+
   function onMouseUpBoard() {
+    setDragging(null);
+    if (linkingFrom) {
+      setLinkingFrom(null);
+      setLinkingFromPort(null);
+      setCursor(null);
+    }
+  }
+
+  function onTouchEndBoard() {
     setDragging(null);
     if (linkingFrom) {
       setLinkingFrom(null);
@@ -450,7 +467,9 @@ export default function SystemDesignEditor() {
       dragging={dragging}
       deletingNode={deletingNode}
       onMouseMove={onMouseMoveBoard}
+      onTouchMove={onTouchMoveBoard}
       onMouseUp={onMouseUpBoard}
+      onTouchEnd={onTouchEndBoard}
       onMouseLeave={onMouseUpBoard}
       onMouseDown={() => {
         setSelectedNode(null);
@@ -516,6 +535,9 @@ export default function SystemDesignEditor() {
               onConnectMode={toggleConnectMode}
               onAddComponent={() => setIsAddSheetOpen(true)}
               onUndoRedo={handleUndoRedo}
+              onResetView={() => boardApiRef.current?.centerToGrid()}
+              onShare={shareDesign}
+              onFork={forkDesign}
             />
           }
           canvas={board}
