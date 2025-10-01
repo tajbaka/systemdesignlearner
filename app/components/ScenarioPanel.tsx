@@ -37,6 +37,8 @@ export interface ScenarioPanelProps {
   nodes?: PlacedNode[];
   boardApi?: BoardApi | null;
   cameraTick?: number;
+  // Mobile props
+  hideHeader?: boolean;
 }
 
 export default function ScenarioPanel({
@@ -51,6 +53,7 @@ export default function ScenarioPanel({
   nodes = [],
   boardApi,
   cameraTick = 0,
+  hideHeader = false,
 }: ScenarioPanelProps) {
   const selectedScenario = scenarios.find((s) => s.id === selectedScenarioId)!;
   const outcome: "pass" | "partial" | "fail" | "chaos_fail" | null = (() => {
@@ -83,18 +86,20 @@ export default function ScenarioPanel({
 
   return (
     <div className="flex flex-col gap-2 text-zinc-300">
-      <div className="flex items-center justify-between gap-2">
-        <h2 className="text-base font-semibold text-zinc-100">Simulation</h2>
-        <button 
-          className="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 transition cursor-pointer font-medium flex items-center gap-1.5 text-sm"
-          onClick={onRunSimulation}
-        >
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z"/>
-          </svg>
-          Run
-        </button>
-      </div>
+      {!hideHeader && (
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-base font-semibold text-zinc-100">Simulation</h2>
+          <button
+            className="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 transition cursor-pointer font-medium flex items-center gap-1.5 text-sm"
+            onClick={onRunSimulation}
+          >
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+            Run
+          </button>
+        </div>
+      )}
       
       <select
         value={selectedScenarioId}

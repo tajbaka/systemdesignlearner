@@ -545,6 +545,23 @@ export default function SystemDesignEditor() {
             <MobileSimulationPanel
               isCollapsed={isSimPanelCollapsed}
               onToggle={() => setIsSimPanelCollapsed(!isSimPanelCollapsed)}
+              collapsedHeader={
+                <div className="flex items-center justify-between gap-2">
+                  <h2 className="text-base font-semibold text-zinc-100">Simulation</h2>
+                  <button
+                    className="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 transition cursor-pointer font-medium flex items-center gap-1.5 text-sm touch-manipulation"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      runSimulation();
+                    }}
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    Run
+                  </button>
+                </div>
+              }
             >
               <ScenarioPanel
                 scenarios={SCENARIOS}
@@ -558,6 +575,7 @@ export default function SystemDesignEditor() {
                 nodes={nodes}
                 boardApi={boardApiRef.current}
                 cameraTick={cameraTick}
+                hideHeader={false}
               />
             </MobileSimulationPanel>
           }
