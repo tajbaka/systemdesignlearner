@@ -306,7 +306,7 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
           const wrapper = boardRef.current;
           if (!wrapper) return;
           const rect = wrapper.getBoundingClientRect();
-          const scale = 1;
+          const scale = 2; // Zoomed in to show half the viewport area
 
           let x, y;
           if (focusCenter) {
@@ -345,49 +345,29 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
               return;
             }
 
-            // If there are nodes, calculate bounds and fit all components in view
             if (nodes.length > 0) {
-              // Calculate bounds of all nodes
-              // Nodes are positioned by their CENTER (x,y coordinates)
-              // NodeCard renders at: left: node.x - 95, top: node.y - 45 (190x90 card)
-              const nodeWidth = 190;
-              const nodeHeight = 90;
-              const padding = 100; // Extra padding around bounds
+              // Center on barycenter (average position) of all nodes without changing scale
+              const totalX = nodes.reduce((sum, node) => sum + node.x, 0);
+              const totalY = nodes.reduce((sum, node) => sum + node.y, 0);
+              const barycenterX = totalX / nodes.length;
+              const barycenterY = totalY / nodes.length;
 
-              // Get actual bounds of all nodes (nodes.x and nodes.y are CENTER positions)
-              const xs = nodes.map(n => n.x);
-              const ys = nodes.map(n => n.y);
-              
-              const minX = Math.min(...xs) - nodeWidth/2 - padding;
-              const maxX = Math.max(...xs) + nodeWidth/2 + padding;
-              const minY = Math.min(...ys) - nodeHeight/2 - padding;
-              const maxY = Math.max(...ys) + nodeHeight/2 + padding;
+              // Use the corrected positioning formula (same as onInit)
+              const currentScale = transformStateRef.current.scale;
+              const x = 500 - barycenterX * currentScale;
+              const y = 500 - barycenterY * currentScale;
 
-              const boundsWidth = maxX - minX;
-              const boundsHeight = maxY - minY;
-              const boundsCenterX = (minX + maxX) / 2;
-              const boundsCenterY = (minY + maxY) / 2;
-
-              // Calculate scale to fit all components with some padding
-              const scaleX = (rect.width * 0.85) / boundsWidth; // 85% of viewport width
-              const scaleY = (rect.height * 0.85) / boundsHeight; // 85% of viewport height
-              const optimalScale = Math.min(scaleX, scaleY, MAX_SCALE);
-              const finalScale = Math.max(optimalScale, MIN_SCALE);
-
-              // Center the view on the bounds center
-              const x = rect.width / 2 - boundsCenterX * finalScale;
-              const y = rect.height / 2 - boundsCenterY * finalScale;
-
-              setTransform(x, y, finalScale);
-              transformStateRef.current = { positionX: x, positionY: y, scale: finalScale };
+              setTransform(x, y, currentScale);
+              transformStateRef.current = { positionX: x, positionY: y, scale: currentScale };
               emitWorldCenter();
             } else {
-              // No nodes, center to grid default
-              const scale = 1;
-              const x = (rect.width - GRID_WIDTH * scale) / 2;
-              const y = (rect.height - GRID_HEIGHT * scale) / 2;
-              setTransform(x, y, scale);
-              transformStateRef.current = { positionX: x, positionY: y, scale };
+              // No nodes, center to board center (same as initial positioning)
+              const boardCenterX = GRID_WIDTH / 2;
+              const boardCenterY = GRID_HEIGHT / 2;
+              const x = 500 - boardCenterX * 2; // Use scale = 2 like initial
+              const y = 500 - boardCenterY * 2;
+              setTransform(x, y, 2);
+              transformStateRef.current = { positionX: x, positionY: y, scale: 2 };
               emitWorldCenter();
             }
           };

@@ -160,9 +160,12 @@ export default function SystemDesignEditor() {
     // Spawn at board center coordinates (not viewport center)
     const boardCenter = { x: GRID_WIDTH / 2, y: GRID_HEIGHT / 2 };
 
-    // Temporarily remove randomness while debugging placement
-    const x = snap(boardCenter.x);
-    const y = snap(boardCenter.y);
+    // Add random offset so components don't stack exactly on top of each other
+    const offsetX = (Math.random() - 0.5) * 200; // ±100 pixels
+    const offsetY = (Math.random() - 0.5) * 200;
+
+    const x = snap(boardCenter.x + offsetX);
+    const y = snap(boardCenter.y + offsetY);
 
     const n: PlacedNode = {
       id: uid(),
