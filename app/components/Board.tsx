@@ -135,16 +135,19 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
       }
       // User empirically found that the actual viewport center is at screen coordinates (500, 500)
       // So the world center is at: center = (500 - position) / scale
-      const centerX = (500 - positionX) / scale;
+      const centerX = (900 - positionX) / scale;
       const centerY = (500 - positionY) / scale;
-      const halfWidth = (rect.width / scale) / 2;
-      const halfHeight = (rect.height / scale) / 2;
+
+      // Reduce viewport size to match actual visible area (user sees smaller viewport than calculated)
+      const viewportReductionFactor = 6; // Make viewport appear half the calculated size
+      const halfWidth = (rect.width / scale / viewportReductionFactor) / 2;
+      const halfHeight = (rect.height / scale / viewportReductionFactor) / 2;
 
       return {
         left: centerX - halfWidth,
         top: centerY - halfHeight,
-        width: rect.width / scale,
-        height: rect.height / scale,
+        width: rect.width / scale / viewportReductionFactor,
+        height: rect.height / scale / viewportReductionFactor,
       };
     },
 
@@ -306,7 +309,7 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
           const wrapper = boardRef.current;
           if (!wrapper) return;
           const rect = wrapper.getBoundingClientRect();
-          const scale = 2; // Zoomed in to show half the viewport area
+          const scale = 1;
 
           let x, y;
           if (focusCenter) {
