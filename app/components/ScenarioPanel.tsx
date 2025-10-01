@@ -2,6 +2,7 @@
 import React from "react";
 import type { Scenario } from "@/lib/scenarios";
 import type { PlacedNode } from "./types";
+import type { BoardApi } from "./Board";
 import ScenarioTabs from "./ScenarioTabs";
 
 const GRID_WIDTH = 12000;
@@ -34,8 +35,8 @@ export interface ScenarioPanelProps {
   failAttempts: number;
   // Minimap props
   nodes?: PlacedNode[];
-  worldCenter?: { x: number; y: number } | null;
-  onWorldCenterChange?: (center: { x: number; y: number }) => void;
+  boardApi?: BoardApi | null;
+  cameraTick?: number;
 }
 
 export default function ScenarioPanel({
@@ -48,8 +49,8 @@ export default function ScenarioPanel({
   simulationResult,
   failAttempts,
   nodes = [],
-  worldCenter,
-  onWorldCenterChange,
+  boardApi,
+  cameraTick = 0,
 }: ScenarioPanelProps) {
   const selectedScenario = scenarios.find((s) => s.id === selectedScenarioId)!;
   const outcome: "pass" | "partial" | "fail" | "chaos_fail" | null = (() => {
@@ -70,26 +71,15 @@ export default function ScenarioPanel({
 
   // Simple minimap navigation
   const navigateToWorld = (worldX: number, worldY: number) => {
-    if (!onWorldCenterChange) return;
-    onWorldCenterChange({ x: worldX, y: worldY });
+    if (!boardApi) return;
+    boardApi.centerTo({ x: worldX, y: worldY });
   };
 
-  // Calculate viewport bounds (simplified)
-  const getViewportBounds = () => {
-    if (!worldCenter) return { left: 0, top: 0, width: GRID_WIDTH, height: GRID_HEIGHT };
-
-    const viewportWidth = 2000; // Approximate viewport width at scale 1
-    const viewportHeight = 1500; // Approximate viewport height at scale 1
-
-    return {
-      left: worldCenter.x - viewportWidth / 2,
-      top: worldCenter.y - viewportHeight / 2,
-      width: viewportWidth,
-      height: viewportHeight
-    };
-  };
-
-  const viewport = getViewportBounds();
+  // Calculate viewport bounds using accurate BoardApi - updates live during panning
+  const viewport = React.useMemo(() => {
+    if (!boardApi) return { left: 0, top: 0, width: GRID_WIDTH, height: GRID_HEIGHT };
+    return boardApi.getViewportWorldRect(); // no approximations, no constants
+  }, [boardApi, cameraTick]);
 
   return (
     <div className="flex flex-col gap-2 text-zinc-300">

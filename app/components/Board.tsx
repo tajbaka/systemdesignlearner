@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef } from "react";
+import React, { useRef, useImperativeHandle, forwardRef } from "react";
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchContentRef } from "react-zoom-pan-pinch";
 import { ComponentKind, Edge, NodeId, PlacedNode } from "./types";
 import { findNode, linePath } from "./utils";
@@ -10,6 +10,14 @@ const GRID_WIDTH = 12000;
 const GRID_HEIGHT = 8000;
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 2.5;
+
+// Imperative API for accessing board transform state
+export interface BoardApi {
+  getWorldCenter(): { x: number; y: number };
+  getTransform(): { positionX: number; positionY: number; scale: number };
+  getViewportWorldRect(): { left: number; top: number; width: number; height: number };
+  centerTo(worldPoint: { x: number; y: number }): void;
+}
 
 interface BoardProps {
   nodes: PlacedNode[];
@@ -33,12 +41,14 @@ interface BoardProps {
   onPortMouseDown: (e: React.MouseEvent, id: NodeId, side: PortSide) => void;
   onPortTouchStart?: (e: React.TouchEvent, id: NodeId, side: PortSide) => void;
   onWorldCenterChange?: (center: { x: number; y: number }) => void;
+  onForceUpdateWorldCenter?: () => void;
   focusCenter?: { x: number; y: number } | null;
   onDrop: (kind: ComponentKind, world: { x: number; y: number }) => void;
   onDeleteNode?: (nodeId: NodeId) => void;
+  onCameraChange?: () => void;
 }
 
-export default function Board({
+const Board = forwardRef<BoardApi, BoardProps>(function Board({
   nodes,
   edges,
   lastPath,
@@ -60,10 +70,12 @@ export default function Board({
   onPortMouseDown,
   onPortTouchStart,
   onWorldCenterChange,
+  onForceUpdateWorldCenter,
   focusCenter = null,
   onDrop,
   onDeleteNode,
-}: BoardProps) {
+  onCameraChange,
+}, ref) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const transformStateRef = useRef<{ positionX: number; positionY: number; scale: number }>({
     positionX: 0,
@@ -74,7 +86,7 @@ export default function Board({
   const lastEmittedCenter = useRef<{ x: number; y: number } | null>(null);
   const [, setTransformTick] = React.useState(0); // force rerenders for overlays
 
-  const emitWorldCenter = () => {
+  const emitWorldCenter = React.useCallback((force = false) => {
     const rect = boardRef.current?.getBoundingClientRect();
     if (!rect || !onWorldCenterChange) return;
     
@@ -86,7 +98,8 @@ export default function Board({
     const cy = (rect.height / 2 - positionY) / scale;
     
     // Only emit if center has changed significantly (> 10 pixels to reduce spam)
-    if (lastEmittedCenter.current) {
+    // Unless force is true (e.g., after a drop or spawn)
+    if (!force && lastEmittedCenter.current) {
       const dx = Math.abs(cx - lastEmittedCenter.current.x);
       const dy = Math.abs(cy - lastEmittedCenter.current.y);
       if (dx < 10 && dy < 10) return;
@@ -94,7 +107,70 @@ export default function Board({
     
     lastEmittedCenter.current = { x: cx, y: cy };
     onWorldCenterChange({ x: cx, y: cy });
-  };
+  }, [onWorldCenterChange]);
+
+  // Expose imperative API
+  useImperativeHandle(ref, () => ({
+    getWorldCenter(): { x: number; y: number } {
+      const rect = boardRef.current?.getBoundingClientRect();
+      if (!rect || rect.width === 0 || rect.height === 0) {
+        return { x: 6000, y: 4000 }; // fallback to grid center
+      }
+      const { positionX, positionY, scale } = transformStateRef.current;
+      // Use the same corrected center calculation as getViewportWorldRect
+      const cx = (500 - positionX) / scale;
+      const cy = (500 - positionY) / scale;
+      return { x: cx, y: cy };
+    },
+
+    getTransform(): { positionX: number; positionY: number; scale: number } {
+      return { ...transformStateRef.current };
+    },
+
+    getViewportWorldRect(): { left: number; top: number; width: number; height: number } {
+      const rect = boardRef.current?.getBoundingClientRect();
+      const { positionX, positionY, scale } = transformStateRef.current;
+      if (!rect || !scale) {
+        return { left: 0, top: 0, width: GRID_WIDTH, height: GRID_HEIGHT };
+      }
+      // User empirically found that the actual viewport center is at screen coordinates (500, 500)
+      // So the world center is at: center = (500 - position) / scale
+      const centerX = (500 - positionX) / scale;
+      const centerY = (500 - positionY) / scale;
+      const halfWidth = (rect.width / scale) / 2;
+      const halfHeight = (rect.height / scale) / 2;
+
+      return {
+        left: centerX - halfWidth,
+        top: centerY - halfHeight,
+        width: rect.width / scale,
+        height: rect.height / scale,
+      };
+    },
+
+    centerTo(worldPoint: { x: number; y: number }): void {
+      const rect = boardRef.current?.getBoundingClientRect();
+      if (!rect || !setTransformRef.current) return;
+
+      const scale = transformStateRef.current.scale;
+      const targetX = rect.width / 2 - worldPoint.x * scale;
+      const targetY = rect.height / 2 - worldPoint.y * scale;
+
+      setTransformRef.current(targetX, targetY, scale);
+      transformStateRef.current = { positionX: targetX, positionY: targetY, scale };
+      emitWorldCenter();
+      setTransformTick((t) => t + 1);
+    },
+  }), [emitWorldCenter]);
+
+  // Expose emitWorldCenter to parent via callback
+  React.useEffect(() => {
+    if (onForceUpdateWorldCenter) {
+      // Replace the callback with our emitWorldCenter function
+      // This is a bit hacky but allows parent to force update
+      (onForceUpdateWorldCenter as unknown as { current?: () => void }).current = () => emitWorldCenter(true);
+    }
+  }, [onForceUpdateWorldCenter, emitWorldCenter]);
 
   // Ensure world center is emitted on mount and when viewport changes
   React.useEffect(() => {
@@ -171,7 +247,11 @@ export default function Board({
       data-board
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseLeave}
-      onMouseDown={onMouseDown}
+      onMouseDown={() => {
+        // Force update worldCenter when user interacts with board
+        emitWorldCenter(true);
+        onMouseDown();
+      }}
       onDragOver={(e) => {
         // Allow dropping from palette
         e.preventDefault();
@@ -186,6 +266,8 @@ export default function Board({
         if (!kind) return;
         const rect = boardRef.current?.getBoundingClientRect();
         if (!rect) return;
+        
+        // Calculate drop position - use same formula as worldCenter for consistency
         const clientX = e.clientX - rect.left;
         const clientY = e.clientY - rect.top;
         const { positionX, positionY, scale } = transformStateRef.current;
@@ -193,6 +275,10 @@ export default function Board({
           x: (clientX - positionX) / scale,
           y: (clientY - positionY) / scale,
         };
+        
+        // Force update worldCenter so it's accurate for any subsequent spawn() calls
+        emitWorldCenter(true);
+        
         onDrop(kind, world);
       }}
       className="relative rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-900 to-black overflow-hidden"
@@ -213,20 +299,31 @@ export default function Board({
           transformStateRef.current = state;
           emitWorldCenter();
           setTransformTick((t) => t + 1);
+          onCameraChange?.(); // For live minimap updates
         }}
         onInit={(ref) => {
-          // ensure centered on first mount
+          // Position viewport top-left corner at board center for initial focus
           const wrapper = boardRef.current;
           if (!wrapper) return;
           const rect = wrapper.getBoundingClientRect();
           const scale = 1;
-          let x = (rect.width - GRID_WIDTH * scale) / 2;
-          let y = (rect.height - GRID_HEIGHT * scale) / 2;
+
+          let x, y;
           if (focusCenter) {
             // center the viewport on the provided world coords
             x = rect.width / 2 - focusCenter.x * scale;
             y = rect.height / 2 - focusCenter.y * scale;
+          } else {
+            // Position viewport center at board center
+            const boardCenterX = GRID_WIDTH / 2;
+            const boardCenterY = GRID_HEIGHT / 2;
+            // From corrected center formula: center = (500 - position) / scale = boardCenter
+            // Solving: 500 - position = boardCenter * scale
+            // position = 500 - boardCenter * scale
+            x = 500 - boardCenterX * scale;
+            y = 500 - boardCenterY * scale;
           }
+
           ref.setTransform(x, y, scale);
           transformStateRef.current = { positionX: x, positionY: y, scale };
           setTransformRef.current = ref.setTransform ?? null;
@@ -447,4 +544,6 @@ export default function Board({
       </TransformWrapper>
     </div>
   );
-}
+});
+
+export default Board;

@@ -1,5 +1,19 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
+
+// Responsive hook to detect mobile vs desktop
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = React.useState(false);
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const m = window.matchMedia(query);
+    const onChange = (e: MediaQueryListEvent) => setMatches(e.matches);
+    setMatches(m.matches);
+    m.addEventListener("change", onChange);
+    return () => m.removeEventListener("change", onChange);
+  }, [query]);
+  return matches;
+}
 import { ComponentKind, Edge, NodeId, PlacedNode } from "./types";
 import { COMPONENT_LIBRARY } from "./data";
 import { SCENARIOS } from "@/lib/scenarios";
@@ -11,7 +25,10 @@ import BottomSheet from "./BottomSheet";
 import ScenarioPanel from "./ScenarioPanel";
 import SelectedNodePanel from "./SelectedNodePanel";
 import Palette from "./Palette";
-import Board from "./Board";
+import Board, { BoardApi } from "./Board";
+
+const GRID_WIDTH = 12000;
+const GRID_HEIGHT = 8000;
 import { UndoStack } from "@/lib/undo";
 import { track } from "@/lib/analytics";
 import Tutorial, { useTutorial } from "./Tutorial";
@@ -46,12 +63,13 @@ export default function SystemDesignEditor() {
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [focusCenter, setFocusCenter] = useState<{ x: number; y: number } | null>(null);
   const [failAttemptsByScenario, setFailAttemptsByScenario] = useState<Record<string, number>>({});
-  const [worldCenter, setWorldCenter] = useState<{ x: number; y: number } | null>(null);
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isConnectMode, setIsConnectMode] = useState(false);
   const [undoRedoToggle, setUndoRedoToggle] = useState<"undo" | "redo">("undo");
   const [isSimPanelCollapsed, setIsSimPanelCollapsed] = useState(false);
   const [deletingNode, setDeletingNode] = useState<NodeId | null>(null);
+  const boardApiRef = useRef<BoardApi | null>(null);
+  const [cameraTick, setCameraTick] = useState(0); // For live minimap updates
 
   const scenario = useMemo(() => SCENARIOS.find((s) => s.id === scenarioId)!, [scenarioId]);
   
@@ -136,20 +154,16 @@ export default function SystemDesignEditor() {
 
   function spawn(kind: ComponentKind) {
     if (isReadOnly) return;
+
     const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
-    
-    // Spawn at current viewport center (desktop + mobile)
-    // Fallback to grid center if not yet known
-    const baseX = worldCenter?.x ?? 6000;
-    const baseY = worldCenter?.y ?? 4000;
-    
-    // Add small random offset so components don't stack exactly on top of each other
-    const offsetX = (Math.random() - 0.5) * 200; // ±100 pixels
-    const offsetY = (Math.random() - 0.5) * 200;
-    
-    const x = snap(baseX + offsetX);
-    const y = snap(baseY + offsetY);
-    
+
+    // Spawn at board center coordinates (not viewport center)
+    const boardCenter = { x: GRID_WIDTH / 2, y: GRID_HEIGHT / 2 };
+
+    // Temporarily remove randomness while debugging placement
+    const x = snap(boardCenter.x);
+    const y = snap(boardCenter.y);
+
     const n: PlacedNode = {
       id: uid(),
       spec,
@@ -157,17 +171,13 @@ export default function SystemDesignEditor() {
       y,
       replicas: 1,
     };
-    
+
     undo.current.push(snapshot());
     setNodes((prev) => [...prev, n]);
     setIsAddSheetOpen(false);
-    
-    // Move view to the spawned component
-    setFocusCenter({ x, y });
+
+    // Keep viewport in current position, just select the new node
     setSelectedNode(n.id);
-    
-    // Clear focus center after animation
-    setTimeout(() => setFocusCenter(null), 400);
 
     // Haptic feedback
     if ('vibrate' in navigator) navigator.vibrate(50);
@@ -422,9 +432,10 @@ export default function SystemDesignEditor() {
     }
   };
 
-  // Shared Board component
-  const boardComponent = (
+  // Single Board instance shared between layouts
+  const board = (
     <Board
+      ref={boardApiRef}
       nodes={nodes}
       edges={edges}
       lastPath={lastPath}
@@ -471,7 +482,6 @@ export default function SystemDesignEditor() {
         setLinkingFrom(id);
         setLinkingFromPort(side);
       }}
-      onWorldCenterChange={(center) => setWorldCenter(center)}
       focusCenter={focusCenter}
       onDrop={(kind, world) => spawnAt(kind, world)}
       onDeleteNode={(nodeId) => {
@@ -482,139 +492,35 @@ export default function SystemDesignEditor() {
         setSelectedNode(null);
         setDragging(null);
       }}
+      onCameraChange={() => setCameraTick(t => t + 1)} // For live minimap updates
     />
   );
 
+  // Detect mobile vs desktop
+  const isMobile = useMediaQuery("(max-width: 640px)");
+
   return (
     <>
-      {/* Mobile Layout */}
-      <MobileLayout
-        topBar={
-          <MobileTopBar
-            componentCount={nodes.length}
-            isReadOnly={isReadOnly}
-            selectedNode={selectedNode}
-            isConnectMode={isConnectMode}
-            undoRedoToggle={undoRedoToggle}
-            onConnectMode={toggleConnectMode}
-            onAddComponent={() => setIsAddSheetOpen(true)}
-            onUndoRedo={handleUndoRedo}
-          />
-        }
-        canvas={boardComponent}
-        bottomPanel={
-          <MobileSimulationPanel
-            isCollapsed={isSimPanelCollapsed}
-            onToggle={() => setIsSimPanelCollapsed(!isSimPanelCollapsed)}
-          >
-            <ScenarioPanel
-              scenarios={SCENARIOS}
-              selectedScenarioId={scenarioId}
-              onScenarioChange={setScenarioId}
-              chaosMode={chaosMode}
-              onChaosModeChange={setChaosMode}
-              onRunSimulation={runSimulation}
-              simulationResult={result}
-              failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
-              nodes={nodes}
-              worldCenter={worldCenter}
-              onWorldCenterChange={setWorldCenter}
+      {isMobile ? (
+        <MobileLayout
+          topBar={
+            <MobileTopBar
+              componentCount={nodes.length}
+              isReadOnly={isReadOnly}
+              selectedNode={selectedNode}
+              isConnectMode={isConnectMode}
+              undoRedoToggle={undoRedoToggle}
+              onConnectMode={toggleConnectMode}
+              onAddComponent={() => setIsAddSheetOpen(true)}
+              onUndoRedo={handleUndoRedo}
             />
-          </MobileSimulationPanel>
-        }
-        addSheet={
-          <BottomSheet
-            isOpen={isAddSheetOpen}
-            onClose={() => setIsAddSheetOpen(false)}
-            title="Add Component"
-          >
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pb-4">
-              {COMPONENT_LIBRARY.map((c) => {
-                const Icon = iconFor(c.kind);
-                return (
-                  <button
-                    key={c.kind}
-                    onClick={() => spawn(c.kind)}
-                    className="flex flex-col items-start gap-2 p-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition touch-manipulation text-left"
-                  >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-                      <Icon className="text-blue-300" size={20} />
-                    </div>
-                    <div className="min-w-0 w-full">
-                      <div className="text-sm font-semibold text-zinc-100 truncate">{c.label}</div>
-                      <div className="text-[10px] text-zinc-400 mt-0.5">
-                        {c.baseLatencyMs}ms · {c.capacityRps} rps
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </BottomSheet>
-        }
-      />
-
-      {/* Desktop Layout */}
-      <DesktopLayout
-        sidebar={
-          <DesktopSidebar
-            palette={<Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={spawn} />}
-            controls={
-              <>
-                <button
-                  className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
-                  onClick={() => {
-                    if (isReadOnly) return;
-                    const prev = undo.current.undo(snapshot());
-                    if (prev) {
-                      setNodes(prev.nodes);
-                      setEdges(prev.edges);
-                    }
-                  }}
-                >
-                  Undo (⌘Z)
-                </button>
-                <button
-                  className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
-                  onClick={() => {
-                    if (isReadOnly) return;
-                    const next = undo.current.redo(snapshot());
-                    if (next) {
-                      setNodes(next.nodes);
-                      setEdges(next.edges);
-                    }
-                  }}
-                >
-                  Redo (⇧⌘Z)
-                </button>
-                <button
-                  className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
-                  onClick={shareDesign}
-                >
-                  Share
-                </button>
-                {isReadOnly && (
-                  <button
-                    className="px-3 py-1.5 rounded-lg border border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20 text-xs text-emerald-200 cursor-pointer transition-colors"
-                    onClick={forkDesign}
-                  >
-                    Fork
-                  </button>
-                )}
-                {!isReadOnly && (
-                  <button
-                    className="px-3 py-1.5 rounded-lg border border-blue-400/40 bg-blue-400/10 hover:bg-blue-400/20 text-xs text-blue-200 cursor-pointer transition-colors"
-                    onClick={() => {
-                      setScenarioId("spotify-play");
-                      tutorial.resetTutorial();
-                    }}
-                  >
-                    Tutorial
-                  </button>
-                )}
-              </>
-            }
-            scenarioPanel={
+          }
+          canvas={board}
+          bottomPanel={
+            <MobileSimulationPanel
+              isCollapsed={isSimPanelCollapsed}
+              onToggle={() => setIsSimPanelCollapsed(!isSimPanelCollapsed)}
+            >
               <ScenarioPanel
                 scenarios={SCENARIOS}
                 selectedScenarioId={scenarioId}
@@ -625,29 +531,137 @@ export default function SystemDesignEditor() {
                 simulationResult={result}
                 failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
                 nodes={nodes}
-                worldCenter={worldCenter}
-                onWorldCenterChange={setWorldCenter}
+                boardApi={boardApiRef.current}
+                cameraTick={cameraTick}
               />
-            }
-            selectedNodePanel={
-              <SelectedNodePanel
-                selectedNode={selected}
-                nodes={nodes}
-                onDelete={removeSelected}
-                onConnect={connect}
-                onUpdateReplicas={updateReplicas}
-              />
-            }
-            isReadOnly={isReadOnly}
-            readOnlyMessage={
-              <div className="text-[11px] text-amber-300/90 flex-shrink-0">
-                Read-only view from shared link. Click Fork to edit.
+            </MobileSimulationPanel>
+          }
+          addSheet={
+            <BottomSheet
+              isOpen={isAddSheetOpen}
+              onClose={() => setIsAddSheetOpen(false)}
+              title="Add Component"
+            >
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pb-4">
+                {COMPONENT_LIBRARY.map((c) => {
+                  const Icon = iconFor(c.kind);
+                  return (
+                    <button
+                      key={c.kind}
+                      onClick={() => spawn(c.kind)}
+                      className="flex flex-col items-start gap-2 p-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition touch-manipulation text-left"
+                    >
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                        <Icon className="text-blue-300" size={20} />
+                      </div>
+                      <div className="min-w-0 w-full">
+                        <div className="text-sm font-semibold text-zinc-100 truncate">{c.label}</div>
+                        <div className="text-[10px] text-zinc-400 mt-0.5">
+                          {c.baseLatencyMs}ms · {c.capacityRps} rps
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-            }
-          />
-        }
-        canvas={boardComponent}
-      />
+            </BottomSheet>
+          }
+        />
+      ) : (
+        <DesktopLayout
+          sidebar={
+            <DesktopSidebar
+              palette={<Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={spawn} />}
+              controls={
+                <>
+                  <button
+                    className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      const prev = undo.current.undo(snapshot());
+                      if (prev) {
+                        setNodes(prev.nodes);
+                        setEdges(prev.edges);
+                      }
+                    }}
+                  >
+                    Undo (⌘Z)
+                  </button>
+                  <button
+                    className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      const next = undo.current.redo(snapshot());
+                      if (next) {
+                        setNodes(next.nodes);
+                        setEdges(next.edges);
+                      }
+                    }}
+                  >
+                    Redo (⇧⌘Z)
+                  </button>
+                  <button
+                    className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
+                    onClick={shareDesign}
+                  >
+                    Share
+                  </button>
+                  {isReadOnly && (
+                    <button
+                      className="px-3 py-1.5 rounded-lg border border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20 text-xs text-emerald-200 cursor-pointer transition-colors"
+                      onClick={forkDesign}
+                    >
+                      Fork
+                    </button>
+                  )}
+                  {!isReadOnly && (
+                    <button
+                      className="px-3 py-1.5 rounded-lg border border-blue-400/40 bg-blue-400/10 hover:bg-blue-400/20 text-xs text-blue-200 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setScenarioId("spotify-play");
+                        tutorial.resetTutorial();
+                      }}
+                    >
+                      Tutorial
+                    </button>
+                  )}
+                </>
+              }
+              scenarioPanel={
+                <ScenarioPanel
+                  scenarios={SCENARIOS}
+                  selectedScenarioId={scenarioId}
+                  onScenarioChange={setScenarioId}
+                  chaosMode={chaosMode}
+                  onChaosModeChange={setChaosMode}
+                  onRunSimulation={runSimulation}
+                  simulationResult={result}
+                  failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
+                  nodes={nodes}
+                  boardApi={boardApiRef.current}
+                  cameraTick={cameraTick}
+                />
+              }
+              selectedNodePanel={
+                <SelectedNodePanel
+                  selectedNode={selected}
+                  nodes={nodes}
+                  onDelete={removeSelected}
+                  onConnect={connect}
+                  onUpdateReplicas={updateReplicas}
+                />
+              }
+              isReadOnly={isReadOnly}
+              readOnlyMessage={
+                <div className="text-[11px] text-amber-300/90 flex-shrink-0">
+                  Read-only view from shared link. Click Fork to edit.
+                </div>
+              }
+            />
+          }
+          canvas={board}
+        />
+      )}
 
       {/* Tutorial Overlay (Shared) */}
       <Tutorial
