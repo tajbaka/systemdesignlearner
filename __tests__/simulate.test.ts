@@ -3,6 +3,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 import type { PlacedNode, Edge, ComponentSpec } from "@/app/components/types";
 import { simulate } from "@/app/components/simulation";
 import { mulberry32 } from "@/lib/rng";
+import { snapToGrid } from "@/app/components/utils";
 
 const makeSpec = (kind: ComponentSpec["kind"], baseLatencyMs: number, capacityRps: number): ComponentSpec => ({
   kind,
@@ -13,12 +14,12 @@ const makeSpec = (kind: ComponentSpec["kind"], baseLatencyMs: number, capacityRp
   costPerHour: 0,
 });
 
-const node = (id: string, baseLatencyMs: number, cap: number) => ({
-  id,
-  spec: makeSpec(id as any, baseLatencyMs, cap),
+const node = (kind: ComponentSpec["kind"], baseLatencyMs: number, cap: number): PlacedNode => ({
+  id: kind,
+  spec: makeSpec(kind, baseLatencyMs, cap),
   x: 0,
   y: 0,
-}) as unknown as PlacedNode;
+});
 
 describe("simulate", () => {
   it("DB is bottleneck for spotify-search and results are deterministic", () => {
@@ -33,7 +34,7 @@ describe("simulate", () => {
       { id: "e1", from: "Web", to: "API Gateway", linkLatencyMs: 10 },
       { id: "e2", from: "API Gateway", to: "Service", linkLatencyMs: 10 },
       { id: "e3", from: "Service", to: "DB (Postgres)", linkLatencyMs: 10 },
-    ] as any;
+    ];
 
     const pathNodeIds = ["Web", "API Gateway", "Service", "DB (Postgres)"];
 
@@ -46,6 +47,16 @@ describe("simulate", () => {
     expect(r1.meetsRps).toBe(false);
     expect(r1.meetsLatency).toBe(true);
     expect(r1).toEqual(r2);
+  });
+});
+
+describe("utils", () => {
+  it("snapToGrid snaps to 24px increments", () => {
+    expect(snapToGrid(0)).toBe(0);
+    expect(snapToGrid(11)).toBe(0);
+    expect(snapToGrid(12)).toBe(12);
+    expect(snapToGrid(23)).toBe(24);
+    expect(snapToGrid(25)).toBe(24);
   });
 });
 

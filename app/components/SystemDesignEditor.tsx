@@ -3,17 +3,24 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ComponentKind, Edge, NodeId, PlacedNode } from "./types";
 import { COMPONENT_LIBRARY } from "./data";
 import { SCENARIOS } from "@/lib/scenarios";
-import { uid, findScenarioPath } from "./utils";
+import { uid, findScenarioPath, snapToGrid } from "./utils";
 import { simulate } from "./simulation";
 import { mulberry32 } from "@/lib/rng";
 import { encodeDesign, decodeDesign } from "@/lib/shareLink";
-import Palette from "./Palette";
+import BottomSheet from "./BottomSheet";
 import ScenarioPanel from "./ScenarioPanel";
 import SelectedNodePanel from "./SelectedNodePanel";
+import Palette from "./Palette";
 import Board from "./Board";
 import { UndoStack } from "@/lib/undo";
 import { track } from "@/lib/analytics";
 import Tutorial, { useTutorial } from "./Tutorial";
+import { iconFor } from "./icons";
+import MobileLayout from "./layout/MobileLayout";
+import DesktopLayout from "./layout/DesktopLayout";
+import MobileTopBar from "./mobile/MobileTopBar";
+import MobileSimulationPanel from "./mobile/MobileSimulationPanel";
+import DesktopSidebar from "./desktop/DesktopSidebar";
 
 // ------------------------------------------------------------
 // System Design Sandbox – modular architecture
@@ -36,10 +43,15 @@ export default function SystemDesignEditor() {
   const [linkingFrom, setLinkingFrom] = useState<NodeId | null>(null);
   const [linkingFromPort, setLinkingFromPort] = useState<"N" | "E" | "S" | "W" | null>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
-  const [worldCenter, setWorldCenter] = useState<{ x: number; y: number } | null>(null);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [focusCenter, setFocusCenter] = useState<{ x: number; y: number } | null>(null);
   const [failAttemptsByScenario, setFailAttemptsByScenario] = useState<Record<string, number>>({});
+  const [worldCenter, setWorldCenter] = useState<{ x: number; y: number } | null>(null);
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isConnectMode, setIsConnectMode] = useState(false);
+  const [undoRedoToggle, setUndoRedoToggle] = useState<"undo" | "redo">("undo");
+  const [isSimPanelCollapsed, setIsSimPanelCollapsed] = useState(false);
+  const [deletingNode, setDeletingNode] = useState<NodeId | null>(null);
 
   const scenario = useMemo(() => SCENARIOS.find((s) => s.id === scenarioId)!, [scenarioId]);
   
@@ -120,20 +132,45 @@ export default function SystemDesignEditor() {
     return () => window.removeEventListener("keydown", onKey);
   }, [snapshot, isReadOnly]);
 
-  const snap = (v: number) => Math.round(v / 24) * 24;
+  const snap = (v: number) => snapToGrid(v);
 
   function spawn(kind: ComponentKind) {
     if (isReadOnly) return;
     const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
+    
+    // Spawn at current viewport center (desktop + mobile)
+    // Fallback to grid center if not yet known
+    const baseX = worldCenter?.x ?? 6000;
+    const baseY = worldCenter?.y ?? 4000;
+    
+    // Add small random offset so components don't stack exactly on top of each other
+    const offsetX = (Math.random() - 0.5) * 200; // ±100 pixels
+    const offsetY = (Math.random() - 0.5) * 200;
+    
+    const x = snap(baseX + offsetX);
+    const y = snap(baseY + offsetY);
+    
     const n: PlacedNode = {
       id: uid(),
       spec,
-      x: snap(worldCenter?.x ?? 400),
-      y: snap(worldCenter?.y ?? 300),
+      x,
+      y,
       replicas: 1,
     };
+    
     undo.current.push(snapshot());
     setNodes((prev) => [...prev, n]);
+    setIsAddSheetOpen(false);
+    
+    // Move view to the spawned component
+    setFocusCenter({ x, y });
+    setSelectedNode(n.id);
+    
+    // Clear focus center after animation
+    setTimeout(() => setFocusCenter(null), 400);
+
+    // Haptic feedback
+    if ('vibrate' in navigator) navigator.vibrate(50);
   }
 
   function spawnAt(kind: ComponentKind, world: { x: number; y: number }) {
@@ -161,8 +198,61 @@ export default function SystemDesignEditor() {
   function onMouseDownNode(e: React.MouseEvent, id: NodeId) {
     e.stopPropagation();
     if (isReadOnly) return;
+
+    // Connect mode: tap to select target
+    if (isConnectMode && linkingFrom && linkingFrom !== id) {
+      connect(linkingFrom, id);
+      setIsConnectMode(false);
+      setLinkingFrom(null);
+      return;
+    }
+
+    // Exit delete mode when clicking elsewhere
+    if (deletingNode && deletingNode !== id) {
+      setDeletingNode(null);
+    }
+
     setDragging(id);
     setSelectedNode(id);
+  }
+
+  function onTouchStartNode(e: React.TouchEvent, id: NodeId) {
+    e.stopPropagation();
+    if (isReadOnly) return;
+
+    // Connect mode: tap to select target
+    if (isConnectMode && linkingFrom && linkingFrom !== id) {
+      connect(linkingFrom, id);
+      setIsConnectMode(false);
+      setLinkingFrom(null);
+      if ('vibrate' in navigator) navigator.vibrate([50, 50, 50]);
+      return;
+    }
+
+    // If already in delete mode for this node, don't start dragging
+    if (deletingNode === id) return;
+
+    // Mobile: Long press triggers delete mode
+    // Exit any existing delete mode first
+    if (deletingNode) {
+      setDeletingNode(null);
+    }
+
+    // Enter delete mode for this node
+    setDeletingNode(id);
+    setSelectedNode(id);
+  }
+
+  function onTouchEndNode(e: React.TouchEvent, id: NodeId) {
+    e.stopPropagation();
+    if (isReadOnly) return;
+
+    // Just a tap (not drag) - select the node and exit delete mode
+    if (!dragging) {
+      setSelectedNode(id);
+      setDeletingNode(null); // Exit delete mode on tap
+    }
+    setDragging(null);
   }
 
   function onMouseMoveBoard(_e: React.MouseEvent, world: { x: number; y: number }) {
@@ -298,136 +388,275 @@ export default function SystemDesignEditor() {
 
   const selected = nodes.find((n) => n.id === selectedNode) || null;
 
-  return (
-    <div className="w-full h-screen grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-2 sm:gap-4 p-2 sm:p-4 bg-zinc-950 overflow-hidden">
-      {/* Sidebar */}
-      <div className="flex flex-col gap-2 sm:gap-3 h-full lg:h-full overflow-hidden lg:max-h-full">
-        <Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={spawn} />
-        <div className="flex gap-1 sm:gap-2 flex-wrap flex-shrink-0">
-          <button
-            className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 min-h-[44px] touch-manipulation"
-            onClick={() => {
-              if (isReadOnly) return;
-              const prev = undo.current.undo(snapshot());
-              if (prev) {
-                setNodes(prev.nodes);
-                setEdges(prev.edges);
-              }
-            }}
-          >
-            <span className="hidden sm:inline">Undo (⌘Z)</span>
-            <span className="sm:hidden">Undo</span>
-          </button>
-          <button
-            className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 min-h-[44px] touch-manipulation"
-            onClick={() => {
-              if (isReadOnly) return;
-              const next = undo.current.redo(snapshot());
-              if (next) {
-                setNodes(next.nodes);
-                setEdges(next.edges);
-              }
-            }}
-          >
-            <span className="hidden sm:inline">Redo (⇧⌘Z)</span>
-            <span className="sm:hidden">Redo</span>
-          </button>
-          <button
-            className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 min-h-[44px] touch-manipulation"
-            onClick={shareDesign}
-          >
-            Share
-          </button>
-          {isReadOnly && (
-            <button
-              className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20 text-xs text-emerald-200 min-h-[44px] touch-manipulation"
-              onClick={forkDesign}
-            >
-              Fork
-            </button>
-          )}
-          {!isReadOnly && (
-            <button
-              className="px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg sm:rounded-xl border border-blue-400/40 bg-blue-400/10 hover:bg-blue-400/20 text-xs text-blue-200 min-h-[44px] touch-manipulation"
-              onClick={() => {
-                setScenarioId("spotify-play"); // Start with Spotify tutorial scenario
-                tutorial.resetTutorial();
-              }}
-            >
-              Tutorial
-            </button>
-          )}
-        </div>
-        {isReadOnly && (
-          <div className="text-[11px] text-amber-300/90 flex-shrink-0">
-            Read-only view from shared link. Click Fork to edit.
-          </div>
-        )}
-        <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide max-h-[40vh] lg:max-h-none">
-          <ScenarioPanel
-            scenarios={SCENARIOS}
-            selectedScenarioId={scenarioId}
-            onScenarioChange={setScenarioId}
-            chaosMode={chaosMode}
-            onChaosModeChange={setChaosMode}
-            onRunSimulation={runSimulation}
-            simulationResult={result}
-            failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
-          />
-        </div>
-        <div className="flex-shrink-0">
-          <SelectedNodePanel
-            selectedNode={selected}
-            nodes={nodes}
-            onDelete={removeSelected}
-            onConnect={connect}
-            onUpdateReplicas={updateReplicas}
-          />
-        </div>
-      </div>
+  const handleUndoRedo = () => {
+    if (isReadOnly) return;
+    if (undoRedoToggle === "undo") {
+      const prev = undo.current.undo(snapshot());
+      if (prev) {
+        setNodes(prev.nodes);
+        setEdges(prev.edges);
+      }
+      setUndoRedoToggle("redo");
+    } else {
+      const next = undo.current.redo(snapshot());
+      if (next) {
+        setNodes(next.nodes);
+        setEdges(next.edges);
+      }
+      setUndoRedoToggle("undo");
+    }
+  };
 
-      {/* Board */}
-      <Board
-        nodes={nodes}
-        edges={edges}
-        lastPath={lastPath}
-        linkingFrom={linkingFrom}
-        linkingFromPort={linkingFromPort}
-        cursor={cursor}
-        onMouseMove={onMouseMoveBoard}
-        onMouseUp={onMouseUpBoard}
-        onMouseLeave={onMouseUpBoard}
-        onMouseDown={() => setSelectedNode(null)}
-        onNodeMouseDown={onMouseDownNode}
-        onNodeMouseUp={(e, id) => {
-          if (linkingFrom && linkingFrom !== id) {
-            e.stopPropagation();
-            connect(linkingFrom, id);
-            setLinkingFrom(null);
-            setLinkingFromPort(null);
-            setCursor(null);
-          }
-        }}
-        onPortMouseDown={(e, id, side) => {
+  const toggleConnectMode = () => {
+    if (isReadOnly) return;
+    if (!selectedNode) {
+      alert("Select a node first to start connecting");
+      return;
+    }
+    setIsConnectMode(!isConnectMode);
+    if (!isConnectMode) {
+      setLinkingFrom(selectedNode);
+      if ('vibrate' in navigator) navigator.vibrate(50);
+    } else {
+      setLinkingFrom(null);
+    }
+  };
+
+  // Shared Board component
+  const boardComponent = (
+    <Board
+      nodes={nodes}
+      edges={edges}
+      lastPath={lastPath}
+      linkingFrom={linkingFrom}
+      linkingFromPort={linkingFromPort}
+      cursor={cursor}
+      selectedNode={selectedNode}
+      isConnectMode={isConnectMode}
+      dragging={dragging}
+      deletingNode={deletingNode}
+      onMouseMove={onMouseMoveBoard}
+      onMouseUp={onMouseUpBoard}
+      onMouseLeave={onMouseUpBoard}
+      onMouseDown={() => {
+        setSelectedNode(null);
+        setIsConnectMode(false);
+        setLinkingFrom(null);
+        setDeletingNode(null); // Exit delete mode when clicking board
+      }}
+      onNodeMouseDown={onMouseDownNode}
+      onNodeMouseUp={(e, id) => {
+        if (linkingFrom && linkingFrom !== id) {
           e.stopPropagation();
-          if (isReadOnly) return;
-          setSelectedNode(id);
-          setLinkingFrom(id);
-          setLinkingFromPort(side);
-        }}
-        onWorldCenterChange={(c) => setWorldCenter(c)}
-        focusCenter={focusCenter}
-        onDrop={(kind, world) => spawnAt(kind, world)}
+          connect(linkingFrom, id);
+          setLinkingFrom(null);
+          setLinkingFromPort(null);
+          setCursor(null);
+          setIsConnectMode(false);
+        }
+      }}
+      onNodeTouchStart={onTouchStartNode}
+      onNodeTouchEnd={onTouchEndNode}
+      onPortMouseDown={(e, id, side) => {
+        e.stopPropagation();
+        if (isReadOnly) return;
+        setSelectedNode(id);
+        setLinkingFrom(id);
+        setLinkingFromPort(side);
+      }}
+      onPortTouchStart={(e, id, side) => {
+        e.stopPropagation();
+        if (isReadOnly) return;
+        setSelectedNode(id);
+        setLinkingFrom(id);
+        setLinkingFromPort(side);
+      }}
+      onWorldCenterChange={(center) => setWorldCenter(center)}
+      focusCenter={focusCenter}
+      onDrop={(kind, world) => spawnAt(kind, world)}
+      onDeleteNode={(nodeId) => {
+        if (isReadOnly) return;
+        undo.current.push(snapshot());
+        setEdges((prev) => prev.filter((e) => e.from !== nodeId && e.to !== nodeId));
+        setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+        setSelectedNode(null);
+        setDragging(null);
+      }}
+    />
+  );
+
+  return (
+    <>
+      {/* Mobile Layout */}
+      <MobileLayout
+        topBar={
+          <MobileTopBar
+            componentCount={nodes.length}
+            isReadOnly={isReadOnly}
+            selectedNode={selectedNode}
+            isConnectMode={isConnectMode}
+            undoRedoToggle={undoRedoToggle}
+            onConnectMode={toggleConnectMode}
+            onAddComponent={() => setIsAddSheetOpen(true)}
+            onUndoRedo={handleUndoRedo}
+          />
+        }
+        canvas={boardComponent}
+        bottomPanel={
+          <MobileSimulationPanel
+            isCollapsed={isSimPanelCollapsed}
+            onToggle={() => setIsSimPanelCollapsed(!isSimPanelCollapsed)}
+          >
+            <ScenarioPanel
+              scenarios={SCENARIOS}
+              selectedScenarioId={scenarioId}
+              onScenarioChange={setScenarioId}
+              chaosMode={chaosMode}
+              onChaosModeChange={setChaosMode}
+              onRunSimulation={runSimulation}
+              simulationResult={result}
+              failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
+              nodes={nodes}
+              worldCenter={worldCenter}
+              onWorldCenterChange={setWorldCenter}
+            />
+          </MobileSimulationPanel>
+        }
+        addSheet={
+          <BottomSheet
+            isOpen={isAddSheetOpen}
+            onClose={() => setIsAddSheetOpen(false)}
+            title="Add Component"
+          >
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 pb-4">
+              {COMPONENT_LIBRARY.map((c) => {
+                const Icon = iconFor(c.kind);
+                return (
+                  <button
+                    key={c.kind}
+                    onClick={() => spawn(c.kind)}
+                    className="flex flex-col items-start gap-2 p-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 active:scale-[0.98] transition touch-manipulation text-left"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                      <Icon className="text-blue-300" size={20} />
+                    </div>
+                    <div className="min-w-0 w-full">
+                      <div className="text-sm font-semibold text-zinc-100 truncate">{c.label}</div>
+                      <div className="text-[10px] text-zinc-400 mt-0.5">
+                        {c.baseLatencyMs}ms · {c.capacityRps} rps
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </BottomSheet>
+        }
       />
 
-      {/* Tutorial Overlay */}
+      {/* Desktop Layout */}
+      <DesktopLayout
+        sidebar={
+          <DesktopSidebar
+            palette={<Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={spawn} />}
+            controls={
+              <>
+                <button
+                  className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
+                  onClick={() => {
+                    if (isReadOnly) return;
+                    const prev = undo.current.undo(snapshot());
+                    if (prev) {
+                      setNodes(prev.nodes);
+                      setEdges(prev.edges);
+                    }
+                  }}
+                >
+                  Undo (⌘Z)
+                </button>
+                <button
+                  className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
+                  onClick={() => {
+                    if (isReadOnly) return;
+                    const next = undo.current.redo(snapshot());
+                    if (next) {
+                      setNodes(next.nodes);
+                      setEdges(next.edges);
+                    }
+                  }}
+                >
+                  Redo (⇧⌘Z)
+                </button>
+                <button
+                  className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 text-xs text-zinc-200 cursor-pointer transition-colors"
+                  onClick={shareDesign}
+                >
+                  Share
+                </button>
+                {isReadOnly && (
+                  <button
+                    className="px-3 py-1.5 rounded-lg border border-emerald-400/40 bg-emerald-400/10 hover:bg-emerald-400/20 text-xs text-emerald-200 cursor-pointer transition-colors"
+                    onClick={forkDesign}
+                  >
+                    Fork
+                  </button>
+                )}
+                {!isReadOnly && (
+                  <button
+                    className="px-3 py-1.5 rounded-lg border border-blue-400/40 bg-blue-400/10 hover:bg-blue-400/20 text-xs text-blue-200 cursor-pointer transition-colors"
+                    onClick={() => {
+                      setScenarioId("spotify-play");
+                      tutorial.resetTutorial();
+                    }}
+                  >
+                    Tutorial
+                  </button>
+                )}
+              </>
+            }
+            scenarioPanel={
+              <ScenarioPanel
+                scenarios={SCENARIOS}
+                selectedScenarioId={scenarioId}
+                onScenarioChange={setScenarioId}
+                chaosMode={chaosMode}
+                onChaosModeChange={setChaosMode}
+                onRunSimulation={runSimulation}
+                simulationResult={result}
+                failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
+                nodes={nodes}
+                worldCenter={worldCenter}
+                onWorldCenterChange={setWorldCenter}
+              />
+            }
+            selectedNodePanel={
+              <SelectedNodePanel
+                selectedNode={selected}
+                nodes={nodes}
+                onDelete={removeSelected}
+                onConnect={connect}
+                onUpdateReplicas={updateReplicas}
+              />
+            }
+            isReadOnly={isReadOnly}
+            readOnlyMessage={
+              <div className="text-[11px] text-amber-300/90 flex-shrink-0">
+                Read-only view from shared link. Click Fork to edit.
+              </div>
+            }
+          />
+        }
+        canvas={boardComponent}
+      />
+
+      {/* Tutorial Overlay (Shared) */}
       <Tutorial
         isVisible={tutorial.isVisible}
         onClose={tutorial.onClose}
         onStepComplete={tutorial.onStepComplete}
         currentStep={tutorial.currentStep}
       />
-    </div>
+    </>
   );
 }
 

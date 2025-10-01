@@ -1,3 +1,4 @@
+import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import PracticeFlow from "@/components/practice/PracticeFlow";
@@ -81,7 +82,7 @@ describe("practice brief", () => {
 describe("capacity calculator", () => {
   it("displays derived DB reads around 250 per second", () => {
     const lowLevel = {
-      ...makeInitialPracticeState().low,
+      ...(makeInitialPracticeState().low!),
       capacityAssumptions: {
         cacheHit: 95,
         avgWritesPerCreate: 1,

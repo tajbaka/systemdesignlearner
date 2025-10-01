@@ -1,8 +1,11 @@
 "use client";
 import React from "react";
 import type { Scenario } from "@/lib/scenarios";
-import { buttonBase } from "./styles";
+import type { PlacedNode } from "./types";
 import ScenarioTabs from "./ScenarioTabs";
+
+const GRID_WIDTH = 12000;
+const GRID_HEIGHT = 8000;
 
 export interface ScenarioPanelProps {
   scenarios: Scenario[];
@@ -29,6 +32,10 @@ export interface ScenarioPanelProps {
     };
   } | null;
   failAttempts: number;
+  // Minimap props
+  nodes?: PlacedNode[];
+  worldCenter?: { x: number; y: number } | null;
+  onWorldCenterChange?: (center: { x: number; y: number }) => void;
 }
 
 export default function ScenarioPanel({
@@ -40,6 +47,9 @@ export default function ScenarioPanel({
   onRunSimulation,
   simulationResult,
   failAttempts,
+  nodes = [],
+  worldCenter,
+  onWorldCenterChange,
 }: ScenarioPanelProps) {
   const selectedScenario = scenarios.find((s) => s.id === selectedScenarioId)!;
   const outcome: "pass" | "partial" | "fail" | "chaos_fail" | null = (() => {
@@ -58,13 +68,48 @@ export default function ScenarioPanel({
   const hints = selectedScenario.hints ?? [];
   const hintsToShow = Math.min(failAttempts, hints.length);
 
+  // Simple minimap navigation
+  const navigateToWorld = (worldX: number, worldY: number) => {
+    if (!onWorldCenterChange) return;
+    onWorldCenterChange({ x: worldX, y: worldY });
+  };
+
+  // Calculate viewport bounds (simplified)
+  const getViewportBounds = () => {
+    if (!worldCenter) return { left: 0, top: 0, width: GRID_WIDTH, height: GRID_HEIGHT };
+
+    const viewportWidth = 2000; // Approximate viewport width at scale 1
+    const viewportHeight = 1500; // Approximate viewport height at scale 1
+
+    return {
+      left: worldCenter.x - viewportWidth / 2,
+      top: worldCenter.y - viewportHeight / 2,
+      width: viewportWidth,
+      height: viewportHeight
+    };
+  };
+
+  const viewport = getViewportBounds();
+
   return (
-    <div className="p-3 sm:p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col gap-2 text-zinc-300">
-      <h2 className="text-lg text-zinc-300">Scenario</h2>
+    <div className="flex flex-col gap-2 text-zinc-300">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-base font-semibold text-zinc-100">Simulation</h2>
+        <button 
+          className="px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 hover:bg-emerald-500/30 transition cursor-pointer font-medium flex items-center gap-1.5 text-sm"
+          onClick={onRunSimulation}
+        >
+          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          Run
+        </button>
+      </div>
+      
       <select
         value={selectedScenarioId}
         onChange={(e) => onScenarioChange(e.target.value)}
-        className="bg-zinc-800 border border-white/10 rounded-xl px-3 py-2 text-sm text-zinc-300 min-h-[44px] touch-manipulation"
+        className="bg-zinc-800 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-300 cursor-pointer"
       >
         {scenarios.map((s) => (
           <option key={s.id} value={s.id}>
@@ -76,19 +121,16 @@ export default function ScenarioPanel({
       
       <ScenarioTabs scenario={selectedScenario} />
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
-        <label className="text-xs text-zinc-300 flex items-center gap-2 min-h-[44px]">
+      <div className="flex items-center gap-2 mt-1">
+        <label className="text-xs text-zinc-300 flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={chaosMode}
             onChange={(e) => onChaosModeChange(e.target.checked)}
-            className="min-h-[44px] min-w-[44px] touch-manipulation"
+            className="w-4 h-4 cursor-pointer"
           />
           Chaos mode
         </label>
-        <button className={`${buttonBase} text-zinc-300 flex-1 sm:flex-initial`} onClick={onRunSimulation}>
-          Run ▶
-        </button>
       </div>
 
       {simulationResult && (
@@ -187,6 +229,48 @@ export default function ScenarioPanel({
           </ul>
         </div>
       )}
+
+      {/* Minimap */}
+      <div className="mt-4">
+        <div className="rounded-lg border border-white/20 bg-black/50 backdrop-blur px-2 py-2">
+          <svg
+            width={200}
+            height={140}
+            viewBox={`0 0 200 140`}
+            className="block cursor-pointer w-full"
+            onClick={(e) => {
+              const svgRect = (e.target as SVGElement).closest('svg')?.getBoundingClientRect();
+              if (!svgRect) return;
+              const mx = e.clientX - svgRect.left;
+              const my = e.clientY - svgRect.top;
+              const worldX = (mx / 200) * GRID_WIDTH;
+              const worldY = (my / 140) * GRID_HEIGHT;
+              navigateToWorld(worldX, worldY);
+            }}
+          >
+            <rect x={0} y={0} width={200} height={140} rx={6} ry={6} fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" />
+            {nodes.map((n) => (
+              <circle
+                key={n.id}
+                cx={(n.x / GRID_WIDTH) * 200}
+                cy={(n.y / GRID_HEIGHT) * 140}
+                r={2}
+                fill="rgba(16,185,129,0.9)"
+              />
+            ))}
+            {/* Viewport indicator */}
+            <rect
+              x={(viewport.left / GRID_WIDTH) * 200}
+              y={(viewport.top / GRID_HEIGHT) * 140}
+              width={(viewport.width / GRID_WIDTH) * 200}
+              height={(viewport.height / GRID_HEIGHT) * 140}
+              fill="rgba(59,130,246,0.15)"
+              stroke="rgba(255,255,255,0.8)"
+              strokeWidth={1.5}
+            />
+          </svg>
+        </div>
+      </div>
     </div>
   );
 }

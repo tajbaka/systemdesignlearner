@@ -17,6 +17,11 @@ export function neighbors(edges: Edge[], from: NodeId) {
   return edges.filter((e) => e.from === from).map((e) => e.to);
 }
 
+// Grid snapping helper shared by board/editor
+export function snapToGrid(value: number): number {
+  return Math.round(value / 24) * 24;
+}
+
 // Given a scenario, try to find a path in the current graph that hits the flow kinds in order (allowing optional steps)
 export function findScenarioPath(
   scenario: Scenario,
