@@ -36,7 +36,6 @@ export interface ScenarioPanelProps {
   // Minimap props
   nodes?: PlacedNode[];
   boardApi?: BoardApi | null;
-  cameraTick?: number;
   // Mobile props
   hideHeader?: boolean;
 }
@@ -52,7 +51,6 @@ export default function ScenarioPanel({
   failAttempts,
   nodes = [],
   boardApi,
-  cameraTick = 0,
   hideHeader = false,
 }: ScenarioPanelProps) {
   const selectedScenario = scenarios.find((s) => s.id === selectedScenarioId)!;
@@ -82,7 +80,7 @@ export default function ScenarioPanel({
   const viewport = React.useMemo(() => {
     if (!boardApi) return { left: 0, top: 0, width: GRID_WIDTH, height: GRID_HEIGHT };
     return boardApi.getViewportWorldRect(); // no approximations, no constants
-  }, [boardApi, cameraTick]);
+  }, [boardApi]);
 
   return (
     <div className="flex flex-col gap-2 text-zinc-300">
@@ -225,8 +223,8 @@ export default function ScenarioPanel({
         </div>
       )}
 
-      {/* Minimap */}
-      <div className="mt-4">
+      {/* Minimap - hidden on mobile */}
+      <div className="mt-4 hidden lg:block">
         <div className="rounded-lg border border-white/20 bg-black/50 backdrop-blur px-2 py-2">
           <svg
             width={200}

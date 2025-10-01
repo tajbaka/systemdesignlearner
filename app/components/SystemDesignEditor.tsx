@@ -69,7 +69,6 @@ export default function SystemDesignEditor() {
   const [isSimPanelCollapsed, setIsSimPanelCollapsed] = useState(false);
   const [deletingNode, setDeletingNode] = useState<NodeId | null>(null);
   const boardApiRef = useRef<BoardApi | null>(null);
-  const [cameraTick, setCameraTick] = useState(0); // For live minimap updates
 
   const scenario = useMemo(() => SCENARIOS.find((s) => s.id === scenarioId)!, [scenarioId]);
   
@@ -514,7 +513,6 @@ export default function SystemDesignEditor() {
         setSelectedNode(null);
         setDragging(null);
       }}
-      onCameraChange={() => setCameraTick(t => t + 1)} // For live minimap updates
     />
   );
 
@@ -577,7 +575,6 @@ export default function SystemDesignEditor() {
                 failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
                 nodes={nodes}
                 boardApi={boardApiRef.current}
-                cameraTick={cameraTick}
                 hideHeader={false}
               />
             </MobileSimulationPanel>
@@ -685,7 +682,6 @@ export default function SystemDesignEditor() {
                   failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
                   nodes={nodes}
                   boardApi={boardApiRef.current}
-                  cameraTick={cameraTick}
                 />
               }
               selectedNodePanel={
