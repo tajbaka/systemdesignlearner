@@ -23,7 +23,6 @@ import { mulberry32 } from "@/lib/rng";
 import { encodeDesign, decodeDesign } from "@/lib/shareLink";
 import BottomSheet from "./BottomSheet";
 import ScenarioPanel from "./ScenarioPanel";
-import SelectedNodePanel from "./SelectedNodePanel";
 import Palette from "./Palette";
 import Board, { BoardApi } from "./Board";
 
@@ -53,6 +52,7 @@ export default function SystemDesignEditor() {
   const [edges, setEdges] = useState<Edge[]>([]);
   const [dragging, setDragging] = useState<NodeId | null>(null);
   const [selectedNode, setSelectedNode] = useState<NodeId | null>(null);
+  const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const [scenarioId, setScenarioId] = useState<string>(SCENARIOS[0].id);
   const [chaosMode, setChaosMode] = useState(false);
   const [result, setResult] = useState<ReturnType<typeof simulate> | null>(null);
@@ -123,7 +123,29 @@ export default function SystemDesignEditor() {
     [nodes, edges]
   );
 
-  // Keyboard shortcuts: Undo / Redo
+  const deleteSelection = React.useCallback(() => {
+    if (isReadOnly) return;
+
+    if (selectedEdge) {
+      const edgeId = selectedEdge;
+      undo.current.push(snapshot());
+      setEdges((prev) => prev.filter((e) => e.id !== edgeId));
+      setSelectedEdge(null);
+      return;
+    }
+
+    if (selectedNode) {
+      const nodeId = selectedNode;
+      undo.current.push(snapshot());
+      setEdges((prev) => prev.filter((e) => e.from !== nodeId && e.to !== nodeId));
+      setNodes((prev) => prev.filter((n) => n.id !== nodeId));
+      setSelectedNode(null);
+      setDragging(null);
+      setSelectedEdge(null);
+    }
+  }, [isReadOnly, selectedEdge, selectedNode, snapshot]);
+
+  // Keyboard shortcuts: Undo / Redo / Delete
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (isReadOnly) return;
@@ -135,19 +157,31 @@ export default function SystemDesignEditor() {
           if (next) {
             setNodes(next.nodes);
             setEdges(next.edges);
+            setSelectedNode(null);
+            setSelectedEdge(null);
           }
         } else {
           const prev = undo.current.undo(snapshot());
           if (prev) {
             setNodes(prev.nodes);
             setEdges(prev.edges);
+            setSelectedNode(null);
+            setSelectedEdge(null);
           }
+        }
+        return;
+      }
+
+      if (!meta && !e.altKey && (e.key === "Delete" || e.key === "Backspace")) {
+        if (selectedNode || selectedEdge) {
+          e.preventDefault();
+          deleteSelection();
         }
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [snapshot, isReadOnly]);
+  }, [snapshot, isReadOnly, selectedNode, selectedEdge, deleteSelection]);
 
   const snap = (v: number) => snapToGrid(v);
 
@@ -180,6 +214,7 @@ export default function SystemDesignEditor() {
 
     // Keep viewport in current position, just select the new node
     setSelectedNode(n.id);
+    setSelectedEdge(null);
 
     // Haptic feedback
     if ('vibrate' in navigator) navigator.vibrate(50);
@@ -197,14 +232,8 @@ export default function SystemDesignEditor() {
     };
     undo.current.push(snapshot());
     setNodes((prev) => [...prev, n]);
-  }
-
-  function updateReplicas(nodeId: NodeId, replicas: number) {
-    if (isReadOnly) return;
-    undo.current.push(snapshot());
-    setNodes((prev) =>
-      prev.map((n) => (n.id === nodeId ? { ...n, replicas } : n))
-    );
+    setSelectedNode(n.id);
+    setSelectedEdge(null);
   }
 
   function onMouseDownNode(e: React.MouseEvent, id: NodeId) {
@@ -226,6 +255,7 @@ export default function SystemDesignEditor() {
 
     setDragging(id);
     setSelectedNode(id);
+    setSelectedEdge(null);
   }
 
   function onTouchStartNode(e: React.TouchEvent, id: NodeId) {
@@ -249,6 +279,7 @@ export default function SystemDesignEditor() {
     // Start dragging immediately for mobile (don't wait for long press)
     setDragging(id);
     setSelectedNode(id);
+    setSelectedEdge(null);
   }
 
   function onTouchEndNode(e: React.TouchEvent, id: NodeId) {
@@ -258,6 +289,7 @@ export default function SystemDesignEditor() {
     // Just a tap (not drag) - select the node and exit delete mode
     if (!dragging) {
       setSelectedNode(id);
+      setSelectedEdge(null);
       setDeletingNode(null); // Exit delete mode on tap
     }
     setDragging(null);
@@ -318,15 +350,7 @@ export default function SystemDesignEditor() {
     };
     undo.current.push(snapshot());
     setEdges((prev) => [...prev, e]);
-  }
-
-  function removeSelected() {
-    if (isReadOnly) return;
-    if (!selectedNode) return;
-    undo.current.push(snapshot());
-    setEdges((prev) => prev.filter((e) => e.from !== selectedNode && e.to !== selectedNode));
-    setNodes((prev) => prev.filter((n) => n.id !== selectedNode));
-    setSelectedNode(null);
+    setSelectedEdge(e.id);
   }
 
   function shareDesign() {
@@ -415,8 +439,6 @@ export default function SystemDesignEditor() {
     }
   }
 
-  const selected = nodes.find((n) => n.id === selectedNode) || null;
-
   const handleUndoRedo = () => {
     if (isReadOnly) return;
     if (undoRedoToggle === "undo") {
@@ -424,6 +446,8 @@ export default function SystemDesignEditor() {
       if (prev) {
         setNodes(prev.nodes);
         setEdges(prev.edges);
+        setSelectedNode(null);
+        setSelectedEdge(null);
       }
       setUndoRedoToggle("redo");
     } else {
@@ -431,6 +455,8 @@ export default function SystemDesignEditor() {
       if (next) {
         setNodes(next.nodes);
         setEdges(next.edges);
+        setSelectedNode(null);
+        setSelectedEdge(null);
       }
       setUndoRedoToggle("undo");
     }
@@ -438,6 +464,7 @@ export default function SystemDesignEditor() {
 
   const toggleConnectMode = () => {
     if (isReadOnly) return;
+    setSelectedEdge(null);
     if (!selectedNode) {
       alert("Select a node first to start connecting");
       return;
@@ -462,6 +489,7 @@ export default function SystemDesignEditor() {
       linkingFromPort={linkingFromPort}
       cursor={cursor}
       selectedNode={selectedNode}
+      selectedEdge={selectedEdge}
       isConnectMode={isConnectMode}
       dragging={dragging}
       deletingNode={deletingNode}
@@ -472,6 +500,7 @@ export default function SystemDesignEditor() {
       onMouseLeave={onMouseUpBoard}
       onMouseDown={() => {
         setSelectedNode(null);
+        setSelectedEdge(null);
         setIsConnectMode(false);
         setLinkingFrom(null);
         setDeletingNode(null); // Exit delete mode when clicking board
@@ -493,6 +522,7 @@ export default function SystemDesignEditor() {
         e.stopPropagation();
         if (isReadOnly) return;
         setSelectedNode(id);
+        setSelectedEdge(null);
         setLinkingFrom(id);
         setLinkingFromPort(side);
       }}
@@ -500,6 +530,7 @@ export default function SystemDesignEditor() {
         e.stopPropagation();
         if (isReadOnly) return;
         setSelectedNode(id);
+        setSelectedEdge(null);
         setLinkingFrom(id);
         setLinkingFromPort(side);
       }}
@@ -511,7 +542,18 @@ export default function SystemDesignEditor() {
         setEdges((prev) => prev.filter((e) => e.from !== nodeId && e.to !== nodeId));
         setNodes((prev) => prev.filter((n) => n.id !== nodeId));
         setSelectedNode(null);
+        setSelectedEdge(null);
         setDragging(null);
+      }}
+      onSelectEdge={(edgeId) => {
+        if (edgeId) {
+          setSelectedEdge(edgeId);
+          setSelectedNode(null);
+          setIsConnectMode(false);
+          setLinkingFrom(null);
+        } else {
+          setSelectedEdge(null);
+        }
       }}
     />
   );
@@ -536,6 +578,8 @@ export default function SystemDesignEditor() {
               onResetView={() => boardApiRef.current?.centerToGrid()}
               onShare={shareDesign}
               onFork={forkDesign}
+              canDelete={Boolean(selectedNode || selectedEdge)}
+              onDelete={deleteSelection}
             />
           }
           canvas={board}
@@ -625,6 +669,8 @@ export default function SystemDesignEditor() {
                       if (prev) {
                         setNodes(prev.nodes);
                         setEdges(prev.edges);
+                        setSelectedNode(null);
+                        setSelectedEdge(null);
                       }
                     }}
                   >
@@ -638,6 +684,8 @@ export default function SystemDesignEditor() {
                       if (next) {
                         setNodes(next.nodes);
                         setEdges(next.edges);
+                        setSelectedNode(null);
+                        setSelectedEdge(null);
                       }
                     }}
                   >
@@ -648,6 +696,17 @@ export default function SystemDesignEditor() {
                     onClick={shareDesign}
                   >
                     Share
+                  </button>
+                  <button
+                    className={`px-3 py-1.5 rounded-lg border text-xs transition-colors ${
+                      isReadOnly || (!selectedNode && !selectedEdge)
+                        ? "cursor-not-allowed border-white/10 bg-white/5 text-zinc-500"
+                        : "cursor-pointer border-rose-400/30 bg-rose-500/10 text-rose-200 hover:bg-rose-500/20"
+                    }`}
+                    onClick={() => deleteSelection()}
+                    disabled={isReadOnly || (!selectedNode && !selectedEdge)}
+                  >
+                    Delete (⌫)
                   </button>
                   {isReadOnly && (
                     <button
@@ -682,15 +741,6 @@ export default function SystemDesignEditor() {
                   failAttempts={failAttemptsByScenario[scenarioId] ?? 0}
                   nodes={nodes}
                   boardApi={boardApiRef.current}
-                />
-              }
-              selectedNodePanel={
-                <SelectedNodePanel
-                  selectedNode={selected}
-                  nodes={nodes}
-                  onDelete={removeSelected}
-                  onConnect={connect}
-                  onUpdateReplicas={updateReplicas}
                 />
               }
               isReadOnly={isReadOnly}

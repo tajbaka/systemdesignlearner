@@ -5,7 +5,6 @@ interface DesktopSidebarProps {
   palette: ReactNode;
   controls: ReactNode;
   scenarioPanel: ReactNode;
-  selectedNodePanel: ReactNode;
   isReadOnly: boolean;
   readOnlyMessage?: ReactNode;
 }
@@ -14,7 +13,6 @@ export default function DesktopSidebar({
   palette,
   controls,
   scenarioPanel,
-  selectedNodePanel,
   isReadOnly,
   readOnlyMessage,
 }: DesktopSidebarProps) {
@@ -35,12 +33,6 @@ export default function DesktopSidebar({
       <div className="min-h-0 flex-1 flex flex-col overflow-hidden">
         {scenarioPanel}
       </div>
-      
-      {/* Selected Node Panel */}
-      <div className="flex-shrink-0">
-        {selectedNodePanel}
-      </div>
     </>
   );
 }
-

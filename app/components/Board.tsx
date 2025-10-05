@@ -28,6 +28,7 @@ interface BoardProps {
   linkingFromPort?: PortSide | null;
   cursor: { x: number; y: number } | null;
   selectedNode?: NodeId | null;
+  selectedEdge?: string | null;
   isConnectMode?: boolean;
   dragging?: NodeId | null;
   deletingNode?: NodeId | null;
@@ -49,6 +50,7 @@ interface BoardProps {
   onDrop: (kind: ComponentKind, world: { x: number; y: number }) => void;
   onDeleteNode?: (nodeId: NodeId) => void;
   onCameraChange?: () => void;
+  onSelectEdge?: (edgeId: string | null) => void;
 }
 
 const Board = forwardRef<BoardApi, BoardProps>(function Board({
@@ -59,6 +61,7 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
   linkingFromPort = null,
   cursor,
   selectedNode = null,
+  selectedEdge = null,
   isConnectMode = false,
   dragging = null,
   deletingNode = null,
@@ -80,6 +83,7 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
   onDrop,
   onDeleteNode,
   onCameraChange,
+  onSelectEdge,
 }, ref) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const transformStateRef = useRef<{ positionX: number; positionY: number; scale: number }>({
@@ -294,6 +298,7 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
         // Force update worldCenter when user interacts with board
         emitWorldCenter(true);
         onMouseDown();
+        onSelectEdge?.(null);
       }}
       onDragOver={(e) => {
         // Allow dropping from palette
@@ -507,15 +512,34 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
                     const from = findNode(nodes, e.from);
                     const to = findNode(nodes, e.to);
                     if (!from || !to) return null;
+                    const pathD = linePath(from.x, from.y, to.x, to.y);
+                    const isSelected = selectedEdge === e.id;
                     return (
-                      <path
-                        key={e.id}
-                        d={linePath(from.x, from.y, to.x, to.y)}
-                        stroke="rgba(255,255,255,0.22)"
-                        strokeWidth={2}
-                        markerEnd="url(#arrow)"
-                        fill="none"
-                      />
+                      <g key={e.id}>
+                        <path
+                          d={pathD}
+                          stroke={isSelected ? "rgba(96,165,250,0.85)" : "rgba(255,255,255,0.22)"}
+                          strokeWidth={isSelected ? 3.5 : 2}
+                          markerEnd="url(#arrow)"
+                          fill="none"
+                        />
+                        <path
+                          d={pathD}
+                          stroke="transparent"
+                          strokeWidth={12}
+                          fill="none"
+                          onMouseDown={(evt) => {
+                            evt.stopPropagation();
+                            onSelectEdge?.(e.id);
+                          }}
+                          onTouchStart={(evt) => {
+                            evt.stopPropagation();
+                            evt.preventDefault();
+                            onSelectEdge?.(e.id);
+                          }}
+                          style={{ cursor: "pointer" }}
+                        />
+                      </g>
                     );
                   })}
 

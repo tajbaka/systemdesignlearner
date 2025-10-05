@@ -13,6 +13,8 @@ interface MobileTopBarProps {
   onResetView?: () => void;
   onShare?: () => void;
   onFork?: () => void;
+  canDelete?: boolean;
+  onDelete?: () => void;
 }
 
 export default function MobileTopBar({
@@ -27,6 +29,8 @@ export default function MobileTopBar({
   onResetView,
   onShare,
   onFork,
+  canDelete = false,
+  onDelete,
 }: MobileTopBarProps) {
   return (
     <div className="flex-shrink-0 px-3 py-2 bg-zinc-900/90 border-b border-white/10 backdrop-blur-sm lg:hidden">
@@ -39,6 +43,25 @@ export default function MobileTopBar({
 
         {/* Right: Action Buttons */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Delete Button */}
+          {onDelete && (
+            <button
+              onClick={() => {
+                if (isReadOnly || !canDelete) return;
+                onDelete();
+                if ('vibrate' in navigator) navigator.vibrate(30);
+              }}
+              disabled={isReadOnly || !canDelete}
+              className="w-11 h-11 rounded-full bg-red-500/15 border border-red-400/40 text-red-200 flex items-center justify-center hover:bg-red-500/25 transition touch-manipulation disabled:opacity-40"
+              aria-label="Delete selected"
+              title="Delete selected"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          )}
+
           {/* Reset View Button */}
           {onResetView && (
             <button
@@ -143,4 +166,3 @@ export default function MobileTopBar({
     </div>
   );
 }
-
