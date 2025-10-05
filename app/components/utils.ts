@@ -28,46 +28,106 @@ export function findScenarioPath(
   nodes: PlacedNode[],
   edges: Edge[]
 ): { nodeIds: NodeId[]; missingKinds: string[] } {
-  const remainingKinds = [...scenario.flow];
-  const nodeIds: NodeId[] = [];
-  const missingKinds: string[] = [];
+  type State = { current: NodeId | null; path: NodeId[]; visited: Set<NodeId> };
 
-  // Build index: kind -> list of node ids
+  // Precompute adjacency list for outgoing edges
+  const adjacency = new Map<NodeId, Set<NodeId>>();
+  for (const edge of edges) {
+    const list = adjacency.get(edge.from) ?? new Set<NodeId>();
+    list.add(edge.to);
+    adjacency.set(edge.from, list);
+  }
+
+  // Index nodes by component kind so we can quickly look up candidates per flow step
   const byKind = new Map<string, NodeId[]>();
-  for (const n of nodes) {
-    const arr = byKind.get(n.spec.kind) || [];
-    arr.push(n.id);
-    byKind.set(n.spec.kind, arr);
+  for (const node of nodes) {
+    const existing = byKind.get(node.spec.kind) ?? [];
+    existing.push(node.id);
+    byKind.set(node.spec.kind, existing);
   }
 
-  // Try a greedy walk: pick the first available node of the next required kind reachable from the current
-  let current: NodeId | null = null;
-  for (const step of remainingKinds) {
-    const candidates = byKind.get(step.kind) || [];
-    if (candidates.length === 0) {
-      if (!step.optional) missingKinds.push(step.kind);
-      continue; // skip optional if absent
+  const missingKinds = new Set<string>();
+
+  let states: State[] = [{ current: null, path: [], visited: new Set() }];
+
+  for (const step of scenario.flow) {
+    const candidates = byKind.get(step.kind) ?? [];
+    const nextStates: State[] = [];
+    let stepAdvanced = false;
+
+    for (const state of states) {
+      if (state.current === null) {
+        let progressed = false;
+        for (const candidate of candidates) {
+          if (state.visited.has(candidate)) continue;
+          progressed = true;
+          stepAdvanced = true;
+          const visited = new Set(state.visited);
+          visited.add(candidate);
+          nextStates.push({
+            current: candidate,
+            path: [...state.path, candidate],
+            visited,
+          });
+        }
+
+        if (step.optional || !progressed) {
+          nextStates.push(state);
+        }
+        continue;
+      }
+
+      const neighborsOfCurrent = adjacency.get(state.current) ?? new Set<NodeId>();
+      const advancedStates: State[] = [];
+      for (const candidate of candidates) {
+        if (!neighborsOfCurrent.has(candidate)) continue;
+        if (state.visited.has(candidate)) continue;
+        stepAdvanced = true;
+        const visited = new Set(state.visited);
+        visited.add(candidate);
+        advancedStates.push({
+          current: candidate,
+          path: [...state.path, candidate],
+          visited,
+        });
+      }
+
+      if (advancedStates.length > 0) {
+        nextStates.push(...advancedStates);
+        if (step.optional) {
+          nextStates.push(state);
+        }
+      } else {
+        nextStates.push(state);
+      }
     }
 
-    if (current === null) {
-      // start anywhere from candidates
-      const chosen = candidates[0];
-      nodeIds.push(chosen);
-      current = chosen;
-      continue;
+    if (!step.optional && (candidates.length === 0 || !stepAdvanced)) {
+      missingKinds.add(step.kind);
     }
 
-    // from current, is there an edge reaching any candidate?
-    const nbrs: Set<NodeId> = new Set(neighbors(edges, current));
-    const reachable = candidates.find((cid) => nbrs.has(cid));
-    if (reachable) {
-      nodeIds.push(reachable);
-      current = reachable;
-    } else {
-      if (!step.optional) missingKinds.push(step.kind);
-      // keep current; try to match next step later
+    states = dedupeStates(nextStates);
+    if (states.length === 0) {
+      states = [{ current: null, path: [], visited: new Set() }];
     }
   }
 
-  return { nodeIds, missingKinds };
+  const bestState = states.reduce<State>(
+    (best, state) => (state.path.length > best.path.length ? state : best),
+    { current: null, path: [], visited: new Set() }
+  );
+
+  return { nodeIds: bestState.path, missingKinds: Array.from(missingKinds) };
+}
+
+function dedupeStates(states: Array<{ current: NodeId | null; path: NodeId[]; visited: Set<NodeId> }>) {
+  const seen = new Set<string>();
+  const result: typeof states = [];
+  for (const state of states) {
+    const key = `${state.current ?? "null"}|${state.path.join("->")}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(state);
+  }
+  return result;
 }

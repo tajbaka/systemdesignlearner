@@ -28,8 +28,8 @@ body {
   /* Better text rendering on mobile */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent horizontal scroll on mobile */
-  overflow-x: hidden;
+  /* Prevent all scrolling */
+  overflow: hidden;
 }
 
 /* Mobile-first touch targets - use .touch-manipulation class for interactive elements */

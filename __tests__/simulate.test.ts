@@ -3,7 +3,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 import type { PlacedNode, Edge, ComponentSpec } from "@/app/components/types";
 import { simulate } from "@/app/components/simulation";
 import { mulberry32 } from "@/lib/rng";
-import { snapToGrid } from "@/app/components/utils";
+import { snapToGrid, findScenarioPath } from "@/app/components/utils";
 
 const makeSpec = (kind: ComponentSpec["kind"], baseLatencyMs: number, capacityRps: number): ComponentSpec => ({
   kind,
@@ -16,6 +16,18 @@ const makeSpec = (kind: ComponentSpec["kind"], baseLatencyMs: number, capacityRp
 
 const node = (kind: ComponentSpec["kind"], baseLatencyMs: number, cap: number): PlacedNode => ({
   id: kind,
+  spec: makeSpec(kind, baseLatencyMs, cap),
+  x: 0,
+  y: 0,
+});
+
+const nodeWithId = (
+  id: string,
+  kind: ComponentSpec["kind"],
+  baseLatencyMs: number,
+  cap: number
+): PlacedNode => ({
+  id,
   spec: makeSpec(kind, baseLatencyMs, cap),
   x: 0,
   y: 0,
@@ -54,10 +66,33 @@ describe("utils", () => {
   it("snapToGrid snaps to 24px increments", () => {
     expect(snapToGrid(0)).toBe(0);
     expect(snapToGrid(11)).toBe(0);
-    expect(snapToGrid(12)).toBe(12);
+    expect(snapToGrid(12)).toBe(24);
     expect(snapToGrid(23)).toBe(24);
     expect(snapToGrid(25)).toBe(24);
+    expect(snapToGrid(36)).toBe(48);
+  });
+
+  it("findScenarioPath backtracks when an early choice dead-ends", () => {
+    const scenario = SCENARIOS.find((s) => s.id === "spotify-search")!;
+    const nodes: PlacedNode[] = [
+      nodeWithId("web", "Web", 10, 20000),
+      nodeWithId("api-dead", "API Gateway", 8, 8000),
+      nodeWithId("api-good", "API Gateway", 8, 8000),
+      nodeWithId("svc-dead", "Service", 12, 3000),
+      nodeWithId("svc-good", "Service", 12, 3000),
+      nodeWithId("db-main", "DB (Postgres)", 4, 1200),
+    ];
+
+    const edges: Edge[] = [
+      { id: "e1", from: "web", to: "api-dead", linkLatencyMs: 10 },
+      { id: "e2", from: "web", to: "api-good", linkLatencyMs: 10 },
+      { id: "e3", from: "api-dead", to: "svc-dead", linkLatencyMs: 10 },
+      { id: "e4", from: "api-good", to: "svc-good", linkLatencyMs: 10 },
+      { id: "e5", from: "svc-good", to: "db-main", linkLatencyMs: 10 },
+    ];
+
+    const result = findScenarioPath(scenario, nodes, edges);
+    expect(result.missingKinds).toEqual([]);
+    expect(result.nodeIds).toEqual(["web", "api-good", "svc-good", "db-main"]);
   });
 });
-
-

@@ -32,7 +32,7 @@ export default function DesktopSidebar({
       {isReadOnly && readOnlyMessage}
       
       {/* Scenario Panel */}
-      <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">
+      <div className="min-h-0 flex-1 flex flex-col overflow-hidden">
         {scenarioPanel}
       </div>
       
