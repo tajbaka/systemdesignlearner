@@ -1,5 +1,20 @@
 # Mobile-First Conversion Plan
 
+## Current Task: Mobile Simulation UX Enhancements (2025-02-15)
+1. **Surface score in simulation header (mobile)**
+   - Read latest score from `simulationResult` in `ScenarioPanel`.
+   - Show a compact badge next to the title when a score exists; hide when absent.
+2. **Improve mobile run feedback**
+   - Add a short-lived "Running…" feedback state with spinner + haptic pulse when the run button is tapped.
+   - Guard against rapid re-taps during the feedback window.
+3. **Align full-screen panel with top bar**
+   - Measure mobile top bar height (via `id` selector) and offset the snapped panel so its top sits flush beneath the bar.
+   - Ensure height calculations still respect safe areas and drag gestures.
+4. **Tighten mobile top bar controls**
+   - Reduce icon button size on small screens and center the button cluster horizontally.
+   - Keep existing layout for md+ viewports.
+
+
 ## Executive Summary
 Convert the entire System Design Sandbox site from desktop-first to mobile-first design following modern mobile UX best practices. Current site uses desktop-centric breakpoints (lg:, xl:) and needs comprehensive mobile optimization.
 
