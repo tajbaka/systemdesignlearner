@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import { Navbar } from "../../components/Navbar";
 
@@ -16,6 +17,15 @@ const SystemDesignEditor = dynamic(() => import("../components/SystemDesignEdito
 });
 
 export default function PlayPage() {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <Navbar />
