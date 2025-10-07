@@ -1,12 +1,7 @@
 "use client";
 import React from "react";
 import type { Scenario } from "@/lib/scenarios";
-import type { PlacedNode } from "./types";
-import type { BoardApi } from "./Board";
 import ScenarioTabs from "./ScenarioTabs";
-
-const GRID_WIDTH = 12000;
-const GRID_HEIGHT = 8000;
 
 export interface ScenarioPanelProps {
   scenarios: Scenario[];
@@ -33,9 +28,6 @@ export interface ScenarioPanelProps {
     };
   } | null;
   failAttempts: number;
-  // Minimap props
-  nodes?: PlacedNode[];
-  boardApi?: BoardApi | null;
   // Mobile props
   hideHeader?: boolean;
 }
@@ -49,8 +41,6 @@ export default function ScenarioPanel({
   onRunSimulation,
   simulationResult,
   failAttempts,
-  nodes = [],
-  boardApi,
   hideHeader = false,
 }: ScenarioPanelProps) {
   const selectedScenario = scenarios.find((s) => s.id === selectedScenarioId)!;
@@ -69,12 +59,6 @@ export default function ScenarioPanel({
 
   const hints = selectedScenario.hints ?? [];
   const hintsToShow = Math.min(failAttempts, hints.length);
-
-  // Simple minimap navigation
-  const navigateToWorld = (worldX: number, worldY: number) => {
-    if (!boardApi) return;
-    boardApi.centerTo({ x: worldX, y: worldY });
-  };
 
   const [isRunning, setIsRunning] = React.useState(false);
   const runFeedbackTimeout = React.useRef<number | null>(null);
@@ -122,12 +106,6 @@ export default function ScenarioPanel({
       }
     };
   }, []);
-
-  // Calculate viewport bounds using accurate BoardApi - updates live during panning
-  const viewport = React.useMemo(() => {
-    if (!boardApi) return { left: 0, top: 0, width: GRID_WIDTH, height: GRID_HEIGHT };
-    return boardApi.getViewportWorldRect(); // no approximations, no constants
-  }, [boardApi]);
 
   const scoreBadge = React.useMemo(() => {
     if (!simulationResult) return null;
@@ -348,47 +326,6 @@ export default function ScenarioPanel({
               </div>
             )}
 
-            {/* Minimap - hidden on mobile */}
-            <div className="mt-4 hidden lg:block">
-              <div className="rounded-lg border border-white/20 bg-black/50 px-2 py-2 backdrop-blur">
-                <svg
-                  width={200}
-                  height={140}
-                  viewBox={`0 0 200 140`}
-                  className="block w-full cursor-pointer"
-                  onClick={(e) => {
-                    const svgRect = (e.target as SVGElement).closest("svg")?.getBoundingClientRect();
-                    if (!svgRect) return;
-                    const mx = e.clientX - svgRect.left;
-                    const my = e.clientY - svgRect.top;
-                    const worldX = (mx / 200) * GRID_WIDTH;
-                    const worldY = (my / 140) * GRID_HEIGHT;
-                    navigateToWorld(worldX, worldY);
-                  }}
-                >
-                  <rect x={0} y={0} width={200} height={140} rx={6} ry={6} fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" />
-                  {nodes.map((n) => (
-                    <circle
-                      key={n.id}
-                      cx={(n.x / GRID_WIDTH) * 200}
-                      cy={(n.y / GRID_HEIGHT) * 140}
-                      r={2}
-                      fill="rgba(16,185,129,0.9)"
-                    />
-                  ))}
-                  {/* Viewport indicator */}
-                  <rect
-                    x={(viewport.left / GRID_WIDTH) * 200}
-                    y={(viewport.top / GRID_HEIGHT) * 140}
-                    width={(viewport.width / GRID_WIDTH) * 200}
-                    height={(viewport.height / GRID_HEIGHT) * 140}
-                    fill="rgba(59,130,246,0.15)"
-                    stroke="rgba(255,255,255,0.8)"
-                    strokeWidth={1.5}
-                  />
-                </svg>
-              </div>
-            </div>
           </div>
         </div>
       </div>
