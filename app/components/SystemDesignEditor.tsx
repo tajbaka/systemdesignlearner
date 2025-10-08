@@ -47,6 +47,7 @@ export default function SystemDesignEditor() {
 
   // Error state
   const [simulationError, setSimulationError] = useState<string | null>(null);
+  const [simulationRunning, setSimulationRunning] = useState(false);
 
   // Mobile-specific state
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
@@ -273,11 +274,8 @@ export default function SystemDesignEditor() {
       componentCount={nodes.length}
       isReadOnly={false}
       selectedNode={selectedNode}
-      isConnectMode={isConnectMode}
-      undoRedoToggle={undoRedoToggle}
-      onConnectMode={handleConnectMode}
+      selectedScenario={selectedScenario}
       onAddComponent={handleAddComponent}
-      onUndoRedo={handleUndoRedo}
     />
   );
 
@@ -285,9 +283,16 @@ export default function SystemDesignEditor() {
     <MobileSimulationPanel
       isCollapsed={isSimPanelCollapsed}
       onToggle={handleSimPanelToggle}
-      onRunSimulation={handleRunSimulation}
+      onRunSimulation={simulationRunning ? undefined : handleRunSimulation}
       collapsedHeader={
-        simulationResult ? (
+        simulationRunning ? (
+          <div className="flex items-center gap-3 text-sm">
+            <div className="px-2 py-1 rounded text-xs font-semibold bg-blue-500/20 text-blue-300">
+              RUNNING
+            </div>
+            <span className="text-zinc-300">Running simulation...</span>
+          </div>
+        ) : simulationResult ? (
           <div className="flex items-center gap-3 text-sm">
             <div className={`px-2 py-1 rounded text-xs font-semibold ${
               simulationResult.scoreBreakdown?.outcome === "pass" ? "bg-emerald-500/20 text-emerald-300" :
@@ -318,6 +323,8 @@ export default function SystemDesignEditor() {
         simulationError={simulationError}
         simulationResult={simulationResult}
         failAttempts={failAttempts}
+        simulationRunning={simulationRunning}
+        onSimulationRunningChange={setSimulationRunning}
       />
     </MobileSimulationPanel>
   );

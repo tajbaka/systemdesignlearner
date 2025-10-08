@@ -31,6 +31,8 @@ export interface ScenarioPanelProps {
   failAttempts: number;
   // Mobile props
   hideHeader?: boolean;
+  simulationRunning?: boolean;
+  onSimulationRunningChange?: (running: boolean) => void;
 }
 
 export default function ScenarioPanel({
@@ -44,6 +46,8 @@ export default function ScenarioPanel({
   simulationResult,
   failAttempts,
   hideHeader = false,
+  simulationRunning = false,
+  onSimulationRunningChange,
 }: ScenarioPanelProps) {
   const selectedScenario = scenarios.find((s) => s.id === selectedScenarioId)!;
   const outcome: "pass" | "partial" | "fail" | "chaos_fail" | null = (() => {
@@ -62,12 +66,11 @@ export default function ScenarioPanel({
   const hints = selectedScenario.hints ?? [];
   const hintsToShow = Math.min(failAttempts, hints.length);
 
-  const [isRunning, setIsRunning] = React.useState(false);
   const runFeedbackTimeout = React.useRef<number | null>(null);
 
   const handleRun = React.useCallback(() => {
-    if (isRunning) return;
-    setIsRunning(true);
+    if (simulationRunning) return;
+    onSimulationRunningChange?.(true);
     onRunSimulation();
     if (typeof navigator !== "undefined" && "vibrate" in navigator) {
       navigator.vibrate(35);
@@ -76,29 +79,29 @@ export default function ScenarioPanel({
       window.clearTimeout(runFeedbackTimeout.current);
     }
     runFeedbackTimeout.current = window.setTimeout(() => {
-      setIsRunning(false);
+      onSimulationRunningChange?.(false);
       runFeedbackTimeout.current = null;
     }, 700);
-  }, [isRunning, onRunSimulation]);
+  }, [simulationRunning, onRunSimulation, onSimulationRunningChange]);
 
   React.useEffect(() => {
-    if (!isRunning) return;
+    if (!simulationRunning) return;
     return () => {
       if (runFeedbackTimeout.current) {
         window.clearTimeout(runFeedbackTimeout.current);
         runFeedbackTimeout.current = null;
       }
     };
-  }, [isRunning]);
+  }, [simulationRunning]);
 
   React.useEffect(() => {
     if (!simulationResult) return;
-    setIsRunning(false);
+    onSimulationRunningChange?.(false);
     if (runFeedbackTimeout.current) {
       window.clearTimeout(runFeedbackTimeout.current);
       runFeedbackTimeout.current = null;
     }
-  }, [simulationResult]);
+  }, [simulationResult, onSimulationRunningChange]);
 
   React.useEffect(() => {
     return () => {
@@ -143,10 +146,10 @@ export default function ScenarioPanel({
 
   const runButtonClasses = React.useMemo(() => (
     `px-3 py-1.5 rounded-lg border border-emerald-400/40 flex items-center gap-1.5 text-sm font-medium touch-manipulation transition ` +
-    (isRunning
+    (simulationRunning
       ? `bg-emerald-500/30 text-emerald-100 cursor-wait animate-pulse`
       : `bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 cursor-pointer`)
-  ), [isRunning]);
+  ), [simulationRunning]);
 
   return (
     <div className="flex min-h-0 h-full flex-1 flex-col overflow-hidden text-zinc-300">
@@ -160,10 +163,10 @@ export default function ScenarioPanel({
             type="button"
             className={runButtonClasses}
             onClick={handleRun}
-            disabled={isRunning}
+            disabled={simulationRunning}
             aria-live="polite"
           >
-            {isRunning ? (
+            {simulationRunning ? (
               <>
                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" role="presentation">
                   <circle

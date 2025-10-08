@@ -293,30 +293,37 @@ export default function MobileSimulationPanel({
       </button>
 
       {!isCollapsed && (
-        <div
-          className="flex-1 overflow-y-auto px-3 pb-3 sm:px-4 sm:pb-4 max-w-4xl mx-auto w-full"
-          onTouchStart={(e) => {
-            // Only stop propagation to prevent panel drag, don't prevent default
-            // This allows buttons and other interactive elements to work
-            if (e.touches.length === 1) {
-              e.stopPropagation();
-            }
-          }}
-          onTouchMove={(e) => {
-            // Only stop propagation to prevent panel drag, don't prevent default
-            if (e.touches.length === 1) {
-              e.stopPropagation();
-            }
-          }}
-          onTouchEnd={(e) => {
-            // Only stop propagation to prevent panel drag, don't prevent default
-            if (e.changedTouches.length === 1) {
-              e.stopPropagation();
-            }
-          }}
-        >
-          {children}
-        </div>
+        <>
+          {/* Drag handle for expanded panel */}
+          <div className="flex-shrink-0 w-full flex items-center justify-center py-2 cursor-grab active:cursor-grabbing touch-manipulation">
+            <div className="w-12 h-1 rounded-full bg-white/20" />
+          </div>
+
+          {/* Content area */}
+          <div
+            className="flex-1 overflow-y-auto px-3 pb-3 sm:px-4 sm:pb-4 max-w-4xl mx-auto w-full"
+            onTouchStart={(e) => {
+              // Stop propagation to prevent panel drag when scrolling content
+              if (e.touches.length === 1) {
+                e.stopPropagation();
+              }
+            }}
+            onTouchMove={(e) => {
+              // Stop propagation to prevent panel drag when scrolling content
+              if (e.touches.length === 1) {
+                e.stopPropagation();
+              }
+            }}
+            onTouchEnd={(e) => {
+              // Stop propagation to prevent panel drag when scrolling content
+              if (e.changedTouches.length === 1) {
+                e.stopPropagation();
+              }
+            }}
+          >
+            {children}
+          </div>
+        </>
       )}
     </div>
   );

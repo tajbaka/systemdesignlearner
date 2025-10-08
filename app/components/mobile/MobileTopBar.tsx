@@ -1,15 +1,13 @@
 "use client";
 import React from "react";
+import type { Scenario } from "@/lib/scenarios";
 
 interface MobileTopBarProps {
   componentCount: number;
   isReadOnly: boolean;
   selectedNode: string | null;
-  isConnectMode: boolean;
-  undoRedoToggle: "undo" | "redo";
-  onConnectMode: () => void;
+  selectedScenario?: Scenario;
   onAddComponent: () => void;
-  onUndoRedo: () => void;
   onResetView?: () => void;
   onShare?: () => void;
   onFork?: () => void;
@@ -21,11 +19,8 @@ export default function MobileTopBar({
   componentCount: _componentCount,
   isReadOnly,
   selectedNode,
-  isConnectMode,
-  undoRedoToggle,
-  onConnectMode,
+  selectedScenario,
   onAddComponent,
-  onUndoRedo,
   onResetView,
   onShare,
   onFork,
@@ -38,7 +33,11 @@ export default function MobileTopBar({
       className="sticky top-0 z-50 flex-shrink-0 px-3 py-2 bg-zinc-900/90 border-b border-white/10 backdrop-blur-sm lg:hidden"
     >
       <div className="flex items-center justify-center md:justify-between gap-2">
-        {/* Left: Title + Count (hidden on mobile) */}
+        {/* Left: Title + Count */}
+        <div className="flex md:hidden flex-col min-w-0 flex-1">
+          <h1 className="text-sm font-semibold text-zinc-100 truncate">{selectedScenario?.title || 'System Designer'}</h1>
+          <p className="text-xs text-zinc-400">{_componentCount} component{_componentCount !== 1 ? 's' : ''}</p>
+        </div>
         <div className="hidden md:flex flex-col min-w-0 flex-1">
           <h1 className="text-base font-semibold text-zinc-100 truncate">System Designer</h1>
           <p className="text-xs text-zinc-400">{_componentCount} component{_componentCount !== 1 ? 's' : ''}</p>
@@ -83,23 +82,6 @@ export default function MobileTopBar({
             </button>
           )}
 
-          {/* Connect Mode Button */}
-          <button
-            onClick={onConnectMode}
-            disabled={!selectedNode || isReadOnly}
-            className={`w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center transition touch-manipulation ${
-              isConnectMode
-                ? "bg-emerald-500/20 border-2 border-emerald-400 text-emerald-300"
-                : "bg-white/10 border border-white/15 text-zinc-300 disabled:opacity-40"
-            }`}
-            aria-label="Connect mode"
-            title="Connect mode"
-          >
-            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-            </svg>
-          </button>
-
           {/* Add Component Button */}
           <button
             onClick={onAddComponent}
@@ -111,25 +93,6 @@ export default function MobileTopBar({
             <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-          </button>
-
-          {/* Undo/Redo Cycling Button */}
-          <button
-            onClick={onUndoRedo}
-            disabled={isReadOnly}
-            className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/10 border border-white/15 text-zinc-300 flex items-center justify-center hover:bg-white/20 transition touch-manipulation disabled:opacity-40"
-            aria-label={undoRedoToggle === "undo" ? "Undo" : "Redo"}
-            title={undoRedoToggle === "undo" ? "Undo" : "Redo"}
-          >
-            {undoRedoToggle === "undo" ? (
-              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" />
-              </svg>
-            )}
           </button>
 
           {/* Share Button */}
