@@ -26,10 +26,11 @@ interface ReactFlowBoardProps {
   nodes: PlacedNode[];
   edges: Edge[];
   onConnect?: (edge: Edge) => void;
+  onDrop?: (kind: string, position: { x: number; y: number }) => void;
 }
 
 // Inner component that uses React Flow hooks
-function ReactFlowBoardInner({ nodes, edges, onConnect }: ReactFlowBoardProps) {
+function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop }: ReactFlowBoardProps) {
   // Initialize React Flow state from props
   const [rfNodes, setRfNodes, onRfNodesChange] = useNodesState<SystemDesignNode>([]);
   const [rfEdges, setRfEdges, onRfEdgesChange] = useEdgesState<SystemDesignEdge>([]);
@@ -38,21 +39,30 @@ function ReactFlowBoardInner({ nodes, edges, onConnect }: ReactFlowBoardProps) {
   const reactFlowInstance = useReactFlow();
 
 
-  // Update state when props change
+  // Update state when props change (but preserve existing positions)
   React.useEffect(() => {
-    const newRfNodes = nodes.map(placedNodeToReactFlowNode);
-    const newRfEdges = edges.map(edgeToReactFlowEdge);
-    setRfNodes(newRfNodes);
-    setRfEdges(newRfEdges);
+    setRfNodes(currentNodes => {
+      const currentNodeMap = new Map(currentNodes.map(node => [node.id, node]));
 
-    // Fit view to show all nodes when they change
-    if (newRfNodes.length > 0) {
-      setTimeout(() => {
-        reactFlowInstance.fitView({ padding: 0.1 });
-      }, 50);
-    }
+      // Create new nodes, preserving positions of existing ones
+      const newRfNodes = nodes.map(node => {
+        const existingNode = currentNodeMap.get(node.id);
+        if (existingNode) {
+          // Preserve existing position
+          return existingNode;
+        } else {
+          // New node, calculate position
+          return placedNodeToReactFlowNode(node);
+        }
+      });
+
+      return newRfNodes;
+    });
+
+    const newRfEdges = edges.map(edgeToReactFlowEdge);
+    setRfEdges(newRfEdges);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, edges, reactFlowInstance]); // Update when props change
+  }, [nodes, edges]); // Update when props change
 
   // Handle connections
   const handleConnect = React.useCallback((connection: Connection) => {
@@ -62,6 +72,8 @@ function ReactFlowBoardInner({ nodes, edges, onConnect }: ReactFlowBoardProps) {
       id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
       source: connection.source,
       target: connection.target,
+      sourceHandle: connection.sourceHandle || undefined,
+      targetHandle: connection.targetHandle || undefined,
       data: { linkLatencyMs: 10 },
     };
 
@@ -73,11 +85,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect }: ReactFlowBoardProps) {
       onConnect(placedEdge);
     }
 
-    // Fit view to show the new connection
-    setTimeout(() => {
-      reactFlowInstance.fitView({ padding: 0.1 });
-    }, 50);
-  }, [setRfEdges, onConnect, reactFlowInstance]);
+  }, [setRfEdges, onConnect]);
 
   // Handle node changes (position updates, deletions, etc.)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,6 +99,31 @@ function ReactFlowBoardInner({ nodes, edges, onConnect }: ReactFlowBoardProps) {
     onRfEdgesChange(changes);
   }, [onRfEdgesChange]);
 
+  const handleDrop = React.useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+
+    if (!onDrop) return;
+
+    const kind = event.dataTransfer.getData("application/x-sds-kind") ||
+                 event.dataTransfer.getData("text/plain");
+
+    if (!kind) return;
+
+    // Get the drop position relative to the React Flow viewport
+    const reactFlowBounds = event.currentTarget.getBoundingClientRect();
+    const position = reactFlowInstance.screenToFlowPosition({
+      x: event.clientX - reactFlowBounds.left,
+      y: event.clientY - reactFlowBounds.top,
+    });
+
+    onDrop(kind, position);
+  }, [onDrop, reactFlowInstance]);
+
+  const handleDragOver = React.useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+  }, []);
+
   return (
     <div style={{ width: '100vw', height: '100vh', paddingBottom: '80px' }}>
       <ReactFlow
@@ -100,8 +133,16 @@ function ReactFlowBoardInner({ nodes, edges, onConnect }: ReactFlowBoardProps) {
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
         onConnect={handleConnect}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
         fitView
         deleteKeyCode="Delete"
+        connectionLineStyle={{ strokeWidth: 2, stroke: '#10b981' }}
+        defaultEdgeOptions={{
+          type: 'bezier',
+          style: { strokeWidth: 2, stroke: '#10b981' },
+          animated: false,
+        }}
       >
         <Background />
         <Controls

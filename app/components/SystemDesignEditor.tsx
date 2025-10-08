@@ -49,33 +49,64 @@ export default function SystemDesignEditor() {
     SCENARIOS.find((s: Scenario) => s.id === selectedScenarioId)!, [selectedScenarioId]
   );
 
-  const addNode = useCallback((kind: ComponentKind) => {
+  const addNode = useCallback((kind: ComponentKind, position?: { x: number; y: number }) => {
     const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
 
-    // Calculate position in a grid layout centered around origin
-    const nodesCount = nodes.length;
-    const cols = Math.ceil(Math.sqrt(nodesCount + 1));
-    const row = Math.floor(nodesCount / cols);
-    const col = nodesCount % cols;
+    let nodePosition: { x: number; y: number };
 
-    const spacing = 200; // Space between nodes
-    const startX = -(cols - 1) * spacing / 2;
-    const startY = -(Math.ceil((nodesCount + 1) / cols) - 1) * spacing / 2;
+    if (position) {
+      // Use the provided position (from drag & drop)
+      nodePosition = position;
+    } else {
+      // Default fallback position
+      const nodesCount = nodes.length;
+      nodePosition = {
+        x: (nodesCount % 5) * 250 - 500,
+        y: Math.floor(nodesCount / 5) * 250 - 250
+      };
+
+      // Try to find a better empty spot without moving existing nodes
+      const existingPositions = new Set(
+        nodes.map(node => `${Math.round(node.x / 100)},${Math.round(node.y / 100)}`)
+      );
+
+      // Try positions in a spiral pattern starting from center
+      let attempts = 0;
+      const spacing = 200;
+
+      while (attempts < 50) { // Limit attempts to avoid infinite loop
+        const radius = Math.floor(attempts / 8) * spacing;
+        const angle = (attempts % 8) * (Math.PI / 4);
+        const x = Math.round(radius * Math.cos(angle) / spacing) * spacing;
+        const y = Math.round(radius * Math.sin(angle) / spacing) * spacing;
+
+        const key = `${Math.round(x / 100)},${Math.round(y / 100)}`;
+        if (!existingPositions.has(key)) {
+          nodePosition = { x, y };
+          break; // Found a good spot, exit the loop
+        }
+        attempts++;
+      }
+    }
 
     const newNode: PlacedNode = {
       id: uid(),
       spec,
-      x: startX + col * spacing,
-      y: startY + row * spacing,
+      x: nodePosition.x,
+      y: nodePosition.y,
       replicas: 1,
     };
 
     setNodes((prev) => [...prev, newNode]);
-  }, [nodes.length]);
+  }, [nodes]);
 
   const handleConnect = useCallback((newEdge: Edge) => {
     setEdges((prev) => [...prev, newEdge]);
   }, []);
+
+  const handleDrop = useCallback((kind: string, position: { x: number; y: number }) => {
+    addNode(kind as ComponentKind, position);
+  }, [addNode]);
 
   const handleRunSimulation = useCallback(() => {
     try {
@@ -122,6 +153,7 @@ export default function SystemDesignEditor() {
       nodes={nodes}
       edges={edges}
       onConnect={handleConnect}
+      onDrop={handleDrop}
     />
   );
 

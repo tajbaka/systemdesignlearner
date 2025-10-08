@@ -50,6 +50,8 @@ export interface Edge {
   from: NodeId;
   to: NodeId;
   linkLatencyMs: number; // network hop latency
+  sourceHandle?: string;
+  targetHandle?: string;
 }
 
 // React Flow compatible types
@@ -62,6 +64,8 @@ export interface SystemDesignNode extends Node {
 }
 
 export interface SystemDesignEdge extends ReactFlowEdge {
+  sourceHandle?: string;
+  targetHandle?: string;
   data?: {
     linkLatencyMs: number;
   };
@@ -95,6 +99,8 @@ export function edgeToReactFlowEdge(edge: Edge): SystemDesignEdge {
     id: edge.id,
     source: edge.from,
     target: edge.to,
+    sourceHandle: edge.sourceHandle,
+    targetHandle: edge.targetHandle,
     data: {
       linkLatencyMs: edge.linkLatencyMs,
     },
@@ -107,6 +113,8 @@ export function reactFlowEdgeToEdge(edge: SystemDesignEdge): Edge {
     from: edge.source,
     to: edge.target,
     linkLatencyMs: edge.data?.linkLatencyMs || 10,
+    sourceHandle: edge.sourceHandle,
+    targetHandle: edge.targetHandle,
   };
 }
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { SystemDesignNode as SystemDesignNodeType } from "./types";
@@ -23,6 +23,7 @@ export default function SystemDesignNode({
   isDeleting = false,
   onDelete,
 }: SystemDesignNodeProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const hasMoved = useRef(false);
 
@@ -77,30 +78,44 @@ export default function SystemDesignNode({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       whileHover={{ translateZ: 20 }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* React Flow Handles */}
       <Handle
         type="source"
         position={Position.Top}
-        className="w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair opacity-0 lg:opacity-100 lg:hover:opacity-100 lg:hover:scale-150 transition-all"
+        id="top"
+        className={`w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+          isHovered ? "opacity-100 scale-150" : "opacity-0"
+        }`}
         title="Drag to connect (N)"
       />
       <Handle
         type="source"
         position={Position.Right}
-        className="w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair opacity-0 lg:opacity-100 lg:hover:opacity-100 lg:hover:scale-150 transition-all"
+        id="right"
+        className={`w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+          isHovered ? "opacity-100 scale-150" : "opacity-0"
+        }`}
         title="Drag to connect (E)"
       />
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair opacity-0 lg:opacity-100 lg:hover:opacity-100 lg:hover:scale-150 transition-all"
+        id="bottom"
+        className={`w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+          isHovered ? "opacity-100 scale-150" : "opacity-0"
+        }`}
         title="Drag to connect (S)"
       />
       <Handle
         type="source"
         position={Position.Left}
-        className="w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair opacity-0 lg:opacity-100 lg:hover:opacity-100 lg:hover:scale-150 transition-all"
+        id="left"
+        className={`w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+          isHovered ? "opacity-100 scale-150" : "opacity-0"
+        }`}
         title="Drag to connect (W)"
       />
 
@@ -108,22 +123,34 @@ export default function SystemDesignNode({
       <Handle
         type="target"
         position={Position.Top}
-        className="w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair opacity-0 lg:opacity-100 lg:hover:opacity-100 lg:hover:scale-150 transition-all"
+        id="top"
+        className={`w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+          isHovered ? "opacity-100 scale-150" : "opacity-0"
+        }`}
       />
       <Handle
         type="target"
         position={Position.Right}
-        className="w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair opacity-0 lg:opacity-100 lg:hover:opacity-100 lg:hover:scale-150 transition-all"
+        id="right"
+        className={`w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+          isHovered ? "opacity-100 scale-150" : "opacity-0"
+        }`}
       />
       <Handle
         type="target"
         position={Position.Bottom}
-        className="w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair opacity-0 lg:opacity-100 lg:hover:opacity-100 lg:hover:scale-150 transition-all"
+        id="bottom"
+        className={`w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+          isHovered ? "opacity-100 scale-150" : "opacity-0"
+        }`}
       />
       <Handle
         type="target"
         position={Position.Left}
-        className="w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair opacity-0 lg:opacity-100 lg:hover:opacity-100 lg:hover:scale-150 transition-all"
+        id="left"
+        className={`w-5 h-5 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+          isHovered ? "opacity-100 scale-150" : "opacity-0"
+        }`}
       />
 
       <div className={`${handleClass} text-zinc-200`}>{data.spec.kind}</div>
