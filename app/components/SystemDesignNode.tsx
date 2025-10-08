@@ -35,8 +35,6 @@ const SystemDesignNodeComponent = ({
   const hasMoved = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const currentLabel = data.customLabel || data.spec.label;
-
   const startEditing = useCallback(() => {
     setIsEditing(true);
     setEditValue(data.customLabel || data.spec.label);
