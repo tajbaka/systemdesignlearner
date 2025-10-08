@@ -21,31 +21,8 @@ export default function PlayPage() {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    // Additional mobile scroll prevention for the sandbox page
-    const handleTouchStart = (e: TouchEvent) => {
-      // Only prevent page scroll during active panel dragging
-      // Allow normal touch interactions when bottom sheet is open or when not dragging panels
-      if (document.body.classList.contains('mobile-panel-interacting')) {
-        e.preventDefault();
-      }
-      // Allow touch interactions when bottom sheet is open - the sheet handles its own touch events
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      // Only prevent page scroll during active panel dragging
-      if (document.body.classList.contains('mobile-panel-interacting')) {
-        e.preventDefault();
-      }
-    };
-
-    // Add passive: false to ensure preventDefault works
-    document.addEventListener('touchstart', handleTouchStart, { passive: false });
-    document.addEventListener('touchmove', handleTouchMove, { passive: false });
-
     return () => {
       document.body.style.overflow = previousOverflow;
-      document.removeEventListener('touchstart', handleTouchStart);
-      document.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 

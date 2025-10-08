@@ -18,7 +18,7 @@ export default function MobileSimulationPanel({
 }: MobileSimulationPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragHeight, setDragHeight] = useState<number | null>(null);
-  const [dragBottom, setDragBottom] = useState<number | null>(null);
+  const [dragScaleY, setDragScaleY] = useState<number | null>(null);
   const [startY, setStartY] = useState(0);
   const [startHeight, setStartHeight] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -71,7 +71,7 @@ export default function MobileSimulationPanel({
     if (isCollapsed) {
       setIsFullScreen(false);
       setDragHeight(null);
-      setDragBottom(null);
+      setDragScaleY(null);
     }
   }, [isCollapsed]);
 
@@ -126,22 +126,17 @@ export default function MobileSimulationPanel({
     setStartY(touch.clientY);
     setStartHeight(containerRef.current.offsetHeight);
     setIsDragging(true);
-    setDragBottom(0); // Initialize bottom offset
+    setDragScaleY(1); // Initialize scale to full size
     wasMagneticallySnappedRef.current = false;
 
     // Prevent page scroll when dragging panel
     if (typeof document !== "undefined") {
       document.body.classList.add("mobile-panel-interacting");
-      // Prevent default touch behavior to stop page scrolling
-      e.preventDefault();
     }
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isDragging || e.touches.length > 1) return;
-
-    // Prevent default to stop page scrolling
-    e.preventDefault();
 
     const touch = e.touches[0];
     const deltaY = startY - touch.clientY;
@@ -160,21 +155,21 @@ export default function MobileSimulationPanel({
 
     lastDragHeightRef.current = newHeight;
 
-    // Calculate bottom offset for smooth collapse from top
-    const heightChange = startHeight - newHeight;
-    const newBottom = Math.max(0, heightChange); // Bottom increases as height decreases
+    // Calculate scale factor for smooth collapse from top
+    // Scale factor = newHeight / startHeight
+    const newScaleY = newHeight / startHeight;
 
     setDragHeight(newHeight);
-    setDragBottom(newBottom);
+    setDragScaleY(newScaleY);
   }, [isDragging, startY, startHeight, effectiveExpandedHeight, MAGNETIC_THRESHOLD, COLLAPSED_HEIGHT]);
 
   const handleTouchEnd = useCallback(() => {
     if (!isDragging) return;
 
     setIsDragging(false);
+    setDragScaleY(null); // Reset scale
 
     const finalHeight = lastDragHeightRef.current;
-    setDragBottom(null); // Reset bottom offset
     if (finalHeight !== null) {
       const magneticallySnapped = wasMagneticallySnappedRef.current || finalHeight >= effectiveExpandedHeight - 1;
       const halfwayPoint = (COLLAPSED_HEIGHT + effectiveExpandedHeight) / 2;
@@ -203,36 +198,43 @@ export default function MobileSimulationPanel({
     }
   }, [isDragging, COLLAPSED_HEIGHT, effectiveExpandedHeight, isCollapsed, onToggle]);
 
-  const currentHeight = dragHeight !== null
-    ? `${dragHeight}px`
+  const currentHeightValue = dragHeight !== null
+    ? dragHeight
     : (isCollapsed
-      ? `${COLLAPSED_HEIGHT}px`
+      ? COLLAPSED_HEIGHT
       : isFullScreen
-        ? `${effectiveExpandedHeight}px`
-        : `${Math.min(effectiveExpandedHeight * 0.75, window.innerHeight * 0.7)}px`);
+        ? effectiveExpandedHeight
+        : Math.min(effectiveExpandedHeight * 0.75, window.innerHeight * 0.7));
+
+  const currentHeight = `${currentHeightValue}px`;
 
   const sheetStyle: React.CSSProperties = {
     // Safe area padding for expanded/fullscreen states
     paddingBottom: isCollapsed ? 0 : "max(env(safe-area-inset-bottom), 24px)",
     height: currentHeight,
-    transition: isDragging ? "none" : "height 0.3s ease-out",
+    transition: isDragging ? "none" : "height 0.3s ease-out, transform 0.3s ease-out",
     touchAction: isDragging ? "none" : "pan-y pinch-zoom",
-    // Ensure panel stays at bottom and doesn't cause page scroll
-    position: isDragging ? "fixed" : "sticky",
-    bottom: dragBottom !== null ? `${dragBottom}px` : 0, // Dynamic bottom during drag for smooth collapse
+    // Use sticky positioning with scale transform for smooth top-down collapse
+    position: "sticky",
+    bottom: 0,
     left: 0,
     right: 0,
+    transformOrigin: "top",
+    transform: isDragging && dragScaleY !== null ? `scaleY(${dragScaleY})` : "scaleY(1)",
     // Prevent any layout shifts
-    willChange: isDragging ? "height" : "auto",
+    willChange: isDragging ? "height, transform" : "auto",
   };
 
   if (isFullScreen) {
+    // Override for fullscreen
     sheetStyle.position = "fixed";
+    sheetStyle.top = topOffset;
+    sheetStyle.bottom = 0;
     sheetStyle.left = 0;
     sheetStyle.right = 0;
-    sheetStyle.top = topOffset;
-    sheetStyle.bottom = 0; // Ensure it goes all the way to bottom
     sheetStyle.zIndex = 60;
+    sheetStyle.transform = "scaleY(1)";
+    sheetStyle.height = `${effectiveExpandedHeight}px`;
     // Add extra padding for safe areas in fullscreen
     sheetStyle.paddingBottom = "max(env(safe-area-inset-bottom), 34px)";
   }
