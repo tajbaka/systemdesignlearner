@@ -193,7 +193,7 @@ export default function MobileSimulationPanel({
     touchAction: isDragging ? "none" : "pan-y pinch-zoom",
     // Ensure panel stays at bottom and doesn't cause page scroll
     position: "sticky",
-    bottom: 0,
+    bottom: isCollapsed ? "max(env(safe-area-inset-bottom), 0px)" : 0,
     left: 0,
     right: 0,
     // Prevent any layout shifts

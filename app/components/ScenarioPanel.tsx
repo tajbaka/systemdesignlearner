@@ -10,6 +10,7 @@ export interface ScenarioPanelProps {
   chaosMode: boolean;
   onChaosModeChange: (chaosMode: boolean) => void;
   onRunSimulation: () => void;
+  simulationError?: string | null;
   simulationResult: {
     latencyMsP95: number;
     capacityRps: number;
@@ -39,6 +40,7 @@ export default function ScenarioPanel({
   chaosMode,
   onChaosModeChange,
   onRunSimulation,
+  simulationError,
   simulationResult,
   failAttempts,
   hideHeader = false,
@@ -205,15 +207,31 @@ export default function ScenarioPanel({
             <select
               value={selectedScenarioId}
               onChange={(e) => onScenarioChange(e.target.value)}
-              className="rounded-lg border border-white/10 bg-zinc-800 px-3 py-2 text-sm text-zinc-300 cursor-pointer"
+              className="w-full rounded-lg border border-white/10 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-200 cursor-pointer transition-all duration-200 hover:bg-zinc-700/50 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50"
             >
               {scenarios.map((s) => (
-                <option key={s.id} value={s.id}>
+                <option
+                  key={s.id}
+                  value={s.id}
+                  className="bg-zinc-800 text-zinc-200 py-1"
+                >
                   {s.title} [{s.category}] [{s.difficulty}]
                 </option>
               ))}
             </select>
             <p className="text-xs leading-relaxed text-zinc-400">{selectedScenario.description}</p>
+
+            {simulationError && (
+              <div className="mt-3 rounded-xl border border-rose-400/30 bg-rose-500/10 p-3 text-sm">
+                <div className="flex items-start gap-2">
+                  <span className="text-rose-400 text-lg">⚠️</span>
+                  <div className="flex-1">
+                    <div className="font-semibold text-rose-300 mb-1">Simulation Error</div>
+                    <p className="text-rose-200 leading-relaxed">{simulationError}</p>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <ScenarioTabs scenario={selectedScenario} />
 

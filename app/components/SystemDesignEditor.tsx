@@ -45,6 +45,9 @@ export default function SystemDesignEditor() {
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
   const [failAttempts, setFailAttempts] = useState(0);
 
+  // Error state
+  const [simulationError, setSimulationError] = useState<string | null>(null);
+
   // Mobile-specific state
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -55,6 +58,22 @@ export default function SystemDesignEditor() {
   const selectedScenario = useMemo(() =>
     SCENARIOS.find((s: Scenario) => s.id === selectedScenarioId)!, [selectedScenarioId]
   );
+
+  // Clear error when scenario changes
+  React.useEffect(() => {
+    setSimulationError(null);
+  }, [selectedScenarioId]);
+
+  // Auto-clear error after 5 seconds
+  React.useEffect(() => {
+    if (!simulationError) return;
+
+    const timer = setTimeout(() => {
+      setSimulationError(null);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [simulationError]);
 
   const addNode = useCallback((kind: ComponentKind, position?: { x: number; y: number }) => {
     const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
@@ -184,15 +203,18 @@ export default function SystemDesignEditor() {
 
   const handleRunSimulation = useCallback(() => {
     try {
+      // Clear any previous errors
+      setSimulationError(null);
+
       const path = findScenarioPath(selectedScenario, nodes, edges);
 
       if (path.missingKinds.length > 0) {
-        alert(`Missing required components: ${path.missingKinds.join(", ")}`);
+        setSimulationError(`Missing required components: ${path.missingKinds.join(", ")}. Add these components to your design.`);
         return;
       }
 
       if (path.nodeIds.length === 0) {
-        alert("No valid path found through your components. Make sure components are properly connected.");
+        setSimulationError("No valid path found through your components. Make sure all components are properly connected from start to finish.");
         return;
       }
 
@@ -208,7 +230,7 @@ export default function SystemDesignEditor() {
       }
     } catch (error) {
       console.error("Simulation error:", error);
-      alert("Simulation failed. Check your design and try again.");
+      setSimulationError("Simulation failed due to an unexpected error. Check your design and try again.");
     }
   }, [selectedScenario, nodes, edges, chaosMode]);
 
@@ -222,6 +244,7 @@ export default function SystemDesignEditor() {
         chaosMode={chaosMode}
         onChaosModeChange={setChaosMode}
         onRunSimulation={handleRunSimulation}
+        simulationError={simulationError}
         simulationResult={simulationResult}
         failAttempts={failAttempts}
       />
@@ -292,6 +315,7 @@ export default function SystemDesignEditor() {
         chaosMode={chaosMode}
         onChaosModeChange={setChaosMode}
         onRunSimulation={handleRunSimulation}
+        simulationError={simulationError}
         simulationResult={simulationResult}
         failAttempts={failAttempts}
       />
