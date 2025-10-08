@@ -102,6 +102,17 @@ export default function MobileSimulationPanel({
   const effectiveExpandedHeight = Math.max(expandedHeight - topOffset, COLLAPSED_HEIGHT);
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // Don't start dragging if the touch is on an interactive element
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'BUTTON' ||
+        target.closest('button') ||
+        target.closest('[role="button"]') ||
+        target.closest('input') ||
+        target.closest('select') ||
+        target.closest('textarea')) {
+      return; // Let the interactive element handle the touch
+    }
+
     if (!containerRef.current) return;
     if (e.touches.length > 1) {
       setIsDragging(false);
@@ -285,21 +296,22 @@ export default function MobileSimulationPanel({
         <div
           className="flex-1 overflow-y-auto px-3 pb-3 sm:px-4 sm:pb-4 max-w-4xl mx-auto w-full"
           onTouchStart={(e) => {
+            // Only stop propagation to prevent panel drag, don't prevent default
+            // This allows buttons and other interactive elements to work
             if (e.touches.length === 1) {
               e.stopPropagation();
-              e.preventDefault();
             }
           }}
           onTouchMove={(e) => {
+            // Only stop propagation to prevent panel drag, don't prevent default
             if (e.touches.length === 1) {
               e.stopPropagation();
-              e.preventDefault();
             }
           }}
           onTouchEnd={(e) => {
+            // Only stop propagation to prevent panel drag, don't prevent default
             if (e.changedTouches.length === 1) {
               e.stopPropagation();
-              e.preventDefault();
             }
           }}
         >
