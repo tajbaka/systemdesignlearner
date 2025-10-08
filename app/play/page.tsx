@@ -23,20 +23,17 @@ export default function PlayPage() {
 
     // Additional mobile scroll prevention for the sandbox page
     const handleTouchStart = (e: TouchEvent) => {
-      // Only prevent if we're not in a mobile panel interaction
-      if (!document.body.classList.contains('mobile-panel-interacting') &&
-          !document.body.classList.contains('bottom-sheet-open')) {
-        // Allow normal touch behavior for React Flow interactions
-        return;
+      // Only prevent page scroll during active panel dragging
+      // Allow normal touch interactions when bottom sheet is open or when not dragging panels
+      if (document.body.classList.contains('mobile-panel-interacting')) {
+        e.preventDefault();
       }
-      // Prevent page scroll during panel interactions
-      e.preventDefault();
+      // Allow touch interactions when bottom sheet is open - the sheet handles its own touch events
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      // Only prevent if we're in a mobile panel interaction
-      if (document.body.classList.contains('mobile-panel-interacting') ||
-          document.body.classList.contains('bottom-sheet-open')) {
+      // Only prevent page scroll during active panel dragging
+      if (document.body.classList.contains('mobile-panel-interacting')) {
         e.preventDefault();
       }
     };
