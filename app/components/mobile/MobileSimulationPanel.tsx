@@ -248,7 +248,7 @@ export default function MobileSimulationPanel({
       onTouchEnd={handleTouchEnd}
     >
       {isCollapsed && collapsedHeader && (
-        <div className="w-full px-4 py-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}>
+        <div className="w-full px-4 py-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg" style={{ marginBottom: "max(env(safe-area-inset-bottom), 0px)" }}>
           <div className="flex items-center justify-between">
             <div
               className="flex-1 cursor-pointer"
@@ -286,9 +286,7 @@ export default function MobileSimulationPanel({
               ? "py-3 bg-zinc-700/60 text-zinc-200 hover:bg-zinc-700/80 border-t border-white/10"
               : "py-2 text-zinc-400 hover:text-zinc-200"
           }`}
-          style={{
-            paddingBottom: !collapsedHeader ? "max(env(safe-area-inset-bottom), 16px)" : undefined
-          }}
+          style={!collapsedHeader ? { marginBottom: "max(env(safe-area-inset-bottom), 16px)" } : undefined}
           aria-label="Expand simulation panel"
         >
           <div className="w-12 h-1 rounded-full bg-white/20" />
