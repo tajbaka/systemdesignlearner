@@ -69,79 +69,90 @@ export function HomePageClient() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 sm:pt-20 sm:pb-24 lg:pt-24 lg:pb-32">
-          <motion.div
-            className="text-center"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <motion.h1
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight"
-            >
-              Practice System Design.
-              <span className="block text-emerald-400 mt-2">Visually. Fast Feedback.</span>
-            </motion.h1>
+      {/* Hero Section */}
+<section className="relative overflow-hidden">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-28 sm:pt-24 sm:pb-32 lg:pt-32 lg:pb-40">
+    <motion.div
+      className="text-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.h1
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.1 }}
+        className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
+      >
+        Practice System Design.
+        <span className="block text-emerald-400 mt-2 animate-pulse-slow">
+          Visually. Fast Feedback.
+        </span>
+      </motion.h1>
 
-            <motion.p
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.2 }}
-              className="text-lg sm:text-xl text-zinc-300 mb-8 max-w-3xl mx-auto leading-relaxed"
-            >
-              Drag, connect, and simulate realistic architectures in an infinite grid. Get instant insights on capacity, latency, and SLOs.
-            </motion.p>
+      <motion.p
+        initial={{ y: -20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.2 }}
+        className="text-lg sm:text-xl text-zinc-300 mb-10 max-w-3xl mx-auto leading-relaxed"
+      >
+        Drag, connect, and simulate realistic architectures in an infinite grid. 
+        Get instant insights on capacity, latency, and SLOs.
+      </motion.p>
 
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
-            >
-              <Link
-                href="/play"
-                className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-                aria-label="Try URL Shortener Scenario"
-              >
-                Try URL Shortener Scenario
-              </Link>
-              <Link
-                href="/practice"
-                className="px-8 py-4 border-2 border-zinc-600 hover:border-zinc-400 text-zinc-300 hover:text-white font-semibold text-lg rounded-lg transition-colors duration-200"
-                aria-label="Explore All Scenarios"
-              >
-                Explore All Scenarios
-              </Link>
-            </motion.div>
+      {/* CTAs */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.3 }}
+        className="flex flex-col sm:flex-row gap-4 justify-center mb-14"
+      >
+        <Link
+          href="/play"
+          className="px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-emerald-500/30"
+          aria-label="Try URL Shortener Scenario"
+        >
+          Try URL Shortener Scenario
+        </Link>
+        <Link
+          href="/practice"
+          className="px-10 py-5 border-2 border-zinc-600 hover:border-zinc-400 text-zinc-300 hover:text-white font-semibold text-lg rounded-lg transition-colors duration-200"
+          aria-label="Explore All Scenarios"
+        >
+          Explore All Scenarios
+        </Link>
+      </motion.div>
 
-            {/* Interactive Demo Board */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.4 }}
-              className="max-w-4xl mx-auto mb-12"
-            >
-              <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-8 text-center">
-                <DemoBoard />
-              </div>
-            </motion.div>
-
-            {/* Social Proof */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3, delay: 0.5 }}
-              className="text-center"
-            >
-              <p className="text-zinc-400 mb-2">Built by Antonio Coppe – loved by devs for hands-on practice</p>
-            </motion.div>
-          </motion.div>
+      {/* Larger Interactive Demo */}
+      <motion.div
+        initial={{ y: 30, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        className="max-w-6xl mx-auto mb-12"
+      >
+        <div className="bg-zinc-800/60 border border-zinc-700 rounded-2xl p-10 shadow-xl shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all duration-300">
+          <DemoBoard />
         </div>
-      </section>
+      </motion.div>
+
+      {/* Social Proof */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3, delay: 0.6 }}
+        className="text-center"
+      >
+        <p className="text-zinc-400 mb-1">
+          Built by Antonio Coppe — loved by devs for hands-on practice
+        </p>
+        <p className="text-sm text-zinc-500">
+          “Learn by doing” meets “visual system design.” No theory, just clarity.
+        </p>
+      </motion.div>
+    </motion.div>
+  </div>
+</section>
+
 
       {/* Features Section */}
       <section className="py-16 sm:py-20 lg:py-24 bg-zinc-900/50">

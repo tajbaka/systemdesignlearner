@@ -13,72 +13,72 @@ export default function DemoBoard() {
     {
       id: 'demo-web',
       spec: COMPONENT_LIBRARY.find(c => c.kind === 'Web')!,
-      x: 36, // Rounded from 35.517241379310335
-      y: 80,
+      x: -78, // Rounded from -78.04597701149424
+      y: 93, // Rounded from 93.19540229885055
     },
     // API Gateway - middle left
     {
       id: 'demo-gateway',
       spec: COMPONENT_LIBRARY.find(c => c.kind === 'API Gateway')!,
-      x: 56, // Rounded from 56.29310344827586
-      y: 257, // Rounded from 257.3275862068966
+      x: 68, // Rounded from 68.25287356321836
+      y: 230, // Rounded from 229.6666666666667
     },
     // URL Shortening Service - middle right
     {
       id: 'demo-shortener',
       spec: COMPONENT_LIBRARY.find(c => c.kind === 'Service')!,
-      x: 325, // Rounded from 324.7413793103449
-      y: 318, // Rounded from 318.1788793103448
+      x: 347, // Rounded from 346.67816091954023
+      y: 296, // Rounded from 296.32183908045977
       customLabel: 'URL Shortening',
     },
     // URL Redirection Service - top right
     {
       id: 'demo-redirection',
       spec: COMPONENT_LIBRARY.find(c => c.kind === 'Service')!,
-      x: 333, // Rounded from 333.1034482758621
-      y: 99, // Rounded from 98.53448275862068
+      x: 328, // Rounded from 328.28735632183907
+      y: 95, // Rounded from 95.22988505747128
       customLabel: 'URL Redirection',
     },
     // Cache - top far right
     {
       id: 'demo-cache',
       spec: COMPONENT_LIBRARY.find(c => c.kind === 'Cache (Redis)')!,
-      x: 586, // Rounded from 586.2931034482758
-      y: 100,
+      x: 698, // Rounded from 698.1609195402298
+      y: 73, // Rounded from 72.66666666666667
     },
     // Database - bottom right
     {
       id: 'demo-db',
       spec: COMPONENT_LIBRARY.find(c => c.kind === 'DB (Postgres)')!,
-      x: 600, // Rounded from 600.3340517241382
-      y: 233, // Rounded from 232.75862068965515
+      x: 709, // Rounded from 709.3333333333331
+      y: 241, // Rounded from 240.5402298850575
     },
   ];
 
   // Initial edges matching user's connected layout
   const initialEdges: Edge[] = [
-    // API Gateway (top) → Web Client (bottom)
+    // API Gateway (left) → Web Client (bottom)
     {
-      id: '8hxqfvq',
+      id: '16c6l5f',
       from: 'demo-gateway',
       to: 'demo-web',
-      sourceHandle: 'top',
+      sourceHandle: 'left',
       targetHandle: 'bottom',
       linkLatencyMs: 10,
     },
-    // URL Shortening (left) → API Gateway (right)
+    // URL Redirection (left) → API Gateway (right)
     {
-      id: 'rs5q37n',
-      from: 'demo-shortener',
+      id: '73gio84',
+      from: 'demo-redirection',
       to: 'demo-gateway',
       sourceHandle: 'left',
       targetHandle: 'right',
       linkLatencyMs: 10,
     },
-    // URL Redirection (left) → API Gateway (right)
+    // URL Shortening (left) → API Gateway (right)
     {
-      id: 'p2dtarq',
-      from: 'demo-redirection',
+      id: 'evftqdr',
+      from: 'demo-shortener',
       to: 'demo-gateway',
       sourceHandle: 'left',
       targetHandle: 'right',
@@ -86,7 +86,7 @@ export default function DemoBoard() {
     },
     // Cache (left) → URL Redirection (right)
     {
-      id: 'zg8f0l4',
+      id: 'yh2qnhr',
       from: 'demo-cache',
       to: 'demo-redirection',
       sourceHandle: 'left',
@@ -95,27 +95,26 @@ export default function DemoBoard() {
     },
     // Database (left) → URL Shortening (right)
     {
-      id: 'rf54uee',
+      id: '1mz34fi',
       from: 'demo-db',
       to: 'demo-shortener',
       sourceHandle: 'left',
       targetHandle: 'right',
       linkLatencyMs: 10,
     },
-    // Database (left) → URL Redirection (bottom)
+    // Database (left) → URL Redirection (right)
     {
-      id: 'zenrczj',
+      id: 't0357kf',
       from: 'demo-db',
       to: 'demo-redirection',
       sourceHandle: 'left',
-      targetHandle: 'bottom',
+      targetHandle: 'right',
       linkLatencyMs: 10,
     },
   ];
 
   const [nodes, setNodes] = useState<PlacedNode[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
-
 
   const handleNodesChange = useCallback((updatedNodes: PlacedNode[]) => {
     setNodes(updatedNodes);
@@ -148,8 +147,8 @@ export default function DemoBoard() {
         }}
         showMiniMap={false}
       />
-      {/* Overlay to prevent interaction - demo is read-only */}
-      <div className="absolute inset-0 bg-transparent pointer-events-none cursor-default" />
+      {/* Overlay to prevent interaction on desktop - allow mobile interaction */}
+      <div className="absolute inset-0 bg-transparent pointer-events-none cursor-default hidden lg:block" />
     </div>
   );
 }
