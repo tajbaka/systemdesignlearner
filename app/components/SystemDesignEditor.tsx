@@ -108,11 +108,25 @@ export default function SystemDesignEditor() {
     addNode(kind as ComponentKind, position);
   }, [addNode]);
 
+  const handleNodesChange = useCallback((updatedNodes: PlacedNode[]) => {
+    setNodes(updatedNodes);
+  }, []);
+
+  const handleEdgesChange = useCallback((updatedEdges: Edge[]) => {
+    setEdges(updatedEdges);
+  }, []);
+
   const handleRunSimulation = useCallback(() => {
     try {
       const path = findScenarioPath(selectedScenario, nodes, edges);
+
       if (path.missingKinds.length > 0) {
         alert(`Missing required components: ${path.missingKinds.join(", ")}`);
+        return;
+      }
+
+      if (path.nodeIds.length === 0) {
+        alert("No valid path found through your components. Make sure components are properly connected.");
         return;
       }
 
@@ -154,6 +168,8 @@ export default function SystemDesignEditor() {
       edges={edges}
       onConnect={handleConnect}
       onDrop={handleDrop}
+      onNodesChange={handleNodesChange}
+      onEdgesChange={handleEdgesChange}
     />
   );
 

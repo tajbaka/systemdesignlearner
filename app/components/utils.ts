@@ -30,12 +30,18 @@ export function findScenarioPath(
 ): { nodeIds: NodeId[]; missingKinds: string[] } {
   type State = { current: NodeId | null; path: NodeId[]; visited: Set<NodeId> };
 
-  // Precompute adjacency list for outgoing edges
+
+  // Precompute adjacency list for outgoing edges (bidirectional)
   const adjacency = new Map<NodeId, Set<NodeId>>();
   for (const edge of edges) {
-    const list = adjacency.get(edge.from) ?? new Set<NodeId>();
-    list.add(edge.to);
-    adjacency.set(edge.from, list);
+    // Add both directions since users might connect arrows in either direction
+    const list1 = adjacency.get(edge.from) ?? new Set<NodeId>();
+    list1.add(edge.to);
+    adjacency.set(edge.from, list1);
+
+    const list2 = adjacency.get(edge.to) ?? new Set<NodeId>();
+    list2.add(edge.from);
+    adjacency.set(edge.to, list2);
   }
 
   // Index nodes by component kind so we can quickly look up candidates per flow step
@@ -116,6 +122,7 @@ export function findScenarioPath(
     (best, state) => (state.path.length > best.path.length ? state : best),
     { current: null, path: [], visited: new Set() }
   );
+
 
   return { nodeIds: bestState.path, missingKinds: Array.from(missingKinds) };
 }
