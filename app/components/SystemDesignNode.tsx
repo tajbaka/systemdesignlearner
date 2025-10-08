@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, memo } from "react";
 import { motion } from "framer-motion";
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { SystemDesignNode as SystemDesignNodeType } from "./types";
@@ -16,7 +16,7 @@ interface SystemDesignNodeProps extends NodeProps<SystemDesignNodeType> {
   onNodeTouchEnd?: () => void;
 }
 
-export default function SystemDesignNode({
+const SystemDesignNodeComponent = ({
   id,
   data,
   selected = false,
@@ -25,7 +25,7 @@ export default function SystemDesignNode({
   isDeleting = false,
   onNodeTouchStart,
   onNodeTouchEnd,
-}: SystemDesignNodeProps) {
+}: SystemDesignNodeProps) => {
   const onDelete = data.onDelete;
   const [isHovered, setIsHovered] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
@@ -197,4 +197,19 @@ export default function SystemDesignNode({
       )}
     </motion.div>
   );
-}
+};
+
+// Memoize to prevent unnecessary re-renders
+export default memo(SystemDesignNodeComponent, (prevProps, nextProps) => {
+  // Only re-render if these specific props change
+  return (
+    prevProps.id === nextProps.id &&
+    prevProps.selected === nextProps.selected &&
+    prevProps.isInPath === nextProps.isInPath &&
+    prevProps.isConnectMode === nextProps.isConnectMode &&
+    prevProps.isDeleting === nextProps.isDeleting &&
+    prevProps.data.onDelete === nextProps.data.onDelete &&
+    prevProps.data.spec.kind === nextProps.data.spec.kind &&
+    prevProps.data.spec.label === nextProps.data.spec.label
+  );
+});

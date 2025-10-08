@@ -1,5 +1,5 @@
 "use client";
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -63,6 +63,13 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
   // Get React Flow instance for viewport controls
   const reactFlowInstance = useReactFlow();
 
+  // Memoize node data to prevent unnecessary re-renders
+  const nodeData = useMemo(() => ({
+    onDelete: onDeleteNode,
+    onNodeTouchStart,
+    onNodeTouchEnd,
+  }), [onDeleteNode, onNodeTouchStart, onNodeTouchEnd]);
+
 
   // Update state when props change (but preserve existing positions)
   React.useEffect(() => {
@@ -73,14 +80,17 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
       const newRfNodes = nodes.map(node => {
         const existingNode = currentNodeMap.get(node.id);
         if (existingNode) {
-          // Preserve existing position and update data
+          // Preserve existing position and update data only if changed
+          if (existingNode.data.onDelete === onDeleteNode &&
+              existingNode.data.onNodeTouchStart === onNodeTouchStart &&
+              existingNode.data.onNodeTouchEnd === onNodeTouchEnd) {
+            return existingNode;
+          }
           return {
             ...existingNode,
             data: {
               ...existingNode.data,
-              onDelete: onDeleteNode,
-              onNodeTouchStart,
-              onNodeTouchEnd,
+              ...nodeData,
             }
           };
         } else {
@@ -90,9 +100,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
             ...rfNode,
             data: {
               ...rfNode.data,
-              onDelete: onDeleteNode,
-              onNodeTouchStart,
-              onNodeTouchEnd,
+              ...nodeData,
             }
           };
         }
@@ -148,7 +156,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
     onRfEdgesChange(changes);
   }, [onRfEdgesChange]);
 
-  // Notify parent when React Flow nodes change
+  // Notify parent when React Flow nodes change (debounced)
   React.useEffect(() => {
     if (onNodesChange) {
       const updatedNodes = rfNodes.map(reactFlowNodeToPlacedNode);
@@ -158,13 +166,14 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
           const lastNode = lastNotifiedNodes.current[index];
           return !lastNode ||
                  lastNode.id !== node.id ||
-                 lastNode.x !== node.x ||
-                 lastNode.y !== node.y;
+                 Math.abs(lastNode.x - node.x) > 1 || // Allow small position differences
+                 Math.abs(lastNode.y - node.y) > 1;
         });
 
       if (hasChanged) {
         lastNotifiedNodes.current = updatedNodes;
-        onNodesChange(updatedNodes);
+        // Use requestAnimationFrame for better performance
+        requestAnimationFrame(() => onNodesChange(updatedNodes));
       }
     }
   }, [rfNodes, onNodesChange]);
@@ -185,7 +194,8 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
 
       if (hasChanged) {
         lastNotifiedEdges.current = updatedEdges;
-        onEdgesChange(updatedEdges);
+        // Use requestAnimationFrame for better performance
+        requestAnimationFrame(() => onEdgesChange(updatedEdges));
       }
     }
   }, [rfEdges, onEdgesChange]);
@@ -246,19 +256,31 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
           type: 'smoothstep',
           style: { strokeWidth: 2, stroke: '#10b981' },
           animated: false,
+          // Optimize smoothstep performance
+          data: { borderRadius: 8 },
         }}
-        // Mobile-specific optimizations
+        // Performance optimizations
         panOnDrag={true}
         selectionOnDrag={false}
         zoomOnPinch={true}
         zoomOnScroll={false}
         preventScrolling={true}
+        // Reduce re-renders
+        onlyRenderVisibleElements={true}
+        elementsSelectable={true}
+        nodesConnectable={true}
+        nodesDraggable={true}
+        // Disable expensive features on mobile
+        elevateEdgesOnSelect={false}
+        elevateNodesOnSelect={false}
+        // Remove React Flow attribution
+        proOptions={{ hideAttribution: true }}
       >
         <Background
           variant={BackgroundVariant.Dots}
-          gap={20}
-          size={1}
-          color="#374151"
+          gap={15}
+          size={1.5}
+          color="#9ca3af"
         />
         <Controls
           style={{

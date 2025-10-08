@@ -61,6 +61,8 @@ export interface SystemDesignNode extends Node {
     spec: ComponentSpec;
     replicas?: number;
     onDelete?: (id: string) => void;
+    onNodeTouchStart?: (nodeId: string) => void;
+    onNodeTouchEnd?: () => void;
   };
 }
 

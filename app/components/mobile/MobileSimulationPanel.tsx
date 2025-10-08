@@ -6,13 +6,15 @@ interface MobileSimulationPanelProps {
   onToggle: () => void;
   children: ReactNode;
   collapsedHeader?: ReactNode;
+  onRunSimulation?: () => void;
 }
 
 export default function MobileSimulationPanel({
   isCollapsed,
   onToggle,
   children,
-  collapsedHeader
+  collapsedHeader,
+  onRunSimulation
 }: MobileSimulationPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragHeight, setDragHeight] = useState<number | null>(null);
@@ -189,11 +191,32 @@ export default function MobileSimulationPanel({
       onTouchEnd={handleTouchEnd}
     >
       {isCollapsed && collapsedHeader && (
-        <div
-          className="w-full px-4 py-4 bg-zinc-800/80 border-b-2 border-white/20 cursor-pointer rounded-t-lg"
-          aria-label="Expand simulation panel"
-        >
-          {collapsedHeader}
+        <div className="w-full px-4 py-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg">
+          <div className="flex items-center justify-between">
+            <div
+              className="flex-1 cursor-pointer"
+              onClick={onToggle}
+              aria-label="Expand simulation panel"
+            >
+              {collapsedHeader}
+            </div>
+            {onRunSimulation && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRunSimulation();
+                  if ('vibrate' in navigator) navigator.vibrate(50);
+                }}
+                className="ml-3 w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center hover:bg-emerald-500/30 transition-colors touch-manipulation"
+                aria-label="Run simulation"
+                title="Run simulation"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+              </button>
+            )}
+          </div>
         </div>
       )}
 

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import { ComponentKind, PlacedNode, Edge } from "./types";
 import { COMPONENT_LIBRARY } from "./data";
 import { uid } from "./utils";
@@ -159,13 +159,19 @@ export default function SystemDesignEditor() {
     setIsSimPanelCollapsed(prev => !prev);
   }, []);
 
-  // Mobile touch handlers for React Flow
+  // Mobile touch handlers for React Flow (throttled for performance)
+  const touchThrottleRef = useRef(false);
   const handleNodeTouchStart = useCallback((nodeId: string) => {
+    if (touchThrottleRef.current) return;
+    touchThrottleRef.current = true;
     setSelectedNode(nodeId);
+    setTimeout(() => {
+      touchThrottleRef.current = false;
+    }, 100); // Throttle touch events to 10 per second
   }, []);
 
   const handleNodeTouchEnd = useCallback(() => {
-    // Handle touch end if needed
+    // Handle touch end if needed - currently no-op for performance
   }, []);
 
   const handleRunSimulation = useCallback(() => {
@@ -247,6 +253,7 @@ export default function SystemDesignEditor() {
     <MobileSimulationPanel
       isCollapsed={isSimPanelCollapsed}
       onToggle={handleSimPanelToggle}
+      onRunSimulation={handleRunSimulation}
       collapsedHeader={
         simulationResult ? (
           <div className="flex items-center gap-3 text-sm">
