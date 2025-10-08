@@ -116,6 +116,12 @@ export default function SystemDesignEditor() {
     setEdges(updatedEdges);
   }, []);
 
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    setNodes(prev => prev.filter(node => node.id !== nodeId));
+    // Also remove any edges connected to this node
+    setEdges(prev => prev.filter(edge => edge.from !== nodeId && edge.to !== nodeId));
+  }, []);
+
   const handleRunSimulation = useCallback(() => {
     try {
       const path = findScenarioPath(selectedScenario, nodes, edges);
@@ -170,6 +176,7 @@ export default function SystemDesignEditor() {
       onDrop={handleDrop}
       onNodesChange={handleNodesChange}
       onEdgesChange={handleEdgesChange}
+      onDeleteNode={handleDeleteNode}
     />
   );
 

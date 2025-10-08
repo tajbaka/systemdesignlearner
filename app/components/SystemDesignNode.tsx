@@ -21,8 +21,8 @@ export default function SystemDesignNode({
   isInPath = false,
   isConnectMode = false,
   isDeleting = false,
-  onDelete,
 }: SystemDesignNodeProps) {
+  const onDelete = data.onDelete;
   const [isHovered, setIsHovered] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const hasMoved = useRef(false);
@@ -172,19 +172,19 @@ export default function SystemDesignNode({
         <div className="absolute inset-0 rounded-2xl ring-2 ring-emerald-400/40 pointer-events-none" />
       )}
 
-      {/* Delete button overlay (mobile) */}
-      {isDeleting && (
+      {/* Delete button overlay */}
+      {(selected || isHovered) && onDelete && (
         <button
           className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-red-500 border-2 border-red-400 text-white flex items-center justify-center shadow-lg hover:bg-red-600 transition-colors z-10"
           onClick={(e) => {
             e.stopPropagation();
-            onDelete?.(id);
+            onDelete(id);
           }}
           onTouchEnd={(e) => {
             e.stopPropagation();
-            onDelete?.(id);
+            onDelete(id);
           }}
-          title="Delete component"
+          title="Delete component (or press Delete key)"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

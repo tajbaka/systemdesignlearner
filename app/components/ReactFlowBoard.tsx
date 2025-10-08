@@ -29,10 +29,11 @@ interface ReactFlowBoardProps {
   onDrop?: (kind: string, position: { x: number; y: number }) => void;
   onNodesChange?: (nodes: PlacedNode[]) => void;
   onEdgesChange?: (edges: Edge[]) => void;
+  onDeleteNode?: (nodeId: string) => void;
 }
 
 // Inner component that uses React Flow hooks
-function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange }: ReactFlowBoardProps) {
+function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode }: ReactFlowBoardProps) {
   // Initialize React Flow state from props
   const [rfNodes, setRfNodes, onRfNodesChange] = useNodesState<SystemDesignNode>([]);
   const [rfEdges, setRfEdges, onRfEdgesChange] = useEdgesState<SystemDesignEdge>([]);
@@ -67,11 +68,24 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
       const newRfNodes = nodes.map(node => {
         const existingNode = currentNodeMap.get(node.id);
         if (existingNode) {
-          // Preserve existing position
-          return existingNode;
+          // Preserve existing position and update data
+          return {
+            ...existingNode,
+            data: {
+              ...existingNode.data,
+              onDelete: onDeleteNode,
+            }
+          };
         } else {
           // New node, calculate position
-          return placedNodeToReactFlowNode(node);
+          const rfNode = placedNodeToReactFlowNode(node);
+          return {
+            ...rfNode,
+            data: {
+              ...rfNode.data,
+              onDelete: onDeleteNode,
+            }
+          };
         }
       });
 
@@ -80,7 +94,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
 
     setRfEdges(edges.map(edgeToReactFlowEdge));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, edges]); // Update when props change
+  }, [nodes, edges, onDeleteNode]); // Update when props change
 
   // Handle connections
   const handleConnect = React.useCallback((connection: Connection) => {
@@ -217,6 +231,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
         onDragOver={handleDragOver}
         fitView
         deleteKeyCode="Delete"
+        multiSelectionKeyCode="Meta"
         connectionLineStyle={{ strokeWidth: 2, stroke: '#10b981' }}
         defaultEdgeOptions={{
           type: 'bezier',

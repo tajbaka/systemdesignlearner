@@ -60,6 +60,7 @@ export interface SystemDesignNode extends Node {
   data: {
     spec: ComponentSpec;
     replicas?: number;
+    onDelete?: (id: string) => void;
   };
 }
 
