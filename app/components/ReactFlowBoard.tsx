@@ -284,7 +284,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
           variant={BackgroundVariant.Dots}
           gap={15}
           size={1.5}
-          color="#9ca3af"
+          color="#ffffff"
         />
         <Controls
           style={{
