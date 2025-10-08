@@ -86,9 +86,34 @@ textarea {
   padding-top: env(safe-area-inset-top);
 }
 
-/* Prevent pull-to-refresh on touch devices */
-body {
-  overscroll-behavior-y: contain;
+/* Prevent pull-to-refresh and page scroll on touch devices */
+html, body {
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+}
+
+/* Additional mobile scroll prevention */
+@media screen and (max-width: 1024px) {
+  html, body {
+    /* Completely prevent any scroll behavior on mobile */
+    overscroll-behavior: none !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Lock body position when interacting with mobile panel */
+  body.mobile-panel-interacting,
+  body.bottom-sheet-open {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    overflow: hidden !important;
+    /* Prevent any elastic scrolling */
+    overscroll-behavior: none !important;
+    -webkit-overflow-scrolling: auto !important;
+  }
 }
 
 /* Reduce motion for users who prefer it */

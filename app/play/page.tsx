@@ -21,8 +21,34 @@ export default function PlayPage() {
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
+    // Additional mobile scroll prevention for the sandbox page
+    const handleTouchStart = (e: TouchEvent) => {
+      // Only prevent if we're not in a mobile panel interaction
+      if (!document.body.classList.contains('mobile-panel-interacting') &&
+          !document.body.classList.contains('bottom-sheet-open')) {
+        // Allow normal touch behavior for React Flow interactions
+        return;
+      }
+      // Prevent page scroll during panel interactions
+      e.preventDefault();
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      // Only prevent if we're in a mobile panel interaction
+      if (document.body.classList.contains('mobile-panel-interacting') ||
+          document.body.classList.contains('bottom-sheet-open')) {
+        e.preventDefault();
+      }
+    };
+
+    // Add passive: false to ensure preventDefault works
+    document.addEventListener('touchstart', handleTouchStart, { passive: false });
+    document.addEventListener('touchmove', handleTouchMove, { passive: false });
+
     return () => {
       document.body.style.overflow = previousOverflow;
+      document.removeEventListener('touchstart', handleTouchStart);
+      document.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 

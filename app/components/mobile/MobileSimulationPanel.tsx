@@ -118,11 +118,16 @@ export default function MobileSimulationPanel({
     // Prevent page scroll when dragging panel
     if (typeof document !== "undefined") {
       document.body.classList.add("mobile-panel-interacting");
+      // Prevent default touch behavior to stop page scrolling
+      e.preventDefault();
     }
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isDragging || e.touches.length > 1) return;
+
+    // Prevent default to stop page scrolling
+    e.preventDefault();
 
     const touch = e.touches[0];
     const deltaY = startY - touch.clientY;
@@ -277,13 +282,22 @@ export default function MobileSimulationPanel({
         <div
           className="flex-1 overflow-y-auto px-3 pb-3 sm:px-4 sm:pb-4 max-w-4xl mx-auto w-full"
           onTouchStart={(e) => {
-            if (e.touches.length === 1) e.stopPropagation();
+            if (e.touches.length === 1) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
           }}
           onTouchMove={(e) => {
-            if (e.touches.length === 1) e.stopPropagation();
+            if (e.touches.length === 1) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
           }}
           onTouchEnd={(e) => {
-            if (e.changedTouches.length === 1) e.stopPropagation();
+            if (e.changedTouches.length === 1) {
+              e.stopPropagation();
+              e.preventDefault();
+            }
           }}
         >
           {children}
