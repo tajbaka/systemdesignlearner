@@ -122,7 +122,7 @@ const SystemDesignNodeComponent = ({
         type="source"
         position={Position.Top}
         id="top"
-        className={`w-6 h-6 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+        className={`w-8 h-8 lg:w-2.5 lg:h-2.5 p-2 lg:p-0 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
           isHovered || selected || isConnectMode ? "opacity-100 scale-150" : "opacity-0"
         }`}
         title="Drag to connect (N)"
@@ -131,7 +131,7 @@ const SystemDesignNodeComponent = ({
         type="source"
         position={Position.Right}
         id="right"
-        className={`w-6 h-6 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+        className={`w-8 h-8 lg:w-2.5 lg:h-2.5 p-2 lg:p-0 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
           isHovered || selected || isConnectMode ? "opacity-100 scale-150" : "opacity-0"
         }`}
         title="Drag to connect (E)"
@@ -140,7 +140,7 @@ const SystemDesignNodeComponent = ({
         type="source"
         position={Position.Bottom}
         id="bottom"
-        className={`w-6 h-6 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+        className={`w-8 h-8 lg:w-2.5 lg:h-2.5 p-2 lg:p-0 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
           isHovered || selected || isConnectMode ? "opacity-100 scale-150" : "opacity-0"
         }`}
         title="Drag to connect (S)"
@@ -149,7 +149,7 @@ const SystemDesignNodeComponent = ({
         type="source"
         position={Position.Left}
         id="left"
-        className={`w-6 h-6 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+        className={`w-8 h-8 lg:w-2.5 lg:h-2.5 p-2 lg:p-0 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
           isHovered || selected || isConnectMode ? "opacity-100 scale-150" : "opacity-0"
         }`}
         title="Drag to connect (W)"
@@ -160,7 +160,7 @@ const SystemDesignNodeComponent = ({
         type="target"
         position={Position.Top}
         id="top"
-        className={`w-6 h-6 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+        className={`w-8 h-8 lg:w-2.5 lg:h-2.5 p-2 lg:p-0 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
           isHovered || selected || isConnectMode ? "opacity-100 scale-150" : "opacity-0"
         }`}
       />
@@ -168,7 +168,7 @@ const SystemDesignNodeComponent = ({
         type="target"
         position={Position.Right}
         id="right"
-        className={`w-6 h-6 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+        className={`w-8 h-8 lg:w-2.5 lg:h-2.5 p-2 lg:p-0 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
           isHovered || selected || isConnectMode ? "opacity-100 scale-150" : "opacity-0"
         }`}
       />
@@ -176,7 +176,7 @@ const SystemDesignNodeComponent = ({
         type="target"
         position={Position.Bottom}
         id="bottom"
-        className={`w-6 h-6 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+        className={`w-8 h-8 lg:w-2.5 lg:h-2.5 p-2 lg:p-0 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
           isHovered || selected || isConnectMode ? "opacity-100 scale-150" : "opacity-0"
         }`}
       />
@@ -184,7 +184,7 @@ const SystemDesignNodeComponent = ({
         type="target"
         position={Position.Left}
         id="left"
-        className={`w-6 h-6 lg:w-2.5 lg:h-2.5 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
+        className={`w-8 h-8 lg:w-2.5 lg:h-2.5 p-2 lg:p-0 rounded-full bg-emerald-400/80 ring-1 lg:ring-1 ring-emerald-300/40 shadow cursor-crosshair transition-all ${
           isHovered || selected || isConnectMode ? "opacity-100 scale-150" : "opacity-0"
         }`}
       />
