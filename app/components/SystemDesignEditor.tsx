@@ -129,6 +129,14 @@ export default function SystemDesignEditor() {
     setEdges(prev => prev.filter(edge => edge.from !== nodeId && edge.to !== nodeId));
   }, []);
 
+  const handleRenameNode = useCallback((nodeId: string, newLabel: string) => {
+    setNodes(prev => prev.map(node =>
+      node.id === nodeId
+        ? { ...node, customLabel: newLabel }
+        : node
+    ));
+  }, []);
+
   // Mobile-specific handlers
   const handleAddComponent = useCallback(() => {
     setIsAddSheetOpen(true);
@@ -229,6 +237,7 @@ export default function SystemDesignEditor() {
       onNodesChange={handleNodesChange}
       onEdgesChange={handleEdgesChange}
       onDeleteNode={handleDeleteNode}
+      onRenameNode={handleRenameNode}
       onNodeTouchStart={handleNodeTouchStart}
       onNodeTouchEnd={handleNodeTouchEnd}
       className="w-full h-full"

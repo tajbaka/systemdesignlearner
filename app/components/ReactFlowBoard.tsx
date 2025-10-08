@@ -33,12 +33,13 @@ interface ReactFlowBoardProps {
   onDeleteNode?: (nodeId: string) => void;
   onNodeTouchStart?: (nodeId: string) => void;
   onNodeTouchEnd?: () => void;
+  onRenameNode?: (nodeId: string, newLabel: string) => void;
   className?: string;
   style?: React.CSSProperties;
 }
 
 // Inner component that uses React Flow hooks
-function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode, onNodeTouchStart, onNodeTouchEnd, className, style }: ReactFlowBoardProps) {
+function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, className, style }: ReactFlowBoardProps) {
   // Initialize React Flow state from props
   const [rfNodes, setRfNodes, onRfNodesChange] = useNodesState<SystemDesignNode>([]);
   const [rfEdges, setRfEdges, onRfEdgesChange] = useEdgesState<SystemDesignEdge>([]);
@@ -68,7 +69,8 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
     onDelete: onDeleteNode,
     onNodeTouchStart,
     onNodeTouchEnd,
-  }), [onDeleteNode, onNodeTouchStart, onNodeTouchEnd]);
+    onRename: onRenameNode,
+  }), [onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode]);
 
 
   // Update state when props change (but preserve existing positions)
@@ -80,17 +82,14 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
       const newRfNodes = nodes.map(node => {
         const existingNode = currentNodeMap.get(node.id);
         if (existingNode) {
-          // Preserve existing position and update data only if changed
-          if (existingNode.data.onDelete === onDeleteNode &&
-              existingNode.data.onNodeTouchStart === onNodeTouchStart &&
-              existingNode.data.onNodeTouchEnd === onNodeTouchEnd) {
-            return existingNode;
-          }
           return {
             ...existingNode,
             data: {
               ...existingNode.data,
               ...nodeData,
+              customLabel: node.customLabel,
+              spec: node.spec,
+              replicas: node.replicas || 1,
             }
           };
         } else {
@@ -111,7 +110,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
 
     setRfEdges(edges.map(edgeToReactFlowEdge));
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodes, edges, onDeleteNode]); // Update when props change
+  }, [nodes, edges, onDeleteNode, onRenameNode, nodeData]); // Update when props change
 
   // Handle connections
   const handleConnect = React.useCallback((connection: Connection) => {
@@ -307,7 +306,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
 }
 
 // Main component wrapped with ReactFlowProvider
-function ReactFlowBoard({ className, style, onNodeTouchStart, onNodeTouchEnd, ...props }: ReactFlowBoardProps) {
+function ReactFlowBoard({ className, style, onNodeTouchStart, onNodeTouchEnd, onRenameNode, ...props }: ReactFlowBoardProps) {
   return (
     <ReactFlowProvider>
       <ReactFlowBoardInner
@@ -315,6 +314,7 @@ function ReactFlowBoard({ className, style, onNodeTouchStart, onNodeTouchEnd, ..
         style={style}
         onNodeTouchStart={onNodeTouchStart}
         onNodeTouchEnd={onNodeTouchEnd}
+        onRenameNode={onRenameNode}
         {...props}
       />
     </ReactFlowProvider>

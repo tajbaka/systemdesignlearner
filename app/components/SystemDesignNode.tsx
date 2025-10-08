@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useEffect, useState, memo } from "react";
+import React, { useRef, useEffect, useState, memo, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Handle, Position, NodeProps } from '@xyflow/react';
 import { SystemDesignNode as SystemDesignNodeType } from "./types";
@@ -27,9 +27,43 @@ const SystemDesignNodeComponent = ({
   onNodeTouchEnd,
 }: SystemDesignNodeProps) => {
   const onDelete = data.onDelete;
+  const onRename = data.onRename;
   const [isHovered, setIsHovered] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState('');
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const hasMoved = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const currentLabel = data.customLabel || data.spec.label;
+
+  const startEditing = useCallback(() => {
+    setIsEditing(true);
+    setEditValue(data.customLabel || data.spec.label);
+    setTimeout(() => {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }, 0);
+  }, [data.customLabel, data.spec.label]);
+
+  const handleRename = useCallback((newLabel: string) => {
+    const trimmedLabel = newLabel.trim();
+    const currentDisplayLabel = data.customLabel || data.spec.label;
+    if (trimmedLabel && trimmedLabel !== currentDisplayLabel) {
+      onRename?.(id, trimmedLabel);
+    }
+    setIsEditing(false);
+  }, [data.customLabel, data.spec.label, onRename, id]);
+
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleRename(editValue);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setIsEditing(false);
+    }
+  }, [editValue, handleRename]);
 
   const handleTouchStart = () => {
     hasMoved.current = false;
@@ -164,7 +198,29 @@ const SystemDesignNodeComponent = ({
             const Icon = iconFor(data.spec.kind);
             return <Icon className="text-zinc-200" size={18} />;
           })()}
-          <div className="text-sm font-semibold tracking-wide text-zinc-100">{data.spec.label}</div>
+          {isEditing ? (
+            <input
+              ref={inputRef}
+              type="text"
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onBlur={(e) => {
+                e.preventDefault();
+                handleRename(editValue);
+              }}
+              className="bg-zinc-700 border border-zinc-500 rounded px-1 py-0 text-sm font-semibold tracking-wide text-zinc-100 focus:outline-none focus:border-blue-400 min-w-0 flex-1"
+              style={{ maxWidth: '120px' }}
+            />
+          ) : (
+            <div
+              className="text-sm font-semibold tracking-wide text-zinc-100 cursor-text hover:text-zinc-200 select-none"
+              onDoubleClick={startEditing}
+              title="Double-click to rename"
+            >
+              {data.customLabel || data.spec.label}
+            </div>
+          )}
         </div>
         <div className="text-[11px] text-zinc-300 mt-1">
           {data.spec.baseLatencyMs}ms · {data.spec.capacityRps} rps
@@ -209,7 +265,9 @@ export default memo(SystemDesignNodeComponent, (prevProps, nextProps) => {
     prevProps.isConnectMode === nextProps.isConnectMode &&
     prevProps.isDeleting === nextProps.isDeleting &&
     prevProps.data.onDelete === nextProps.data.onDelete &&
+    prevProps.data.onRename === nextProps.data.onRename &&
     prevProps.data.spec.kind === nextProps.data.spec.kind &&
-    prevProps.data.spec.label === nextProps.data.spec.label
+    prevProps.data.spec.label === nextProps.data.spec.label &&
+    prevProps.data.customLabel === nextProps.data.customLabel
   );
 });

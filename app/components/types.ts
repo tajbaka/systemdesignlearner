@@ -43,6 +43,7 @@ export interface PlacedNode {
   x: number; // board coords
   y: number; // board coords
   replicas?: number; // number of replicas (default 1)
+  customLabel?: string; // custom display name, overrides spec.label if provided
 }
 
 export interface Edge {
@@ -60,9 +61,11 @@ export interface SystemDesignNode extends Node {
   data: {
     spec: ComponentSpec;
     replicas?: number;
+    customLabel?: string;
     onDelete?: (id: string) => void;
     onNodeTouchStart?: (nodeId: string) => void;
     onNodeTouchEnd?: () => void;
+    onRename?: (id: string, newLabel: string) => void;
   };
 }
 
@@ -83,6 +86,7 @@ export function placedNodeToReactFlowNode(node: PlacedNode): SystemDesignNode {
     data: {
       spec: node.spec,
       replicas: node.replicas || 1,
+      customLabel: node.customLabel,
     },
   };
 }
@@ -94,6 +98,7 @@ export function reactFlowNodeToPlacedNode(node: SystemDesignNode): PlacedNode {
     x: node.position.x + 95, // Convert top-left to center position
     y: node.position.y + 45,
     replicas: node.data.replicas || 1,
+    customLabel: node.data.customLabel,
   };
 }
 
