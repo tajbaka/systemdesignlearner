@@ -149,6 +149,25 @@ html, body {
   animation: shake 0.5s ease-in-out infinite;
 }
 
+/* Bidirectional data flow animation for edges */
+@keyframes bidirectional-flow-forward {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -32px;
+  }
+}
+
+@keyframes bidirectional-flow-backward {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 32px;
+  }
+}
+
 /* React Flow Controls Styling */
 .react-flow__controls {
   background: rgba(0, 0, 0, 0.8) !important;

@@ -18,9 +18,14 @@ import '@xyflow/react/dist/style.css';
 import { PlacedNode, Edge, SystemDesignNode, SystemDesignEdge } from "./types";
 import { placedNodeToReactFlowNode, edgeToReactFlowEdge, reactFlowEdgeToEdge, reactFlowNodeToPlacedNode } from "./types";
 import SystemDesignNodeComponent from "./SystemDesignNode";
+import BidirectionalEdge from "./BidirectionalEdge";
 
 const nodeTypes = {
   systemDesignNode: SystemDesignNodeComponent,
+};
+
+const edgeTypes = {
+  bidirectional: BidirectionalEdge,
 };
 
 interface ReactFlowBoardProps {
@@ -242,6 +247,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
         nodes={rfNodes}
         edges={rfEdges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={handleNodesChange}
         onEdgesChange={handleEdgesChange}
         onConnect={handleConnect}
@@ -250,10 +256,9 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
         fitView
         deleteKeyCode="Delete"
         multiSelectionKeyCode="Meta"
-        connectionLineStyle={{ strokeWidth: 2, stroke: '#10b981' }}
+        connectionLineStyle={{ strokeWidth: 2, stroke: '#10b981', strokeDasharray: '5,5' }}
         defaultEdgeOptions={{
-          type: 'smoothstep',
-          style: { strokeWidth: 2, stroke: '#10b981' },
+          type: 'bidirectional',
           animated: false,
           // Optimize smoothstep performance
           data: { borderRadius: 8 },
