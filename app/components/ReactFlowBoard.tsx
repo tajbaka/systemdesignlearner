@@ -41,10 +41,11 @@ interface ReactFlowBoardProps {
   onRenameNode?: (nodeId: string, newLabel: string) => void;
   className?: string;
   style?: React.CSSProperties;
+  showMiniMap?: boolean;
 }
 
 // Inner component that uses React Flow hooks
-function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, className, style }: ReactFlowBoardProps) {
+function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, className, style, showMiniMap = true }: ReactFlowBoardProps) {
   // Initialize React Flow state from props
   const [rfNodes, setRfNodes, onRfNodesChange] = useNodesState<SystemDesignNode>([]);
   const [rfEdges, setRfEdges, onRfEdgesChange] = useEdgesState<SystemDesignEdge>([]);
@@ -296,15 +297,17 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
           position="bottom-center"
           className="lg:flex lg:relative" // Show on desktop with proper positioning
         />
-        <MiniMap
-          nodeColor="#10b981"
-          maskColor="rgba(0, 0, 0, 0.2)"
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-          }}
-          className="hidden lg:block" // Hide on mobile, show on desktop
-        />
+        {showMiniMap && (
+          <MiniMap
+            nodeColor="#10b981"
+            maskColor="rgba(0, 0, 0, 0.2)"
+            style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+            }}
+            className="hidden lg:block" // Hide on mobile, show on desktop
+          />
+        )}
       </ReactFlow>
     </div>
   );

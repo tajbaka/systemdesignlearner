@@ -1,159 +1,334 @@
-# React Flow Migration Plan
+# System Design Sandbox — Product & Implementation Plan (v2)
 
-## Overview
-This document outlines the migration from the current custom canvas/SVG-based graphing system to React Flow (@xyflow/react). The current implementation uses `react-zoom-pan-pinch` for pan/zoom, custom SVG rendering for edges, and manual node/handle management.
+> A complete roadmap to evolve the sandbox into a lovable, NeetCode-style platform with guided practice tracks, gamified feedback, shareability, analytics, and lightweight monetization — all bootstrapped without a backend first.
 
-## Current Architecture
-- **Board.tsx**: Custom pan/zoom wrapper using `react-zoom-pan-pinch`
-- **NodeCard.tsx**: Manual node rendering with custom handles (N/E/S/W ports)
-- **SVG Edges**: Custom edge rendering in Board.tsx with manual path calculation
-- **State Management**: Custom nodes/edges arrays with manual state updates
-- **Interaction**: Custom mouse/touch handlers for selection, dragging, connecting
+---
 
-## Target Architecture
-- **ReactFlow**: Built-in pan/zoom, node management, edge rendering
-- **Custom Node Types**: Convert NodeCard to React Flow custom node component
-- **Built-in Handles**: Use React Flow's Handle components instead of custom ports
-- **React Flow Hooks**: Use `useNodesState`, `useEdgesState`, `useReactFlow` for state management
-- **Built-in Interactions**: Leverage React Flow's selection, dragging, and connection logic
+## 0) Guiding principles
 
-## Migration Steps
+- **Speed to aha**: first win in <5 minutes.
+- **Visible progress**: always show what’s next.
+- **Tight feedback**: pass/fail + why + what to try.
+- **Shareability**: every pass produces a brag-worthy card/link.
+- **Gradual backend**: start stateless, add Supabase Auth later.
 
-### ✅ Phase 1: Setup and Dependencies - COMPLETED
-1. **Install React Flow** ✅
-   ```bash
-   npm install @xyflow/react
-   ```
-   - Added to package.json dependencies
-   - Imported React Flow CSS in globals.css
+---
 
-2. **Update Type Definitions** ✅
-   - Created `SystemDesignNode` and `SystemDesignEdge` types
-   - Added conversion utilities between legacy and React Flow formats
-   - Updated type imports throughout codebase
+## 1) Landing & SEO
 
-### ✅ Phase 2: Core Component Migration - COMPLETED
+**Goal:** Clear promise + social proof.
 
-3. **Replace Board Component** ✅
-   - Removed `react-zoom-pan-pinch` dependency
-   - Created `ReactFlowBoard` component using `<ReactFlow>`
-   - Migrated pan/zoom to React Flow's built-in functionality
-   - Updated coordinate system conversions (center ↔ top-left)
+### Deliverables
 
-4. **Create Custom Node Component** ✅
-   - Converted `NodeCard` to `SystemDesignNode` with React Flow `<Handle>` components
-   - Maintained visual styling, animations, and interactions
-   - Updated positioning calculations for React Flow
+Hero: "Practice System Design. Visually. Fast feedback."
+CTA: Try URL Shortener
 
-5. **Update Edge Management** ✅
-   - Removed custom SVG edge rendering
-   - Using React Flow's built-in edge types and rendering
-   - Updated edge creation/deletion through React Flow hooks
-   - Migrated edge styling and selection to React Flow
+FAQ + Pricing section + OG tags.
 
-### ✅ Phase 3: State Management Migration - COMPLETED
+## 2) Practice: URL Shortener (MVP) — *Highest priority*
 
-6. **Update State Management** ✅
-   - Replaced manual `nodes`/`edges` arrays with `useNodesState`/`useEdgesState`
-   - Updated all CRUD operations to use React Flow hooks
-   - Migrated selection state management
-   - Updated connection logic to use React Flow's `onConnect`
+**Goal:** A 10–15 min guided session (Brief → Design → Run → Review) with rubric checks and shareable result.
 
-7. **Update Interaction Handlers** ✅
-   - Replaced custom mouse/touch handlers with React Flow callbacks
-   - Updated `onConnect`, `onNodesChange`, `onEdgesChange` handlers
-   - Migrated selection and dragging to React Flow's built-in behavior
-   - Updated keyboard shortcuts
+### Deliverables
 
-8. **Update Undo/Redo System** ✅
-   - Modified undo stack to convert between React Flow and legacy formats
-   - Updated snapshot logic to work with React Flow data structures
-   - Maintained compatibility with existing UndoStack interface
+- `PracticeFlow`: 4 steps — **Brief**, **Design**, **Run**, **Review**.
+- **Seed board**: pre-place Web → API GW → Service → DB; learner adds Cache (+ optional CDN).
+- **Rubric** checks:
+  - Cache on GET path
+  - Service behind LB/GW
+  - Meets 100 ms P95 and 5 k RPS
+- **Result panel**: PASS/FAIL badge, P95, capacity, and bottleneck with one-line hint.
+- **Share link**: `Copy Run` button encodes board + scenario + pass/fail.
+- **301/302 toggle** in side panel.
 
-### 🔄 Phase 4: Feature Migration - MOSTLY HANDLED BY REACT FLOW
+### Acceptance
 
-9. **Update Path Highlighting** 🔄
-   - Simulation path visualization now handled through React Flow node/edge data
-   - Edge styling for path highlighting needs verification
-   - Visual feedback for simulation results maintained
+- Learner can pass within 15 min with zero docs.
+- Failing shows one actionable hint.
+- Share link restores exact state.
 
-10. **Update Share/Fork Functionality** ✅
-    - Data serialization works with conversion utilities
-    - URL sharing preserves functionality
-    - Read-only mode handling maintained
+---
 
-11. **Update Mobile Interactions** 🔄
-    - Touch interactions now handled by React Flow
-    - Mobile-specific UI components need testing
-    - Responsive behavior should be maintained
+## 3) No-Auth Analytics & Metrics
 
-12. **Update Styling and Theming** ✅
-    - CSS compatible with React Flow
-    - Custom styles maintained for nodes/edges
-    - Dark theme preserved
+**Goal:** Track usage without accounts or DB.
 
-### 🧪 Phase 5: Testing and Polish - IN PROGRESS
+### Tracking approach
 
-13. **Comprehensive Testing** 🧪
-    - Test all CRUD operations (create, update, delete nodes/edges)
-    - Verify pan/zoom functionality
-    - Test connection logic and validation
-    - Ensure simulation still works correctly
-    - Test share/fork functionality
-    - Verify mobile responsiveness
-    - Check undo/redo functionality
+Use `localStorage` + `track(event, data)` util (PostHog / Umami).
 
-## Key Technical Considerations
+#### Activation
 
-### Coordinate System Changes
-- **Current**: Node position is center point (x, y)
-- **React Flow**: Node position is top-left corner
-- **Migration**: Adjust positioning calculations by half node dimensions
+```js
+track('practice_pass_first', { scenario });
+Compute % of users who pass within first session.
 
-### Handle Management
-- **Current**: Custom N/E/S/W ports with manual positioning
-- **React Flow**: `<Handle>` components with relative positioning
-- **Migration**: Convert to Handle components with proper positioning
+Retention
+Store timestamps per scenario; if another opened < 48 h later → track('return_within_48h').
 
-### State Synchronization
-- **Current**: Manual state updates with direct array manipulation
-- **React Flow**: State managed through hooks with change callbacks
-- **Migration**: Update all state mutations to use React Flow patterns
+Virality
+Fire share_click and og_impression → compute CTR.
 
-### Event Handling
-- **Current**: Custom event handlers for all interactions
-- **React Flow**: Built-in event system with callbacks
-- **Migration**: Replace custom handlers with React Flow equivalents
+Conversion
+Track upgrade_modal_view, checkout_click, checkout_success.
 
-## Benefits of Migration
+#### Implementation
+```js
+if (!localStorage.getItem('anonId'))
+  localStorage.setItem('anonId', crypto.randomUUID());
+```
 
-1. **Reduced Complexity**: Eliminate ~600 lines of custom board/interaction code
-2. **Better Performance**: React Flow optimizations for large graphs
-3. **Enhanced Features**: Built-in features like multi-selection, copy/paste, etc.
-4. **Active Maintenance**: Regular updates and community support
-5. **Accessibility**: Built-in keyboard navigation and screen reader support
-6. **Extensibility**: Rich ecosystem of plugins and extensions
+Attach anonId to every event; send to PostHog Cloud Free or Umami endpoint.
 
-## Potential Challenges
+## 4) Email Capture
 
-1. **Custom Interactions**: Some advanced mobile interactions may need custom implementation
-2. **Visual Consistency**: Ensuring exact visual match with current design
-3. **Performance**: Large graphs may need optimization (though React Flow handles this well)
-4. **Breaking Changes**: React Flow updates may introduce breaking changes
+**Goal:** Grow waitlist.
 
-## Success Criteria
+### Deliverables
 
-- All existing functionality works identically
-- Visual appearance matches current design
-- Performance is maintained or improved
-- Mobile experience remains smooth
-- Share/fork functionality preserved
-- All tests pass
+Input on result screen:
+"Get new scenarios & dailies."
 
-## Rollback Plan
+MVP: webhook or mailto fallback.
 
-If migration encounters blocking issues:
-1. Keep current implementation as backup
-2. Gradually migrate components rather than big-bang approach
-3. Use feature flags to switch between implementations
-4. Ensure comprehensive test coverage before migration
+## 5) Learning Path Ladder (Progress bar)
+
+**Goal:** Make progress “finishable.”
+
+### Deliverables
+
+- `/practice` shows ladder:  
+  `URL Shortener → Rate Limiter → CDN → News Feed → Messenger`.
+- Progress pill (“1/5 completed”) + ✅ per scenario.
+- Stored in `localStorage` (Supabase sync later).
+
+---
+
+## 3) Skill Metrics (granular feedback)
+
+**Goal:** After each run, display **Scalability / Fault tolerance / Latency** bars.
+
+### Deliverables
+
+- Compute scores from rubric & simulation (0–100 scale).
+- Render 3 bars with explanations like  
+  *“Cache hit ratio is low → add Redis on GET path.”*
+
+---
+
+## 4) Social Share + Profile Stub
+
+**Goal:** Let users brag and compare.
+
+### Deliverables
+
+- Dynamic **OG image card** per run (scenario, result, time-to-pass).
+- `/u/local` profile stub (shows passed scenarios, best times).
+- “Top 5 shared today” client-side widget.
+
+---
+
+## 6) Daily Challenge (habit loop)
+
+**Goal:** One rotating scenario per day.
+
+### Deliverables
+
+- `/daily` page rotates beginner scenarios every 24 h.
+- Timer (“⏱ 12h left”) and local pass record.
+- Next-day auto-reset.
+
+---
+
+## 7) Skill Metrics (granular feedback)
+
+**Goal:** After each run, display **Scalability / Fault tolerance / Latency** bars.
+
+### Deliverables
+
+- Compute scores from rubric & simulation (0–100 scale).
+- Render 3 bars with explanations like
+  *"Cache hit ratio is low → add Redis on GET path."*
+
+## 8) Coach Hints (guided help)
+
+**Goal:** Optional progressive hints.
+
+### Deliverables
+
+- 3 hint levels per scenario (concept → placement → trade-off).
+- "Show Coach Hints" toggle.
+- Track `hint_open` events for analytics.
+
+---
+
+## 9) Monetization (Stripe)
+
+**Goal:** Free habit loop + low-friction upgrade.
+
+### Tiers
+
+| Tier | Price | Features |
+|------|--------|-----------|
+| **Free** | $0 | 3 scenarios, progress tracking, daily challenge |
+| **Pro (Lifetime)** | $29 | All scenarios, Coach Hints, Profile, Share images, Skill metrics |
+| **Plus** | $9 / mo | Interview vault PDFs, AI grader (phase 2) |
+
+### Deliverables
+
+- Stripe Checkout (one-time + monthly).
+- Client-side gate via `user.plan` in `localStorage` (mock now).
+- Upgrade modal on pass/fail with ROI bullets.
+
+---
+
+## 10) Social Share + Profile Stub
+
+**Goal:** Let users brag and compare.
+
+### Deliverables
+
+- Dynamic **OG image card** per run (scenario, result, time-to-pass).
+- `/u/local` profile stub (shows passed scenarios, best times).
+- "Top 5 shared today" client-side widget.
+
+## 11) Authentication & User State
+
+**Goal:** Persist progress, purchases, and metrics across devices.
+
+### Deliverables
+
+- Email OTP login/signup via **Supabase Auth**.
+- `AuthContext` provider.
+- Merge local progress → user row on login.
+- Attach `stripe_customer_id` to `auth.user.id`.
+- Anonymous fallback keeps free flow alive.
+
+### Acceptance
+
+- Login/logout without reload.
+- Returning user sees identical progress + Pro status.
+- Stripe checkout instantly unlocks Pro features.
+
+### Later expansion
+
+- OAuth (GitHub/Google).
+- Public profile toggle for leaderboard.
+
+---
+
+## 12) Leaderboard (lightweight)
+
+**Goal:** Friendly competition.
+
+### Deliverables
+
+- Local PB leaderboard first.
+- Optional global top 10 once backend stable.
+
+---
+
+## 13) Docs Primer (5 micro-pages)
+
+**Goal:** Give quick theory anchors.
+
+### Pages
+
+- Caching basics
+- 301 vs 302
+- Rate limiting
+- Load balancing
+- DB replicas
+
+Each ≈ 250 words + diagram, linked from hints.
+
+---
+
+## 14) Sandbox UX Polish
+
+**Goal:** Lower cognitive load.
+
+### Deliverables
+
+Highlight hot path after run.
+
+Label bottleneck node ("capacity 3.2k < 5k").
+
+Add "Reset Board" + "Try Alternative Design."
+
+Ensure mobile auto-center on spawn.
+
+---
+
+## 15) PWA & Offline (Optional)
+
+**Goal:** Cache docs & scenarios for fast relaunch.
+
+### Deliverables
+
+Manifest + Service Worker for offline mode.
+
+---
+
+## 16) Teams / Enterprise (Optional)
+
+**Goal:** Mentor + Bootcamp collaboration.
+
+### Deliverables
+
+"Share for Review" link with comment pins.
+
+Team leaderboard (later via Supabase).
+
+🧱 Engineering Plan — Files & Estimates
+(Maker-days; parallelize UI / Platform work)
+
+| Stage | Feature | Days | Key Files |
+|-------|---------|------|-----------|
+| A | Landing & SEO | 1 | /page.tsx, seo.config.ts |
+| B | Practice: URL Shortener | 3-4 | PracticeFlow, lib/practice/scoring.ts |
+| C | No-Auth Analytics | 1 | lib/track.ts, PostHog SDK |
+| D | Email Capture | 0.5 | components/EmailCapture.tsx |
+| E | Learning Path Ladder | 1-2 | /practice/index.tsx, useProgress.ts |
+| F | Daily Challenge | 1-2 | /daily/page.tsx |
+| G | Skill Metrics | 1 | lib/scoring.ts, components/ScoreBars.tsx |
+| H | Coach Hints | 1-2 | lib/hints.ts, components/HintPanel.tsx |
+| I | Monetization (Stripe) | 2-3 | stripe.ts, usePlan.ts |
+| J | Social Share + Profile | 2-3 | app/api/og/route.ts, /u/local.tsx |
+| K | Auth / User State | 2 | AuthContext.tsx, supabase.ts |
+| L | Leaderboard | 1 | useLeaderboard.ts, LeaderboardCard.tsx |
+| M | Docs Primer | 1-2 | /docs/*.mdx |
+| N | Sandbox UX Polish | 1 | Simulator.tsx, ResultPanel.tsx |
+| O | PWA & Offline | 1-2 | manifest.json, sw.js |
+| P | Teams / Enterprise | 2-3 | components/TeamShare.tsx, supabase.ts |
+
+📊 Success Metrics (v1)
+Activation: % of users passing URL Shortener in first session.
+
+Retention: % attempting another scenario within 48 h.
+
+Virality: Share-rate / CTR on OG cards.
+
+Conversion: Upgrade modal views → checkouts.
+
+(All measurable with no-auth analytics + optional Supabase later.)
+
+🚨 Risks & Mitigation
+
+| Risk | Mitigation |
+|------|------------|
+| Scope creep | Ship 5 scenarios max for v1 |
+| Backend delays | Store everything locally now |
+| Stripe complexity | Use Checkout links + webhook stub |
+| Analytics privacy | Anonymous UUID + opt-out toggle |
+
+🧠 Appendix — UI Copy Examples
+Practice card: “Finish URL Shortener in <15 minutes. Real rubric. Share your pass.”
+
+Fail hint: “Your GET path hits the DB on every request. Add a cache between Service and DB, then re-run.”
+
+Upgrade modal: "Unlock Coach Hints, Pro scenarios & share images — one-time $29."
+
+---
+
+This version gives you a **complete implementation map** — from no-auth analytics to Supabase login integration — ordered by impact and difficulty, ready for direct inclusion in your repo as `plan.md`.

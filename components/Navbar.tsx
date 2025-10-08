@@ -52,6 +52,8 @@ export function Navbar() {
           >
             Feedback
           </Link>
+
+
           {isOnSandbox ? (
             <div className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium">
               Sandbox Active
@@ -123,6 +125,7 @@ export function Navbar() {
             >
               Feedback
             </Link>
+
             <div className="pt-2">
               {isOnSandbox ? (
                 <div className="px-3 py-3 bg-emerald-600 text-white rounded-lg text-base font-medium text-center">

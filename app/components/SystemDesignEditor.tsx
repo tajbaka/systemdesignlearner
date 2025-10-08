@@ -52,9 +52,7 @@ export default function SystemDesignEditor() {
   // Mobile-specific state
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
-  const [isConnectMode, setIsConnectMode] = useState(false);
   const [isSimPanelCollapsed, setIsSimPanelCollapsed] = useState(false);
-  const [undoRedoToggle, setUndoRedoToggle] = useState<"undo" | "redo">("undo");
 
   const selectedScenario = useMemo(() =>
     SCENARIOS.find((s: Scenario) => s.id === selectedScenarioId)!, [selectedScenarioId]
@@ -170,15 +168,6 @@ export default function SystemDesignEditor() {
   // Mobile-specific handlers
   const handleAddComponent = useCallback(() => {
     setIsAddSheetOpen(true);
-  }, []);
-
-  const handleConnectMode = useCallback(() => {
-    setIsConnectMode(prev => !prev);
-  }, []);
-
-  const handleUndoRedo = useCallback(() => {
-    setUndoRedoToggle(prev => prev === "undo" ? "redo" : "undo");
-    // TODO: Implement actual undo/redo functionality
   }, []);
 
   const handleAddComponentFromSheet = useCallback((kind: ComponentKind) => {
