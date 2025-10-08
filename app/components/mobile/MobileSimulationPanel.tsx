@@ -18,6 +18,7 @@ export default function MobileSimulationPanel({
 }: MobileSimulationPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragHeight, setDragHeight] = useState<number | null>(null);
+  const [dragBottom, setDragBottom] = useState<number | null>(null);
   const [startY, setStartY] = useState(0);
   const [startHeight, setStartHeight] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -70,6 +71,7 @@ export default function MobileSimulationPanel({
     if (isCollapsed) {
       setIsFullScreen(false);
       setDragHeight(null);
+      setDragBottom(null);
     }
   }, [isCollapsed]);
 
@@ -124,6 +126,7 @@ export default function MobileSimulationPanel({
     setStartY(touch.clientY);
     setStartHeight(containerRef.current.offsetHeight);
     setIsDragging(true);
+    setDragBottom(0); // Initialize bottom offset
     wasMagneticallySnappedRef.current = false;
 
     // Prevent page scroll when dragging panel
@@ -156,7 +159,13 @@ export default function MobileSimulationPanel({
     newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxHeight, newHeight));
 
     lastDragHeightRef.current = newHeight;
+
+    // Calculate bottom offset for smooth collapse from top
+    const heightChange = startHeight - newHeight;
+    const newBottom = Math.max(0, heightChange); // Bottom increases as height decreases
+
     setDragHeight(newHeight);
+    setDragBottom(newBottom);
   }, [isDragging, startY, startHeight, effectiveExpandedHeight, MAGNETIC_THRESHOLD, COLLAPSED_HEIGHT]);
 
   const handleTouchEnd = useCallback(() => {
@@ -165,6 +174,7 @@ export default function MobileSimulationPanel({
     setIsDragging(false);
 
     const finalHeight = lastDragHeightRef.current;
+    setDragBottom(null); // Reset bottom offset
     if (finalHeight !== null) {
       const magneticallySnapped = wasMagneticallySnappedRef.current || finalHeight >= effectiveExpandedHeight - 1;
       const halfwayPoint = (COLLAPSED_HEIGHT + effectiveExpandedHeight) / 2;
@@ -208,8 +218,8 @@ export default function MobileSimulationPanel({
     transition: isDragging ? "none" : "height 0.3s ease-out",
     touchAction: isDragging ? "none" : "pan-y pinch-zoom",
     // Ensure panel stays at bottom and doesn't cause page scroll
-    position: "sticky",
-    bottom: 0, // Always position at bottom, handle safe areas with content padding
+    position: isDragging ? "fixed" : "sticky",
+    bottom: dragBottom !== null ? `${dragBottom}px` : 0, // Dynamic bottom during drag for smooth collapse
     left: 0,
     right: 0,
     // Prevent any layout shifts

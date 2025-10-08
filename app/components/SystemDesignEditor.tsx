@@ -76,6 +76,16 @@ export default function SystemDesignEditor() {
     return () => clearTimeout(timer);
   }, [simulationError]);
 
+  // Auto-expand panel when there are simulation errors or failures
+  React.useEffect(() => {
+    const hasErrors = simulationError ||
+      (simulationResult && simulationResult.scoreBreakdown?.outcome === "fail");
+
+    if (hasErrors && isSimPanelCollapsed) {
+      setIsSimPanelCollapsed(false);
+    }
+  }, [simulationError, simulationResult, isSimPanelCollapsed]);
+
   const addNode = useCallback((kind: ComponentKind, position?: { x: number; y: number }) => {
     const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
 
