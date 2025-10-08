@@ -198,7 +198,11 @@ export default function MobileSimulationPanel({
       onTouchEnd={handleTouchEnd}
     >
       {isCollapsed && collapsedHeader && (
-        <div className="w-full px-4 py-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg" style={{ marginBottom: "max(env(safe-area-inset-bottom), 0px)" }}>
+        <div className="w-full px-4 pb-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg" style={{ marginBottom: "max(env(safe-area-inset-bottom), 0px)" }}>
+          {/* Drag handle at the top */}
+          <div className="cursor-grab active:cursor-grabbing touch-manipulation" style={{ height: '20px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, margin: 0, boxSizing: 'border-box', lineHeight: 1 }}>
+            <div className="w-12 h-1 rounded-full bg-white/20" />
+          </div>
           <div className="flex items-center justify-between">
             <div
               className="flex-1 cursor-pointer"
@@ -225,21 +229,6 @@ export default function MobileSimulationPanel({
             )}
           </div>
         </div>
-      )}
-      {/* Only show toggle button when collapsed - expanded panels use the drag handle at the top */}
-      {isCollapsed && (
-        <button
-          onClick={onToggle}
-          className={`flex-shrink-0 w-full flex items-center justify-center gap-2 transition touch-manipulation rounded-b-lg ${
-            collapsedHeader
-              ? "py-3 bg-zinc-700/60 text-zinc-200 hover:bg-zinc-700/80 border-t border-white/10"
-              : "py-2 text-zinc-400 hover:text-zinc-200"
-          }`}
-          style={!collapsedHeader ? { marginBottom: "max(env(safe-area-inset-bottom), 16px)" } : undefined}
-          aria-label="Expand simulation panel"
-        >
-          <div className="w-12 h-1 rounded-full bg-white/20" />
-        </button>
       )}
       {!isCollapsed && (
         <>
