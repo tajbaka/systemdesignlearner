@@ -277,20 +277,23 @@ export default function MobileSimulationPanel({
         </div>
       )}
 
-      <button
-        onClick={onToggle}
-        className={`flex-shrink-0 w-full flex items-center justify-center gap-2 transition touch-manipulation rounded-b-lg ${
-          isCollapsed && collapsedHeader
-            ? "py-3 bg-zinc-700/60 text-zinc-200 hover:bg-zinc-700/80 border-t border-white/10"
-            : "py-2 text-zinc-400 hover:text-zinc-200"
-        }`}
-        style={{
-          paddingBottom: isCollapsed && !collapsedHeader ? "max(env(safe-area-inset-bottom), 16px)" : undefined
-        }}
-        aria-label={isCollapsed ? "Expand simulation panel" : "Collapse simulation panel"}
-      >
-        <div className="w-12 h-1 rounded-full bg-white/20" />
-      </button>
+      {/* Only show toggle button when collapsed - expanded panels use the drag handle at the top */}
+      {isCollapsed && (
+        <button
+          onClick={onToggle}
+          className={`flex-shrink-0 w-full flex items-center justify-center gap-2 transition touch-manipulation rounded-b-lg ${
+            collapsedHeader
+              ? "py-3 bg-zinc-700/60 text-zinc-200 hover:bg-zinc-700/80 border-t border-white/10"
+              : "py-2 text-zinc-400 hover:text-zinc-200"
+          }`}
+          style={{
+            paddingBottom: !collapsedHeader ? "max(env(safe-area-inset-bottom), 16px)" : undefined
+          }}
+          aria-label="Expand simulation panel"
+        >
+          <div className="w-12 h-1 rounded-full bg-white/20" />
+        </button>
+      )}
 
       {!isCollapsed && (
         <>
