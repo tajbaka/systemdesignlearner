@@ -4,6 +4,7 @@ import {
   ReactFlow,
   ReactFlowProvider,
   Background,
+  BackgroundVariant,
   Controls,
   MiniMap,
   useNodesState,
@@ -30,10 +31,14 @@ interface ReactFlowBoardProps {
   onNodesChange?: (nodes: PlacedNode[]) => void;
   onEdgesChange?: (edges: Edge[]) => void;
   onDeleteNode?: (nodeId: string) => void;
+  onNodeTouchStart?: (nodeId: string) => void;
+  onNodeTouchEnd?: () => void;
+  className?: string;
+  style?: React.CSSProperties;
 }
 
 // Inner component that uses React Flow hooks
-function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode }: ReactFlowBoardProps) {
+function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode, onNodeTouchStart, onNodeTouchEnd, className, style }: ReactFlowBoardProps) {
   // Initialize React Flow state from props
   const [rfNodes, setRfNodes, onRfNodesChange] = useNodesState<SystemDesignNode>([]);
   const [rfEdges, setRfEdges, onRfEdgesChange] = useEdgesState<SystemDesignEdge>([]);
@@ -74,6 +79,8 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
             data: {
               ...existingNode.data,
               onDelete: onDeleteNode,
+              onNodeTouchStart,
+              onNodeTouchEnd,
             }
           };
         } else {
@@ -84,6 +91,8 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
             data: {
               ...rfNode.data,
               onDelete: onDeleteNode,
+              onNodeTouchStart,
+              onNodeTouchEnd,
             }
           };
         }
@@ -219,7 +228,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
   }, []);
 
   return (
-    <div style={{ width: '100vw', height: '100vh', paddingBottom: '80px' }}>
+    <div className={className} style={{ width: '100%', height: '100%', ...style }}>
       <ReactFlow
         nodes={rfNodes}
         edges={rfEdges}
@@ -234,29 +243,32 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
         multiSelectionKeyCode="Meta"
         connectionLineStyle={{ strokeWidth: 2, stroke: '#10b981' }}
         defaultEdgeOptions={{
-          type: 'bezier',
+          type: 'smoothstep',
           style: { strokeWidth: 2, stroke: '#10b981' },
           animated: false,
         }}
+        // Mobile-specific optimizations
+        panOnDrag={true}
+        selectionOnDrag={false}
+        zoomOnPinch={true}
+        zoomOnScroll={false}
+        preventScrolling={true}
       >
-        <Background />
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={20}
+          size={1}
+          color="#374151"
+        />
         <Controls
           style={{
-            display: 'flex',
-            flexDirection: 'row',
-            gap: '8px',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-            borderRadius: '8px',
-            padding: '8px 12px',
-            backdropFilter: 'blur(8px)',
+            display: 'none', // Forcefully hide on mobile
           }}
           showZoom={true}
           showFitView={true}
           showInteractive={false}
           position="bottom-center"
+          className="lg:flex lg:relative" // Show on desktop with proper positioning
         />
         <MiniMap
           nodeColor="#10b981"
@@ -265,6 +277,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
             backgroundColor: 'rgba(0, 0, 0, 0.5)',
             border: '1px solid rgba(255, 255, 255, 0.2)',
           }}
+          className="hidden lg:block" // Hide on mobile, show on desktop
         />
       </ReactFlow>
     </div>
@@ -272,10 +285,16 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
 }
 
 // Main component wrapped with ReactFlowProvider
-function ReactFlowBoard(props: ReactFlowBoardProps) {
+function ReactFlowBoard({ className, style, onNodeTouchStart, onNodeTouchEnd, ...props }: ReactFlowBoardProps) {
   return (
     <ReactFlowProvider>
-      <ReactFlowBoardInner {...props} />
+      <ReactFlowBoardInner
+        className={className}
+        style={style}
+        onNodeTouchStart={onNodeTouchStart}
+        onNodeTouchEnd={onNodeTouchEnd}
+        {...props}
+      />
     </ReactFlowProvider>
   );
 }

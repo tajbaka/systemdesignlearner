@@ -12,6 +12,8 @@ interface SystemDesignNodeProps extends NodeProps<SystemDesignNodeType> {
   isDeleting?: boolean;
   onDelete?: (id: string) => void;
   nodeId?: string;
+  onNodeTouchStart?: (nodeId: string) => void;
+  onNodeTouchEnd?: () => void;
 }
 
 export default function SystemDesignNode({
@@ -21,15 +23,17 @@ export default function SystemDesignNode({
   isInPath = false,
   isConnectMode = false,
   isDeleting = false,
+  onNodeTouchStart,
+  onNodeTouchEnd,
 }: SystemDesignNodeProps) {
   const onDelete = data.onDelete;
   const [isHovered, setIsHovered] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const hasMoved = useRef(false);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = () => {
     hasMoved.current = false;
+    onNodeTouchStart?.(id);
 
     // Long press for delete mode (mobile only)
     longPressTimer.current = setTimeout(() => {
@@ -50,8 +54,8 @@ export default function SystemDesignNode({
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleTouchEnd = (e: React.TouchEvent) => {
+  const handleTouchEnd = () => {
+    onNodeTouchEnd?.();
     if (longPressTimer.current) {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;

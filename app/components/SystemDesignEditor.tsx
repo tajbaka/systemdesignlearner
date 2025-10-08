@@ -7,15 +7,15 @@ import { SCENARIOS } from "@/lib/scenarios";
 import type { Scenario } from "@/lib/scenarios";
 import { simulate } from "./simulation";
 import { findScenarioPath } from "./utils";
+import { iconFor } from "./icons";
 import ReactFlowBoard from "./ReactFlowBoard";
 import Palette from "./Palette";
 import ScenarioPanel from "./ScenarioPanel";
 import DesktopLayout from "./layout/DesktopLayout";
-// Temporarily disabled mobile components - need to update their interfaces
-// import MobileLayout from "./layout/MobileLayout";
-// import MobileTopBar from "./mobile/MobileTopBar";
-// import MobileSimulationPanel from "./mobile/MobileSimulationPanel";
-// import BottomSheet from "./BottomSheet";
+import MobileLayout from "./layout/MobileLayout";
+import MobileTopBar from "./mobile/MobileTopBar";
+import MobileSimulationPanel from "./mobile/MobileSimulationPanel";
+import BottomSheet from "./BottomSheet";
 
 // Simulation result type matching ScenarioPanel expectations
 interface SimulationResult {
@@ -44,6 +44,13 @@ export default function SystemDesignEditor() {
   const [chaosMode, setChaosMode] = useState(false);
   const [simulationResult, setSimulationResult] = useState<SimulationResult | null>(null);
   const [failAttempts, setFailAttempts] = useState(0);
+
+  // Mobile-specific state
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [isConnectMode, setIsConnectMode] = useState(false);
+  const [isSimPanelCollapsed, setIsSimPanelCollapsed] = useState(false);
+  const [undoRedoToggle, setUndoRedoToggle] = useState<"undo" | "redo">("undo");
 
   const selectedScenario = useMemo(() =>
     SCENARIOS.find((s: Scenario) => s.id === selectedScenarioId)!, [selectedScenarioId]
@@ -122,6 +129,45 @@ export default function SystemDesignEditor() {
     setEdges(prev => prev.filter(edge => edge.from !== nodeId && edge.to !== nodeId));
   }, []);
 
+  // Mobile-specific handlers
+  const handleAddComponent = useCallback(() => {
+    setIsAddSheetOpen(true);
+  }, []);
+
+  const handleConnectMode = useCallback(() => {
+    setIsConnectMode(prev => !prev);
+  }, []);
+
+  const handleUndoRedo = useCallback(() => {
+    setUndoRedoToggle(prev => prev === "undo" ? "redo" : "undo");
+    // TODO: Implement actual undo/redo functionality
+  }, []);
+
+  const handleAddComponentFromSheet = useCallback((kind: ComponentKind) => {
+    addNode(kind);
+    setIsAddSheetOpen(false);
+    // Auto-center on the new node
+    setTimeout(() => {
+      const newNode = nodes[nodes.length - 1]; // Get the most recently added node
+      if (newNode) {
+        setSelectedNode(newNode.id);
+      }
+    }, 100);
+  }, [addNode, nodes]);
+
+  const handleSimPanelToggle = useCallback(() => {
+    setIsSimPanelCollapsed(prev => !prev);
+  }, []);
+
+  // Mobile touch handlers for React Flow
+  const handleNodeTouchStart = useCallback((nodeId: string) => {
+    setSelectedNode(nodeId);
+  }, []);
+
+  const handleNodeTouchEnd = useCallback(() => {
+    // Handle touch end if needed
+  }, []);
+
   const handleRunSimulation = useCallback(() => {
     try {
       const path = findScenarioPath(selectedScenario, nodes, edges);
@@ -177,10 +223,110 @@ export default function SystemDesignEditor() {
       onNodesChange={handleNodesChange}
       onEdgesChange={handleEdgesChange}
       onDeleteNode={handleDeleteNode}
+      onNodeTouchStart={handleNodeTouchStart}
+      onNodeTouchEnd={handleNodeTouchEnd}
+      className="w-full h-full"
     />
   );
 
+  // Mobile components
+  const mobileTopBar = (
+    <MobileTopBar
+      componentCount={nodes.length}
+      isReadOnly={false}
+      selectedNode={selectedNode}
+      isConnectMode={isConnectMode}
+      undoRedoToggle={undoRedoToggle}
+      onConnectMode={handleConnectMode}
+      onAddComponent={handleAddComponent}
+      onUndoRedo={handleUndoRedo}
+    />
+  );
+
+  const mobileBottomPanel = (
+    <MobileSimulationPanel
+      isCollapsed={isSimPanelCollapsed}
+      onToggle={handleSimPanelToggle}
+      collapsedHeader={
+        simulationResult ? (
+          <div className="flex items-center gap-3 text-sm">
+            <div className={`px-2 py-1 rounded text-xs font-semibold ${
+              simulationResult.scoreBreakdown?.outcome === "pass" ? "bg-emerald-500/20 text-emerald-300" :
+              simulationResult.scoreBreakdown?.outcome === "partial" ? "bg-yellow-500/20 text-yellow-300" :
+              "bg-red-500/20 text-red-300"
+            }`}>
+              {simulationResult.scoreBreakdown?.outcome === "pass" ? "PASS" :
+               simulationResult.scoreBreakdown?.outcome === "partial" ? "PARTIAL" : "FAIL"}
+            </div>
+            <span className="text-zinc-300">
+              Score: {simulationResult.scoreBreakdown?.totalScore || 0}/100
+            </span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3 text-sm text-zinc-400">
+            <span>Ready to run simulation</span>
+          </div>
+        )
+      }
+    >
+      <ScenarioPanel
+        scenarios={SCENARIOS}
+        selectedScenarioId={selectedScenarioId}
+        onScenarioChange={setSelectedScenarioId}
+        chaosMode={chaosMode}
+        onChaosModeChange={setChaosMode}
+        onRunSimulation={handleRunSimulation}
+        simulationResult={simulationResult}
+        failAttempts={failAttempts}
+      />
+    </MobileSimulationPanel>
+  );
+
+  const addComponentSheet = (
+    <BottomSheet
+      isOpen={isAddSheetOpen}
+      onClose={() => setIsAddSheetOpen(false)}
+      title="Add Component"
+    >
+      <div className="grid grid-cols-2 gap-3">
+        {COMPONENT_LIBRARY.map((component) => {
+          const Icon = iconFor(component.kind);
+          return (
+            <button
+              key={component.kind}
+              onClick={() => handleAddComponentFromSheet(component.kind)}
+              className="p-4 bg-zinc-800/50 border border-white/10 rounded-xl hover:bg-zinc-700/50 transition-colors touch-manipulation"
+            >
+              <div className="flex flex-col items-center gap-2">
+                <Icon className="text-zinc-200" size={24} />
+                <div className="text-sm font-medium text-zinc-200 text-center">{component.label}</div>
+                <div className="text-xs text-zinc-400 text-center">
+                  {component.baseLatencyMs}ms · {component.capacityRps} rps
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+    </BottomSheet>
+  );
+
   return (
-    <DesktopLayout sidebar={sidebar} canvas={canvas} />
+    <>
+      {/* Desktop Layout */}
+      <div className="hidden lg:block">
+        <DesktopLayout sidebar={sidebar} canvas={canvas} />
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <MobileLayout
+          topBar={mobileTopBar}
+          canvas={canvas}
+          bottomPanel={mobileBottomPanel}
+          addSheet={addComponentSheet}
+        />
+      </div>
+    </>
   );
 }
