@@ -219,7 +219,7 @@ export default function MobileSimulationPanel({
     bottom: 0,
     left: 0,
     right: 0,
-    transformOrigin: "top",
+    transformOrigin: "bottom",
     transform: isDragging && dragScaleY !== null ? `scaleY(${dragScaleY})` : "scaleY(1)",
     // Prevent any layout shifts
     willChange: isDragging ? "height, transform" : "auto",
