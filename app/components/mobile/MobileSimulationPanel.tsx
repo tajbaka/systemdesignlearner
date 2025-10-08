@@ -33,7 +33,17 @@ export default function MobileSimulationPanel({
     if (typeof window === "undefined") {
       return 600;
     }
-    return window.visualViewport?.height ?? window.innerHeight;
+    // Use visualViewport for better Safari support, fallback to innerHeight
+    const visualViewportHeight = window.visualViewport?.height;
+    const innerHeight = window.innerHeight;
+
+    // On Safari, visualViewport might be more reliable, but we need to account for safe areas
+    if (visualViewportHeight) {
+      // Add some buffer for safe areas and ensure minimum height
+      return Math.max(visualViewportHeight, innerHeight * 0.8);
+    }
+
+    return innerHeight;
   }, []);
 
   const [expandedHeight, setExpandedHeight] = useState<number>(() => getViewportHeight());
@@ -104,6 +114,11 @@ export default function MobileSimulationPanel({
     setStartHeight(containerRef.current.offsetHeight);
     setIsDragging(true);
     wasMagneticallySnappedRef.current = false;
+
+    // Prevent page scroll when dragging panel
+    if (typeof document !== "undefined") {
+      document.body.classList.add("mobile-panel-interacting");
+    }
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
@@ -155,6 +170,11 @@ export default function MobileSimulationPanel({
 
     wasMagneticallySnappedRef.current = false;
     lastDragHeightRef.current = null;
+
+    // Re-enable page scroll after dragging
+    if (typeof document !== "undefined") {
+      document.body.classList.remove("mobile-panel-interacting");
+    }
   }, [isDragging, COLLAPSED_HEIGHT, effectiveExpandedHeight, isCollapsed, onToggle]);
 
   const currentHeight = dragHeight !== null
@@ -163,13 +183,21 @@ export default function MobileSimulationPanel({
       ? `${COLLAPSED_HEIGHT}px`
       : isFullScreen
         ? `${effectiveExpandedHeight}px`
-        : "70vh");
+        : `${Math.min(effectiveExpandedHeight * 0.75, window.innerHeight * 0.7)}px`);
 
   const sheetStyle: React.CSSProperties = {
-    paddingBottom: "calc(env(safe-area-inset-bottom) + 12px)",
+    // Increased padding for better Safari compatibility and safe areas
+    paddingBottom: "max(env(safe-area-inset-bottom), 24px)",
     height: currentHeight,
     transition: isDragging ? "none" : "height 0.3s ease-out",
-    touchAction: isDragging ? "none" : "pan-y pinch-zoom"
+    touchAction: isDragging ? "none" : "pan-y pinch-zoom",
+    // Ensure panel stays at bottom and doesn't cause page scroll
+    position: "sticky",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    // Prevent any layout shifts
+    willChange: isDragging ? "height" : "auto",
   };
 
   if (isFullScreen) {
@@ -177,15 +205,28 @@ export default function MobileSimulationPanel({
     sheetStyle.left = 0;
     sheetStyle.right = 0;
     sheetStyle.top = topOffset;
-    sheetStyle.bottom = undefined;
+    sheetStyle.bottom = 0; // Ensure it goes all the way to bottom
     sheetStyle.zIndex = 60;
+    // Add extra padding for safe areas in fullscreen
+    sheetStyle.paddingBottom = "max(env(safe-area-inset-bottom), 34px)";
   }
 
   return (
     <div
       ref={containerRef}
-      className="flex-shrink-0 border-t border-white/10 bg-zinc-900/95 backdrop-blur-sm shadow-2xl flex flex-col lg:hidden overflow-hidden"
-      style={sheetStyle}
+      className="mobile-simulation-panel flex-shrink-0 border-t border-white/10 bg-zinc-900/95 backdrop-blur-sm shadow-2xl flex flex-col lg:hidden overflow-hidden"
+      style={{
+        ...sheetStyle,
+        // Safari-specific fixes
+        WebkitTransform: 'translateZ(0)', // Force hardware acceleration
+        transform: 'translateZ(0)',
+        // Ensure panel doesn't cause page scroll
+        maxHeight: '100vh',
+        // Better touch handling for Safari
+        WebkitTouchCallout: 'none',
+        WebkitUserSelect: 'none',
+        userSelect: 'none',
+      }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
