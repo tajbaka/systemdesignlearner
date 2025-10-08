@@ -191,14 +191,14 @@ export default function MobileSimulationPanel({
         : `${Math.min(effectiveExpandedHeight * 0.75, window.innerHeight * 0.7)}px`);
 
   const sheetStyle: React.CSSProperties = {
-    // Increased padding for better Safari compatibility and safe areas
-    paddingBottom: "max(env(safe-area-inset-bottom), 24px)",
+    // Safe area padding for expanded/fullscreen states
+    paddingBottom: isCollapsed ? 0 : "max(env(safe-area-inset-bottom), 24px)",
     height: currentHeight,
     transition: isDragging ? "none" : "height 0.3s ease-out",
     touchAction: isDragging ? "none" : "pan-y pinch-zoom",
     // Ensure panel stays at bottom and doesn't cause page scroll
     position: "sticky",
-    bottom: isCollapsed ? "max(env(safe-area-inset-bottom), 0px)" : 0,
+    bottom: 0, // Always position at bottom, handle safe areas with content padding
     left: 0,
     right: 0,
     // Prevent any layout shifts
@@ -219,7 +219,7 @@ export default function MobileSimulationPanel({
   return (
     <div
       ref={containerRef}
-      className="mobile-simulation-panel flex-shrink-0 border-t border-white/10 bg-zinc-900/95 backdrop-blur-sm shadow-2xl flex flex-col lg:hidden overflow-hidden"
+      className={`mobile-simulation-panel flex-shrink-0 border-t border-white/10 bg-zinc-900/95 backdrop-blur-sm shadow-2xl flex flex-col lg:hidden overflow-hidden ${isCollapsed ? 'mobile-panel-collapsed' : ''}`}
       style={{
         ...sheetStyle,
         // Safari-specific fixes
@@ -237,7 +237,7 @@ export default function MobileSimulationPanel({
       onTouchEnd={handleTouchEnd}
     >
       {isCollapsed && collapsedHeader && (
-        <div className="w-full px-4 py-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg">
+        <div className="w-full px-4 py-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg" style={{ paddingBottom: "max(env(safe-area-inset-bottom), 16px)" }}>
           <div className="flex items-center justify-between">
             <div
               className="flex-1 cursor-pointer"
@@ -273,6 +273,9 @@ export default function MobileSimulationPanel({
             ? "py-3 bg-zinc-700/60 text-zinc-200 hover:bg-zinc-700/80 border-t border-white/10"
             : "py-2 text-zinc-400 hover:text-zinc-200"
         }`}
+        style={{
+          paddingBottom: isCollapsed && !collapsedHeader ? "max(env(safe-area-inset-bottom), 16px)" : undefined
+        }}
         aria-label={isCollapsed ? "Expand simulation panel" : "Collapse simulation panel"}
       >
         <div className="w-12 h-1 rounded-full bg-white/20" />

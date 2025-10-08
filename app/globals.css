@@ -215,10 +215,17 @@ html, body {
     overscroll-behavior: contain;
   }
 
-  /* Ensure safe area handling on Safari */
-  @supports (padding: max(0px)) {
+  /* iOS Safari and Chrome safe area fixes */
+  @media screen and (max-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
     .mobile-simulation-panel {
-      padding-bottom: max(env(safe-area-inset-bottom), 24px);
+      /* Force proper positioning on iOS devices */
+      -webkit-transform: translateZ(0);
+      transform: translateZ(0);
+    }
+
+    /* Override padding for collapsed state - handle safe areas in content */
+    .mobile-simulation-panel.mobile-panel-collapsed {
+      padding-bottom: 0 !important;
     }
   }
 }
