@@ -23,7 +23,7 @@ export default function MobileSimulationPanel({
   const wasMagneticallySnappedRef = useRef(false);
   const lastDragHeightRef = useRef<number | null>(null);
   const [topOffset, setTopOffset] = useState(0);
-  const COLLAPSED_HEIGHT = collapsedHeader ? 143 : 60;
+  const COLLAPSED_HEIGHT = collapsedHeader ? 142 : 59;
   const MAGNETIC_THRESHOLD = 100;
   const getViewportHeight = useCallback(() => {
     if (typeof window === "undefined") {
@@ -155,7 +155,7 @@ export default function MobileSimulationPanel({
   const currentHeightValue = dragHeight !== null
     ? dragHeight
     : (isCollapsed
-      ? COLLAPSED_HEIGHT
+      ? 108
       : isFullScreen
         ? effectiveExpandedHeight
         : Math.min(effectiveExpandedHeight * 0.75, window.innerHeight * 0.7));
