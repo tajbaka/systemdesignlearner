@@ -30,10 +30,16 @@ This will create:
 
 ### Updating Existing Databases
 
-If you've already run the initial schema, run this migration to update the unique constraint:
+If you've already run the initial schema, run these migrations in order:
 
+1. **Fix unique constraint:**
 ```sql
 -- Copy and paste the contents of database/migrations/002_update_unique_constraint.sql
+```
+
+2. **Add consent and provenance fields:**
+```sql
+-- Copy and paste the contents of database/migrations/003_add_consent_and_provenance.sql
 ```
 
 ## 3. Test the Setup

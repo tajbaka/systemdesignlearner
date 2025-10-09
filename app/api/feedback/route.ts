@@ -3,7 +3,14 @@ import { supabase } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, name, feedback } = await request.json()
+    const {
+      email,
+      name,
+      feedback,
+      contact_ok = false,
+      marketing_ok = false,
+      source = 'landing'
+    } = await request.json()
 
     // Validate required fields
     if (!email || !email.includes('@')) {
@@ -20,13 +27,28 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Get client information for provenance
+    const userAgent = request.headers.get('user-agent') || ''
+    const referrer = request.headers.get('referer') || ''
+    const ip = request.headers.get('x-forwarded-for') ||
+               request.headers.get('x-real-ip') || ''
+    const ipSha256 = ip ? await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip))
+      .then(hash => Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join(''))
+      : null
+
     // Insert feedback submission
     const { error: feedbackError } = await supabase
       .from('feedback_submissions')
       .insert({
         email,
         name: name || null,
-        feedback: feedback.trim()
+        feedback: feedback.trim(),
+        contact_ok,
+        marketing_ok,
+        source,
+        referrer,
+        user_agent: userAgent,
+        ip_sha256: ipSha256
       })
 
     if (feedbackError) {
@@ -37,22 +59,46 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Also add to email subscriptions if not already subscribed
-    const { data: existing } = await supabase
+    // Add to email subscriptions with consent flags
+    const { data: existingFeedback } = await supabase
       .from('email_subscriptions')
       .select('id')
       .eq('email', email)
       .eq('type', 'feedback')
       .single()
 
-    if (!existing) {
+    if (!existingFeedback) {
       await supabase
         .from('email_subscriptions')
         .insert({
           email,
           name: name || null,
-          type: 'feedback'
+          type: 'feedback',
+          contact_ok,
+          marketing_ok
         })
+    }
+
+    // If they opted into marketing, also subscribe them to newsletter
+    if (marketing_ok) {
+      const { data: existingNewsletter } = await supabase
+        .from('email_subscriptions')
+        .select('id')
+        .eq('email', email)
+        .eq('type', 'newsletter')
+        .single()
+
+      if (!existingNewsletter) {
+        await supabase
+          .from('email_subscriptions')
+          .insert({
+            email,
+            name: name || null,
+            type: 'newsletter',
+            contact_ok,
+            marketing_ok
+          })
+      }
     }
 
     return NextResponse.json(
