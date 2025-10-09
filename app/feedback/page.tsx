@@ -144,7 +144,7 @@ export default function FeedbackPage() {
                   className="mt-1 h-4 w-4 rounded border-zinc-600 bg-transparent text-emerald-500 focus:ring-emerald-500"
                 />
                 <label htmlFor="contact_ok" className="text-sm text-zinc-300">
-                  <strong>It's okay to contact me</strong> about this feedback for clarification or follow-up questions.
+                  <strong>It&apos;s okay to contact me</strong> about this feedback for clarification or follow-up questions.
                 </label>
               </div>
 
