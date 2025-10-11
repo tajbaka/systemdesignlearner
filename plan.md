@@ -25,7 +25,7 @@ CTA: Try URL Shortener
 
 FAQ + Pricing section + OG tags.
 
-## 2) Practice: URL Shortener (MVP) — *Highest priority*
+## 2) Practice: URL Shortener (MVP) — *Highest priority* --> explore tooltips
 
 **Goal:** A 10–15 min guided session (Brief → Design → Run → Review) with rubric checks and shareable result.
 
