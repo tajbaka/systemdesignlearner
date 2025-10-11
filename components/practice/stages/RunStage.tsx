@@ -49,25 +49,36 @@ const deriveHints = (
   const hints: string[] = [];
 
   if (result.failedByChaos) {
-    hints.push("Chaos mode surfaced an instability. Add redundancy or disable chaos to validate baseline design.");
+    hints.push(
+      "Chaos mode surfaced an instability. Add redundancy or disable chaos to validate baseline design."
+    );
   }
   if (!result.meetsLatency) {
-    hints.push("Latency target missed. Ensure cache sits before Postgres and remove extra hops on the redirect path.");
+    hints.push(
+      "Latency target missed. Ensure cache sits before Postgres and remove extra hops on the redirect path."
+    );
   }
   if (!result.meetsRps) {
     const hasLoadBalancer = result.acceptanceResults?.["lb-service"];
-    const totalServiceReplicas = nodes.find(n => n.spec.kind === "Service")?.replicas || 1;
-    const serviceCapacity = (nodes.find(n => n.spec.kind === "Service")?.spec.capacityRps || 0) * totalServiceReplicas;
+    const totalServiceReplicas = nodes.find((n) => n.spec.kind === "Service")?.replicas || 1;
+    const serviceCapacity =
+      (nodes.find((n) => n.spec.kind === "Service")?.spec.capacityRps || 0) * totalServiceReplicas;
     const requiredRps = scenario.requiredRps;
 
     if (hasLoadBalancer && serviceCapacity >= requiredRps) {
-      hints.push("Throughput target missed. Check your component connections or increase other component replicas.");
+      hints.push(
+        "Throughput target missed. Check your component connections or increase other component replicas."
+      );
     } else if (hasLoadBalancer) {
       hints.push("Throughput target missed. Increase service replicas to meet the load.");
     } else if (totalServiceReplicas > 1) {
-      hints.push("Throughput target missed. Add a load balancer or API gateway to distribute traffic.");
+      hints.push(
+        "Throughput target missed. Add a load balancer or API gateway to distribute traffic."
+      );
     } else {
-      hints.push("Throughput target missed. Increase service replicas or add a load balancer/API gateway.");
+      hints.push(
+        "Throughput target missed. Increase service replicas or add a load balancer/API gateway."
+      );
     }
   }
   if (result.acceptanceResults) {
@@ -78,7 +89,9 @@ const deriveHints = (
           hints.push("Cache missing from redirect path. Add Redis between Service and DB.");
           break;
         case "lb-service":
-          hints.push("Place a gateway or load balancer before the service to satisfy availability requirements.");
+          hints.push(
+            "Place a gateway or load balancer before the service to satisfy availability requirements."
+          );
           break;
         case "analytics": {
           const message =
@@ -119,8 +132,13 @@ export default function RunStage({
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
 
-  const hints = useMemo(() => deriveHints(run.lastResult, requirements, design.nodes, URL_SHORTENER), [run.lastResult, requirements, design.nodes]);
-  const outcome = run.lastResult?.scoreBreakdown?.outcome ?? (run.lastResult?.failedByChaos ? "chaos_fail" : undefined);
+  const hints = useMemo(
+    () => deriveHints(run.lastResult, requirements, design.nodes, URL_SHORTENER),
+    [run.lastResult, requirements, design.nodes]
+  );
+  const outcome =
+    run.lastResult?.scoreBreakdown?.outcome ??
+    (run.lastResult?.failedByChaos ? "chaos_fail" : undefined);
   const canContinue = outcome === "pass";
 
   const handleChaosToggle = useCallback(() => {
@@ -178,14 +196,17 @@ export default function RunStage({
       track("practice_run_completed", {
         slug: "url-shortener",
         attempts: run.attempts + 1,
-        outcome: result.scoreBreakdown?.outcome ?? (result.failedByChaos ? "chaos_fail" : "unknown"),
+        outcome:
+          result.scoreBreakdown?.outcome ?? (result.failedByChaos ? "chaos_fail" : "unknown"),
         chaos: run.chaosMode,
         latency: result.latencyMsP95,
         capacity: result.capacityRps,
       });
 
       if (result.scoreBreakdown?.outcome === "pass" && !run.firstPassAt) {
-        track("practice_run_first_pass", { slug: "url-shortener", attempts: run.attempts + 1 });
+        const attemptCount = run.attempts + 1;
+        track("practice_run_first_pass", { slug: "url-shortener", attempts: attemptCount });
+        track("practice_pass_first", { scenario: "url-shortener", attempts: attemptCount });
       }
     } catch (err) {
       console.error("Simulation error", err);
@@ -193,7 +214,17 @@ export default function RunStage({
     } finally {
       setRunning(false);
     }
-  }, [design.edges, design.nodes, locked, readOnly, run.attempts, run.chaosMode, run.firstPassAt, running, updateRun]);
+  }, [
+    design.edges,
+    design.nodes,
+    locked,
+    readOnly,
+    run.attempts,
+    run.chaosMode,
+    run.firstPassAt,
+    running,
+    updateRun,
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -201,7 +232,8 @@ export default function RunStage({
         <div className="space-y-2">
           <h2 className="text-xl font-semibold text-white">Run</h2>
           <p className="text-sm text-zinc-400 leading-relaxed">
-            We’ll simulate 5k RPS redirects against your current graph. Adjust between runs until latency and throughput targets pass.
+            We’ll simulate 5k RPS redirects against your current graph. Adjust between runs until
+            latency and throughput targets pass.
           </p>
           <div className="flex flex-wrap gap-2 text-xs text-zinc-300">
             <span className="rounded-full border border-zinc-700 px-3 py-1">
@@ -248,8 +280,20 @@ export default function RunStage({
             {running ? (
               <>
                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" role="presentation">
-                  <circle className="opacity-30" cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" fill="none" />
-                  <path className="opacity-90" fill="currentColor" d="M12 3a9 9 0 00-9 9h2a7 7 0 017-7V3z" />
+                  <circle
+                    className="opacity-30"
+                    cx="12"
+                    cy="12"
+                    r="9"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-90"
+                    fill="currentColor"
+                    d="M12 3a9 9 0 00-9 9h2a7 7 0 017-7V3z"
+                  />
                 </svg>
                 Running…
               </>
@@ -277,14 +321,18 @@ export default function RunStage({
               <dl className="mt-3 space-y-2 text-sm text-zinc-300">
                 <div className="flex items-center justify-between">
                   <dt>P95 latency</dt>
-                  <dd className={run.lastResult.meetsLatency ? "text-emerald-300" : "text-rose-300"}>
-                    {run.lastResult.latencyMsP95} ms (target ≤ {URL_SHORTENER.latencyBudgetMsP95} ms)
+                  <dd
+                    className={run.lastResult.meetsLatency ? "text-emerald-300" : "text-rose-300"}
+                  >
+                    {run.lastResult.latencyMsP95} ms (target ≤ {URL_SHORTENER.latencyBudgetMsP95}
+                     ms)
                   </dd>
                 </div>
                 <div className="flex items-center justify-between">
                   <dt>Throughput capacity</dt>
                   <dd className={run.lastResult.meetsRps ? "text-emerald-300" : "text-rose-300"}>
-                    {run.lastResult.capacityRps.toLocaleString()} rps (target ≥ {URL_SHORTENER.requiredRps.toLocaleString()} rps)
+                    {run.lastResult.capacityRps.toLocaleString()} rps (target ≥{" "}
+                    {URL_SHORTENER.requiredRps.toLocaleString()} rps)
                   </dd>
                 </div>
                 <div className="flex items-center justify-between text-xs text-zinc-400">
@@ -296,9 +344,14 @@ export default function RunStage({
 
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/30 p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-semibold text-zinc-200 uppercase tracking-wide">Score</h4>
-                <span className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${outcomeBadge(outcome)}`}>
-                  {outcome ? outcome.toUpperCase() : "PENDING"} · {run.lastResult.scoreBreakdown?.totalScore ?? 0}/100
+                <h4 className="text-sm font-semibold text-zinc-200 uppercase tracking-wide">
+                  Score
+                </h4>
+                <span
+                  className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${outcomeBadge(outcome)}`}
+                >
+                  {outcome ? outcome.toUpperCase() : "PENDING"} ·{" "}
+                  {run.lastResult.scoreBreakdown?.totalScore ?? 0}/100
                 </span>
               </div>
               <dl className="text-sm text-zinc-300 space-y-2">
@@ -325,7 +378,9 @@ export default function RunStage({
 
         {hints.length > 0 ? (
           <div className="mt-6 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4 text-sm text-amber-100">
-            <h4 className="font-semibold uppercase tracking-wide text-xs text-amber-200">Try next</h4>
+            <h4 className="font-semibold uppercase tracking-wide text-xs text-amber-200">
+              Try next
+            </h4>
             <ul className="mt-2 space-y-2 leading-relaxed">
               {hints.map((hint) => (
                 <li key={hint} className="flex items-start gap-2">

@@ -173,7 +173,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
     setHydrated(true);
 
     if (!stored) {
-      track("practice_started", { slug: PRACTICE_SLUG });
+      track("practice_start", { slug: PRACTICE_SLUG });
     }
   }, [sharedState]);
 
