@@ -33,36 +33,47 @@ Prove three things fast:
 
 ---
 
-## 🔹 Phase 1 — Weeks 1–4: **Attention & Problem Validation**
+## 🔹 Phase 1 — Weeks 1–4: **Attention & Problem Validation** ✅ IMPLEMENTED
 
 ### Goal
 
 Confirm that developers *want* to practice system design visually.
 
-### Deliverables
+### Deliverables ✅ COMPLETED (Oct 11, 2025)
 
-- Landing page:  
-  “**Practice System Design. Visually. Finish URL Shortener < 15 min.**”
-- Static MVP with **1 scenario (URL Shortener)**  
+- ✅ Landing page:
+  "**Practice System Design. Visually. Finish URL Shortener < 15 min.**"
+- ✅ Static MVP with **1 scenario (URL Shortener)**
   - `Brief → Design → Run → Review`
   - PASS/FAIL rubric + shareable result
-- Add `EmailCapture` on pass screen (“Get new daily scenarios”)
-- Record `page_view`, `practice_start`, `practice_pass_first` in localStorage + PostHog
+- ✅ Add `EmailCapture` on pass screen + homepage footer
+- ✅ PostHog tracking configured:
+  - `practice_start`, `practice_run_completed`, `practice_pass_first`
+  - `email_capture_success`, `email_capture_submitted`, `email_capture_already_subscribed`
+  - `practice_shared`, `$pageview`
+- ✅ Phase-1 Metrics Dashboard created in PostHog
 
-### Launch Channels
+### Launch Channels (Pending)
 
-- Reddit (`r/systemdesign`, `r/learnprogramming`)  
-- X / LinkedIn / ProductHunt teaser  
+- Reddit (`r/systemdesign`, `r/learnprogramming`)
+- X / LinkedIn / ProductHunt teaser
 - Send demo to 5 mentors / friends for feedback
 
-### Success Metrics
+### Success Metrics - 2 Week Tracking
 
-| Metric | Target |
-|---------|--------|
-| 500 unique visitors | ✅ Demand exists |
-| 100 plays | ✅ Curiosity conversion |
-| 30+ signups (6%) | ✅ Real interest |
-| 10+ organic shares | ✅ Shareability works |
+**Start Date:** Oct 11, 2025
+**Week 1 Check:** Oct 18, 2025
+**Week 2 Check:** Oct 25, 2025 (Final Review)
+
+| Metric | PostHog Event | Target | Week 1 Actual (Oct 18) | Week 2 Actual (Oct 25) | Status |
+|--------|---------------|--------|------------------------|------------------------|--------|
+| Unique visitors | `$pageview` (unique users) | 500 | — | — | ✅ Tracking |
+| Practice starts | `practice_start` | 100 | — | — | ✅ Tracking |
+| Email signups | `email_capture_success` | 30 (6%) | — | — | ✅ Tracking |
+| Organic shares | `practice_shared` | 10+ | — | — | ✅ Tracking |
+| First-pass wins | `practice_pass_first` | N/A | — | — | ✅ Tracking |
+
+**Baseline (Oct 11):** 1 visitor, 1 practice start, 1 email signup, 6 shares, 3 first-pass wins
 
 ### Review Checkpoint
 
