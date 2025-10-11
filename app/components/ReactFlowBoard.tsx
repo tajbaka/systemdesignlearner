@@ -65,7 +65,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
   }, [rfNodes]);
 
   React.useEffect(() => {
-    console.debug('[ReactFlowBoard] syncing nodes from props', nodes.map(node => ({ id: node.id, replicas: node.replicas })));
+    console.debug('[ReactFlowBoard] syncing edges from props', rfEdges.map(edge => edge.id));
     rfEdgesRef.current = rfEdges;
   }, [rfEdges]);
 

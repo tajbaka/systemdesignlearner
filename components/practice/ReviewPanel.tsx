@@ -133,7 +133,7 @@ export const ReviewPanel = ({
       : "";
 
   const handleShare = () => {
-    if (!shareUrl) return;
+    if (!shareUrl || readOnly) return;
     navigator.clipboard
       .writeText(shareUrl)
       .then(() => {
@@ -150,8 +150,9 @@ export const ReviewPanel = ({
       });
   };
 
-  const shareButtonClass =
-    shareStatus === "copied"
+  const shareButtonClass = readOnly
+    ? "inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-400 opacity-60 cursor-not-allowed"
+    : shareStatus === "copied"
       ? "inline-flex items-center gap-2 rounded-full border border-blue-400 px-4 py-2 text-xs font-semibold text-white bg-blue-500 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
       : "inline-flex items-center gap-2 rounded-full border border-blue-400/40 px-4 py-2 text-xs font-semibold text-blue-100 transition hover:bg-blue-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400";
 
@@ -312,6 +313,7 @@ export const ReviewPanel = ({
               type="button"
               onClick={handleShare}
               className={shareButtonClass}
+              disabled={readOnly}
             >
               {shareStatus === "copied" ? "Link copied!" : "Copy share link"}
             </button>

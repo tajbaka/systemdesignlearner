@@ -99,20 +99,21 @@ export default function SystemDesignEditor() {
       }
 
       if (payload.nodes && payload.nodes.length > 0) {
-        const resolvedNodes: PlacedNode[] = payload.nodes
-          .map((node) => {
-            const spec = specsByKind.get(node.kind);
-            if (!spec) return null;
-            return {
-              id: node.id,
-              spec,
-              x: node.x,
-              y: node.y,
-              replicas: node.replicas ?? 1,
-              customLabel: node.customLabel,
-            };
-          })
-          .filter((n): n is PlacedNode => Boolean(n));
+        const resolvedNodes = payload.nodes.reduce<PlacedNode[]>((acc, node) => {
+          const spec = specsByKind.get(node.kind);
+          if (!spec) {
+            return acc;
+          }
+          acc.push({
+            id: node.id,
+            spec,
+            x: node.x,
+            y: node.y,
+            replicas: node.replicas ?? 1,
+            customLabel: node.customLabel,
+          });
+          return acc;
+        }, []);
         setNodes(resolvedNodes);
       }
 

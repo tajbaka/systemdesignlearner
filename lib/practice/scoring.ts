@@ -1,4 +1,4 @@
-import type { PracticeState } from "./types";
+import type { PracticeState, HighLevelChoice, LowLevel } from "./types";
 
 export interface PracticeScoreBreakdown {
   sloScore: number; // 60% - based on requirements alignment and architecture suitability
@@ -14,11 +14,13 @@ export function scorePractice(state: PracticeState): PracticeScoreBreakdown {
   let checklistScore = 0;
   let costScore = 0;
   const hints: string[] = [];
+  const highSelection = (state as { high?: HighLevelChoice }).high;
+  const lowLevel = (state as { low?: LowLevel }).low;
 
   // SLO Score (60 points max) - Architecture suitability for requirements
-  if (state.requirements && state.high) {
+  if (state.requirements && highSelection) {
     const { nonFunctional } = state.requirements;
-    const { components, presetId } = state.high;
+    const { components, presetId } = highSelection;
 
     // Cache-first architecture is ideal for high read RPS with strict latency
     if (presetId === "cache_primary") {
@@ -66,9 +68,9 @@ export function scorePractice(state: PracticeState): PracticeScoreBreakdown {
   }
 
   // Cost Score (10 points max) - Design efficiency
-  if (state.high && state.low) {
-    const { components } = state.high;
-    const { capacityAssumptions } = state.low;
+  if (highSelection && lowLevel) {
+    const { components } = highSelection;
+    const { capacityAssumptions } = lowLevel;
 
     // Penalize over-engineering
     if (components.length > 4 && (state.requirements?.nonFunctional.readRps || 0) < 1000) {
@@ -106,13 +108,13 @@ export function scorePractice(state: PracticeState): PracticeScoreBreakdown {
 
   // Add contextual hints based on failures
   if (outcome === "fail" || outcome === "partial") {
-    if (!state.high?.components.some(c => c.includes("Cache"))) {
+    if (!highSelection?.components.some(c => c.includes("Cache"))) {
       hints.push("Add Redis cache to handle redirect traffic efficiently");
     }
     if ((state.requirements?.nonFunctional.p95RedirectMs || 0) < 100 && !hints.some(h => h.includes("latency"))) {
       hints.push("Consider edge caching or CDN for sub-100ms latency targets");
     }
-    if ((state.low?.capacityAssumptions.cacheHit || 0) < 85) {
+    if ((lowLevel?.capacityAssumptions.cacheHit || 0) < 85) {
       hints.push("Implement cache warming or longer TTL policies");
     }
   }

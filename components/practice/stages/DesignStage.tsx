@@ -263,14 +263,14 @@ export default function DesignStage({
   }, [stepCount, updateDesign]);
 
   const handleSkipGuidance = useCallback(() => {
-    if (design.guidedDismissed) return;
+    if (design.guidedDismissed || locked || readOnly) return;
     updateDesign((prev) => ({
       ...prev,
       guidedDismissed: true,
       freeModeUnlocked: true,
     }));
     track("practice_design_guided_skipped", { slug: "url-shortener", step: currentStep?.id ?? "unknown" });
-  }, [design.guidedDismissed, updateDesign, currentStep?.id]);
+  }, [design.guidedDismissed, updateDesign, currentStep?.id, locked, readOnly]);
 
   const addNode = useCallback(
     (kind: ComponentKind, position?: { x: number; y: number }) => {
@@ -569,11 +569,23 @@ export default function DesignStage({
           </div>
 
           <aside className="order-3 flex flex-col gap-4 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-3 lg:order-3 lg:sticky lg:top-28 lg:h-[620px] lg:min-h-[620px]">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">Guided steps</h3>
-              <span className="text-xs text-zinc-500">
-                {design.guidedCompleted ? "Complete" : `${Math.min(design.guidedStepIndex + 1, stepCount)}/${stepCount}`}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-500">
+                  {design.guidedCompleted ? "Complete" : `${Math.min(design.guidedStepIndex + 1, stepCount)}/${stepCount}`}
+                </span>
+                {!design.guidedDismissed && !design.guidedCompleted ? (
+                  <button
+                    type="button"
+                    onClick={handleSkipGuidance}
+                    className="rounded-full border border-zinc-700 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-300 transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={locked || readOnly}
+                  >
+                    Skip
+                  </button>
+                ) : null}
+              </div>
             </div>
             {currentStep ? (
               <div className="rounded-2xl border border-blue-400/30 bg-blue-500/10 p-4 text-sm text-blue-50 space-y-2">
