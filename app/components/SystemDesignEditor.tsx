@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { ComponentKind, PlacedNode, Edge } from "./types";
 import { COMPONENT_LIBRARY } from "./data";
 import { uid } from "./utils";
@@ -16,6 +16,7 @@ import MobileLayout from "./layout/MobileLayout";
 import MobileTopBar from "./mobile/MobileTopBar";
 import MobileSimulationPanel from "./mobile/MobileSimulationPanel";
 import BottomSheet from "./BottomSheet";
+import { decodeDesign } from "@/lib/shareLink";
 
 // Simulation result type matching ScenarioPanel expectations
 interface SimulationResult {
@@ -57,6 +58,79 @@ export default function SystemDesignEditor() {
   const selectedScenario = useMemo(() =>
     SCENARIOS.find((s: Scenario) => s.id === selectedScenarioId)!, [selectedScenarioId]
   );
+  const specsByKind = useMemo(() => {
+    const map = new Map<ComponentKind, (typeof COMPONENT_LIBRARY)[number]>();
+    for (const spec of COMPONENT_LIBRARY) {
+      map.set(spec.kind, spec);
+    }
+    return map;
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const shared = params.get("s");
+    if (!shared) return;
+
+    type SandboxSharePayload = {
+      scenarioId?: string;
+      nodes?: Array<{
+        id: string;
+        kind: ComponentKind;
+        x: number;
+        y: number;
+        replicas?: number;
+        customLabel?: string;
+      }>;
+      edges?: Array<{
+        id?: string;
+        from: string;
+        to: string;
+        linkLatencyMs?: number;
+        sourceHandle?: string;
+        targetHandle?: string;
+      }>;
+    };
+
+    try {
+      const payload = decodeDesign<SandboxSharePayload>(shared);
+      if (payload.scenarioId && SCENARIOS.some((s) => s.id === payload.scenarioId)) {
+        setSelectedScenarioId(payload.scenarioId);
+      }
+
+      if (payload.nodes && payload.nodes.length > 0) {
+        const resolvedNodes: PlacedNode[] = payload.nodes
+          .map((node) => {
+            const spec = specsByKind.get(node.kind);
+            if (!spec) return null;
+            return {
+              id: node.id,
+              spec,
+              x: node.x,
+              y: node.y,
+              replicas: node.replicas ?? 1,
+              customLabel: node.customLabel,
+            };
+          })
+          .filter((n): n is PlacedNode => Boolean(n));
+        setNodes(resolvedNodes);
+      }
+
+      if (payload.edges) {
+        const resolvedEdges: Edge[] = payload.edges.map((edge) => ({
+          id: edge.id ?? uid(),
+          from: edge.from,
+          to: edge.to,
+          linkLatencyMs: edge.linkLatencyMs ?? 10,
+          sourceHandle: edge.sourceHandle,
+          targetHandle: edge.targetHandle,
+        }));
+        setEdges(resolvedEdges);
+      }
+    } catch (error) {
+      console.warn("Failed to decode sandbox share payload", error);
+    }
+  }, [specsByKind]);
 
   // Clear error when scenario changes
   React.useEffect(() => {

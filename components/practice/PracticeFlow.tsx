@@ -276,14 +276,6 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nextRenderableStep, hydrated]);
 
-  const handleExport = () => {
-    track("practice_brief_exported", { slug: PRACTICE_SLUG });
-  };
-
-  const handleOpenSandbox = () => {
-    track("practice_opened_sandbox", { slug: PRACTICE_SLUG });
-  };
-
   const isReadOnly = Boolean(sharedState);
 
   const isDesignStep = currentStep === "design";
@@ -342,8 +334,6 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
         {currentStep === "review" ? (
           <ReviewPanel
             state={state}
-            onExport={handleExport}
-            onOpenSandbox={handleOpenSandbox}
             readOnly={isReadOnly}
           />
         ) : null}

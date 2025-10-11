@@ -1,15 +1,12 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { toMarkdown } from "@/lib/practice/brief";
+import { useEffect, useMemo, useState } from "react";
 import { encodeDesign as encodeShare } from "@/lib/shareLink";
 import { track } from "@/lib/analytics";
 import type { PracticeState } from "@/lib/practice/types";
 
 type ReviewPanelProps = {
   state: PracticeState;
-  onExport?: () => void;
-  onOpenSandbox?: () => void;
   readOnly?: boolean;
 };
 
@@ -61,18 +58,57 @@ const buildHints = (state: PracticeState): string[] => {
   return Array.from(new Set(hints));
 };
 
+type SandboxSharePayload = {
+  scenarioId: PracticeState["slug"];
+  nodes: Array<{
+    id: string;
+    kind: string;
+    x: number;
+    y: number;
+    replicas?: number;
+    customLabel?: string;
+  }>;
+  edges: Array<{
+    id: string;
+    from: string;
+    to: string;
+    linkLatencyMs: number;
+    sourceHandle?: string;
+    targetHandle?: string;
+  }>;
+};
+
+const buildSandboxSharePayload = (state: PracticeState): SandboxSharePayload => ({
+  scenarioId: state.slug,
+  nodes: state.design.nodes.map((node) => ({
+    id: node.id,
+    kind: node.spec.kind,
+    x: node.x,
+    y: node.y,
+    replicas: node.replicas,
+    customLabel: node.customLabel,
+  })),
+  edges: state.design.edges.map((edge) => ({
+    id: edge.id,
+    from: edge.from,
+    to: edge.to,
+    linkLatencyMs: edge.linkLatencyMs,
+    sourceHandle: edge.sourceHandle,
+    targetHandle: edge.targetHandle,
+  })),
+});
+
 export const ReviewPanel = ({
   state,
-  onExport,
-  onOpenSandbox,
   readOnly = false,
 }: ReviewPanelProps) => {
-  const markdown = useMemo(() => toMarkdown(state), [state]);
   const lastResult = state.run.lastResult;
   const score = lastResult?.scoreBreakdown;
   const outcome =
     score?.outcome ?? (lastResult?.failedByChaos ? "chaos_fail" : undefined);
   const hints = useMemo(() => buildHints(state), [state]);
+  const sandboxShare = useMemo(() => buildSandboxSharePayload(state), [state]);
+  const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
 
   useEffect(() => {
     if (score) {
@@ -85,24 +121,16 @@ export const ReviewPanel = ({
     }
   }, [score, state.slug, state.run.attempts]);
 
+  useEffect(() => {
+    if (shareStatus === "idle") return;
+    const timer = window.setTimeout(() => setShareStatus("idle"), 3000);
+    return () => window.clearTimeout(timer);
+  }, [shareStatus]);
+
   const shareUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}/practice/${state.slug}?s=${encodeShare(state)}`
+      ? `${window.location.origin}/play?s=${encodeShare(sandboxShare)}`
       : "";
-
-  const handleExport = () => {
-    const blob = new Blob([markdown], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${state.slug}-review.md`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    onExport?.();
-    track("practice_review_exported", { slug: state.slug });
-  };
 
   const handleShare = () => {
     if (!shareUrl) return;
@@ -112,17 +140,20 @@ export const ReviewPanel = ({
         track("practice_shared", {
           slug: state.slug,
           score: score?.totalScore ?? 0,
+          destination: "sandbox",
         });
+        setShareStatus("copied");
       })
       .catch((error) => {
         console.error("Failed to copy share link", error);
+        setShareStatus("error");
       });
   };
 
-  const handleOpenSandbox = () => {
-    onOpenSandbox?.();
-    track("practice_review_sandbox_requested", { slug: state.slug });
-  };
+  const shareButtonClass =
+    shareStatus === "copied"
+      ? "inline-flex items-center gap-2 rounded-full border border-blue-400 px-4 py-2 text-xs font-semibold text-white bg-blue-500 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+      : "inline-flex items-center gap-2 rounded-full border border-blue-400/40 px-4 py-2 text-xs font-semibold text-blue-100 transition hover:bg-blue-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400";
 
   return (
     <div className="space-y-6">
@@ -131,7 +162,7 @@ export const ReviewPanel = ({
           <div>
             <h2 className="text-xl font-semibold text-white">Review</h2>
             <p className="text-sm text-zinc-400">
-              Final metrics and notes from your latest passing run. Share it or export the markdown recap.
+              Final metrics and notes from your latest passing run. Share a sandbox link or review the highlights below.
             </p>
           </div>
           {score ? (
@@ -270,40 +301,38 @@ export const ReviewPanel = ({
         <header className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
-              Markdown recap
+              Share your sandbox
             </h3>
             <p className="text-xs text-zinc-500">
-              Copy the summary into your notes or share the encoded link for friends to replay.
+              Copy a link that recreates this scenario, layout, connections, and replicas directly in the sandbox.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
               onClick={handleShare}
-              className="inline-flex items-center gap-2 rounded-full border border-blue-400/40 px-4 py-2 text-xs font-semibold text-blue-100 transition hover:bg-blue-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              className={shareButtonClass}
             >
-              Copy share link
-            </button>
-            <button
-              type="button"
-              onClick={handleExport}
-              className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-100 transition hover:border-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
-            >
-              Export .md
-            </button>
-            <button
-              type="button"
-              onClick={handleOpenSandbox}
-              disabled
-              className="inline-flex cursor-not-allowed items-center gap-2 rounded-full border border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-500"
-            >
-              Validate in sandbox (soon)
+              {shareStatus === "copied" ? "Link copied!" : "Copy share link"}
             </button>
           </div>
+          {shareStatus === "error" ? (
+            <p className="text-xs text-rose-300">Copy failed. Try again or share manually.</p>
+          ) : null}
         </header>
-        <pre className="max-h-[50vh] overflow-y-auto rounded-2xl bg-zinc-950/70 p-4 text-xs leading-relaxed text-zinc-100 sm:text-sm">
-          {markdown}
-        </pre>
+        <dl className="grid gap-3 rounded-2xl border border-zinc-800 bg-zinc-950/40 p-4 text-xs text-zinc-300 sm:grid-cols-2">
+          <div>
+            <dt className="uppercase tracking-wide text-zinc-400">Scenario</dt>
+            <dd className="text-zinc-100">{state.slug}</dd>
+          </div>
+          <div>
+            <dt className="uppercase tracking-wide text-zinc-400">Nodes</dt>
+            <dd className="text-zinc-100">{sandboxShare.nodes.length}</dd>
+          </div>
+          <div className="sm:col-span-2 text-zinc-400">
+            The copied link opens in the sandbox so others can inspect the board exactly as you arranged it.
+          </div>
+        </dl>
       </section>
     </div>
   );
