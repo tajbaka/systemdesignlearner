@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
 import ReactFlowBoard from "@/app/components/ReactFlowBoard";
@@ -185,6 +185,8 @@ export default function DesignStage({
   onGoBack,
 }: DesignStageProps) {
   console.debug('[DesignStage] render nodes', design.nodes.map(node => ({ id: node.id, replicas: node.replicas })));
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const paletteItems = useMemo(
     () =>
       COMPONENT_LIBRARY.filter((component) =>
@@ -332,11 +334,22 @@ export default function DesignStage({
   const handleNodesChange = useCallback(
     (nextNodes: PlacedNode[]) => {
       if (locked || readOnly) return;
-      updateDesign((prev) => ({
-        ...prev,
-        nodes: nextNodes,
-        edges: pruneEdges(prev.edges, nextNodes),
-      }));
+      let prunedEdges: Edge[] = [];
+      updateDesign((prev) => {
+        const edges = pruneEdges(prev.edges, nextNodes);
+        prunedEdges = edges;
+        return {
+          ...prev,
+          nodes: nextNodes,
+          edges,
+        };
+      });
+      setSelectedNodeId((prev) =>
+        prev && nextNodes.some((node) => node.id === prev) ? prev : null
+      );
+      setSelectedEdgeId((prev) =>
+        prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
+      );
     },
     [locked, readOnly, updateDesign]
   );
@@ -348,6 +361,9 @@ export default function DesignStage({
         ...prev,
         edges: nextEdges,
       }));
+      setSelectedEdgeId((prev) =>
+        prev && nextEdges.some((edge) => edge.id === prev) ? prev : null
+      );
     },
     [locked, readOnly, updateDesign]
   );
@@ -355,11 +371,17 @@ export default function DesignStage({
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
       if (locked || readOnly) return;
+      let prunedEdges: Edge[] = [];
       updateDesign((prev) => {
         const nodes = prev.nodes.filter((node) => node.id !== nodeId);
         const edges = pruneEdges(prev.edges, nodes);
+        prunedEdges = edges;
         return { ...prev, nodes, edges };
       });
+      setSelectedNodeId((prev) => (prev === nodeId ? null : prev));
+      setSelectedEdgeId((prev) =>
+        prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
+      );
     },
     [locked, readOnly, updateDesign]
   );
@@ -377,6 +399,55 @@ export default function DesignStage({
     },
     [locked, readOnly, updateDesign]
   );
+
+  const handleEdgeSelect = useCallback((edgeId: string | null) => {
+    setSelectedEdgeId(edgeId);
+    if (edgeId) {
+      setSelectedNodeId(null);
+    }
+  }, []);
+
+  const handleNodeSelect = useCallback((nodeId: string | null) => {
+    setSelectedNodeId(nodeId);
+    if (nodeId) {
+      setSelectedEdgeId(null);
+    }
+  }, []);
+
+  const handleNodeTouchStart = useCallback((nodeId: string) => {
+    if (locked || readOnly) return;
+    setSelectedNodeId(nodeId);
+    setSelectedEdgeId(null);
+  }, [locked, readOnly]);
+
+  const handleNodeTouchEnd = useCallback(() => {
+    // Touch end currently unused; reserved for future mobile gestures
+  }, []);
+
+  const handleDeleteSelection = useCallback(() => {
+    if (locked || readOnly) return;
+    if (selectedEdgeId) {
+      updateDesign((prev) => ({
+        ...prev,
+        edges: prev.edges.filter((edge) => edge.id !== selectedEdgeId),
+      }));
+      setSelectedEdgeId(null);
+      return;
+    }
+    if (selectedNodeId) {
+      let prunedEdges: Edge[] = [];
+      updateDesign((prev) => {
+        const nodes = prev.nodes.filter((node) => node.id !== selectedNodeId);
+        const edges = pruneEdges(prev.edges, nodes);
+        prunedEdges = edges;
+        return { ...prev, nodes, edges };
+      });
+      setSelectedNodeId(null);
+      setSelectedEdgeId((prev) =>
+        prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
+      );
+    }
+  }, [locked, readOnly, selectedEdgeId, selectedNodeId, updateDesign]);
 
   const serviceNode = useMemo(
     () => design.nodes.find((node) => node.spec.kind === "Service"),
@@ -530,7 +601,7 @@ export default function DesignStage({
 
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(280px,0.9fr)_minmax(720px,1.2fr)_minmax(280px,0.9fr)] lg:items-start lg:gap-6 lg:max-w-screen-2xl lg:mx-auto">
-          <aside className="order-2 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-2 lg:order-1 lg:sticky lg:top-28 lg:h-[640px] lg:flex lg:flex-col lg:min-h-[640px] lg:overflow-hidden">
+          <aside className="order-3 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-2 lg:order-1 lg:sticky lg:top-28 lg:h-[640px] lg:flex lg:flex-col lg:min-h-[640px] lg:overflow-hidden">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">Component palette</h3>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
               Pick the blocks you need. Tap to drop components on mobile, or drag and drop on desktop to place them exactly where you want.
@@ -545,9 +616,29 @@ export default function DesignStage({
             />
           </aside>
 
-          <div className="order-1 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-3 sm:order-1 lg:order-2 lg:px-6 lg:py-6 sm:p-4">
+          <div className="order-2 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-3 sm:order-1 lg:order-2 lg:px-6 lg:py-6 sm:p-4">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-2 lg:p-6">
               <div className="relative h-[65vh] min-h-[420px] max-h-[640px] sm:h-[70vh] lg:h-[640px] lg:max-h-none rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/50">
+                {!locked && !readOnly && (selectedNodeId || selectedEdgeId) ? (
+                  <div className="absolute top-3 right-3 z-30">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleDeleteSelection();
+                        if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+                          navigator.vibrate(30);
+                        }
+                      }}
+                      className="w-10 h-10 flex items-center justify-center rounded-full bg-red-500/15 border border-red-400/40 text-red-200 hover:bg-red-500/25 transition touch-manipulation"
+                      aria-label="Delete selected"
+                      title="Delete selected"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                ) : null}
                 {locked || readOnly ? (
                   <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/60 backdrop-blur-sm text-sm text-zinc-300">
                     Shared view · editing disabled
@@ -562,13 +653,17 @@ export default function DesignStage({
                   onEdgesChange={handleEdgesChange}
                   onDeleteNode={handleDeleteNode}
                   onUpdateReplicas={handleUpdateReplicas}
+                  onNodeTouchStart={handleNodeTouchStart}
+                  onNodeTouchEnd={handleNodeTouchEnd}
+                  onEdgeSelect={handleEdgeSelect}
+                  onNodeSelect={handleNodeSelect}
                   className={locked || readOnly ? "pointer-events-none opacity-60" : ""}
                 />
               </div>
             </div>
           </div>
 
-          <aside className="order-3 flex flex-col gap-4 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-3 lg:order-3 lg:sticky lg:top-28 lg:h-[620px] lg:min-h-[620px]">
+          <aside className="order-1 flex flex-col gap-4 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-3 lg:order-3 lg:sticky lg:top-28 lg:h-[620px] lg:min-h-[620px]">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">Guided steps</h3>
               <div className="flex items-center gap-2">

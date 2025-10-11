@@ -53,6 +53,7 @@ export default function SystemDesignEditor() {
   // Mobile-specific state
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [isSimPanelCollapsed, setIsSimPanelCollapsed] = useState(false);
 
   const selectedScenario = useMemo(() =>
@@ -224,12 +225,24 @@ export default function SystemDesignEditor() {
 
   const handleEdgesChange = useCallback((updatedEdges: Edge[]) => {
     setEdges(updatedEdges);
+    setSelectedEdgeId((prev) => {
+      if (!prev) return prev;
+      return updatedEdges.some((edge) => edge.id === prev) ? prev : null;
+    });
   }, []);
 
   const handleDeleteNode = useCallback((nodeId: string) => {
     setNodes(prev => prev.filter(node => node.id !== nodeId));
-    // Also remove any edges connected to this node
-    setEdges(prev => prev.filter(edge => edge.from !== nodeId && edge.to !== nodeId));
+    let nextEdges: Edge[] = [];
+    setEdges(prev => {
+      nextEdges = prev.filter(edge => edge.from !== nodeId && edge.to !== nodeId);
+      return nextEdges;
+    });
+    setSelectedNode(prev => (prev === nodeId ? null : prev));
+    setSelectedEdgeId(prev => {
+      if (!prev) return prev;
+      return nextEdges.some(edge => edge.id === prev) ? prev : null;
+    });
   }, []);
 
   const handleRenameNode = useCallback((nodeId: string, newLabel: string) => {
@@ -267,6 +280,7 @@ export default function SystemDesignEditor() {
     if (touchThrottleRef.current) return;
     touchThrottleRef.current = true;
     setSelectedNode(nodeId);
+    setSelectedEdgeId(null);
     setTimeout(() => {
       touchThrottleRef.current = false;
     }, 100); // Throttle touch events to 10 per second
@@ -274,6 +288,15 @@ export default function SystemDesignEditor() {
 
   const handleNodeTouchEnd = useCallback(() => {
     // Handle touch end if needed - currently no-op for performance
+  }, []);
+
+  const handleNodeSelect = useCallback((nodeId: string | null) => {
+    if (nodeId) {
+      setSelectedNode(nodeId);
+      setSelectedEdgeId(null);
+    } else {
+      setSelectedNode(null);
+    }
   }, []);
 
   const handleRunSimulation = useCallback(() => {
@@ -309,6 +332,28 @@ export default function SystemDesignEditor() {
     }
   }, [selectedScenario, nodes, edges, chaosMode]);
 
+  const handleEdgeSelect = useCallback((edgeId: string | null) => {
+    setSelectedEdgeId(edgeId);
+    if (edgeId) {
+      setSelectedNode(null);
+    }
+  }, []);
+
+  const handleDeleteSelection = useCallback(() => {
+    if (selectedEdgeId) {
+      let nextEdges: Edge[] = [];
+      setEdges(prev => {
+        nextEdges = prev.filter(edge => edge.id !== selectedEdgeId);
+        return nextEdges;
+      });
+      setSelectedEdgeId(null);
+      return;
+    }
+    if (selectedNode) {
+      handleDeleteNode(selectedNode);
+    }
+  }, [handleDeleteNode, selectedEdgeId, selectedNode]);
+
   const sidebar = (
     <div className="flex min-h-0 flex-col gap-3 h-full overflow-hidden">
       <div className="flex flex-col gap-3 h-full overflow-hidden">
@@ -342,6 +387,8 @@ export default function SystemDesignEditor() {
       onRenameNode={handleRenameNode}
       onNodeTouchStart={handleNodeTouchStart}
       onNodeTouchEnd={handleNodeTouchEnd}
+      onEdgeSelect={handleEdgeSelect}
+      onNodeSelect={handleNodeSelect}
       className="w-full h-full"
     />
   );
@@ -354,6 +401,8 @@ export default function SystemDesignEditor() {
       selectedNode={selectedNode}
       selectedScenario={selectedScenario}
       onAddComponent={handleAddComponent}
+      canDelete={Boolean(selectedNode || selectedEdgeId)}
+      onDelete={handleDeleteSelection}
     />
   );
 

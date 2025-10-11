@@ -40,13 +40,32 @@ interface ReactFlowBoardProps {
   onNodeTouchEnd?: () => void;
   onRenameNode?: (nodeId: string, newLabel: string) => void;
   onUpdateReplicas?: (nodeId: string, replicas: number) => void;
+  onEdgeSelect?: (edgeId: string | null) => void;
+  onNodeSelect?: (nodeId: string | null) => void;
   className?: string;
   style?: React.CSSProperties;
   showMiniMap?: boolean;
 }
 
 // Inner component that uses React Flow hooks
-function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, onUpdateReplicas, className, style, showMiniMap = true }: ReactFlowBoardProps) {
+function ReactFlowBoardInner({
+  nodes,
+  edges,
+  onConnect,
+  onDrop,
+  onNodesChange,
+  onEdgesChange,
+  onDeleteNode,
+  onNodeTouchStart,
+  onNodeTouchEnd,
+  onRenameNode,
+  onUpdateReplicas,
+  onEdgeSelect,
+  onNodeSelect,
+  className,
+  style,
+  showMiniMap = true,
+}: ReactFlowBoardProps) {
   // Initialize React Flow state from props
   const [rfNodes, setRfNodes, onRfNodesChange] = useNodesState<SystemDesignNode>([]);
   const [rfEdges, setRfEdges, onRfEdgesChange] = useEdgesState<SystemDesignEdge>([]);
@@ -277,6 +296,55 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
     event.dataTransfer.dropEffect = "copy";
   }, []);
 
+  const clearEdgeSelection = React.useCallback(() => {
+    setRfEdges((prevEdges) => {
+      let didChange = false;
+      const nextEdges = prevEdges.map((edge) => {
+        if (edge.selected) {
+          didChange = true;
+          return { ...edge, selected: false };
+        }
+        return edge;
+      });
+      return didChange ? nextEdges : prevEdges;
+    });
+    onEdgeSelect?.(null);
+  }, [setRfEdges, onEdgeSelect]);
+
+  const handleEdgeClick = React.useCallback((event: React.MouseEvent, edge: SystemDesignEdge) => {
+    event.stopPropagation();
+    setRfEdges((prevEdges) => {
+      let didChange = false;
+      const nextEdges = prevEdges.map((current) => {
+        if (current.id === edge.id) {
+          if (!current.selected) {
+            didChange = true;
+            return { ...current, selected: true };
+          }
+          return current;
+        }
+        if (current.selected) {
+          didChange = true;
+          return { ...current, selected: false };
+        }
+        return current;
+      });
+      return didChange ? nextEdges : prevEdges;
+    });
+    onEdgeSelect?.(edge.id);
+    onNodeSelect?.(null);
+  }, [setRfEdges, onEdgeSelect, onNodeSelect]);
+
+  const handleNodeClick = React.useCallback((_: React.MouseEvent, node: SystemDesignNode) => {
+    clearEdgeSelection();
+    onNodeSelect?.(node.id);
+  }, [clearEdgeSelection, onNodeSelect]);
+
+  const handlePaneClick = React.useCallback(() => {
+    clearEdgeSelection();
+    onNodeSelect?.(null);
+  }, [clearEdgeSelection, onNodeSelect]);
+
   return (
     <div className={className} style={{ width: '100%', height: '100%', ...style }}>
       <ReactFlow
@@ -289,6 +357,9 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
         onConnect={handleConnect}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
+        onEdgeClick={handleEdgeClick}
+        onPaneClick={handlePaneClick}
+        onNodeClick={handleNodeClick}
         fitView
         deleteKeyCode={["Delete", "Backspace"]}
         multiSelectionKeyCode="Meta"
