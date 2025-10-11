@@ -310,19 +310,23 @@ export default function SystemDesignEditor() {
   }, [selectedScenario, nodes, edges, chaosMode]);
 
   const sidebar = (
-    <div className="flex flex-col gap-3 h-full overflow-hidden">
-      <Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={addNode} />
-      <ScenarioPanel
-        scenarios={SCENARIOS}
-        selectedScenarioId={selectedScenarioId}
-        onScenarioChange={setSelectedScenarioId}
-        chaosMode={chaosMode}
-        onChaosModeChange={setChaosMode}
-        onRunSimulation={handleRunSimulation}
-        simulationError={simulationError}
-        simulationResult={simulationResult}
-        failAttempts={failAttempts}
-      />
+    <div className="flex min-h-0 flex-col gap-3 h-full overflow-hidden">
+      <div className="flex flex-col gap-3 h-full overflow-hidden">
+        <div className="flex flex-col gap-3 h-80">
+          <Palette componentLibrary={COMPONENT_LIBRARY} onSpawn={addNode} />
+        </div>
+        <ScenarioPanel
+          scenarios={SCENARIOS}
+          selectedScenarioId={selectedScenarioId}
+          onScenarioChange={setSelectedScenarioId}
+          chaosMode={chaosMode}
+          onChaosModeChange={setChaosMode}
+          onRunSimulation={handleRunSimulation}
+          simulationError={simulationError}
+          simulationResult={simulationResult}
+          failAttempts={failAttempts}
+        />
+      </div>
     </div>
   );
 

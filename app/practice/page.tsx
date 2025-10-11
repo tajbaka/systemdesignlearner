@@ -40,9 +40,6 @@ export default function PracticePage() {
               Upcoming
             </p>
             <div>
-              <label htmlFor="practice-search" className="text-sm text-zinc-400">
-                Search tracks (coming soon)
-              </label>
               <input
                 id="practice-search"
                 type="search"
