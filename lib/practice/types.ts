@@ -52,6 +52,7 @@ export type PracticeDesignState = {
   guidedCompleted: boolean;
   guidedDismissed: boolean;
   freeModeUnlocked: boolean;
+  redirectMode: "301" | "302";
 };
 
 export type PracticeRunState = {

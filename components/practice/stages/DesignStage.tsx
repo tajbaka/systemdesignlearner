@@ -449,6 +449,18 @@ export default function DesignStage({
     }
   }, [locked, readOnly, selectedEdgeId, selectedNodeId, updateDesign]);
 
+  const handleRedirectModeChange = useCallback(
+    (mode: "301" | "302") => {
+      if (locked || readOnly) return;
+      updateDesign((prev) => ({
+        ...prev,
+        redirectMode: mode,
+      }));
+      track("practice_design_redirect_mode_changed", { slug: "url-shortener", mode });
+    },
+    [locked, readOnly, updateDesign]
+  );
+
   const serviceNode = useMemo(
     () => design.nodes.find((node) => node.spec.kind === "Service"),
     [design.nodes]
@@ -523,6 +535,8 @@ export default function DesignStage({
     if (!authNode || !serviceNode) return false;
     return hasEdge(design.edges, authNode.id, serviceNode.id);
   }, [authNode, design.edges, requiresAdminDelete, serviceNode]);
+
+  const redirectMode = design.redirectMode ?? "302";
 
   const designReady =
     cacheOnPath &&
@@ -709,6 +723,42 @@ export default function DesignStage({
                 Guided mode is complete. Iterate freely or continue to simulation.
               </div>
             )}
+
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
+                  Redirect behavior
+                </h4>
+                <span className="text-xs text-zinc-500">{redirectMode === "301" ? "Permanent" : "Temporary"}</span>
+              </div>
+              <p className="text-xs leading-relaxed text-zinc-400">
+                URL shorteners default to 302 (temporary) redirects during rollout. Flip to 301 once you are confident cache warmups and analytics are stable.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {(["301", "302"] as const).map((mode) => {
+                  const active = redirectMode === mode;
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => handleRedirectModeChange(mode)}
+                      disabled={locked || readOnly}
+                      className={`rounded-xl border px-3 py-3 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                        active
+                          ? "border-emerald-400/60 bg-emerald-500/15 text-emerald-100"
+                          : "border-zinc-700 bg-zinc-900/50 text-zinc-300 hover:border-zinc-500"
+                      } ${locked || readOnly ? "cursor-not-allowed opacity-70" : ""}`}
+                    >
+                      {mode}
+                      <span className="block text-[11px] font-normal text-zinc-400">
+                        {mode === "301" ? "Permanent cacheable" : "Temporary flexible"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
             <div className="space-y-2 text-xs text-zinc-400">
               <div

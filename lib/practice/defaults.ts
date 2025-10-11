@@ -176,6 +176,7 @@ export const makeDefaultDesignState = (): PracticeDesignState => ({
   guidedCompleted: false,
   guidedDismissed: false,
   freeModeUnlocked: false,
+  redirectMode: "302",
 });
 
 export const makeDefaultRunState = (): PracticeRunState => ({

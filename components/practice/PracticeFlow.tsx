@@ -117,6 +117,7 @@ const mergeState = (
     edges: state.design?.edges
       ? cloneEdges(state.design.edges)
       : cloneEdges(base.design.edges),
+    redirectMode: state.design?.redirectMode ?? base.design.redirectMode,
   };
 
   const mergedRun: PracticeRunState = {

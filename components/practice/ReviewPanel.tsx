@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { encodeDesign as encodeShare } from "@/lib/shareLink";
+import { EmailCapture } from "@/components/EmailCapture";
 import { track } from "@/lib/analytics";
 import type { PracticeState } from "@/lib/practice/types";
 
@@ -108,6 +109,7 @@ export const ReviewPanel = ({
   const score = lastResult?.scoreBreakdown;
   const outcome =
     score?.outcome ?? (lastResult?.failedByChaos ? "chaos_fail" : undefined);
+  const isPass = outcome === "pass";
   const hints = useMemo(() => buildHints(state), [state]);
   const sandboxShare = useMemo(() => buildSandboxSharePayload(state), [state]);
   const [shareStatus, setShareStatus] = useState<"idle" | "copied" | "error">("idle");
@@ -241,6 +243,10 @@ export const ReviewPanel = ({
                   {state.requirements.nonFunctional.availability}%
                 </dd>
               </div>
+              <div>
+                <dt className="uppercase tracking-wide">Redirect code</dt>
+                <dd className="text-zinc-100">HTTP {state.design.redirectMode ?? "302"}</dd>
+              </div>
             </dl>
           </div>
 
@@ -344,6 +350,17 @@ export const ReviewPanel = ({
           </div>
         </dl>
       </section>
+
+      {isPass ? (
+        <EmailCapture
+          className="border-emerald-500/40 bg-emerald-500/10"
+          title="Get new daily scenarios"
+          description="Drop your email and we’ll ship new drills, launch updates, and deeper guides as they land."
+          buttonLabel="Send me updates"
+          successMessage="You’re on the list! Expect the next drill in your inbox soon."
+          alreadySubscribedMessage="You’re already subscribed — keep an eye out for the next drop."
+        />
+      ) : null}
 
       {onGoBack ? (
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
