@@ -1,11 +1,12 @@
 import type { Scenario } from "@/lib/scenarios";
-import type { PlacedNode } from "@/app/components/types";
+import type { PlacedNode, Edge } from "@/app/components/types";
 
 // Evaluates scenario acceptance criteria based on the current design
 export function evaluateScenario(
   scenario: Scenario,
   pathIds: string[],
-  nodes: PlacedNode[]
+  nodes: PlacedNode[],
+  edges: Edge[]
 ) {
   // Build text representation of the path for pattern matching
   const textPath = pathIds.map(id => {
@@ -14,6 +15,13 @@ export function evaluateScenario(
   }).join(">");
 
   const results: Record<string, boolean> = {};
+
+  const edgeConnects = (a: string, b: string) =>
+    edges.some(
+      (edge) =>
+        (edge.from === a && edge.to === b) ||
+        (edge.from === b && edge.to === a)
+    );
 
   // Evaluate each acceptance criterion
   for (const criterion of scenario.acceptance ?? []) {
@@ -50,10 +58,26 @@ export function evaluateScenario(
       case "redis-zset":
         results[criterion.id] = textPath.includes("Cache (Redis)");
         break;
-      case "analytics":
-        // Look for message queue + worker pool pattern for async analytics
-        results[criterion.id] = textPath.includes("Message Queue (Kafka Topic)") && textPath.includes("Worker Pool");
+      case "analytics": {
+        const serviceIds = nodes.filter((n) => n.spec.kind === "Service").map((n) => n.id);
+        const queueIds = nodes.filter((n) => n.spec.kind === "Message Queue (Kafka Topic)").map((n) => n.id);
+        const workerIds = nodes.filter((n) => n.spec.kind === "Worker Pool").map((n) => n.id);
+
+        if (serviceIds.length === 0 || queueIds.length === 0 || workerIds.length === 0) {
+          results[criterion.id] = false;
+          break;
+        }
+
+        const serviceToQueue = serviceIds.some((serviceId) =>
+          queueIds.some((queueId) => edgeConnects(serviceId, queueId))
+        );
+        const queueToWorker = queueIds.some((queueId) =>
+          workerIds.some((workerId) => edgeConnects(queueId, workerId))
+        );
+
+        results[criterion.id] = serviceToQueue && queueToWorker;
         break;
+      }
       case "dlq":
         // Look for message queue + worker pool pattern
         results[criterion.id] = textPath.includes("Message Queue") && textPath.includes("Worker Pool");

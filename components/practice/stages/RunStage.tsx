@@ -80,8 +80,20 @@ const deriveHints = (
         case "lb-service":
           hints.push("Place a gateway or load balancer before the service to satisfy availability requirements.");
           break;
+        case "analytics": {
+          const message =
+            scenario.acceptance?.find((item) => item.id === "analytics")?.text ??
+            "Add async analytics processing with a queue and worker.";
+          hints.push(message);
+          break;
+        }
         default:
-          hints.push("Scenario acceptance criteria unmet. Revisit the guided steps.");
+          const acceptance = scenario.acceptance?.find((item) => item.id === id);
+          if (acceptance) {
+            hints.push(acceptance.text);
+          } else {
+            hints.push("Scenario acceptance criteria unmet. Revisit the guided steps.");
+          }
       }
     });
   }

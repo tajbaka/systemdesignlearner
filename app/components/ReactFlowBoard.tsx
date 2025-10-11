@@ -339,6 +339,8 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
             style={{
               backgroundColor: 'rgba(0, 0, 0, 0.5)',
               border: '1px solid rgba(255, 255, 255, 0.2)',
+              width: 140,
+              height: 105,
             }}
             className="hidden lg:block" // Hide on mobile, show on desktop
           />

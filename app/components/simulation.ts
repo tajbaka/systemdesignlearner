@@ -47,7 +47,7 @@ export function simulate(
   const backlogGrowthRps = Math.max(0, scenario.requiredRps - (isFinite(capacity) ? capacity : 0));
 
   // Evaluate acceptance criteria
-  const acceptanceResults = evaluateScenario(scenario, pathNodeIds, nodes);
+  const acceptanceResults = evaluateScenario(scenario, pathNodeIds, nodes, edges);
   const acceptanceScore = calculateAcceptanceScore(scenario, acceptanceResults);
 
   // Calculate overall score

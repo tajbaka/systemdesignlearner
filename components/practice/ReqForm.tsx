@@ -36,7 +36,7 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
   const requirements = useMemo(() => ensureDefaults(value), [value]);
 
   const handleToggle = (id: string) => {
-    if (readOnly) return;
+    if (readOnly || locked) return;
     const next: Requirements = {
       ...requirements,
       functional: {

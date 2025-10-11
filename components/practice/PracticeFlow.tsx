@@ -258,6 +258,20 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
     }
   };
 
+  const goBackToBrief = () => {
+    updateState((prev) => ({
+      ...prev,
+      locked: {
+        ...prev.locked,
+        brief: false,
+        design: false,
+        run: false,
+      },
+    }));
+    setCurrentStep("brief");
+    track("practice_design_back_to_brief", { slug: PRACTICE_SLUG });
+  };
+
   const goBackToDesign = () => {
     setCurrentStep("design");
     track("practice_step_goback", { slug: PRACTICE_SLUG, from: "run", to: "design" });
@@ -289,55 +303,56 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
         readOnly={isReadOnly}
       />
 
-      <section
-        className={`transition-all ${
-          isDesignStep
-            ? "bg-transparent p-0 sm:p-0 border-none shadow-none"
-            : "rounded-3xl border border-zinc-700 bg-zinc-900 p-4 shadow-sm sm:p-6"
-        }`}
-      >
-        {currentStep === "brief" ? (
-          <BriefStage
-            value={state.requirements ?? makeDefaultRequirements()}
-            locked={isReadOnly}
-            onChange={handleRequirementsChange}
-            onComplete={completeBrief}
-            readOnly={isReadOnly}
-          />
-        ) : null}
+      {currentStep === "brief" ? (
+        <BriefStage
+          value={state.requirements ?? makeDefaultRequirements()}
+          locked={isReadOnly}
+          onChange={handleRequirementsChange}
+          onComplete={completeBrief}
+          readOnly={isReadOnly}
+        />
+      ) : (
+        <section
+          className={`transition-all ${
+            isDesignStep
+              ? "bg-transparent p-0 sm:p-0 border-none shadow-none"
+              : "rounded-3xl border border-zinc-700 bg-zinc-900 p-4 shadow-sm sm:p-6"
+          }`}
+        >
+          {currentStep === "design" ? (
+            <DesignStage
+              design={state.design}
+              requirements={state.requirements}
+              locked={isReadOnly}
+              readOnly={isReadOnly}
+              designComplete={state.locked.design}
+              updateDesign={updateDesign}
+              onContinue={completeDesign}
+              onGoBack={goBackToBrief}
+            />
+          ) : null}
 
-        {currentStep === "design" ? (
-          <DesignStage
-            design={state.design}
-            requirements={state.requirements}
-            locked={isReadOnly}
-            readOnly={isReadOnly}
-            designComplete={state.locked.design}
-            updateDesign={updateDesign}
-            onContinue={completeDesign}
-          />
-        ) : null}
+          {currentStep === "run" ? (
+            <RunStage
+              design={state.design}
+              run={state.run}
+              requirements={state.requirements}
+              locked={isReadOnly}
+              readOnly={isReadOnly}
+              updateRun={updateRun}
+              onContinue={completeRun}
+              onGoBack={goBackToDesign}
+            />
+          ) : null}
 
-        {currentStep === "run" ? (
-          <RunStage
-            design={state.design}
-            run={state.run}
-            requirements={state.requirements}
-            locked={isReadOnly}
-            readOnly={isReadOnly}
-            updateRun={updateRun}
-            onContinue={completeRun}
-            onGoBack={goBackToDesign}
-          />
-        ) : null}
-
-        {currentStep === "review" ? (
-          <ReviewPanel
-            state={state}
-            readOnly={isReadOnly}
-          />
-        ) : null}
-      </section>
+          {currentStep === "review" ? (
+            <ReviewPanel
+              state={state}
+              readOnly={isReadOnly}
+            />
+          ) : null}
+        </section>
+      )}
     </div>
   );
 };
