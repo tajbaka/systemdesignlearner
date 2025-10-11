@@ -8,6 +8,7 @@ import type { PracticeState } from "@/lib/practice/types";
 type ReviewPanelProps = {
   state: PracticeState;
   readOnly?: boolean;
+  onGoBack?: () => void;
 };
 
 const FUNCTIONAL_ITEMS: Array<{ id: keyof PracticeState["requirements"]["functional"]; label: string }> = [
@@ -101,6 +102,7 @@ const buildSandboxSharePayload = (state: PracticeState): SandboxSharePayload => 
 export const ReviewPanel = ({
   state,
   readOnly = false,
+  onGoBack,
 }: ReviewPanelProps) => {
   const lastResult = state.run.lastResult;
   const score = lastResult?.scoreBreakdown;
@@ -155,6 +157,12 @@ export const ReviewPanel = ({
     : shareStatus === "copied"
       ? "inline-flex items-center gap-2 rounded-full border border-blue-400 px-4 py-2 text-xs font-semibold text-white bg-blue-500 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
       : "inline-flex items-center gap-2 rounded-full border border-blue-400/40 px-4 py-2 text-xs font-semibold text-blue-100 transition hover:bg-blue-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400";
+
+  const handleGoBack = () => {
+    if (!onGoBack || readOnly) return;
+    track("practice_review_goback_clicked", { slug: state.slug });
+    onGoBack();
+  };
 
   return (
     <div className="space-y-6">
@@ -336,6 +344,19 @@ export const ReviewPanel = ({
           </div>
         </dl>
       </section>
+
+      {onGoBack ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <button
+            type="button"
+            onClick={handleGoBack}
+            disabled={readOnly}
+            className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            ← Back to Run
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 };

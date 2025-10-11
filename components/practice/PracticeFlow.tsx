@@ -31,6 +31,21 @@ const deriveCurrentStep = (state: PracticeState): PracticeStep => {
   return "review";
 };
 
+const isStepAccessible = (step: PracticeStep, locks: PracticeState["locked"]) => {
+  switch (step) {
+    case "brief":
+      return true;
+    case "design":
+      return locks.brief;
+    case "run":
+      return locks.design;
+    case "review":
+      return locks.run;
+    default:
+      return false;
+  }
+};
+
 type LegacyPracticeState = Partial<{
   slug: string;
   requirements: Requirements;
@@ -174,15 +189,10 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       if (sharedState) return;
       setState((prev) => {
         const next = updater(prev);
-        const updated = {
+        return {
           ...next,
           updatedAt: Date.now(),
         };
-        setCurrentStep((current) => {
-          const derived = deriveCurrentStep(updated);
-          return derived === current ? current : derived;
-        });
-        return updated;
       });
     },
     [sharedState]
@@ -209,24 +219,8 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
   );
 
   const handleStepChange = (step: PracticeStep) => {
-    updateState((prev) => {
-      if (step === "brief") {
-        return {
-          ...prev,
-          locked: { brief: false, design: false, run: false },
-        };
-      }
-      if (step === "design") {
-        if (!prev.locked.design && !prev.locked.run) {
-          return prev;
-        }
-        return {
-          ...prev,
-          locked: { ...prev.locked, design: false, run: false },
-        };
-      }
-      return prev;
-    });
+    if (!isStepAccessible(step, state.locked)) return;
+    setCurrentStep(step);
     track("practice_step_viewed", { slug: PRACTICE_SLUG, step });
     scrollToTop();
   };
@@ -248,6 +242,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
 
   const completeBrief = (requirements: Requirements) => {
     const wasCompleted = state.locked.brief;
+    setCurrentStep("design");
     updateState((prev) => ({
       ...prev,
       requirements,
@@ -261,6 +256,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
 
   const completeDesign = () => {
     const wasCompleted = state.locked.design;
+    setCurrentStep("run");
     updateState((prev) => ({
       ...prev,
       locked: wasCompleted ? prev.locked : { ...prev.locked, design: true },
@@ -273,6 +269,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
 
   const completeRun = () => {
     const wasCompleted = state.locked.run;
+    setCurrentStep("review");
     updateState((prev) => ({
       ...prev,
       locked: wasCompleted ? prev.locked : { ...prev.locked, run: true },
@@ -284,44 +281,31 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
   };
 
   const goBackToBrief = () => {
-    updateState((prev) => ({
-      ...prev,
-      locked: {
-        ...prev.locked,
-        brief: false,
-        design: false,
-        run: false,
-      },
-    }));
+    setCurrentStep("brief");
     scrollToTop();
     track("practice_design_back_to_brief", { slug: PRACTICE_SLUG });
   };
 
   const goBackToDesign = () => {
-    updateState((prev) => ({
-      ...prev,
-      locked: {
-        ...prev.locked,
-        design: false,
-        run: false,
-      },
-    }));
+    setCurrentStep("design");
     scrollToTop();
     track("practice_step_goback", { slug: PRACTICE_SLUG, from: "run", to: "design" });
   };
 
-  const nextRenderableStep = useMemo(
-    () => deriveCurrentStep(state),
-    [state]
-  );
+  const goBackToRun = () => {
+    setCurrentStep("run");
+    scrollToTop();
+    track("practice_step_goback", { slug: PRACTICE_SLUG, from: "review", to: "run" });
+  };
+
+  const nextRenderableStep = useMemo(() => deriveCurrentStep(state), [state]);
 
   useEffect(() => {
     if (!hydrated) return;
-    if (currentStep !== nextRenderableStep) {
+    if (!isStepAccessible(currentStep, state.locked)) {
       setCurrentStep(nextRenderableStep);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nextRenderableStep, hydrated]);
+  }, [hydrated, currentStep, nextRenderableStep, state.locked]);
 
   const isReadOnly = Boolean(sharedState);
 
@@ -382,6 +366,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
             <ReviewPanel
               state={state}
               readOnly={isReadOnly}
+              onGoBack={isReadOnly ? undefined : goBackToRun}
             />
           ) : null}
         </section>
