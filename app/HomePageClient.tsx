@@ -80,9 +80,12 @@ export function HomePageClient() {
 
     const form = e.currentTarget;
     const formData = new FormData(form);
+    const email = formData.get('email') as string;
     const data = {
-      email: formData.get('email') as string,
+      email,
     };
+
+    track("email_capture_submitted", { source: "homepage-footer", emailDomain: email.split("@")[1] ?? "unknown" });
 
     try {
       const response = await fetch('/api/subscribe', {
@@ -103,6 +106,7 @@ export function HomePageClient() {
       if (result.message === 'Already subscribed!') {
         setNewsletterStatus('success');
         setNewsletterMessage('Thanks for subscribing, you\'re already on our list!');
+        track("email_capture_already_subscribed", { source: "homepage-footer" });
         // Reset form after success
         form.reset();
         setTimeout(() => {
@@ -114,6 +118,7 @@ export function HomePageClient() {
 
       setNewsletterStatus('success');
       setNewsletterMessage('Successfully subscribed!');
+      track("email_capture_success", { source: "homepage-footer" });
 
       // Reset form after success
       form.reset();
@@ -126,6 +131,7 @@ export function HomePageClient() {
     } catch (error) {
       console.error('Newsletter subscription error:', error);
       setNewsletterStatus('error');
+      track("email_capture_error", { source: "homepage-footer" });
 
       // Reset status after showing error message
       setTimeout(() => setNewsletterStatus('idle'), 3000);

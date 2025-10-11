@@ -172,9 +172,11 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
     setCurrentStep(deriveCurrentStep(merged));
     setHydrated(true);
 
-    if (!stored) {
-      track("practice_start", { slug: PRACTICE_SLUG });
-    }
+    track("practice_start", {
+      slug: PRACTICE_SLUG,
+      isFirstVisit: !stored,
+      hasProgress: Boolean(stored)
+    });
   }, [sharedState]);
 
   useEffect(() => {
