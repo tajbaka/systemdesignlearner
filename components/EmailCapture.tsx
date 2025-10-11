@@ -108,7 +108,7 @@ export function EmailCapture({
             name="email"
             required
             placeholder={placeholder}
-            className="h-14 sm:h-12 flex-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 text-sm text-white placeholder:text-emerald-200/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+            className="h-16 min-h-[3.5rem] sm:h-12 sm:min-h-0 flex-1 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 text-sm text-white placeholder:text-emerald-200/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
             autoComplete="email"
             disabled={status === "submitting"}
             aria-label="Email address"
