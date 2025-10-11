@@ -23,8 +23,8 @@ export default function Palette({
   const listSpacing = title || subtitle ? "mt-3" : "";
 
   return (
-    <div className={className ?? "flex flex-col gap-3 h-80"}>
-      <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col h-full">
+    <div className={className ?? "flex flex-col gap-3 h-full min-h-0"}>
+      <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col flex-1 min-h-0">
         {title ? <h2 className="text-base text-zinc-300 font-semibold">{title}</h2> : null}
         {subtitle ? <p className="text-xs text-zinc-400 mt-1">{subtitle}</p> : null}
         <div

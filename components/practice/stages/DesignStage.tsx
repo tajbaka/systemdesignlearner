@@ -530,7 +530,7 @@ export default function DesignStage({
 
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(280px,0.9fr)_minmax(720px,1.2fr)_minmax(280px,0.9fr)] lg:items-start lg:gap-6 lg:max-w-screen-2xl lg:mx-auto">
-          <aside className="order-2 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-2 lg:order-1 lg:sticky lg:top-28 lg:h-[620px] lg:flex lg:flex-col lg:min-h-[620px] lg:overflow-hidden">
+          <aside className="order-2 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-2 lg:order-1 lg:sticky lg:top-28 lg:h-[640px] lg:flex lg:flex-col lg:min-h-[640px] lg:overflow-hidden">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">Component palette</h3>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
               Pick the blocks you need. Drag them into the board or click to spawn near the current flow.

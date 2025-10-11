@@ -64,24 +64,6 @@ export default function BriefStage({
       </section>
 
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 space-y-6">
-        <header className="space-y-3">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h2 className="text-xl font-semibold text-white">Brief</h2>
-              <p className="text-sm text-zinc-400">
-                Confirm the scope before we step into the sandbox. Everything saves locally so you can iterate freely.
-              </p>
-            </div>
-            <div className="rounded-2xl border border-zinc-800 bg-zinc-900 px-3 py-2 text-xs text-zinc-300">
-              <span className="font-semibold text-zinc-100">Targets:</span>{" "}
-              {nonFunctionalSummary.join(" · ")}
-            </div>
-          </div>
-          <div className="rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-3 text-sm text-blue-100">
-            Tip: Toggle “Custom alias” or “Basic analytics” to see how the design prompts evolve later.
-          </div>
-        </header>
-
         <ReqForm
           value={value}
           locked={locked}
