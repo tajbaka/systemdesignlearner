@@ -65,6 +65,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
   }, [rfNodes]);
 
   React.useEffect(() => {
+    console.debug('[ReactFlowBoard] syncing nodes from props', nodes.map(node => ({ id: node.id, replicas: node.replicas })));
     rfEdgesRef.current = rfEdges;
   }, [rfEdges]);
 
@@ -83,6 +84,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
 
   // Update state when props change (but preserve existing positions)
   React.useEffect(() => {
+    console.debug('[ReactFlowBoard] props.nodes', nodes.map(node => ({ id: node.id, replicas: node.replicas })));
     setRfNodes(currentNodes => {
       const currentNodeMap = new Map(currentNodes.map(node => [node.id, node]));
 
@@ -97,7 +99,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
               ...nodeData,
               customLabel: node.customLabel,
               spec: node.spec,
-              replicas: node.replicas || 1,
+              replicas: node.replicas ?? existingNode.data?.replicas ?? 1,
             }
           };
         } else {
@@ -108,6 +110,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
             data: {
               ...rfNode.data,
               ...nodeData,
+              replicas: node.replicas ?? rfNode.data?.replicas ?? 1,
             }
           };
         }

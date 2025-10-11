@@ -66,6 +66,7 @@ export interface SystemDesignNode extends Node {
     onNodeTouchStart?: (nodeId: string) => void;
     onNodeTouchEnd?: () => void;
     onRename?: (id: string, newLabel: string) => void;
+    onUpdateReplicas?: (id: string, replicas: number) => void;
   };
 }
 

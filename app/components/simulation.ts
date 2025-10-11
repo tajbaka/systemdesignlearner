@@ -25,8 +25,11 @@ export function simulate(
     if (chaos && rng() < n.spec.failureRate) {
       failedByChaos = true;
     }
+    const replicas = Math.max(1, n.replicas ?? 1);
+    const nodeCapacity = n.spec.capacityRps * replicas;
+
     latency += n.spec.baseLatencyMs;
-    capacity = Math.min(capacity, n.spec.capacityRps);
+    capacity = Math.min(capacity, nodeCapacity);
 
     // add link latency to next
     if (i < pathNodeIds.length - 1) {

@@ -60,6 +60,34 @@ describe("simulate", () => {
     expect(r1.meetsLatency).toBe(true);
     expect(r1).toEqual(r2);
   });
+
+  it("scales capacity with replicas on the bottleneck node", () => {
+    const s = SCENARIOS.find((x) => x.id === "spotify-search")!;
+    const baseNodes: PlacedNode[] = [
+      node("Web", 10, 20000),
+      node("API Gateway", 8, 8000),
+      node("Service", 12, 3000),
+      node("DB (Postgres)", 4, 10000),
+    ];
+
+    const edges: Edge[] = [
+      { id: "e1", from: "Web", to: "API Gateway", linkLatencyMs: 10 },
+      { id: "e2", from: "API Gateway", to: "Service", linkLatencyMs: 10 },
+      { id: "e3", from: "Service", to: "DB (Postgres)", linkLatencyMs: 10 },
+    ];
+
+    const pathNodeIds = ["Web", "API Gateway", "Service", "DB (Postgres)"];
+
+    const singleReplicaResult = simulate(s, pathNodeIds, baseNodes, edges, false);
+    expect(singleReplicaResult.capacityRps).toBe(3000);
+
+    const withReplicas = baseNodes.map((n) =>
+      n.spec.kind === "Service" ? { ...n, replicas: 3 } : n
+    );
+
+    const scaledResult = simulate(s, pathNodeIds, withReplicas, edges, false);
+    expect(scaledResult.capacityRps).toBe(8000);
+  });
 });
 
 describe("utils", () => {

@@ -20,6 +20,7 @@ type DesignStageProps = {
   requirements: Requirements;
   locked: boolean;
   readOnly?: boolean;
+  designComplete?: boolean;
   updateDesign: UpdateDesignFn;
   onContinue: () => void;
 };
@@ -143,9 +144,11 @@ export default function DesignStage({
   requirements,
   locked,
   readOnly = false,
+  designComplete = false,
   updateDesign,
   onContinue,
 }: DesignStageProps) {
+  console.debug('[DesignStage] render nodes', design.nodes.map(node => ({ id: node.id, replicas: node.replicas })));
   const paletteItems = useMemo(
     () =>
       COMPONENT_LIBRARY.filter((component) =>
@@ -383,7 +386,7 @@ export default function DesignStage({
     });
   }, [design.nodes, design.edges]);
 
-  const canContinue = designReady && !locked && !readOnly;
+  const canContinue = !locked && !readOnly && (designReady || designComplete);
 
   return (
     <div className="flex flex-col gap-6">

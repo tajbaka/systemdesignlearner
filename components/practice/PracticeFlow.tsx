@@ -241,9 +241,9 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       locked: wasCompleted ? prev.locked : { ...prev.locked, design: true },
     }));
     if (!wasCompleted) {
-      setCurrentStep("run");
       track("practice_step_completed", { slug: PRACTICE_SLUG, step: "design" });
     }
+    setCurrentStep("run");
   };
 
   const completeRun = () => {
@@ -320,6 +320,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
             requirements={state.requirements}
             locked={isReadOnly}
             readOnly={isReadOnly}
+            designComplete={state.locked.design}
             updateDesign={updateDesign}
             onContinue={completeDesign}
           />

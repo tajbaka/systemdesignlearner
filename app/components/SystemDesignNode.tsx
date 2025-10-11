@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useEffect, useState, memo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Handle, Position, NodeProps } from '@xyflow/react';
+import { Handle, Position, NodeProps, useReactFlow } from '@xyflow/react';
 import { SystemDesignNode as SystemDesignNodeType } from "./types";
 import { handleClass, isoClass } from "./styles";
 import { iconFor } from "./icons";
@@ -26,10 +26,12 @@ const SystemDesignNodeComponent = ({
   isDeleting = false,
   onNodeTouchStart,
   onNodeTouchEnd,
-  onUpdateReplicas,
+  onUpdateReplicas: onUpdateReplicasProp,
 }: SystemDesignNodeProps) => {
+  const { setNodes } = useReactFlow();
   const onDelete = data.onDelete;
   const onRename = data.onRename;
+  const onUpdateReplicas = data.onUpdateReplicas ?? onUpdateReplicasProp;
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -95,6 +97,25 @@ const SystemDesignNodeComponent = ({
       longPressTimer.current = null;
     }
   };
+
+  const updateLocalReplicas = useCallback(
+    (nextReplicas: number) => {
+      setNodes((nodes) =>
+        nodes.map((node) =>
+          node.id === id
+            ? {
+                ...node,
+                data: {
+                  ...node.data,
+                  replicas: nextReplicas,
+                },
+              }
+            : node
+        )
+      );
+    },
+    [id, setNodes]
+  );
 
   useEffect(() => {
     return () => {
@@ -229,6 +250,12 @@ const SystemDesignNodeComponent = ({
               onClick={(e) => {
                 e.stopPropagation();
                 const newReplicas = Math.max(1, (data.replicas || 1) - 1);
+                console.debug('[SystemDesignNode] Decrease replicas', {
+                  id,
+                  previous: data.replicas || 1,
+                  next: newReplicas,
+                });
+                updateLocalReplicas(newReplicas);
                 onUpdateReplicas?.(id, newReplicas);
               }}
               className="w-4 h-4 rounded bg-zinc-600 hover:bg-zinc-500 text-zinc-300 text-xs flex items-center justify-center leading-none pointer-events-auto"
@@ -241,6 +268,12 @@ const SystemDesignNodeComponent = ({
               onClick={(e) => {
                 e.stopPropagation();
                 const newReplicas = (data.replicas || 1) + 1;
+                console.debug('[SystemDesignNode] Increase replicas', {
+                  id,
+                  previous: data.replicas || 1,
+                  next: newReplicas,
+                });
+                updateLocalReplicas(newReplicas);
                 onUpdateReplicas?.(id, newReplicas);
               }}
               className="w-4 h-4 rounded bg-zinc-600 hover:bg-zinc-500 text-zinc-300 text-xs flex items-center justify-center leading-none pointer-events-auto"
@@ -291,6 +324,7 @@ export default memo(SystemDesignNodeComponent, (prevProps, nextProps) => {
     prevProps.isDeleting === nextProps.isDeleting &&
     prevProps.data.onDelete === nextProps.data.onDelete &&
     prevProps.data.onRename === nextProps.data.onRename &&
+    prevProps.data.replicas === nextProps.data.replicas &&
     prevProps.data.spec.kind === nextProps.data.spec.kind &&
     prevProps.data.spec.label === nextProps.data.spec.label &&
     prevProps.data.customLabel === nextProps.data.customLabel
