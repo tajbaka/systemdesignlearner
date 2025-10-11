@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import ReqForm from "../ReqForm";
 import type { Requirements } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
@@ -26,16 +25,6 @@ export default function BriefStage({
   onComplete,
   readOnly = false,
 }: BriefStageProps) {
-  const nonFunctionalSummary = useMemo(() => {
-    const targets = value.nonFunctional;
-    return [
-      `${targets.readRps.toLocaleString()} redirect reads/sec`,
-      `${targets.writeRps.toLocaleString()} short link writes/sec`,
-      `P95 redirect < ${targets.p95RedirectMs} ms`,
-      `${targets.availability}% availability`,
-    ];
-  }, [value.nonFunctional]);
-
   return (
     <div className="space-y-6">
       <section className="flex flex-col gap-3 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:flex-row sm:items-start sm:justify-between sm:p-6">
@@ -53,7 +42,7 @@ export default function BriefStage({
             {INTRO_POINTS.map((point) => (
               <span
                 key={point}
-                className="rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-blue-100 whitespace-nowrap"
+                className="rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-blue-100 whitespace-normal sm:whitespace-nowrap"
               >
                 {point}
               </span>

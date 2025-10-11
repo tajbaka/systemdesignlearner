@@ -483,12 +483,12 @@ export default function DesignStage({
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-xs text-emerald-100 lg:flex-nowrap">
-            <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-emerald-100 whitespace-nowrap">
+            <span className="rounded-full border border-emerald-400/30 bg-emerald-500/15 px-3 py-1 text-emerald-100 whitespace-normal">
               Target path: {pathPreview.join(" → ")}
             </span>
             {requiresAnalytics ? (
               <span
-                className={`rounded-full border px-3 py-1 whitespace-nowrap ${
+                className={`rounded-full border px-3 py-1 whitespace-normal ${
                   analyticsReady
                     ? "border-indigo-400/40 bg-indigo-500/15 text-indigo-100"
                     : "border-indigo-400/40 bg-transparent text-indigo-200"
@@ -497,13 +497,13 @@ export default function DesignStage({
                 {analyticsReady ? "Analytics queue ready" : "Add analytics queue"}
               </span>
             ) : (
-              <span className="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 whitespace-nowrap">
+              <span className="rounded-full border border-zinc-700 px-3 py-1 text-zinc-300 whitespace-normal">
                 Analytics optional
               </span>
             )}
             {requiresRateLimit ? (
               <span
-                className={`rounded-full border px-3 py-1 whitespace-nowrap ${
+                className={`rounded-full border px-3 py-1 whitespace-normal ${
                   rateLimiterReady
                     ? "border-amber-400/40 bg-amber-500/15 text-amber-100"
                     : "border-amber-400/40 bg-transparent text-amber-200"
@@ -514,7 +514,7 @@ export default function DesignStage({
             ) : null}
             {requiresAdminDelete ? (
               <span
-                className={`rounded-full border px-3 py-1 whitespace-nowrap ${
+                className={`rounded-full border px-3 py-1 whitespace-normal ${
                   adminFlowReady
                     ? "border-rose-400/40 bg-rose-500/15 text-rose-100"
                     : "border-rose-400/40 bg-transparent text-rose-200"
@@ -533,7 +533,7 @@ export default function DesignStage({
           <aside className="order-2 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-2 lg:order-1 lg:sticky lg:top-28 lg:h-[640px] lg:flex lg:flex-col lg:min-h-[640px] lg:overflow-hidden">
             <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">Component palette</h3>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
-              Pick the blocks you need. Drag them into the board or click to spawn near the current flow.
+              Pick the blocks you need. Tap to drop components on mobile, or drag and drop on desktop to place them exactly where you want.
             </p>
             <Palette
               componentLibrary={paletteItems}
@@ -547,7 +547,7 @@ export default function DesignStage({
 
           <div className="order-1 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-3 sm:order-1 lg:order-2 lg:px-6 lg:py-6 sm:p-4">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-2 lg:p-6">
-              <div className="relative h-[520px] sm:h-[580px] lg:h-[640px] rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/50">
+              <div className="relative h-[65vh] min-h-[420px] max-h-[640px] sm:h-[70vh] lg:h-[640px] lg:max-h-none rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/50">
                 {locked || readOnly ? (
                   <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/60 backdrop-blur-sm text-sm text-zinc-300">
                     Shared view · editing disabled

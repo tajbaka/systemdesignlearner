@@ -34,7 +34,7 @@ export default function PracticeSlugPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
       <Navbar />
-      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-6 px-4 pb-16 pt-6 lg:px-8">
+      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 pb-20 pt-6 sm:px-6 md:pt-8 lg:px-8">
         <PracticeFlow sharedState={sharedState} />
       </main>
     </div>

@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { loadPractice, savePractice } from "@/lib/practice/storage";
 import {
   makeDefaultDesignState,
@@ -7,9 +8,39 @@ import {
 } from "@/lib/practice/defaults";
 import { toMarkdown } from "@/lib/practice/brief";
 import type { PracticeState } from "@/lib/practice/types";
+import PracticeFlow from "@/components/practice/PracticeFlow";
 
 vi.mock("@/lib/analytics", () => ({
   track: vi.fn(),
+}));
+
+vi.mock("@/components/practice/stages/DesignStage", () => ({
+  __esModule: true,
+  default: (props: Record<string, unknown>) => (
+    <div data-testid="design-stage">
+      Design Stage
+      <button type="button" onClick={props.onContinue as () => void}>
+        Continue to Run
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("@/components/practice/stages/RunStage", () => ({
+  __esModule: true,
+  default: (props: Record<string, unknown>) => (
+    <div data-testid="run-stage">
+      Run Stage
+      <button type="button" onClick={props.onContinue as () => void}>
+        Continue to Review
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("@/components/practice/ReviewPanel", () => ({
+  __esModule: true,
+  default: () => <div data-testid="review-panel">Review Panel</div>,
 }));
 
 afterEach(() => {
@@ -87,5 +118,16 @@ describe("practice brief markdown", () => {
     expect(markdown).toContain("Read throughput target: 5,000 rps");
     expect(markdown).toContain("Outcome: pass");
     expect(markdown).toContain("P95 latency: 82 ms");
+  });
+});
+
+describe("PracticeFlow interactions", () => {
+  it("advances from brief to design", () => {
+    render(<PracticeFlow />);
+
+    const continueBtn = screen.getByRole("button", { name: /continue/i });
+    fireEvent.click(continueBtn);
+
+    expect(screen.getByTestId("design-stage")).toBeInTheDocument();
   });
 });

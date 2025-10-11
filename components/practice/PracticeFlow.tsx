@@ -172,10 +172,15 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       if (sharedState) return;
       setState((prev) => {
         const next = updater(prev);
-        return {
+        const updated = {
           ...next,
           updatedAt: Date.now(),
         };
+        setCurrentStep((current) => {
+          const derived = deriveCurrentStep(updated);
+          return derived === current ? current : derived;
+        });
+        return updated;
       });
     },
     [sharedState]
@@ -229,7 +234,6 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       locked: wasCompleted ? prev.locked : { ...prev.locked, brief: true },
     }));
     if (!wasCompleted) {
-      setCurrentStep("design");
       track("practice_step_completed", { slug: PRACTICE_SLUG, step: "brief" });
     }
   };
@@ -243,7 +247,6 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
     if (!wasCompleted) {
       track("practice_step_completed", { slug: PRACTICE_SLUG, step: "design" });
     }
-    setCurrentStep("run");
   };
 
   const completeRun = () => {
@@ -253,7 +256,6 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       locked: wasCompleted ? prev.locked : { ...prev.locked, run: true },
     }));
     if (!wasCompleted) {
-      setCurrentStep("review");
       track("practice_step_completed", { slug: PRACTICE_SLUG, step: "run" });
     }
   };
