@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import confetti from "canvas-confetti";
 import { SCENARIOS } from "@/lib/scenarios";
 import { findScenarioPath } from "@/app/components/utils";
 import { simulate } from "@/app/components/simulation";
@@ -8,6 +9,7 @@ import type { PracticeDesignState, PracticeRunState, Requirements } from "@/lib/
 import type { PlacedNode } from "@/app/components/types";
 import type { Scenario } from "@/lib/scenarios";
 import { track } from "@/lib/analytics";
+import { markScenarioCompleted } from "@/lib/scenarioProgress";
 
 type UpdateRunFn = (updater: (prev: PracticeRunState) => PracticeRunState) => void;
 
@@ -140,6 +142,45 @@ export default function RunStage({
     run.lastResult?.scoreBreakdown?.outcome ??
     (run.lastResult?.failedByChaos ? "chaos_fail" : undefined);
   const canContinue = outcome === "pass";
+
+  // Confetti celebration on first-time pass
+  useEffect(() => {
+    if (!run.lastResult || outcome !== "pass") return;
+
+    const isFirstTime = markScenarioCompleted("url-shortener");
+
+    if (isFirstTime) {
+      // NeetCode-style confetti celebration
+      const duration = 3000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+      const interval = window.setInterval(() => {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        });
+      }, 250);
+
+      return () => clearInterval(interval);
+    }
+  }, [run.lastResult, outcome]);
 
   const handleChaosToggle = useCallback(() => {
     if (locked || readOnly) return;

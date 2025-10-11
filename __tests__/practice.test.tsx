@@ -113,6 +113,7 @@ describe("practice brief markdown", () => {
             totalScore: 98,
             outcome: "pass",
           },
+          completedAt: Date.now(),
         },
       },
       locked: { brief: true, design: true, run: true },

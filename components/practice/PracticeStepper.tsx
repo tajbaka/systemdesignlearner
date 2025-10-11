@@ -96,53 +96,46 @@ export const PracticeStepper = ({ current, locks, onStepChange, readOnly = false
   return (
     <nav
       aria-label="Practice steps"
-      className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/80 overflow-x-hidden"
+      className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/80"
     >
-      <ol className="mx-auto flex w-full max-w-5xl list-none flex-row gap-2 px-3 py-3 justify-center sm:justify-start">
-        {currentIndex === 0 ? (
-          <li className="flex-shrink-0 w-[30vw] sm:hidden" aria-hidden />
-        ) : null}
-        {steps.map((step) => {
-          const stepNumber = getStepNumber(step.id);
-          const position = `${stepNumber} of ${PRACTICE_STEPS.length}`;
-          const isCurrent = current === step.id;
-          const stepIndex = PRACTICE_STEPS.indexOf(step.id);
-          const isPrev = stepIndex === currentIndex - 1;
-          const isNext = stepIndex === currentIndex + 1;
-          const showOnMobile = isCurrent || isPrev || isNext;
-          const statusLabel = step.completed ? "completed" : step.disabled ? "locked" : "available";
+      {/* Mobile view - carousel style */}
+      <div className="sm:hidden px-3 py-4">
+        <ol className="flex items-center justify-center gap-2 list-none">
+          {steps.map((step) => {
+            const stepNumber = getStepNumber(step.id);
+            const position = `${stepNumber} of ${PRACTICE_STEPS.length}`;
+            const isCurrent = current === step.id;
+            const stepIndex = PRACTICE_STEPS.indexOf(step.id);
+            const isPrev = stepIndex === currentIndex - 1;
+            const isNext = stepIndex === currentIndex + 1;
+            const showOnMobile = isCurrent || isPrev || isNext;
+            const statusLabel = step.completed ? "completed" : step.disabled ? "locked" : "available";
 
-          return (
-            <li
-              key={step.id}
-              className={`flex-shrink-0 ${!isCurrent ? 'flex justify-center items-center' : ''} ${showOnMobile ? '' : 'hidden sm:flex'} ${
-                isCurrent ? 'w-[70vw] sm:w-auto' : (isPrev || isNext) ? 'w-[30vw] sm:w-auto' : ''
-              }`}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  if (!step.disabled && !readOnly) {
-                    onStepChange(step.id);
-                  }
-                }}
-                disabled={step.disabled || readOnly}
-                className={`group flex w-full flex-col rounded-lg border text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 ${
-                  isCurrent ? 'px-4 py-3' : 'px-3 py-2'
-                } ${
-                  isCurrent
-                    ? "border-blue-400 bg-blue-950 text-blue-100"
-                    : step.completed
-                      ? "border-emerald-400/70 bg-emerald-950/70 text-emerald-100"
-                      : "border-zinc-700 bg-zinc-900 text-zinc-100 transition hover:border-blue-300 hover:bg-blue-900/40"
-                }`}
-                aria-current={isCurrent ? "step" : undefined}
-                aria-disabled={step.disabled}
-              >
-                <span className={`flex min-w-0 items-center ${isCurrent ? 'gap-3' : 'gap-2'}`}>
+            if (!showOnMobile) return null;
+
+            return (
+              <li key={step.id} className={isCurrent ? "flex-1" : ""}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!step.disabled && !readOnly) {
+                      onStepChange(step.id);
+                    }
+                  }}
+                  disabled={step.disabled || readOnly}
+                  className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 ${
+                    isCurrent
+                      ? "border-blue-400 bg-blue-950 text-blue-100"
+                      : step.completed
+                        ? "border-emerald-400/70 bg-emerald-950/70 text-emerald-100"
+                        : "border-zinc-700 bg-zinc-900 text-zinc-100"
+                  }`}
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-disabled={step.disabled}
+                >
                   <span
                     aria-hidden
-                    className={`flex items-center justify-center rounded-full border font-semibold ${
+                    className={`flex-shrink-0 flex items-center justify-center rounded-full border font-semibold ${
                       isCurrent ? 'h-10 w-10 text-base' : 'h-8 w-8 text-sm'
                     } ${
                       isCurrent
@@ -154,24 +147,93 @@ export const PracticeStepper = ({ current, locks, onStepChange, readOnly = false
                   >
                     {stepNumber}
                   </span>
-                  <span className="flex min-w-0 w-full flex-col">
-                    <span className={`block w-full font-semibold uppercase truncate tracking-tight sm:tracking-wide ${
-                      isCurrent ? 'text-sm' : 'text-xs'
-                    }`}>{step.label}</span>
-                    <span className={`block w-full text-zinc-400 truncate ${
-                      isCurrent ? 'text-xs' : 'text-xs hidden sm:block'
-                    }`}>{step.description}</span>
+                  {isCurrent && (
+                    <span className="flex-1 min-w-0">
+                      <span className="block font-semibold uppercase text-sm truncate">{step.label}</span>
+                      <span className="block text-zinc-400 text-xs truncate">{step.description}</span>
+                    </span>
+                  )}
+                  <span className="sr-only">Step {position}, {statusLabel}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      {/* Desktop view - minimal line style */}
+      <div className="hidden sm:block px-6 py-6">
+        <ol className="relative flex items-start justify-between list-none max-w-4xl mx-auto">
+          {/* Progress line */}
+          <div className="absolute top-5 left-0 right-0 h-0.5 bg-zinc-800" aria-hidden />
+          <div
+            className="absolute top-5 left-0 h-0.5 bg-blue-500 transition-all duration-500"
+            style={{ width: `${(currentIndex / (PRACTICE_STEPS.length - 1)) * 100}%` }}
+            aria-hidden
+          />
+
+          {steps.map((step) => {
+            const stepNumber = getStepNumber(step.id);
+            const position = `${stepNumber} of ${PRACTICE_STEPS.length}`;
+            const isCurrent = current === step.id;
+            const statusLabel = step.completed ? "completed" : step.disabled ? "locked" : "available";
+
+            return (
+              <li key={step.id} className="relative flex flex-col items-center z-10 flex-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!step.disabled && !readOnly) {
+                      onStepChange(step.id);
+                    }
+                  }}
+                  disabled={step.disabled || readOnly}
+                  className="group flex flex-col items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-900 rounded disabled:cursor-not-allowed transition"
+                  aria-current={isCurrent ? "step" : undefined}
+                  aria-disabled={step.disabled}
+                >
+                  {/* Circle */}
+                  <span
+                    className={`flex items-center justify-center rounded-full font-semibold transition-all ${
+                      isCurrent ? 'h-11 w-11 text-base' : 'h-10 w-10 text-sm'
+                    } ${
+                      isCurrent
+                        ? "bg-blue-500 text-white ring-4 ring-blue-500/30"
+                        : step.completed
+                          ? "bg-emerald-500 text-white"
+                          : "bg-zinc-800 text-zinc-400 group-hover:bg-zinc-700 group-hover:text-zinc-300 group-disabled:opacity-50"
+                    }`}
+                  >
+                    {step.completed && !isCurrent ? (
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      stepNumber
+                    )}
                   </span>
-                </span>
-                <span className="sr-only">Step {position}, {statusLabel}</span>
-              </button>
-            </li>
-          );
-        })}
-        {currentIndex === lastIndex ? (
-          <li className="flex-shrink-0 w-[30vw] sm:hidden" aria-hidden />
-        ) : null}
-      </ol>
+
+                  {/* Label */}
+                  <span className="flex flex-col items-center text-center mt-1">
+                    <span className={`font-semibold uppercase tracking-wide transition-colors ${
+                      isCurrent ? 'text-blue-400 text-sm' : step.completed ? 'text-emerald-400 text-xs' : 'text-zinc-400 text-xs group-hover:text-zinc-300 group-disabled:opacity-50'
+                    }`}>
+                      {step.label}
+                    </span>
+                    <span className={`text-xs transition-colors mt-0.5 ${
+                      isCurrent ? 'text-zinc-400' : 'text-zinc-500 group-hover:text-zinc-400 group-disabled:opacity-50'
+                    }`}>
+                      {step.description}
+                    </span>
+                  </span>
+
+                  <span className="sr-only">Step {position}, {statusLabel}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
     </nav>
   );
 };
