@@ -19,6 +19,9 @@ vi.mock("@/components/practice/stages/DesignStage", () => ({
   default: (props: Record<string, unknown>) => (
     <div data-testid="design-stage">
       Design Stage
+      <button type="button" onClick={props.onGoBack as () => void}>
+        Back to Brief
+      </button>
       <button type="button" onClick={props.onContinue as () => void}>
         Continue to Run
       </button>
@@ -31,6 +34,9 @@ vi.mock("@/components/practice/stages/RunStage", () => ({
   default: (props: Record<string, unknown>) => (
     <div data-testid="run-stage">
       Run Stage
+      <button type="button" onClick={props.onGoBack as () => void}>
+        Back to Design
+      </button>
       <button type="button" onClick={props.onContinue as () => void}>
         Continue to Review
       </button>
@@ -123,11 +129,50 @@ describe("practice brief markdown", () => {
 
 describe("PracticeFlow interactions", () => {
   it("advances from brief to design", () => {
+    // jsdom does not implement smooth scroll; guard to prevent console noise
+    const originalScrollTo = window.scrollTo;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).scrollTo = vi.fn();
+
     render(<PracticeFlow />);
 
     const continueBtn = screen.getByRole("button", { name: /continue/i });
     fireEvent.click(continueBtn);
 
     expect(screen.getByTestId("design-stage")).toBeInTheDocument();
+
+    window.scrollTo = originalScrollTo;
+  });
+
+  it("allows returning to brief from design", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const originalScrollTo = window.scrollTo;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).scrollTo = vi.fn();
+
+    render(<PracticeFlow />);
+
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+    expect(screen.getByTestId("design-stage")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /back to brief/i }));
+    expect(screen.getByRole("heading", { name: /url shortener mvp/i })).toBeInTheDocument();
+    window.scrollTo = originalScrollTo;
+  });
+
+  it("allows returning to design from run", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const originalScrollTo = window.scrollTo;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).scrollTo = vi.fn();
+
+    render(<PracticeFlow />);
+    fireEvent.click(screen.getByRole("button", { name: /continue/i }));
+    fireEvent.click(screen.getByRole("button", { name: /continue to run/i }));
+    expect(screen.getByTestId("run-stage")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /back to design/i }));
+    expect(screen.getByTestId("design-stage")).toBeInTheDocument();
+    window.scrollTo = originalScrollTo;
   });
 });

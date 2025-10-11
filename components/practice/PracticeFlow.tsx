@@ -20,6 +20,7 @@ import type {
   Requirements,
 } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
+import { useScrollToTop } from "@/hooks/useScrollToTop";
 
 const PRACTICE_SLUG = "url-shortener";
 
@@ -133,6 +134,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
   );
   const [currentStep, setCurrentStep] = useState<PracticeStep>("brief");
   const [hydrated, setHydrated] = useState(false);
+  const scrollToTop = useScrollToTop();
 
   useEffect(() => {
     if (sharedState) {
@@ -207,8 +209,26 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
   );
 
   const handleStepChange = (step: PracticeStep) => {
-    setCurrentStep(step);
+    updateState((prev) => {
+      if (step === "brief") {
+        return {
+          ...prev,
+          locked: { brief: false, design: false, run: false },
+        };
+      }
+      if (step === "design") {
+        if (!prev.locked.design && !prev.locked.run) {
+          return prev;
+        }
+        return {
+          ...prev,
+          locked: { ...prev.locked, design: false, run: false },
+        };
+      }
+      return prev;
+    });
     track("practice_step_viewed", { slug: PRACTICE_SLUG, step });
+    scrollToTop();
   };
 
   const handleRequirementsChange = (requirements: Requirements) => {
@@ -234,6 +254,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       locked: wasCompleted ? prev.locked : { ...prev.locked, brief: true },
     }));
     if (!wasCompleted) {
+      scrollToTop();
       track("practice_step_completed", { slug: PRACTICE_SLUG, step: "brief" });
     }
   };
@@ -245,6 +266,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       locked: wasCompleted ? prev.locked : { ...prev.locked, design: true },
     }));
     if (!wasCompleted) {
+      scrollToTop();
       track("practice_step_completed", { slug: PRACTICE_SLUG, step: "design" });
     }
   };
@@ -256,6 +278,7 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       locked: wasCompleted ? prev.locked : { ...prev.locked, run: true },
     }));
     if (!wasCompleted) {
+      scrollToTop();
       track("practice_step_completed", { slug: PRACTICE_SLUG, step: "run" });
     }
   };
@@ -270,12 +293,20 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
         run: false,
       },
     }));
-    setCurrentStep("brief");
+    scrollToTop();
     track("practice_design_back_to_brief", { slug: PRACTICE_SLUG });
   };
 
   const goBackToDesign = () => {
-    setCurrentStep("design");
+    updateState((prev) => ({
+      ...prev,
+      locked: {
+        ...prev.locked,
+        design: false,
+        run: false,
+      },
+    }));
+    scrollToTop();
     track("practice_step_goback", { slug: PRACTICE_SLUG, from: "run", to: "design" });
   };
 
