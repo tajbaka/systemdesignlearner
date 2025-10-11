@@ -129,7 +129,7 @@ export default function FeedbackPage() {
               required
               value={formData.question}
               onChange={handleChange}
-              className="w-full rounded-md border border-zinc-300 dark:border-zinc-600 bg-transparent px-3 py-2 text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
+              className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
             />
 
             {/* Consent Checkboxes */}
