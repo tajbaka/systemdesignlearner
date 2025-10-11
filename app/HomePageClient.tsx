@@ -5,6 +5,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import DemoBoard from "./components/DemoBoard";
+import { track } from "@/lib/analytics";
 
 export function HomePageClient() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -176,9 +177,10 @@ export function HomePageClient() {
         className="flex flex-col sm:flex-row gap-4 justify-center mb-14"
       >
         <Link
-          href="/play"
+          href="/practice/url-shortener"
           className="px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-emerald-500/30"
           aria-label="Try URL Shortener Scenario"
+          onClick={() => track("homepage_try_url_shortener_clicked")}
         >
           Try URL Shortener Scenario
         </Link>
@@ -186,6 +188,7 @@ export function HomePageClient() {
           href="/practice"
           className="px-10 py-5 border-2 border-zinc-600 hover:border-zinc-400 text-zinc-300 hover:text-white font-semibold text-lg rounded-lg transition-colors duration-200"
           aria-label="Explore All Scenarios"
+          onClick={() => track("homepage_explore_scenarios_clicked")}
         >
           Explore All Scenarios
         </Link>

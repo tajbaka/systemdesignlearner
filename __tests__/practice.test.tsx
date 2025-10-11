@@ -1,61 +1,50 @@
-import React from "react";
-import { describe, it, expect, vi, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import PracticeFlow from "@/components/practice/PracticeFlow";
-import * as storage from "@/lib/practice/storage";
-import { makeInitialPracticeState } from "@/lib/practice/defaults";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { loadPractice, savePractice } from "@/lib/practice/storage";
+import {
+  makeDefaultDesignState,
+  makeDefaultRunState,
+  makeInitialPracticeState,
+} from "@/lib/practice/defaults";
 import { toMarkdown } from "@/lib/practice/brief";
 import type { PracticeState } from "@/lib/practice/types";
-import LowLevelEditor from "@/components/practice/LowLevelEditor";
 
 vi.mock("@/lib/analytics", () => ({
   track: vi.fn(),
 }));
-
-const userState = makeInitialPracticeState();
 
 afterEach(() => {
   window.localStorage.clear();
   vi.restoreAllMocks();
 });
 
-describe("Practice flow", () => {
-  it("advances steps only after clicking Continue", async () => {
-    render(<PracticeFlow />);
-
-    expect(await screen.findByText(/Functional scope/i)).toBeInTheDocument();
-    expect(screen.queryByText(/Choose the architecture/i)).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: /Continue/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Cards are keyboard focusable/i)).toBeInTheDocument();
-    });
-  });
-});
-
 describe("practice storage", () => {
-  it("round-trips practice state through localStorage", () => {
+  it("round-trips the new practice state structure", () => {
     const state: PracticeState = {
-      ...userState,
-      locked: { req: true, high: false, low: false },
+      ...makeInitialPracticeState(),
+      locked: { brief: true, design: true, run: false },
       updatedAt: Date.now(),
     };
 
-    storage.savePractice(state);
-    const loaded = storage.loadPractice("url-shortener");
-    expect(loaded).toMatchObject({ locked: { req: true } });
+    savePractice(state);
+    const loaded = loadPractice("url-shortener");
+    expect(loaded).toMatchObject({ locked: { brief: true, design: true, run: false } });
   });
 });
 
-describe("practice brief", () => {
-  it("contains availability and preset id", () => {
+describe("practice brief markdown", () => {
+  it("includes requirements and simulation summary", () => {
+    const design = makeDefaultDesignState();
+    const run = makeDefaultRunState();
     const state: PracticeState = {
       slug: "url-shortener",
       requirements: {
         functional: {
           "create-short-url": true,
           "redirect-by-slug": true,
+          "custom-alias": false,
+          "basic-analytics": false,
+          "rate-limiting": false,
+          "admin-delete": false,
         },
         nonFunctional: {
           readRps: 5000,
@@ -64,41 +53,39 @@ describe("practice brief", () => {
           availability: "99.9",
         },
       },
-      high: {
-        presetId: "cache_primary",
-        components: ["Web", "API", "Cache"],
+      design,
+      run: {
+        ...run,
+        attempts: 1,
+        lastResult: {
+          latencyMsP95: 82,
+          capacityRps: 5600,
+          meetsLatency: true,
+          meetsRps: true,
+          backlogGrowthRps: 0,
+          failedByChaos: false,
+          acceptanceResults: {
+            "cache-present": true,
+            "lb-service": true,
+          },
+          acceptanceScore: 100,
+          scoreBreakdown: {
+            sloScore: 60,
+            checklistScore: 30,
+            costScore: 8,
+            totalScore: 98,
+            outcome: "pass",
+          },
+        },
       },
-      low: makeInitialPracticeState().low,
-      locked: { req: true, high: true, low: true },
+      locked: { brief: true, design: true, run: true },
       updatedAt: Date.now(),
     };
 
-    const brief = toMarkdown(state);
-    expect(brief).toContain("Availability: 99.9%");
-    expect(brief).toContain("Preset: cache_primary");
-  });
-});
-
-describe("capacity calculator", () => {
-  it("displays derived DB reads around 250 per second", () => {
-    const lowLevel = {
-      ...(makeInitialPracticeState().low!),
-      capacityAssumptions: {
-        cacheHit: 95,
-        avgWritesPerCreate: 1,
-        readRps: 5000,
-      },
-    };
-
-    render(
-      <LowLevelEditor
-        value={lowLevel}
-        locked={false}
-        onChange={() => {}}
-        onContinue={() => {}}
-      />
-    );
-
-    expect(screen.getByText(/Derived DB reads:/i).textContent).toMatch(/~250 /);
+    const markdown = toMarkdown(state);
+    expect(markdown).toContain("Create short URLs: Enabled");
+    expect(markdown).toContain("Read throughput target: 5,000 rps");
+    expect(markdown).toContain("Outcome: pass");
+    expect(markdown).toContain("P95 latency: 82 ms");
   });
 });

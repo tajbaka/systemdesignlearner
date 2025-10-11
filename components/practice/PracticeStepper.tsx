@@ -4,9 +4,9 @@ import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
 import { useMemo } from "react";
 
 type StepperLocks = {
-  req: boolean;
-  high: boolean;
-  low: boolean;
+  brief: boolean;
+  design: boolean;
+  run: boolean;
 };
 
 type PracticeStepperProps = {
@@ -25,16 +25,16 @@ type StepConfig = {
 };
 
 const stepLabels: Record<PracticeStep, { label: string; description: string }> = {
-  req: { label: "Requirements", description: "Scope & constraints" },
-  high: { label: "High-Level", description: "Pick an architecture" },
-  low: { label: "Low-Level", description: "Schemas, APIs, capacity" },
-  review: { label: "Review", description: "Generate brief" },
+  brief: { label: "Brief", description: "Scope & constraints" },
+  design: { label: "Design", description: "Build the system" },
+  run: { label: "Run", description: "Simulate & iterate" },
+  review: { label: "Review", description: "Highlights & share" },
 };
 
 const STEP_NUMBERS: Record<PracticeStep, number> = {
-  req: 1,
-  high: 2,
-  low: 3,
+  brief: 1,
+  design: 2,
+  run: 3,
   review: 4,
 };
 
@@ -44,14 +44,14 @@ const getStepNumber = (stepId: PracticeStep): number => {
 
 const isDisabled = (step: PracticeStep, locks: StepperLocks) => {
   switch (step) {
-    case "req":
+    case "brief":
       return false;
-    case "high":
-      return !locks.req;
-    case "low":
-      return !locks.high;
+    case "design":
+      return !locks.brief;
+    case "run":
+      return !locks.design;
     case "review":
-      return !locks.low;
+      return !locks.run;
     default:
       return true;
   }
@@ -59,14 +59,14 @@ const isDisabled = (step: PracticeStep, locks: StepperLocks) => {
 
 const isCompleted = (step: PracticeStep, locks: StepperLocks) => {
   switch (step) {
-    case "req":
-      return locks.req;
-    case "high":
-      return locks.high;
-    case "low":
-      return locks.low;
+    case "brief":
+      return locks.brief;
+    case "design":
+      return locks.design;
+    case "run":
+      return locks.run;
     case "review":
-      return locks.low;
+      return locks.run;
     default:
       return false;
   }

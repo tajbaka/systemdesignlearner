@@ -35,17 +35,18 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
   const [error, setError] = useState<string | null>(null);
   const requirements = useMemo(() => ensureDefaults(value), [value]);
 
-  const handleToggle = (id: string, checked: boolean) => {
+  const handleToggle = (id: string) => {
     if (readOnly) return;
     const next: Requirements = {
       ...requirements,
       functional: {
         ...requirements.functional,
-        [id]: checked,
+        [id]: !requirements.functional[id],
       },
     };
     onChange(next);
   };
+
 
   const handleNonFunctionalChange = (key: keyof Requirements["nonFunctional"], raw: string) => {
     if (readOnly) return;
@@ -81,26 +82,20 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
         </header>
         <div className="grid gap-2 sm:grid-cols-2 sm:gap-3">
           {FUNCTIONAL_TOGGLES.map((toggle) => (
-            <label
+            <div
               key={toggle.id}
-              className={`flex min-h-[2.5rem] sm:min-h-[2.25rem] items-start gap-2 rounded-lg border px-2 py-2 sm:py-1.5 transition focus-within:ring-2 focus-within:ring-blue-500 touch-manipulation ${
+              className={`flex min-h-[2.5rem] sm:min-h-[2.25rem] items-start gap-2 rounded-lg border px-2 py-2 sm:py-1.5 transition cursor-pointer hover:border-zinc-600 ${
                 requirements.functional[toggle.id]
                   ? "border-blue-400 bg-blue-950/50"
                   : "border-zinc-700"
-              } ${(locked || readOnly) ? "opacity-60" : ""} ${readOnly ? "" : "cursor-pointer hover:border-zinc-600"}`}
+              } ${(locked || readOnly) ? "opacity-60" : ""}`}
+              onClick={() => handleToggle(toggle.id)}
             >
-              <input
-                type="checkbox"
-                className="mt-0.5 h-1.5 w-1.5 sm:h-2 sm:w-2 shrink-0 rounded border-zinc-600 text-blue-600 focus:ring-blue-500"
-                checked={Boolean(requirements.functional[toggle.id])}
-                onChange={(event) => handleToggle(toggle.id, event.target.checked)}
-                disabled={locked || readOnly}
-              />
               <span className="flex-1 min-w-0">
                 <span className="text-sm font-semibold text-white block">{toggle.label}</span>
                 <span className="block text-xs text-zinc-400 leading-relaxed">{toggle.description}</span>
               </span>
-            </label>
+            </div>
           ))}
         </div>
       </section>

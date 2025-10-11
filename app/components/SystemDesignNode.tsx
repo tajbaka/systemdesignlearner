@@ -14,6 +14,7 @@ interface SystemDesignNodeProps extends NodeProps<SystemDesignNodeType> {
   nodeId?: string;
   onNodeTouchStart?: (nodeId: string) => void;
   onNodeTouchEnd?: () => void;
+  onUpdateReplicas?: (id: string, replicas: number) => void;
 }
 
 const SystemDesignNodeComponent = ({
@@ -25,6 +26,7 @@ const SystemDesignNodeComponent = ({
   isDeleting = false,
   onNodeTouchStart,
   onNodeTouchEnd,
+  onUpdateReplicas,
 }: SystemDesignNodeProps) => {
   const onDelete = data.onDelete;
   const onRename = data.onRename;
@@ -220,8 +222,33 @@ const SystemDesignNodeComponent = ({
             </div>
           )}
         </div>
-        <div className="text-[11px] text-zinc-300 mt-1">
-          {data.spec.baseLatencyMs}ms · {data.spec.capacityRps} rps
+        <div className="text-[11px] text-zinc-300 mt-1 flex items-center justify-between pointer-events-auto">
+          <span>{data.spec.baseLatencyMs}ms · {data.spec.capacityRps * (data.replicas || 1)} rps</span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newReplicas = Math.max(1, (data.replicas || 1) - 1);
+                onUpdateReplicas?.(id, newReplicas);
+              }}
+              className="w-4 h-4 rounded bg-zinc-600 hover:bg-zinc-500 text-zinc-300 text-xs flex items-center justify-center leading-none pointer-events-auto"
+              title="Decrease replicas"
+            >
+              −
+            </button>
+            <span className="text-xs text-zinc-400 min-w-[12px] text-center">{data.replicas || 1}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const newReplicas = (data.replicas || 1) + 1;
+                onUpdateReplicas?.(id, newReplicas);
+              }}
+              className="w-4 h-4 rounded bg-zinc-600 hover:bg-zinc-500 text-zinc-300 text-xs flex items-center justify-center leading-none pointer-events-auto"
+              title="Increase replicas"
+            >
+              +
+            </button>
+          </div>
         </div>
       </div>
 

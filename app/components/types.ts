@@ -109,6 +109,7 @@ export function edgeToReactFlowEdge(edge: Edge): SystemDesignEdge {
     target: edge.to,
     sourceHandle: edge.sourceHandle,
     targetHandle: edge.targetHandle,
+    selectable: true,
     data: {
       linkLatencyMs: edge.linkLatencyMs,
     },

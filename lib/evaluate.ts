@@ -50,6 +50,10 @@ export function evaluateScenario(
       case "redis-zset":
         results[criterion.id] = textPath.includes("Cache (Redis)");
         break;
+      case "analytics":
+        // Look for message queue + worker pool pattern for async analytics
+        results[criterion.id] = textPath.includes("Message Queue (Kafka Topic)") && textPath.includes("Worker Pool");
+        break;
       case "dlq":
         // Look for message queue + worker pool pattern
         results[criterion.id] = textPath.includes("Message Queue") && textPath.includes("Worker Pool");

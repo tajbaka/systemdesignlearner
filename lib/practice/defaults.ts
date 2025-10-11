@@ -1,4 +1,17 @@
-import type { HighLevelChoice, LowLevel, PracticeState, Requirements } from "./types";
+import type {
+  ComponentKind,
+  PlacedNode,
+  Edge,
+} from "@/app/components/types";
+import { COMPONENT_LIBRARY } from "@/app/components/data";
+import type {
+  HighLevelChoice,
+  LowLevel,
+  PracticeState,
+  PracticeDesignState,
+  PracticeRunState,
+  Requirements,
+} from "./types";
 
 export const FUNCTIONAL_TOGGLES = [
   {
@@ -118,15 +131,67 @@ export const makeDefaultLowLevel = (): LowLevel => ({
   },
 });
 
+const specFor = (kind: ComponentKind) => {
+  const spec = COMPONENT_LIBRARY.find((component) => component.kind === kind);
+  if (!spec) {
+    throw new Error(`Missing component spec for ${kind}`);
+  }
+  return spec;
+};
+
+const SEED_NODE_BLUEPRINTS: Array<{ id: string; kind: ComponentKind; x: number; y: number }> = [
+  { id: "seed-web", kind: "Web", x: -360, y: -40 },
+  { id: "seed-api", kind: "API Gateway", x: -120, y: -40 },
+  { id: "seed-service", kind: "Service", x: 120, y: -40 },
+  { id: "seed-db", kind: "DB (Postgres)", x: 360, y: -40 },
+];
+
+const SEED_EDGE_BLUEPRINTS: Array<{ id: string; from: string; to: string; linkLatencyMs: number }> = [
+  { id: "seed-edge-web-api", from: "seed-web", to: "seed-api", linkLatencyMs: 15 },
+  { id: "seed-edge-api-service", from: "seed-api", to: "seed-service", linkLatencyMs: 10 },
+  { id: "seed-edge-service-db", from: "seed-service", to: "seed-db", linkLatencyMs: 12 },
+];
+
+const buildSeedNodes = (): PlacedNode[] =>
+  SEED_NODE_BLUEPRINTS.map((blueprint) => ({
+    id: blueprint.id,
+    spec: specFor(blueprint.kind),
+    x: blueprint.x,
+    y: blueprint.y,
+    replicas: 1,
+  }));
+
+const buildSeedEdges = (): Edge[] =>
+  SEED_EDGE_BLUEPRINTS.map((blueprint) => ({
+    id: blueprint.id,
+    from: blueprint.from,
+    to: blueprint.to,
+    linkLatencyMs: blueprint.linkLatencyMs,
+  }));
+
+export const makeDefaultDesignState = (): PracticeDesignState => ({
+  nodes: buildSeedNodes(),
+  edges: buildSeedEdges(),
+  guidedStepIndex: 0,
+  guidedCompleted: false,
+  guidedDismissed: false,
+  freeModeUnlocked: false,
+});
+
+export const makeDefaultRunState = (): PracticeRunState => ({
+  attempts: 0,
+  chaosMode: false,
+});
+
 export const makeInitialPracticeState = (): PracticeState => ({
   slug: "url-shortener",
   requirements: makeDefaultRequirements(),
-  high: undefined,
-  low: makeDefaultLowLevel(),
+  design: makeDefaultDesignState(),
+  run: makeDefaultRunState(),
   locked: {
-    req: false,
-    high: false,
-    low: false,
+    brief: false,
+    design: false,
+    run: false,
   },
   updatedAt: Date.now(),
 });

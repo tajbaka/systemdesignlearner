@@ -39,13 +39,14 @@ interface ReactFlowBoardProps {
   onNodeTouchStart?: (nodeId: string) => void;
   onNodeTouchEnd?: () => void;
   onRenameNode?: (nodeId: string, newLabel: string) => void;
+  onUpdateReplicas?: (nodeId: string, replicas: number) => void;
   className?: string;
   style?: React.CSSProperties;
   showMiniMap?: boolean;
 }
 
 // Inner component that uses React Flow hooks
-function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, className, style, showMiniMap = true }: ReactFlowBoardProps) {
+function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, onEdgesChange, onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, onUpdateReplicas, className, style, showMiniMap = true }: ReactFlowBoardProps) {
   // Initialize React Flow state from props
   const [rfNodes, setRfNodes, onRfNodesChange] = useNodesState<SystemDesignNode>([]);
   const [rfEdges, setRfEdges, onRfEdgesChange] = useEdgesState<SystemDesignEdge>([]);
@@ -76,7 +77,8 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
     onNodeTouchStart,
     onNodeTouchEnd,
     onRename: onRenameNode,
-  }), [onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode]);
+    onUpdateReplicas,
+  }), [onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, onUpdateReplicas]);
 
 
   // Update state when props change (but preserve existing positions)
@@ -114,7 +116,22 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
       return newRfNodes;
     });
 
-    setRfEdges(edges.map(edgeToReactFlowEdge));
+    setRfEdges(currentEdges => {
+      const currentEdgeMap = new Map(currentEdges.map(edge => [edge.id, edge]));
+
+      // Update edges, preserving selection state
+      return edges.map(edge => {
+        const existingEdge = currentEdgeMap.get(edge.id);
+        const rfEdge = edgeToReactFlowEdge(edge);
+
+        // Preserve selected state from existing edge
+        if (existingEdge?.selected) {
+          rfEdge.selected = true;
+        }
+
+        return rfEdge;
+      });
+    });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges, onDeleteNode, onRenameNode, nodeData]); // Update when props change
 
@@ -159,7 +176,15 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleEdgesChange = React.useCallback((changes: any[]) => {
     onRfEdgesChange(changes);
-  }, [onRfEdgesChange]);
+
+    // Notify parent immediately when edges change (for deletions)
+    setTimeout(() => {
+      if (onEdgesChange) {
+        const currentEdges = rfEdgesRef.current.map(reactFlowEdgeToEdge);
+        onEdgesChange(currentEdges);
+      }
+    }, 0);
+  }, [onRfEdgesChange, onEdgesChange]);
 
   // Notify parent when React Flow nodes change (debounced)
   React.useEffect(() => {
@@ -215,12 +240,19 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
 
     if (!kind) return;
 
-    // Get the drop position relative to the React Flow viewport
-    const reactFlowBounds = event.currentTarget.getBoundingClientRect();
-    const position = reactFlowInstance.screenToFlowPosition({
-      x: event.clientX - reactFlowBounds.left,
-      y: event.clientY - reactFlowBounds.top,
-    });
+    // Get the drop position using viewport transformation
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const clientX = event.clientX - bounds.left;
+    const clientY = event.clientY - bounds.top;
+
+    // Get viewport information
+    const { x: viewX, y: viewY, zoom } = reactFlowInstance.getViewport();
+
+    // Convert container coordinates to flow coordinates
+    const position = {
+      x: (clientX - viewX) / zoom,
+      y: (clientY - viewY) / zoom,
+    };
 
     onDrop(kind, position);
 
@@ -255,7 +287,7 @@ function ReactFlowBoardInner({ nodes, edges, onConnect, onDrop, onNodesChange, o
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         fitView
-        deleteKeyCode="Delete"
+        deleteKeyCode={["Delete", "Backspace"]}
         multiSelectionKeyCode="Meta"
         connectionLineStyle={{ strokeWidth: 2, stroke: '#10b981', strokeDasharray: '5,5' }}
         defaultEdgeOptions={{

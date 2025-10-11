@@ -1,20 +1,20 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import type { PlacedNode, Edge } from "@/app/components/types";
 import PracticeStepper from "@/components/practice/PracticeStepper";
-import ReqForm from "@/components/practice/ReqForm";
-import HighLevelPresets from "@/components/practice/HighLevelPresets";
-import LowLevelEditor from "@/components/practice/LowLevelEditor";
+import BriefStage from "@/components/practice/stages/BriefStage";
+import DesignStage from "@/components/practice/stages/DesignStage";
+import RunStage from "@/components/practice/stages/RunStage";
 import ReviewPanel from "@/components/practice/ReviewPanel";
 import { loadPractice, savePractice } from "@/lib/practice/storage";
 import {
   makeInitialPracticeState,
   makeDefaultRequirements,
-  makeDefaultLowLevel,
 } from "@/lib/practice/defaults";
 import type {
-  HighLevelChoice,
-  LowLevel,
+  PracticeDesignState,
+  PracticeRunState,
   PracticeState,
   PracticeStep,
   Requirements,
@@ -24,43 +24,102 @@ import { track } from "@/lib/analytics";
 const PRACTICE_SLUG = "url-shortener";
 
 const deriveCurrentStep = (state: PracticeState): PracticeStep => {
-  if (!state.locked.req) return "req";
-  if (!state.locked.high) return "high";
-  if (!state.locked.low) return "low";
+  if (!state.locked.brief) return "brief";
+  if (!state.locked.design) return "design";
+  if (!state.locked.run) return "run";
   return "review";
 };
 
-const mergeState = (stored: PracticeState | null): PracticeState => {
+type LegacyPracticeState = Partial<{
+  slug: string;
+  requirements: Requirements;
+  locked: { req?: boolean; high?: boolean; low?: boolean };
+}>;
+
+const cloneNodes = (nodes: PlacedNode[]) =>
+  nodes.map((node) => ({
+    ...node,
+    spec: { ...node.spec },
+  }));
+
+const cloneEdges = (edges: Edge[]) => edges.map((edge) => ({ ...edge }));
+
+const mergeState = (
+  stored: PracticeState | LegacyPracticeState | null
+): PracticeState => {
   const base = makeInitialPracticeState();
   if (!stored) {
     return base;
   }
-  const defaults = makeDefaultLowLevel();
-  return {
-    ...base,
-    ...stored,
-    requirements: stored.requirements ?? base.requirements ?? makeDefaultRequirements(),
-    high: stored.high,
-    low: stored.low
+
+  const isLegacy =
+    !("design" in stored) ||
+    !("run" in stored) ||
+    !(
+      "locked" in stored &&
+      stored.locked &&
+      typeof (stored as PracticeState).locked === "object" &&
+      "brief" in (stored as PracticeState).locked
+    );
+
+  if (isLegacy) {
+    const legacy = stored as LegacyPracticeState;
+    const legacyRequirements = legacy.requirements
       ? {
-          ...defaults,
-          ...stored.low,
-          schemas: {
-            ...defaults.schemas,
-            ...stored.low.schemas,
+          functional: {
+            ...base.requirements.functional,
+            ...legacy.requirements.functional,
           },
-          apis: stored.low.apis?.length ? stored.low.apis : defaults.apis,
-          capacityAssumptions: {
-            ...defaults.capacityAssumptions,
-            ...stored.low.capacityAssumptions,
+          nonFunctional: {
+            ...base.requirements.nonFunctional,
+            ...legacy.requirements.nonFunctional,
           },
         }
-      : defaults,
+      : base.requirements;
+
+    return {
+      ...base,
+      requirements: legacyRequirements,
+      locked: {
+        brief: Boolean(legacy.locked?.req),
+        design: false,
+        run: false,
+      },
+      updatedAt: Date.now(),
+    };
+  }
+
+  const state = stored as PracticeState;
+
+  const mergedDesign: PracticeDesignState = {
+    ...base.design,
+    ...state.design,
+    nodes:
+      state.design?.nodes?.length
+        ? cloneNodes(state.design.nodes)
+        : cloneNodes(base.design.nodes),
+    edges: state.design?.edges
+      ? cloneEdges(state.design.edges)
+      : cloneEdges(base.design.edges),
+  };
+
+  const mergedRun: PracticeRunState = {
+    ...base.run,
+    ...state.run,
+  };
+
+  return {
+    ...base,
+    ...state,
+    requirements: state.requirements ?? base.requirements,
+    design: mergedDesign,
+    run: mergedRun,
     locked: {
-      ...base.locked,
-      ...stored.locked,
+      brief: Boolean(state.locked?.brief),
+      design: Boolean(state.locked?.design),
+      run: Boolean(state.locked?.run),
     },
-    updatedAt: stored.updatedAt ?? Date.now(),
+    updatedAt: state.updatedAt ?? Date.now(),
   };
 };
 
@@ -69,52 +128,78 @@ type PracticeFlowProps = {
 };
 
 export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
-  const [state, setState] = useState<PracticeState>(() => makeInitialPracticeState());
-  const [currentStep, setCurrentStep] = useState<PracticeStep>("req");
+  const [state, setState] = useState<PracticeState>(() =>
+    makeInitialPracticeState()
+  );
+  const [currentStep, setCurrentStep] = useState<PracticeStep>("brief");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     if (sharedState) {
-      // Shared state: read-only mode, all steps locked
-      const readOnlyState = {
-        ...sharedState,
-        locked: { req: true, high: true, low: true },
+      const readOnlyState = mergeState(sharedState);
+      const lockedState: PracticeState = {
+        ...readOnlyState,
+        locked: { brief: true, design: true, run: true },
       };
-      setState(readOnlyState);
-      setCurrentStep("review"); // Always show review for shared states
+      setState(lockedState);
+      setCurrentStep("review");
       setHydrated(true);
       track("practice_shared_viewed", { slug: PRACTICE_SLUG });
-    } else {
-      // Normal editable mode
-      const stored = loadPractice(PRACTICE_SLUG);
-      const merged = mergeState(stored);
-      setState(merged);
-      setCurrentStep(deriveCurrentStep(merged));
-      setHydrated(true);
-      if (!stored) {
-        track("practice_started", { slug: PRACTICE_SLUG });
-      }
+      return;
+    }
+
+    const stored = loadPractice(PRACTICE_SLUG);
+    const merged = mergeState(stored);
+    setState(merged);
+    setCurrentStep(deriveCurrentStep(merged));
+    setHydrated(true);
+
+    if (!stored) {
+      track("practice_started", { slug: PRACTICE_SLUG });
     }
   }, [sharedState]);
 
   useEffect(() => {
-    if (!hydrated || sharedState) return; // Don't autosave in read-only mode
-    const handle = window.setTimeout(() => {
+    if (!hydrated || sharedState) return;
+    const timeout = window.setTimeout(() => {
       savePractice(state);
     }, 300);
-    return () => window.clearTimeout(handle);
+    return () => window.clearTimeout(timeout);
   }, [state, hydrated, sharedState]);
 
-  const updateState = useCallback((updater: (prev: PracticeState) => PracticeState) => {
-    if (sharedState) return; // No updates in read-only mode
-    setState((prev) => {
-      const next = updater(prev);
-      return {
-        ...next,
-        updatedAt: Date.now(),
-      };
-    });
-  }, [sharedState]);
+  const updateState = useCallback(
+    (updater: (prev: PracticeState) => PracticeState) => {
+      if (sharedState) return;
+      setState((prev) => {
+        const next = updater(prev);
+        return {
+          ...next,
+          updatedAt: Date.now(),
+        };
+      });
+    },
+    [sharedState]
+  );
+
+  const updateDesign = useCallback(
+    (updater: (prev: PracticeDesignState) => PracticeDesignState) => {
+      updateState((prev) => ({
+        ...prev,
+        design: updater(prev.design),
+      }));
+    },
+    [updateState]
+  );
+
+  const updateRun = useCallback(
+    (updater: (prev: PracticeRunState) => PracticeRunState) => {
+      updateState((prev) => ({
+        ...prev,
+        run: updater(prev.run),
+      }));
+    },
+    [updateState]
+  );
 
   const handleStepChange = (step: PracticeStep) => {
     setCurrentStep(step);
@@ -126,73 +211,63 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
       ...prev,
       requirements,
     }));
-    track("practice_requirement_changed", {
+    track("practice_requirements_changed", {
       slug: PRACTICE_SLUG,
-      functional_enabled: Object.values(requirements.functional).filter(Boolean).length,
+      enabled: Object.values(requirements.functional).filter(Boolean).length,
       read_rps: requirements.nonFunctional.readRps,
       write_rps: requirements.nonFunctional.writeRps,
       p95_latency: requirements.nonFunctional.p95RedirectMs,
-      availability: requirements.nonFunctional.availability
+      availability: requirements.nonFunctional.availability,
     });
   };
 
-  const completeRequirements = (requirements: Requirements) => {
+  const completeBrief = (requirements: Requirements) => {
+    const wasCompleted = state.locked.brief;
     updateState((prev) => ({
       ...prev,
       requirements,
-      locked: { ...prev.locked, req: true },
+      locked: wasCompleted ? prev.locked : { ...prev.locked, brief: true },
     }));
-    setCurrentStep("high");
-    track("practice_step_completed", { slug: PRACTICE_SLUG, step: "requirements" });
+    if (!wasCompleted) {
+      setCurrentStep("design");
+      track("practice_step_completed", { slug: PRACTICE_SLUG, step: "brief" });
+    }
   };
 
-  const handleHighLevelChange = (high: HighLevelChoice) => {
+  const completeDesign = () => {
+    const wasCompleted = state.locked.design;
     updateState((prev) => ({
       ...prev,
-      high,
+      locked: wasCompleted ? prev.locked : { ...prev.locked, design: true },
     }));
-    track("practice_preset_selected", {
-      slug: PRACTICE_SLUG,
-      preset: high.presetId,
-      components_count: high.components.length
-    });
+    if (!wasCompleted) {
+      setCurrentStep("run");
+      track("practice_step_completed", { slug: PRACTICE_SLUG, step: "design" });
+    }
   };
 
-  const completeHighLevel = (high: HighLevelChoice) => {
+  const completeRun = () => {
+    const wasCompleted = state.locked.run;
     updateState((prev) => ({
       ...prev,
-      high,
-      locked: { ...prev.locked, high: true },
+      locked: wasCompleted ? prev.locked : { ...prev.locked, run: true },
     }));
-    setCurrentStep("low");
-    track("practice_step_completed", { slug: PRACTICE_SLUG, step: "high-level" });
+    if (!wasCompleted) {
+      setCurrentStep("review");
+      track("practice_step_completed", { slug: PRACTICE_SLUG, step: "run" });
+    }
   };
 
-  const handleLowLevelChange = (low: LowLevel) => {
-    updateState((prev) => ({
-      ...prev,
-      low,
-    }));
-    track("practice_lowlevel_modified", {
-      slug: PRACTICE_SLUG,
-      schemas_count: Object.keys(low.schemas).length,
-      apis_count: low.apis.length,
-      cache_hit: low.capacityAssumptions.cacheHit,
-      read_rps: low.capacityAssumptions.readRps
-    });
+  const goBackToDesign = () => {
+    setCurrentStep("design");
+    track("practice_step_goback", { slug: PRACTICE_SLUG, from: "run", to: "design" });
   };
 
-  const completeLowLevel = (low: LowLevel) => {
-    updateState((prev) => ({
-      ...prev,
-      low,
-      locked: { ...prev.locked, low: true },
-    }));
-    setCurrentStep("review");
-    track("practice_step_completed", { slug: PRACTICE_SLUG, step: "low-level" });
-  };
+  const nextRenderableStep = useMemo(
+    () => deriveCurrentStep(state),
+    [state]
+  );
 
-  const nextRenderableStep = useMemo(() => deriveCurrentStep(state), [state]);
   useEffect(() => {
     if (!hydrated) return;
     if (currentStep !== nextRenderableStep) {
@@ -209,55 +284,70 @@ export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
     track("practice_opened_sandbox", { slug: PRACTICE_SLUG });
   };
 
-  const isReadOnly = !!sharedState;
+  const isReadOnly = Boolean(sharedState);
+
+  const isDesignStep = currentStep === "design";
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 pb-16 pt-6">
+    <div className="flex w-full flex-col gap-6">
       <PracticeStepper
         current={currentStep}
         locks={state.locked}
         onStepChange={handleStepChange}
         readOnly={isReadOnly}
       />
-      <section className="rounded-3xl border border-zinc-700 bg-zinc-900 p-4 shadow-sm transition-all sm:p-6">
-        {currentStep === "req" ? (
-          <ReqForm
+
+      <section
+        className={`transition-all ${
+          isDesignStep
+            ? "bg-transparent p-0 sm:p-0 border-none shadow-none"
+            : "rounded-3xl border border-zinc-700 bg-zinc-900 p-4 shadow-sm sm:p-6"
+        }`}
+      >
+        {currentStep === "brief" ? (
+          <BriefStage
             value={state.requirements ?? makeDefaultRequirements()}
             locked={isReadOnly}
             onChange={handleRequirementsChange}
-            onContinue={completeRequirements}
+            onComplete={completeBrief}
             readOnly={isReadOnly}
           />
         ) : null}
-        {currentStep === "high" ? (
-          <HighLevelPresets
-            value={state.high}
+
+        {currentStep === "design" ? (
+          <DesignStage
+            design={state.design}
+            requirements={state.requirements}
             locked={isReadOnly}
-            onChange={handleHighLevelChange}
-            onContinue={completeHighLevel}
             readOnly={isReadOnly}
+            updateDesign={updateDesign}
+            onContinue={completeDesign}
           />
         ) : null}
-        {currentStep === "low" ? (
-          <LowLevelEditor
-            value={state.low}
+
+        {currentStep === "run" ? (
+          <RunStage
+            design={state.design}
+            run={state.run}
+            requirements={state.requirements}
             locked={isReadOnly}
-            onChange={handleLowLevelChange}
-            onContinue={completeLowLevel}
             readOnly={isReadOnly}
+            updateRun={updateRun}
+            onContinue={completeRun}
+            onGoBack={goBackToDesign}
           />
         ) : null}
+
         {currentStep === "review" ? (
           <ReviewPanel
             state={state}
-            sandboxAvailable
             onExport={handleExport}
             onOpenSandbox={handleOpenSandbox}
             readOnly={isReadOnly}
           />
         ) : null}
       </section>
-    </main>
+    </div>
   );
 };
 

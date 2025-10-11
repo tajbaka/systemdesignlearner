@@ -6,15 +6,32 @@ import { iconFor } from "./icons";
 interface PaletteProps {
   componentLibrary: ComponentSpec[];
   onSpawn: (kind: ComponentKind) => void;
+  title?: string;
+  subtitle?: string;
+  className?: string;
+  listClassName?: string;
 }
 
-export default function Palette({ componentLibrary, onSpawn }: PaletteProps) {
+export default function Palette({
+  componentLibrary,
+  onSpawn,
+  title = "Components",
+  subtitle = "Drag to board or click to spawn at center.",
+  className,
+  listClassName,
+}: PaletteProps) {
+  const listSpacing = title || subtitle ? "mt-3" : "";
+
   return (
-    <div className="flex flex-col gap-3 h-80">
+    <div className={className ?? "flex flex-col gap-3 h-80"}>
       <div className="p-4 rounded-2xl bg-zinc-900/80 border border-white/10 flex flex-col h-full">
-        <h2 className="text-base text-zinc-300 font-semibold">Components</h2>
-        <p className="text-xs text-zinc-400 mt-1">Drag to board or click to spawn at center.</p>
-        <div className="mt-3 grid grid-cols-1 gap-1.5 overflow-y-auto min-h-0 flex-1 scrollbar-hide">
+        {title ? <h2 className="text-base text-zinc-300 font-semibold">{title}</h2> : null}
+        {subtitle ? <p className="text-xs text-zinc-400 mt-1">{subtitle}</p> : null}
+        <div
+          className={`${listSpacing} grid grid-cols-1 gap-1.5 overflow-y-auto min-h-0 flex-1 scrollbar-hide ${
+            listClassName ?? ""
+          }`}
+        >
           {componentLibrary.map((c) => {
             const Icon = iconFor(c.kind);
             return (

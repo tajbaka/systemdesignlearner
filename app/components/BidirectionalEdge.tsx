@@ -12,6 +12,7 @@ export default function BidirectionalEdge({
   targetPosition,
   style = {},
   markerEnd,
+  selected,
 }: EdgeProps) {
 
   // Create parallel paths offset by 2px in both directions
@@ -33,20 +34,34 @@ export default function BidirectionalEdge({
     targetPosition,
   });
 
+  const strokeColor = selected ? '#3b82f6' : '#10b981'; // Blue when selected, green when not
+
   return (
     <>
+      {/* Invisible wider path for better click detection */}
+      <path
+        style={{
+          strokeWidth: 10,
+          stroke: 'transparent',
+          fill: 'none',
+          pointerEvents: 'stroke',
+        }}
+        className="react-flow__edge-path"
+        d={upperLeftPath}
+      />
+
       {/* Upper-left line - moving forward */}
       <path
         id={id}
         style={{
           ...style,
-          strokeWidth: 2,
-          stroke: '#10b981',
+          strokeWidth: selected ? 3 : 2, // Thicker when selected
+          stroke: strokeColor,
           strokeDasharray: '8,8',
           animation: 'bidirectional-flow-forward 1.5s linear infinite',
           fill: 'none',
+          pointerEvents: 'none',
         }}
-        className="react-flow__edge-path"
         d={upperLeftPath}
         markerEnd={markerEnd}
       />
@@ -55,13 +70,13 @@ export default function BidirectionalEdge({
       <path
         style={{
           ...style,
-          strokeWidth: 2,
-          stroke: '#10b981',
+          strokeWidth: selected ? 3 : 2, // Thicker when selected
+          stroke: strokeColor,
           strokeDasharray: '8,8',
           animation: 'bidirectional-flow-backward 1.5s linear infinite',
           fill: 'none',
+          pointerEvents: 'none',
         }}
-        className="react-flow__edge-path"
         d={lowerRightPath}
         markerEnd={markerEnd}
       />

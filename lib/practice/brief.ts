@@ -1,4 +1,8 @@
-import type { PracticeState } from "./types";
+import { findScenarioPath } from "@/app/components/utils";
+import { SCENARIOS } from "@/lib/scenarios";
+import type { PracticeState, Requirements } from "./types";
+
+const URL_SHORTENER = SCENARIOS.find((scenario) => scenario.id === "url-shortener")!;
 
 const functionalOrder = [
   "create-short-url",
@@ -7,137 +11,191 @@ const functionalOrder = [
   "basic-analytics",
   "rate-limiting",
   "admin-delete",
-];
+] as const;
 
 const functionalLabels: Record<string, string> = {
   "create-short-url": "Create short URLs",
   "redirect-by-slug": "Redirect by slug",
   "custom-alias": "Custom aliases",
-  "basic-analytics": "Basic click analytics",
+  "basic-analytics": "Click analytics",
   "rate-limiting": "Client rate limiting",
   "admin-delete": "Admin delete",
 };
 
-const formatFunctional = (state: PracticeState): string[] => {
-  const toggles = state.requirements?.functional;
-  if (!toggles) {
-    return ["Functional requirements TBD."];
+const formatFunctional = (requirements: Requirements | undefined): string[] => {
+  if (!requirements?.functional) {
+    return ["Functional requirements pending."];
   }
 
   return functionalOrder
-    .filter((key) => key in toggles)
-    .map((key) => `- ${functionalLabels[key] ?? key}: ${toggles[key] ? "Yes" : "No"}`);
+    .filter((key) => key in requirements.functional)
+    .map(
+      (key) =>
+        `- ${functionalLabels[key] ?? key}: ${requirements.functional[key] ? "Enabled" : "Deferred"}`
+    );
 };
 
-const formatNonFunctional = (state: PracticeState): string[] => {
-  const nf = state.requirements?.nonFunctional;
-  if (!nf) {
-    return ["Non-functional constraints TBD."];
+const formatNonFunctional = (requirements: Requirements | undefined): string[] => {
+  if (!requirements?.nonFunctional) {
+    return ["Non-functional constraints pending."];
   }
-
+  const nf = requirements.nonFunctional;
   return [
-    `- Read QPS: ${nf.readRps.toLocaleString()}/s`,
-    `- Write QPS: ${nf.writeRps.toLocaleString()}/s`,
+    `- Read throughput target: ${nf.readRps.toLocaleString()} rps`,
+    `- Write throughput target: ${nf.writeRps.toLocaleString()} rps`,
     `- P95 redirect latency: ${nf.p95RedirectMs} ms`,
     `- Availability: ${nf.availability}%`,
   ];
 };
 
-const formatHighLevel = (state: PracticeState): string[] => {
-  const high = state.high;
-  if (!high) {
-    return ["Architecture pending."];
-  }
-
-  const lines = [`Preset: ${high.presetId}`];
-  lines.push("Components:");
-  high.components.forEach((c) => {
-    lines.push(`- ${c}`);
-  });
-  if (high.notes?.length) {
-    lines.push("Notes:");
-    high.notes.forEach((note) => {
-      lines.push(`- ${note}`);
+const formatDesign = (state: PracticeState): string[] => {
+  const nodes = [...state.design.nodes].sort((a, b) => a.x - b.x);
+  const lines: string[] = ["Components:"];
+  if (nodes.length === 0) {
+    lines.push("- (none)");
+  } else {
+    nodes.forEach((node) => {
+      const name = node.customLabel?.trim() || node.spec.label || node.spec.kind;
+      const replicas = node.replicas && node.replicas > 1 ? ` ×${node.replicas}` : "";
+      lines.push(`- ${name}${replicas}`);
     });
   }
-  return lines;
-};
 
-const formatSchemas = (state: PracticeState): string[] => {
-  const schemas = state.low?.schemas;
-  if (!schemas) {
-    return ["Schemas pending."];
+  lines.push("", "Connections:");
+  if (state.design.edges.length === 0) {
+    lines.push("- (none)");
+  } else {
+    state.design.edges.forEach((edge) => {
+      const from = state.design.nodes.find((node) => node.id === edge.from);
+      const to = state.design.nodes.find((node) => node.id === edge.to);
+      const fromLabel = from?.customLabel?.trim() || from?.spec.label || edge.from;
+      const toLabel = to?.customLabel?.trim() || to?.spec.label || edge.to;
+      lines.push(`- ${fromLabel} → ${toLabel} (${edge.linkLatencyMs} ms link)`);
+    });
   }
 
-  return Object.entries(schemas).flatMap(([name, schema]) => [
-    `### ${name} Schema`,
-    "```json",
-    schema.trim(),
-    "```",
-  ]);
-};
-
-const formatApis = (state: PracticeState): string[] => {
-  const apis = state.low?.apis;
-  if (!apis?.length) {
-    return ["APIs pending."];
+  const path = findScenarioPath(URL_SHORTENER, state.design.nodes, state.design.edges);
+  if (path.nodeIds.length > 0) {
+    const humanPath = path.nodeIds
+      .map((id) => {
+        const node = state.design.nodes.find((n) => n.id === id);
+        return node?.customLabel?.trim() || node?.spec.label || node?.spec.kind || id;
+      })
+      .join(" → ");
+    lines.push("", `Primary redirect flow: ${humanPath}`);
   }
 
-  const lines = ["Method | Path | Notes", "--- | --- | ---"];
-  apis.forEach((api) => {
+  if (path.missingKinds.length > 0) {
     lines.push(
-      `${api.method} | ${api.path} | ${api.notes ? api.notes.replace(/\|/g, "\\|") : ""}`
+      "",
+      `Missing required components for rubric: ${path.missingKinds.join(", ")}`
     );
-  });
+  }
+
   return lines;
 };
 
-const formatCapacity = (state: PracticeState): string[] => {
-  const low = state.low;
-  const nf = state.requirements?.nonFunctional;
-  if (!low || !nf) {
-    return ["Capacity assumptions pending."];
+const buildRunHints = (
+  result: PracticeState["run"]["lastResult"],
+  requirements: Requirements
+): string[] => {
+  if (!result) return [];
+  const hints: string[] = [];
+
+  if (result.failedByChaos) {
+    hints.push(
+      "Chaos mode failed. Add redundancy (LB/API Gateway) or disable chaos to validate baseline latency."
+    );
+  }
+  if (!result.meetsLatency) {
+    hints.push("Latency target missed. Ensure Redis sits before Postgres and remove extra hops.");
+  }
+  if (!result.meetsRps) {
+    hints.push(
+      "Throughput target missed. Scale the service horizontally or front it with a load balancer."
+    );
+  }
+  if (result.acceptanceResults) {
+    Object.entries(result.acceptanceResults).forEach(([id, ok]) => {
+      if (ok) return;
+      switch (id) {
+        case "cache-present":
+          hints.push("Cache is missing from redirect path. Insert Redis between Service and DB.");
+          break;
+        case "lb-service":
+          hints.push("Place a gateway or load balancer before the service for resiliency.");
+          break;
+        default:
+          hints.push(`Acceptance criterion not met: ${id}`);
+      }
+    });
+  }
+  if (requirements.functional["basic-analytics"]) {
+    const hasQueue = result.acceptanceResults?.analytics ?? false;
+    if (!hasQueue) {
+      hints.push("Route analytics events to a queue/worker so redirects stay async.");
+    }
   }
 
-  const { cacheHit, avgWritesPerCreate } = low.capacityAssumptions;
-  const readRps = nf.readRps;
-  const missRate = Math.max(0, Math.min(100, 100 - cacheHit));
-  const dbReadQps = readRps * (missRate / 100);
+  return Array.from(new Set(hints));
+};
+
+const formatSimulation = (state: PracticeState): string[] => {
+  const result = state.run.lastResult;
+  if (!result) {
+    return ["Simulation not run yet. Complete the Run step to capture metrics."];
+  }
 
   const lines = [
-    `- Read path: ${readRps.toLocaleString()}/s with cache hit ${cacheHit}% → DB reads ~${Math.round(dbReadQps)} /s`,
-    `- Avg writes per redirect create: ${avgWritesPerCreate}`,
+    `- Outcome: ${result.scoreBreakdown?.outcome ?? (result.failedByChaos ? "chaos_fail" : "pending")}`,
+    `- P95 latency: ${result.latencyMsP95} ms (target ≤ ${URL_SHORTENER.latencyBudgetMsP95} ms)`,
+    `- Capacity: ${result.capacityRps.toLocaleString()} rps (target ≥ ${URL_SHORTENER.requiredRps.toLocaleString()} rps)`,
+    `- Backlog growth: ${result.backlogGrowthRps.toLocaleString()} rps`,
   ];
 
-  if (dbReadQps > nf.writeRps * 2) {
-    lines.push("- Hint: Consider stronger caching or read replicas; DB load is high.");
-  } else if (dbReadQps > nf.writeRps) {
-    lines.push("- Hint: Miss traffic rivals write traffic; ensure DB scaling plan.");
-  } else {
-    lines.push("- DB read load is within expected limits.");
+  if (result.scoreBreakdown) {
+    lines.push(
+      `- Score: ${result.scoreBreakdown.totalScore}/100 ` +
+        `(SLO ${result.scoreBreakdown.sloScore}, Requirements ${result.scoreBreakdown.checklistScore}, Efficiency ${result.scoreBreakdown.costScore})`
+    );
+  }
+
+  if (result.acceptanceResults) {
+    lines.push(
+      "",
+      "Acceptance checks:",
+      ...Object.entries(result.acceptanceResults).map(
+        ([id, ok]) => `- ${id}: ${ok ? "pass" : "fail"}`
+      )
+    );
+  }
+
+  const hints = buildRunHints(result, state.requirements);
+  if (hints.length > 0) {
+    lines.push("", "Improvements to consider:", ...hints.map((hint) => `- ${hint}`));
   }
 
   return lines;
 };
 
 export const toMarkdown = (state: PracticeState): string => {
-  const lines: string[] = ["# URL Shortener (Easy)", ""];
+  const lines: string[] = ["# URL Shortener Review", ""];
 
   lines.push("## Requirements");
-  lines.push(...formatFunctional(state));
-  lines.push("", "Non-functional:");
-  lines.push(...formatNonFunctional(state));
+  lines.push(...formatFunctional(state.requirements));
+  lines.push("", "### Non-functional");
+  lines.push(...formatNonFunctional(state.requirements));
 
-  lines.push("", "## High-Level Architecture");
-  lines.push(...formatHighLevel(state));
+  lines.push("", "## Final Design");
+  lines.push(...formatDesign(state));
 
-  lines.push("", "## Low-Level Design");
-  lines.push(...formatSchemas(state));
-  lines.push("", "### APIs");
-  lines.push(...formatApis(state));
+  lines.push("", "## Simulation Outcome");
+  lines.push(...formatSimulation(state));
 
-  lines.push("", "### Capacity Assumptions");
-  lines.push(...formatCapacity(state));
+  lines.push(
+    "",
+    `Share snapshot generated at ${new Date(state.updatedAt).toISOString()}`
+  );
 
   return lines.join("\n");
 };

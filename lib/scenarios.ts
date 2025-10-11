@@ -119,7 +119,8 @@ export const SCENARIOS: Scenario[] = [
     hints: ["Cache hot slugs.", "Use read‑through cache to reduce DB hits."],
     acceptance: [
       { id: "cache-present", text: "Cache present on hot slug path", required: true },
-      { id: "lb-service", text: "Service behind LB/API GW", required: true }
+      { id: "lb-service", text: "Service behind LB/API GW", required: true },
+      { id: "analytics", text: "Analytics queue for async event processing", required: false }
     ],
     api: [
       { method: "POST", path: "/urls", bodyShape: "{ long_url: string }", responseShape: "{ short: string }" },
