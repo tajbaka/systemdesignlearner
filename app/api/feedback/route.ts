@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { sendFeedbackConfirmation } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -101,6 +102,17 @@ export async function POST(request: NextRequest) {
           })
       }
     }
+
+    // Send feedback confirmation email
+    // Note: This runs asynchronously and won't block the response
+    // If email fails, the feedback is still saved successfully
+    sendFeedbackConfirmation({
+      to: email,
+      name: name || undefined,
+      feedback: feedback.trim(),
+    }).catch(error => {
+      console.error('Failed to send feedback confirmation email:', error);
+    });
 
     return NextResponse.json(
       { message: 'Thank you for your feedback!' },

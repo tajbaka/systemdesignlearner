@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
+import { sendNewsletterConfirmation } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -53,6 +54,15 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       )
     }
+
+    // Send newsletter confirmation email
+    // Note: This runs asynchronously and won't block the response
+    // If email fails, the subscription is still saved successfully
+    sendNewsletterConfirmation({
+      to: email,
+    }).catch(error => {
+      console.error('Failed to send newsletter confirmation email:', error);
+    });
 
     return NextResponse.json(
       { message: 'Successfully subscribed!' },
