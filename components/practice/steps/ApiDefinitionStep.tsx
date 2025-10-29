@@ -80,10 +80,7 @@ export function ApiDefinitionStep() {
     <div className="space-y-6">
       <div className="px-4 text-center sm:px-6">
         <div className="space-y-3">
-          <h2 className="text-xl font-semibold text-white sm:text-2xl">Outline the API</h2>
-          <p className="text-xs text-zinc-400 sm:text-sm">
-            Capture each endpoint’s purpose, payload, and edge cases. Speak or type directly into the card.
-          </p>
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">URL Shortener</h2>
         </div>
       </div>
 

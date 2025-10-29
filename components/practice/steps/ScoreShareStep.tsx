@@ -100,7 +100,7 @@ export function ScoreShareStep() {
             </div>
             <div>
               <h2 className="text-xl font-semibold text-white sm:text-2xl">
-                Score & share
+                URL Shortener
               </h2>
               <p className="mt-1 text-sm text-zinc-300">
                 Review your run, polish the architecture, and share a badge when you&apos;re ready.

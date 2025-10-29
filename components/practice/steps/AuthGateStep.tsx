@@ -28,7 +28,7 @@ export function AuthGateStep() {
           </div>
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-white sm:text-2xl">
-              Sign in to keep your run history
+              URL Shortener
             </h2>
             <p className="text-sm leading-relaxed text-zinc-300">
               Store your design, unlock daily streaks, and share a verified pass badge. You can skip for now and keep practicing locally.

@@ -619,7 +619,7 @@ export default function DesignStage({
             Phase 2 · Guided design
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-white sm:text-2xl">Design the redirect flow</h2>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">URL Shortener</h2>
             <p className="text-sm text-zinc-300 leading-relaxed">
               Follow the checklist to shape a fast redirect path. The palette and coach panel flank the canvas so you can iterate with plenty of room.
             </p>

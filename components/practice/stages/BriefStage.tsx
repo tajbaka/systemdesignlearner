@@ -33,7 +33,7 @@ export default function BriefStage({
             Phase 1 · Guided brief
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-white sm:text-2xl">URL Shortener MVP</h2>
+            <h2 className="text-xl font-semibold text-white sm:text-2xl">URL Shortener</h2>
             <p className="text-sm text-zinc-300 leading-relaxed">
               You are shipping a fast redirect service. We pre-loaded the baseline goals—check the toggles, tweak the targets, and lock in the brief to start designing.
             </p>
