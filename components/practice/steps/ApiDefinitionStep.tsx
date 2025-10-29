@@ -150,7 +150,14 @@ export function ApiDefinitionStep() {
                   ) : null}
                   <button
                     type="button"
-                    onClick={() => setOpenId((current) => (current === endpoint.id ? null : endpoint.id))}
+                    onClick={() =>
+                      setOpenId((current) => {
+                        if (current !== endpoint.id) return endpoint.id;
+                        if (endpoints.length <= 1) return endpoint.id;
+                        const nextEndpoint = endpoints[(index + 1) % endpoints.length];
+                        return nextEndpoint?.id ?? endpoint.id;
+                      })
+                    }
                     className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-700 text-zinc-300 transition hover:border-blue-400 hover:text-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     aria-expanded={isOpen}
                     aria-label={isOpen ? "Collapse endpoint" : "Expand endpoint"}

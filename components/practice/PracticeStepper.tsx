@@ -83,9 +83,9 @@ export function PracticeStepper({ current, progress, onStepChange, readOnly = fa
       className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
     >
       {/* Mobile */}
-      <div className="sm:hidden px-6 py-5">
+      <div className="sm:hidden py-5">
         <div
-          className="relative mb-2 h-9"
+          className="relative mb-2 h-9 px-6"
           style={{ ["--dot" as any]: "36px" }}
         >
           <div
@@ -138,8 +138,8 @@ export function PracticeStepper({ current, progress, onStepChange, readOnly = fa
                       isCurrent
                         ? "border-blue-400 bg-blue-500 text-blue-950"
                         : completed
-                          ? "border-emerald-400/60 bg-emerald-500/20 text-emerald-100"
-                          : "border-zinc-700 bg-zinc-900 text-zinc-400"
+                          ? "border-emerald-400/60 bg-emerald-500 text-emerald-50"
+                          : "border-zinc-700 bg-zinc-800 text-zinc-300"
                     }`}
                     aria-current={isCurrent ? "step" : undefined}
                     aria-disabled={disabled}
@@ -154,7 +154,7 @@ export function PracticeStepper({ current, progress, onStepChange, readOnly = fa
             })}
           </ol>
         </div>
-        <div className="mt-3 text-center text-xs font-semibold uppercase tracking-wide text-zinc-300">
+        <div className="mt-3 px-6 text-center text-xs font-semibold uppercase tracking-wide text-zinc-300">
           {STEP_META[current].label}
         </div>
       </div>
