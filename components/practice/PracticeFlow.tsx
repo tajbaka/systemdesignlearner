@@ -10,6 +10,7 @@ import ApiDefinitionStep from "@/components/practice/steps/ApiDefinitionStep";
 import SandboxStep from "@/components/practice/steps/SandboxStep";
 import AuthGateStep from "@/components/practice/steps/AuthGateStep";
 import ScoreShareStep from "@/components/practice/steps/ScoreShareStep";
+import VerificationFeedback from "@/components/practice/VerificationFeedback";
 import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
 
@@ -85,11 +86,22 @@ const STEP_COMPONENTS: Record<PracticeStep, (props?: any) => ReactElement> = {
   score: () => <ScoreShareStep />,
 };
 
+type VerificationState = {
+  isVerifying: boolean;
+  result: { canProceed: boolean; blocking: string[]; warnings: string[] } | null;
+  error: string | null;
+};
+
 export function PracticeFlow() {
   const session = usePracticeSession();
   const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
+  const [verification, setVerification] = useState<VerificationState>({
+    isVerifying: false,
+    result: null,
+    error: null,
+  });
 
   useEffect(() => {
     if (hydrated && !isReadOnly && currentStep === "score") {
@@ -102,6 +114,8 @@ export function PracticeFlow() {
       setMobilePaletteOpen(false);
       setRunPanelOpen(false);
     }
+    // Clear verification state when step changes
+    setVerification({ isVerifying: false, result: null, error: null });
   }, [currentStep]);
 
   const config = STEP_CONFIGS[currentStep];
@@ -126,10 +140,106 @@ export function PracticeFlow() {
     goPrev();
   };
 
-  const handleNext = () => {
-    if (isReadOnly) return;
+  const verifyStep = async () => {
+    setVerification({ isVerifying: true, result: null, error: null });
+
+    try {
+      let body: any;
+
+      switch (currentStep) {
+        case "functional":
+          body = {
+            step: "functional",
+            summary: state.requirements.functionalSummary,
+            selectedFeatures: state.requirements.functional,
+          };
+          break;
+
+        case "nonFunctional":
+          body = {
+            step: "nonFunctional",
+            notes: state.requirements.nonFunctional.notes,
+            readRps: state.requirements.nonFunctional.readRps,
+            writeRps: state.requirements.nonFunctional.writeRps,
+            p95RedirectMs: state.requirements.nonFunctional.p95RedirectMs,
+            availability: state.requirements.nonFunctional.availability,
+          };
+          break;
+
+        case "api":
+          body = {
+            step: "api",
+            endpoints: state.apiDefinition.endpoints,
+            selectedFeatures: state.requirements.functional,
+          };
+          break;
+
+        default:
+          // No verification needed for other steps
+          return { canProceed: true, blocking: [], warnings: [] };
+      }
+
+      const response = await fetch("/api/practice/verify-step", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.error || errorData.message || "Verification failed";
+        throw new Error(errorMessage);
+      }
+
+      const result = await response.json();
+      setVerification({ isVerifying: false, result, error: null });
+      return result;
+    } catch (error) {
+      console.error("Verification error:", error);
+      setVerification({
+        isVerifying: false,
+        result: null,
+        error: "Verification service unavailable. Please try again.",
+      });
+      return null;
+    }
+  };
+
+  const proceedToNext = () => {
     config?.onNext?.(session);
     goNext();
+  };
+
+  const handleNext = async () => {
+    if (isReadOnly) return;
+
+    // Steps that need verification
+    const stepsNeedingVerification: PracticeStep[] = ["functional", "nonFunctional", "api"];
+
+    if (stepsNeedingVerification.includes(currentStep)) {
+      const result = await verifyStep();
+
+      if (!result) {
+        // Verification API failed - user must retry
+        return;
+      }
+
+      if (!result.canProceed) {
+        // Blocking issues - user must revise
+        return;
+      }
+
+      if (result.warnings.length > 0 && !verification.result) {
+        // Show warnings, wait for user action
+        return;
+      }
+
+      // Either no warnings, or user clicked "Continue Anyway"
+      proceedToNext();
+    } else {
+      // No verification needed
+      proceedToNext();
+    }
   };
 
   const sandboxProps = currentStep === "sandbox"
@@ -184,19 +294,30 @@ export function PracticeFlow() {
             <button
               type="button"
               onClick={handleNext}
-              disabled={isReadOnly || nextDisabled}
+              disabled={isReadOnly || nextDisabled || verification.isVerifying}
               className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 text-blue-950 transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:bg-zinc-600 disabled:text-zinc-300"
             >
-              <span className="sr-only">{nextLabel}</span>
-              <svg aria-hidden className="h-4 w-4" viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M6 4l4 4-4 4"
-                  stroke="currentColor"
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
+              <span className="sr-only">{verification.isVerifying ? "Verifying..." : nextLabel}</span>
+              {verification.isVerifying ? (
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : (
+                <svg aria-hidden className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+                  <path
+                    d="M6 4l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              )}
             </button>
           ) : null}
         </div>
@@ -261,6 +382,23 @@ export function PracticeFlow() {
       ) : null}
 
       <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">
+        {verification.error ? (
+          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
+            <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4">
+              <p className="text-sm text-rose-200">{verification.error}</p>
+            </div>
+          </div>
+        ) : null}
+        {verification.result && (verification.result.blocking.length > 0 || verification.result.warnings.length > 0) ? (
+          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
+            <VerificationFeedback
+              blocking={verification.result.blocking}
+              warnings={verification.result.warnings}
+              onRevise={() => setVerification({ isVerifying: false, result: null, error: null })}
+              onContinue={verification.result.canProceed ? proceedToNext : undefined}
+            />
+          </div>
+        ) : null}
         {renderFooter()}
         {helper ? (
           <div className="mx-auto w-full max-w-5xl px-4 pb-4 text-xs text-amber-200">

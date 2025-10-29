@@ -1,0 +1,159 @@
+{
+  "slug": "url-shortener",
+  "title": "URL Shortener",
+  "functional": {
+    "required": [
+      {
+        "id": "url-shortening",
+        "label": "URL shortening",
+        "description": "System must accept long URLs and generate short codes/slugs",
+        "keywords": ["shorten", "generate", "slug", "code", "short url", "create"]
+      },
+      {
+        "id": "redirect",
+        "label": "Redirect by slug",
+        "description": "System must redirect users from short URL to original URL",
+        "keywords": ["redirect", "lookup", "resolve", "navigate", "forward"]
+      },
+      {
+        "id": "persistence",
+        "label": "Persistent storage",
+        "description": "URL mappings must be stored persistently in a database",
+        "keywords": ["store", "save", "database", "persist", "storage"]
+      }
+    ],
+    "optional": [
+      {
+        "id": "custom-aliases",
+        "label": "Custom aliases",
+        "description": "Users can choose their own custom short codes instead of auto-generated ones",
+        "keywords": ["custom", "alias", "vanity", "personalized", "choose slug"]
+      },
+      {
+        "id": "basic-analytics",
+        "label": "Click analytics",
+        "description": "Track click counts, timestamps, and basic metrics for each short URL",
+        "keywords": ["analytics", "track", "count", "clicks", "metrics", "statistics", "monitor"]
+      },
+      {
+        "id": "rate-limiting",
+        "label": "Rate limiting",
+        "description": "Prevent abuse by limiting requests per IP address or user account",
+        "keywords": ["rate limit", "throttle", "abuse", "spam", "quota", "limit"]
+      },
+      {
+        "id": "admin-delete",
+        "label": "Admin deletion",
+        "description": "Administrators can delete malicious, spam, or inappropriate URLs",
+        "keywords": ["admin", "delete", "remove", "moderate", "manage"]
+      }
+    ]
+  },
+  "nonFunctional": {
+    "latency": {
+      "min": 10,
+      "max": 500,
+      "recommended": 100,
+      "unit": "ms",
+      "description": "P95 latency for redirect operations"
+    },
+    "readThroughput": {
+      "min": 100,
+      "max": 100000,
+      "recommended": 5000,
+      "unit": "rps",
+      "description": "Read requests per second (redirects)"
+    },
+    "writeThroughput": {
+      "min": 10,
+      "max": 10000,
+      "recommended": 100,
+      "unit": "rps",
+      "description": "Write requests per second (URL creation)"
+    },
+    "availability": {
+      "acceptable": ["99.0", "99.9", "99.99"],
+      "recommended": "99.9"
+    }
+  },
+  "apiEndpoints": [
+    {
+      "method": "POST",
+      "path": "/urls",
+      "purpose": "Create a new shortened URL",
+      "required": true,
+      "requestBody": {
+        "longUrl": {
+          "type": "string",
+          "required": true,
+          "description": "The original long URL to shorten"
+        },
+        "customSlug": {
+          "type": "string",
+          "required": false,
+          "description": "Optional custom slug (if custom-aliases feature is enabled)"
+        }
+      },
+      "responses": {
+        "201": {
+          "description": "URL created successfully",
+          "body": {
+            "shortUrl": "string",
+            "slug": "string",
+            "longUrl": "string"
+          }
+        },
+        "400": "Invalid URL or slug already taken",
+        "429": "Rate limit exceeded (if rate-limiting enabled)"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/:slug",
+      "purpose": "Redirect to the original URL",
+      "required": true,
+      "responses": {
+        "302": "Redirect to original URL",
+        "404": "Slug not found"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/urls/:slug/stats",
+      "purpose": "Get analytics for a shortened URL",
+      "required": false,
+      "requiresFeature": "basic-analytics",
+      "responses": {
+        "200": {
+          "description": "Analytics data",
+          "body": {
+            "slug": "string",
+            "clickCount": "number",
+            "createdAt": "timestamp",
+            "lastAccessedAt": "timestamp"
+          }
+        },
+        "404": "Slug not found"
+      }
+    },
+    {
+      "method": "DELETE",
+      "path": "/urls/:slug",
+      "purpose": "Delete a shortened URL (admin only)",
+      "required": false,
+      "requiresFeature": "admin-delete",
+      "responses": {
+        "204": "URL deleted successfully",
+        "401": "Unauthorized - admin access required",
+        "404": "Slug not found"
+      }
+    }
+  ],
+  "components": {
+    "base": ["Web", "API Gateway", "Service", "DB (Postgres)", "Cache (Redis)"],
+    "analytics": ["Message Queue (Kafka Topic)", "Worker Pool"],
+    "rateLimit": ["Rate Limiter"],
+    "admin": ["Auth"],
+    "optional": ["Load Balancer", "CDN", "Object Store (S3)", "Tracing/Logging"]
+  }
+}
