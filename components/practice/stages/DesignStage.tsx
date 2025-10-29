@@ -559,9 +559,9 @@ export default function DesignStage({
   if (layout === "immersive") {
     return (
       <div className="relative flex-1 min-h-[600px]">
-        <div className="relative flex h-full w-full flex-col overflow-hidden bg-zinc-950 min-h-[600px] sm:rounded-3xl sm:border sm:border-zinc-800 sm:bg-zinc-900/70">
-          <div className="flex-1 min-h-[560px] p-2 sm:p-6">
-            <div className="relative h-full w-full overflow-hidden bg-zinc-950 min-h-[520px] sm:rounded-2xl sm:border sm:border-zinc-800 sm:bg-zinc-950/40">
+        <div className="relative flex h-full w-full flex-col overflow-hidden bg-zinc-950 min-h-[600px] sm:rounded-3xl sm:border sm:border-zinc-800 sm:bg-zinc-900/70 lg:rounded-none lg:border-none lg:bg-zinc-950">
+          <div className="flex-1 min-h-[560px] p-2 sm:p-6 lg:p-0">
+            <div className="relative h-full w-full overflow-hidden bg-zinc-950 min-h-[520px] sm:rounded-2xl sm:border sm:border-zinc-800 sm:bg-zinc-950/40 lg:rounded-none lg:border-none lg:bg-zinc-950">
               {!locked && !readOnly && (selectedNodeId || selectedEdgeId) ? (
                 <div className="absolute left-4 top-4 z-30">
                   <button

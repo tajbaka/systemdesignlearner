@@ -412,7 +412,9 @@ function ReactFlowBoardInner({
               border: '1px solid rgba(255, 255, 255, 0.2)',
               width: 140,
               height: 105,
+              bottom: 120,
             }}
+            position="bottom-left"
             className="hidden lg:block" // Hide on mobile, show on desktop
           />
         )}
