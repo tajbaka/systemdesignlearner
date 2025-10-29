@@ -2,13 +2,22 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import DemoBoard from "./components/DemoBoard";
 import { track } from "@/lib/analytics";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 export function HomePageClient() {
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState<string>('');
@@ -18,17 +27,21 @@ export function HomePageClient() {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
+      transition: { staggerChildren: 0.15, delayChildren: 0.2 }
     }
   };
 
   const item = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.3 } }
-  };
-
-  const toggleFaq = (index: number) => {
-    setOpenFaq(openFaq === index ? null : index);
+    hidden: { y: 30, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        duration: 0.5,
+        type: "spring" as const,
+        stiffness: 100
+      }
+    }
   };
 
   const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -179,25 +192,40 @@ export function HomePageClient() {
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.3 }}
+        transition={{ duration: 0.5, delay: 0.3, type: "spring", stiffness: 100 }}
         className="flex flex-col sm:flex-row gap-4 justify-center mb-14"
       >
-        <Link
-          href="/practice/url-shortener"
-          className="px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-emerald-500/30"
-          aria-label="Try URL Shortener Scenario"
-          onClick={() => track("homepage_try_url_shortener_clicked")}
-        >
-          Try URL Shortener Scenario
-        </Link>
-        <Link
-          href="/practice"
-          className="px-10 py-5 border-2 border-zinc-600 hover:border-zinc-400 text-zinc-300 hover:text-white font-semibold text-lg rounded-lg transition-colors duration-200"
-          aria-label="Explore All Scenarios"
-          onClick={() => track("homepage_explore_scenarios_clicked")}
-        >
-          Explore All Scenarios
-        </Link>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            asChild
+            size="lg"
+            className="px-10 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
+          >
+            <Link
+              href="/practice/url-shortener"
+              aria-label="Try URL Shortener Scenario"
+              onClick={() => track("homepage_try_url_shortener_clicked")}
+            >
+              Try URL Shortener Scenario
+            </Link>
+          </Button>
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="px-10 py-6 border-2 border-zinc-600 hover:border-emerald-500/50 text-zinc-300 hover:text-white font-semibold text-lg transition-all duration-300"
+          >
+            <Link
+              href="/practice"
+              aria-label="Explore All Scenarios"
+              onClick={() => track("homepage_explore_scenarios_clicked")}
+            >
+              Explore All Scenarios
+            </Link>
+          </Button>
+        </motion.div>
       </motion.div>
 
       {/* Larger Interactive Demo */}
@@ -249,60 +277,81 @@ export function HomePageClient() {
             viewport={{ once: true }}
           >
             {/* Feature 1 */}
-            <motion.div variants={item} className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl p-6 hover:border-emerald-500/30 transition-colors duration-200">
-              <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Drag-and-Design</h3>
-              <p className="text-zinc-400 leading-relaxed">
-                Place components (Web, CDN, API Gateway, Service, Redis, Postgres, S3, Kafka, Load Balancer) on an infinite grid and connect them with directional edges.
-              </p>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-xl">Drag-and-Design</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-zinc-400 leading-relaxed">
+                    Place components (Web, CDN, API Gateway, Service, Redis, Postgres, S3, Kafka, Load Balancer) on an infinite grid and connect them with directional edges.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Feature 2 */}
-            <motion.div variants={item} className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl p-6 hover:border-emerald-500/30 transition-colors duration-200">
-              <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Scenario-Driven Practice</h3>
-              <p className="text-zinc-400 leading-relaxed">
-                Pick from real-world scenarios like Spotify Play (200ms P95, 2k RPS), URL Shortener (100ms P95, 5k RPS), and CDN Design (80ms P95, 8k RPS).
-              </p>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-xl">Scenario-Driven Practice</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-zinc-400 leading-relaxed">
+                    Pick from real-world scenarios like Spotify Play (200ms P95, 2k RPS), URL Shortener (100ms P95, 5k RPS), and CDN Design (80ms P95, 8k RPS).
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Feature 3 */}
-            <motion.div variants={item} className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl p-6 hover:border-emerald-500/30 transition-colors duration-200">
-              <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center mb-4">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-semibold mb-3">Fast Simulation</h3>
-              <p className="text-zinc-400 leading-relaxed">
-                Get instant feedback with P95 latency calculations, RPS capacity checks, SLO validation, and bottleneck identification through our lightweight simulation engine.
-              </p>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <CardTitle className="text-xl">Fast Simulation</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-zinc-400 leading-relaxed">
+                    Get instant feedback with P95 latency calculations, RPS capacity checks, SLO validation, and bottleneck identification through our lightweight simulation engine.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
 
             {/* Feature 4 */}
-            {/* Feature 4 */}
-            <motion.div variants={item} className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl p-6 hover:border-emerald-500/30 transition-colors duration-200 md:col-span-2 lg:col-span-3">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold mb-3">Share &amp; Fork</h3>
-                  <p className="text-zinc-400 leading-relaxed">
-                    One-click URL encoding of your designs with compressed Base64. Recipients can fork your architecture and build upon it. Perfect for collaborative learning and sharing solutions.
-                  </p>
-                </div>
-              </div>
+            <motion.div variants={item} className="md:col-span-2 lg:col-span-3">
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full hover:border-emerald-500/50 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="text-xl mb-3">Share &amp; Fork</CardTitle>
+                      <CardDescription className="text-zinc-400 leading-relaxed">
+                        One-click URL encoding of your designs with compressed Base64. Recipients can fork your architecture and build upon it. Perfect for collaborative learning and sharing solutions.
+                      </CardDescription>
+                    </div>
+                  </div>
+                </CardHeader>
+              </Card>
             </motion.div>
 
           </motion.div>
@@ -324,44 +373,68 @@ export function HomePageClient() {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            <motion.div variants={item} className="text-center">
-              <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
-                1
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Pick a Scenario</h3>
-              <p className="text-zinc-400 leading-relaxed">
-                Choose from real-world challenges like &ldquo;Spotify Play at 200ms P95, 2k RPS&rdquo; or &ldquo;URL Shortener at 100ms P95, 5k RPS&rdquo; with clear requirements and success criteria.
-              </p>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full text-center hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
+                    1
+                  </div>
+                  <CardTitle className="text-xl">Pick a Scenario</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-zinc-400 leading-relaxed">
+                    Choose from real-world challenges like &ldquo;Spotify Play at 200ms P95, 2k RPS&rdquo; or &ldquo;URL Shortener at 100ms P95, 5k RPS&rdquo; with clear requirements and success criteria.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
 
-            <motion.div variants={item} className="text-center">
-              <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
-                2
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Drag Components</h3>
-              <p className="text-zinc-400 leading-relaxed">
-                Place Web, API Gateway, Service, Redis, Postgres, S3, Kafka, and Load Balancer components on the infinite grid. Connect them with directional edges to build your architecture.
-              </p>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full text-center hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
+                    2
+                  </div>
+                  <CardTitle className="text-xl">Drag Components</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-zinc-400 leading-relaxed">
+                    Place Web, API Gateway, Service, Redis, Postgres, S3, Kafka, and Load Balancer components on the infinite grid. Connect them with directional edges to build your architecture.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
 
-            <motion.div variants={item} className="text-center">
-              <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
-                3
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Connect & Simulate</h3>
-              <p className="text-zinc-400 leading-relaxed">
-                Wire up your components and run the simulation. Get instant feedback on P95 latency, capacity bottlenecks, SLO compliance, and backlog growth analysis.
-              </p>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full text-center hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
+                    3
+                  </div>
+                  <CardTitle className="text-xl">Connect & Simulate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-zinc-400 leading-relaxed">
+                    Wire up your components and run the simulation. Get instant feedback on P95 latency, capacity bottlenecks, SLO compliance, and backlog growth analysis.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
 
-            <motion.div variants={item} className="text-center">
-              <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6 text-2xl font-bold">
-                4
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Review & Iterate</h3>
-              <p className="text-zinc-400 leading-relaxed">
-                Analyze results, identify bottlenecks, and optimize your design. Share your solution via URL encoding or fork existing designs to learn from others.
-              </p>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full text-center hover:border-emerald-500/30 hover:shadow-lg hover:shadow-emerald-500/10 transition-all duration-300 group">
+                <CardHeader>
+                  <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold text-white group-hover:scale-110 transition-transform duration-300">
+                    4
+                  </div>
+                  <CardTitle className="text-xl">Review & Iterate</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-zinc-400 leading-relaxed">
+                    Analyze results, identify bottlenecks, and optimize your design. Share your solution via URL encoding or fork existing designs to learn from others.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </motion.div>
           </motion.div>
         </div>
@@ -375,83 +448,103 @@ export function HomePageClient() {
             <p className="text-lg text-zinc-400">Start free, upgrade when you&apos;re ready</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+            variants={container}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
             {/* Free Tier */}
-            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl p-8 hover:border-emerald-500/30 transition-colors duration-200">
-              <h3 className="text-2xl font-bold mb-4">Free</h3>
-              <p className="text-zinc-400 mb-6">Perfect for getting started and learning the basics</p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center text-zinc-300">
-                  <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Limited scenarios (3-5)
-                </li>
-                <li className="flex items-center text-zinc-300">
-                  <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Basic simulation features
-                </li>
-                <li className="flex items-center text-zinc-300">
-                  <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  URL sharing
-                </li>
-              </ul>
-              <Link
-                href="/play"
-                className="w-full block text-center px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white font-semibold rounded-lg transition-colors duration-200"
-                aria-label="Start Free"
-              >
-                Start Free
-              </Link>
-            </div>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-zinc-700/50 h-full hover:border-emerald-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10">
+                <CardHeader>
+                  <CardTitle className="text-2xl">Free</CardTitle>
+                  <CardDescription className="text-zinc-400">Perfect for getting started and learning the basics</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-center text-zinc-300">
+                      <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Limited scenarios (3-5)
+                    </li>
+                    <li className="flex items-center text-zinc-300">
+                      <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Basic simulation features
+                    </li>
+                    <li className="flex items-center text-zinc-300">
+                      <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      URL sharing
+                    </li>
+                  </ul>
+                  <Button
+                    asChild
+                    variant="secondary"
+                    className="w-full bg-zinc-700 hover:bg-zinc-600 text-white font-semibold"
+                  >
+                    <Link href="/play" aria-label="Start Free">
+                      Start Free
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
 
             {/* Premium Tier */}
-            <div className="bg-zinc-800/30 border-2 border-emerald-500/50 rounded-xl p-8 relative">
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Coming Soon</span>
-              </div>
-              <h3 className="text-2xl font-bold mb-4">Premium</h3>
-              <p className="text-zinc-400 mb-6">For serious system design practice and advanced features</p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center text-zinc-300">
-                  <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Unlimited scenarios
-                </li>
-                <li className="flex items-center text-zinc-300">
-                  <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Advanced analytics
-                </li>
-                <li className="flex items-center text-zinc-300">
-                  <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Chaos mode & stress testing
-                </li>
-                <li className="flex items-center text-zinc-300">
-                  <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Priority support
-                </li>
-              </ul>
-              <button
-                disabled
-                className="w-full block text-center px-6 py-3 bg-emerald-500/50 text-zinc-400 font-semibold rounded-lg cursor-not-allowed"
-                aria-label="Coming Soon"
-              >
-                Sign Up for Updates
-              </button>
-              <p className="text-xs text-zinc-500 text-center mt-2">Details coming soon at x.ai/grok</p>
-            </div>
-          </div>
+            <motion.div variants={item}>
+              <Card className="bg-zinc-800/30 border-2 border-emerald-500/50 h-full relative hover:shadow-lg hover:shadow-emerald-500/20 transition-all duration-300">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-emerald-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Coming Soon</span>
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-2xl">Premium</CardTitle>
+                  <CardDescription className="text-zinc-400">For serious system design practice and advanced features</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3 mb-8">
+                    <li className="flex items-center text-zinc-300">
+                      <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Unlimited scenarios
+                    </li>
+                    <li className="flex items-center text-zinc-300">
+                      <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Advanced analytics
+                    </li>
+                    <li className="flex items-center text-zinc-300">
+                      <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Chaos mode & stress testing
+                    </li>
+                    <li className="flex items-center text-zinc-300">
+                      <svg className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      Priority support
+                    </li>
+                  </ul>
+                  <Button
+                    disabled
+                    className="w-full bg-emerald-500/50 text-zinc-400 font-semibold cursor-not-allowed"
+                    aria-label="Coming Soon"
+                  >
+                    Sign Up for Updates
+                  </Button>
+                  <p className="text-xs text-zinc-500 text-center mt-2">Details coming soon at x.ai/grok</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </motion.div>
 
           {/* Validation Note */}
           <div className="text-center mt-12">
@@ -465,244 +558,162 @@ export function HomePageClient() {
       {/* FAQ Section */}
       <section className="py-16 sm:py-20 lg:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-16"
+          >
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
             <p className="text-lg text-zinc-400">Everything you need to know about practicing system design</p>
-          </div>
+          </motion.div>
 
-          <div className="space-y-4">
-            {/* FAQ Item 1 */}
-            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
-              <button
-                onClick={() => toggleFaq(0)}
-                className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent rounded-xl"
-                aria-expanded={openFaq === 0}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">What makes System Design Sandbox special?</h3>
-                  <svg
-                    className={`w-5 h-5 text-zinc-400 transform transition-transform duration-200 ${openFaq === 0 ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </button>
-              <AnimatePresence>
-                {openFaq === 0 && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="px-6 pb-6 pt-4 overflow-hidden"
-                  >
-                    <p className="text-zinc-400 leading-relaxed">
-                      Unlike abstract theory or expensive courses, we provide hands-on practice where you can immediately see the impact of your architectural decisions. Drag components, connect them, and get real-time feedback on latency, capacity, and bottlenecks.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Accordion type="single" collapsible className="space-y-4">
+              <AccordionItem value="item-1" className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl px-6 data-[state=open]:border-emerald-500/30 transition-colors">
+                <AccordionTrigger className="text-xl font-semibold hover:text-emerald-400 hover:no-underline py-6">
+                  What makes System Design Sandbox special?
+                </AccordionTrigger>
+                <AccordionContent className="text-zinc-400 leading-relaxed pb-6">
+                  Unlike abstract theory or expensive courses, we provide hands-on practice where you can immediately see the impact of your architectural decisions. Drag components, connect them, and get real-time feedback on latency, capacity, and bottlenecks.
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* FAQ Item 2 */}
-            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
-              <button
-                onClick={() => toggleFaq(1)}
-                className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent rounded-xl"
-                aria-expanded={openFaq === 1}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">What scenarios are included?</h3>
-                  <svg
-                    className={`w-5 h-5 text-zinc-400 transform transition-transform duration-200 ${openFaq === 1 ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </button>
-              <AnimatePresence>
-                {openFaq === 1 && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="px-6 pb-6 pt-4 overflow-hidden"
-                  >
-                    <p className="text-zinc-400 leading-relaxed mb-3">
-                      We include production-scale scenarios like:
-                    </p>
-                    <ul className="text-zinc-400 space-y-1 ml-4">
-                      <li>• <strong>Spotify Play</strong> (200ms P95, 2k RPS) - Stream media with caching and CDN</li>
-                      <li>• <strong>Spotify Search</strong> (300ms P95, 1.5k RPS) - Catalog search with Redis and Postgres</li>
-                      <li>• <strong>URL Shortener</strong> (100ms P95, 5k RPS) - Redirect service with caching</li>
-                      <li>• <strong>Rate Limiter</strong> (120ms P95, 2k RPS) - Token bucket in Redis</li>
-                      <li>• <strong>CDN Design</strong> (80ms P95, 8k RPS) - Global asset delivery</li>
-                      <li>• <strong>Webhook Delivery</strong> (300ms P95, 3k RPS) - Async processing with Kafka</li>
-                      <li>• And more: Typeahead Search, Leaderboard, Pastebin</li>
-                    </ul>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              <AccordionItem value="item-2" className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl px-6 data-[state=open]:border-emerald-500/30 transition-colors">
+                <AccordionTrigger className="text-xl font-semibold hover:text-emerald-400 hover:no-underline py-6">
+                  What scenarios are included?
+                </AccordionTrigger>
+                <AccordionContent className="text-zinc-400 leading-relaxed pb-6">
+                  <p className="mb-3">We include production-scale scenarios like:</p>
+                  <ul className="space-y-2 ml-4">
+                    <li>• <strong className="text-zinc-300">Spotify Play</strong> (200ms P95, 2k RPS) - Stream media with caching and CDN</li>
+                    <li>• <strong className="text-zinc-300">Spotify Search</strong> (300ms P95, 1.5k RPS) - Catalog search with Redis and Postgres</li>
+                    <li>• <strong className="text-zinc-300">URL Shortener</strong> (100ms P95, 5k RPS) - Redirect service with caching</li>
+                    <li>• <strong className="text-zinc-300">Rate Limiter</strong> (120ms P95, 2k RPS) - Token bucket in Redis</li>
+                    <li>• <strong className="text-zinc-300">CDN Design</strong> (80ms P95, 8k RPS) - Global asset delivery</li>
+                    <li>• <strong className="text-zinc-300">Webhook Delivery</strong> (300ms P95, 3k RPS) - Async processing with Kafka</li>
+                    <li>• And more: Typeahead Search, Leaderboard, Pastebin</li>
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* FAQ Item 3 */}
-            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
-              <button
-                onClick={() => toggleFaq(2)}
-                className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent rounded-xl"
-                aria-expanded={openFaq === 2}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">What&apos;s the tech stack?</h3>
-                  <svg
-                    className={`w-5 h-5 text-zinc-400 transform transition-transform duration-200 ${openFaq === 2 ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </button>
-              <AnimatePresence>
-                {openFaq === 2 && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="px-6 pb-6 pt-4 overflow-hidden"
-                  >
-                    <p className="text-zinc-400 leading-relaxed">
-                      Built with Next.js 15, React 19, and TypeScript for the frontend. Uses Vitest for testing, Tailwind CSS 4 for styling, and framer-motion for animations. The simulation engine is a custom lightweight model that calculates latency and capacity.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+              <AccordionItem value="item-3" className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl px-6 data-[state=open]:border-emerald-500/30 transition-colors">
+                <AccordionTrigger className="text-xl font-semibold hover:text-emerald-400 hover:no-underline py-6">
+                  What&apos;s the tech stack?
+                </AccordionTrigger>
+                <AccordionContent className="text-zinc-400 leading-relaxed pb-6">
+                  Built with Next.js 15, React 19, and TypeScript for the frontend. Uses Vitest for testing, Tailwind CSS 4 for styling, and framer-motion for animations. The simulation engine is a custom lightweight model that calculates latency and capacity.
+                </AccordionContent>
+              </AccordionItem>
 
-            {/* FAQ Item 4 */}
-            <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl">
-              <button
-                onClick={() => toggleFaq(3)}
-                className="w-full text-left p-6 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent rounded-xl"
-                aria-expanded={openFaq === 3}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold">Is it mobile-friendly?</h3>
-                  <svg
-                    className={`w-5 h-5 text-zinc-400 transform transition-transform duration-200 ${openFaq === 3 ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
-              </button>
-              <AnimatePresence>
-                {openFaq === 3 && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="px-6 pb-6 pt-4 overflow-hidden"
-                  >
-                    <p className="text-zinc-400 leading-relaxed">
-                      Yes! We support touch gestures, bottom sheets for mobile interactions, and responsive design that works great on phones and tablets. You can practice system design anywhere, anytime.
-                    </p>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </div>
+              <AccordionItem value="item-4" className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl px-6 data-[state=open]:border-emerald-500/30 transition-colors">
+                <AccordionTrigger className="text-xl font-semibold hover:text-emerald-400 hover:no-underline py-6">
+                  Is it mobile-friendly?
+                </AccordionTrigger>
+                <AccordionContent className="text-zinc-400 leading-relaxed pb-6">
+                  Yes! We support touch gestures, bottom sheets for mobile interactions, and responsive design that works great on phones and tablets. You can practice system design anywhere, anytime.
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </motion.div>
         </div>
       </section>
 
       {/* Validation Form Section */}
       <section className="py-16 sm:py-20 lg:py-24 bg-zinc-900/50">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center mb-12"
+          >
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Help Validate This Idea</h2>
             <p className="text-lg text-zinc-400 mb-8">
               We&apos;re building this tool for the developer community. What scenarios would you add? What features matter most to you?
             </p>
-          </div>
+          </motion.div>
 
-          <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-xl p-8">
-            <form onSubmit={handleFormSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    placeholder="your@email.com"
-                    required
-                  />
-                </div>
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-2">
-                    Name (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    placeholder="Your Name"
-                  />
-                </div>
-              </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            <Card className="bg-zinc-800/30 border-zinc-700/50">
+              <CardContent className="pt-8">
+                <form onSubmit={handleFormSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium text-zinc-300">
+                        Email Address
+                      </label>
+                      <Input
+                        type="email"
+                        id="email"
+                        name="email"
+                        className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400 focus:border-emerald-500 focus:ring-emerald-500"
+                        placeholder="your@email.com"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="name" className="text-sm font-medium text-zinc-300">
+                        Name (Optional)
+                      </label>
+                      <Input
+                        type="text"
+                        id="name"
+                        name="name"
+                        className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400 focus:border-emerald-500 focus:ring-emerald-500"
+                        placeholder="Your Name"
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label htmlFor="feedback" className="block text-sm font-medium text-zinc-300 mb-2">
-                  What scenarios would you add? Any feature requests?
-                </label>
-                <textarea
-                  id="feedback"
-                  name="feedback"
-                  rows={4}
-                  className="w-full px-4 py-3 bg-zinc-700 border border-zinc-600 rounded-lg text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-vertical"
-                  placeholder="I'd love to see a video streaming scenario, or support for custom components..."
-                  required
-                />
-              </div>
+                  <div className="space-y-2">
+                    <label htmlFor="feedback" className="text-sm font-medium text-zinc-300">
+                      What scenarios would you add? Any feature requests?
+                    </label>
+                    <Textarea
+                      id="feedback"
+                      name="feedback"
+                      rows={4}
+                      className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400 focus:border-emerald-500 focus:ring-emerald-500 resize-vertical"
+                      placeholder="I'd love to see a video streaming scenario, or support for custom components..."
+                      required
+                    />
+                  </div>
 
-              <div className="text-center">
-                <motion.button
-                  type="submit"
-                  disabled={formStatus === 'submitting'}
-                  className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-700 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-                  aria-label="Submit Feedback"
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                >
-                  {formStatus === 'submitting' && (
-                    <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  )}
-                  {formStatus === 'success' ? 'Thanks for your feedback!' :
-                    formStatus === 'error' ? 'Something went wrong. Please try again.' :
-                      'Submit Feedback'}
-                </motion.button>
-              </div>
-            </form>
-          </div>
+                  <div className="text-center">
+                    <Button
+                      type="submit"
+                      disabled={formStatus === 'submitting'}
+                      className="px-8 py-3 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-700 disabled:cursor-not-allowed text-white font-semibold shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
+                      aria-label="Submit Feedback"
+                    >
+                      {formStatus === 'submitting' && (
+                        <svg className="animate-spin h-4 w-4 mr-2 inline" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      )}
+                      {formStatus === 'success' ? 'Thanks for your feedback!' :
+                        formStatus === 'error' ? 'Something went wrong. Please try again.' :
+                          'Submit Feedback'}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
       </section>
 
@@ -825,21 +836,22 @@ export function HomePageClient() {
               <h3 className="text-white font-semibold text-sm mb-4">Stay Updated</h3>
               <p className="text-zinc-400 text-sm mb-4">Get updates and help validate this idea.</p>
               <form onSubmit={handleNewsletterSubmit} className="space-y-3">
-                <input
+                <Input
                   type="email"
                   name="email"
                   placeholder="your@email.com"
-                  className="w-full px-3 py-2 bg-zinc-800 border border-zinc-700 rounded text-white placeholder-zinc-400 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500"
+                  className="w-full bg-zinc-800 border-zinc-700 text-white placeholder-zinc-400 text-sm focus:border-emerald-500 focus:ring-emerald-500"
                   required
                 />
-                <button
+                <Button
                   type="submit"
                   disabled={newsletterStatus === 'submitting'}
-                  className="w-full px-3 py-2 bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-700 disabled:cursor-not-allowed text-white text-sm font-semibold rounded transition-colors duration-200 flex items-center justify-center gap-2"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-700 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all duration-300"
                   aria-label="Subscribe to Newsletter"
+                  size="sm"
                 >
                   {newsletterStatus === 'submitting' && (
-                    <svg className="animate-spin h-3 w-3" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-3 w-3 mr-2 inline" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -847,7 +859,7 @@ export function HomePageClient() {
                   {newsletterStatus === 'success' ? 'Subscribed!' :
                    newsletterStatus === 'error' ? 'Try again' :
                    'Subscribe'}
-                </button>
+                </Button>
                 {newsletterStatus === 'error' && (
                   <p className="text-red-400 text-xs text-center">Subscription failed. Please try again.</p>
                 )}
