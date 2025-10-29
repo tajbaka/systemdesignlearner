@@ -89,6 +89,7 @@ export function PracticeFlow() {
   const session = usePracticeSession();
   const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
+  const [runPanelOpen, setRunPanelOpen] = useState(false);
 
   useEffect(() => {
     if (hydrated && !isReadOnly && currentStep === "score") {
@@ -99,11 +100,13 @@ export function PracticeFlow() {
   useEffect(() => {
     if (currentStep !== "sandbox") {
       setMobilePaletteOpen(false);
+      setRunPanelOpen(false);
     }
   }, [currentStep]);
 
   const config = STEP_CONFIGS[currentStep];
   const StepComponent = STEP_COMPONENTS[currentStep];
+  const isSandboxStep = currentStep === "sandbox";
 
   const nextDisabled = useMemo(() => (config?.nextDisabled ? config.nextDisabled(session) : false), [config, session]);
   const showBack = config?.showBack ?? PRACTICE_STEPS.indexOf(currentStep) > 0;
@@ -130,8 +133,15 @@ export function PracticeFlow() {
   };
 
   const sandboxProps = currentStep === "sandbox"
-    ? { mobilePaletteOpen, onMobilePaletteChange: setMobilePaletteOpen }
+    ? {
+        mobilePaletteOpen,
+        onMobilePaletteChange: setMobilePaletteOpen,
+        runPanelOpen,
+        onRunPanelChange: setRunPanelOpen,
+      }
     : undefined;
+
+  const stepContent = StepComponent ? <StepComponent {...(sandboxProps ?? {})} /> : null;
 
   const renderFooter = () => {
     if (currentStep === "score") {
@@ -170,17 +180,6 @@ export function PracticeFlow() {
         )}
 
         <div className="flex items-center gap-2">
-          {currentStep === "sandbox" ? (
-            <button
-              type="button"
-              onClick={() => setMobilePaletteOpen(true)}
-              disabled={isReadOnly}
-              className="inline-flex h-11 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              + Palette
-            </button>
-          ) : null}
-
           {showNext ? (
             <button
               type="button"
@@ -222,16 +221,23 @@ export function PracticeFlow() {
   const helper = helperText();
 
   return (
-    <div className="flex w-full flex-col gap-6 pb-28">
+    <div className="flex w-full flex-1 flex-col gap-6 pb-28 min-h-0">
       <PracticeStepper
         current={currentStep}
         progress={state.completed}
         onStepChange={(step) => setStep(step)}
         readOnly={isReadOnly}
+        hideMobileStepper={isSandboxStep}
       />
 
-      <div className="space-y-6">
-        {StepComponent ? <StepComponent {...(sandboxProps ?? {})} /> : null}
+      <div
+        className={
+          isSandboxStep
+            ? "flex-1 min-h-0 flex flex-col gap-6"
+            : "flex flex-col gap-6"
+        }
+      >
+        {isSandboxStep ? <div className="flex-1 min-h-0">{stepContent}</div> : stepContent}
       </div>
 
       <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">

@@ -55,9 +55,16 @@ const nextSpawnPosition = (nodes: PracticeDesignState["nodes"]) => {
 type SandboxStepProps = {
   mobilePaletteOpen: boolean;
   onMobilePaletteChange: (open: boolean) => void;
+  runPanelOpen: boolean;
+  onRunPanelChange: (open: boolean) => void;
 };
 
-export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: SandboxStepProps) {
+export function SandboxStep({
+  mobilePaletteOpen,
+  onMobilePaletteChange,
+  runPanelOpen,
+  onRunPanelChange,
+}: SandboxStepProps) {
   const {
     state,
     setDesign,
@@ -77,23 +84,7 @@ export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: Sandbo
 
   return (
     <>
-      <div className="space-y-6">
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-200">
-              Step 4 · High-level design
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-white sm:text-2xl">
-                Build the redirect path
-              </h2>
-              <p className="text-sm leading-relaxed text-zinc-300">
-                Use the sandbox to wire Web → API → Service → Cache → DB. Drop in extras from the palette when features demand them.
-              </p>
-            </div>
-          </div>
-        </section>
-
+      <div className="relative flex w-full flex-1 min-h-[70vh]">
         <DesignStage
           design={state.design}
           requirements={state.requirements}
@@ -104,30 +95,16 @@ export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: Sandbo
           onContinue={() => {}}
           allowedComponentKinds={allowedComponents}
           showFooterControls={false}
+          layout="immersive"
+          onOpenPalette={() => {
+            if (isReadOnly) return;
+            onMobilePaletteChange(true);
+          }}
+          onOpenSimulation={() => {
+            if (isReadOnly) return;
+            onRunPanelChange(true);
+          }}
         />
-
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
-                Simulation
-              </h3>
-              <p className="text-xs text-zinc-500">
-                Run the load test as you iterate. Passing results will unlock the finish step.
-              </p>
-            </div>
-          </div>
-          <RunStage
-            design={state.design}
-            run={state.run}
-            requirements={state.requirements}
-            locked={isReadOnly}
-            readOnly={isReadOnly}
-            updateRun={setRun}
-            onContinue={() => {}}
-            showFooterControls={false}
-          />
-        </section>
       </div>
 
       <BottomSheet
@@ -161,6 +138,23 @@ export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: Sandbo
           }}
           className="h-full"
           listClassName="pb-10"
+        />
+      </BottomSheet>
+
+      <BottomSheet
+        isOpen={runPanelOpen}
+        onClose={() => onRunPanelChange(false)}
+        title="Simulation"
+      >
+        <RunStage
+          design={state.design}
+          run={state.run}
+          requirements={state.requirements}
+          locked={isReadOnly}
+          readOnly={isReadOnly}
+          updateRun={setRun}
+          onContinue={() => onRunPanelChange(false)}
+          showFooterControls={false}
         />
       </BottomSheet>
     </>

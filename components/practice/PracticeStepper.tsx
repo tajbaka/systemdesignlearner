@@ -8,6 +8,7 @@ type PracticeStepperProps = {
   progress: PracticeProgress;
   onStepChange: (step: PracticeStep) => void;
   readOnly?: boolean;
+  hideMobileStepper?: boolean;
 };
 
 type StepMeta = {
@@ -62,7 +63,13 @@ const computeUnlockedIndex = (progress: PracticeProgress): number => {
   return max;
 };
 
-export function PracticeStepper({ current, progress, onStepChange, readOnly = false }: PracticeStepperProps) {
+export function PracticeStepper({
+  current,
+  progress,
+  onStepChange,
+  readOnly = false,
+  hideMobileStepper = false,
+}: PracticeStepperProps) {
   const currentIndex = useMemo(() => PRACTICE_STEPS.indexOf(current), [current]);
   const unlockedIndex = useMemo(() => computeUnlockedIndex(progress), [progress]);
 
@@ -83,81 +90,83 @@ export function PracticeStepper({ current, progress, onStepChange, readOnly = fa
       className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
     >
       {/* Mobile */}
-      <div className="sm:hidden py-5">
-        <div
-          className="relative mb-2 h-9 px-6"
-          style={{ ["--dot" as any]: "36px" }}
-        >
+      {!hideMobileStepper ? (
+        <div className="sm:hidden py-5">
           <div
-            className="absolute h-0.5 bg-zinc-800/70 -z-10"
-            style={{
-              left: "calc(var(--dot) / 2)",
-              right: "calc(var(--dot) / 2)",
-              top: "calc(var(--dot) / 2 - 1px)"
-            }}
-            aria-hidden
-          />
-          <div
-            className="absolute overflow-hidden -z-10"
-            style={{
-              left: "calc(var(--dot) / 2)",
-              right: "calc(var(--dot) / 2)",
-              top: "calc(var(--dot) / 2 - 1px)",
-              height: "2px",
-            }}
-            aria-hidden
+            className="relative mb-2 h-9 px-6"
+            style={{ ["--dot" as any]: "36px" }}
           >
             <div
-              className="h-full bg-blue-500/80 transition-transform duration-500 origin-left"
+              className="absolute h-0.5 bg-zinc-800/70 -z-10"
               style={{
-                transform: `scaleX(${
-                  PRACTICE_STEPS.length > 1
-                    ? currentIndex / (PRACTICE_STEPS.length - 1)
-                    : 0
-                })`,
+                left: "calc(var(--dot) / 2)",
+                right: "calc(var(--dot) / 2)",
+                top: "calc(var(--dot) / 2 - 1px)"
               }}
+              aria-hidden
             />
-          </div>
-          <ol className="relative z-10 flex h-9 items-center justify-between gap-2">
-            {steps.map((step) => {
-              const stepNumber = getStepNumber(step.id);
-              const disabled = isStepDisabled(step.id);
-              const completed = isStepCompleted(step.id);
-              const isCurrent = current === step.id;
-              const statusLabel = completed ? "completed" : disabled ? "locked" : "available";
+            <div
+              className="absolute overflow-hidden -z-10"
+              style={{
+                left: "calc(var(--dot) / 2)",
+                right: "calc(var(--dot) / 2)",
+                top: "calc(var(--dot) / 2 - 1px)",
+                height: "2px",
+              }}
+              aria-hidden
+            >
+              <div
+                className="h-full bg-blue-500/80 transition-transform duration-500 origin-left"
+                style={{
+                  transform: `scaleX(${
+                    PRACTICE_STEPS.length > 1
+                      ? currentIndex / (PRACTICE_STEPS.length - 1)
+                      : 0
+                  })`,
+                }}
+              />
+            </div>
+            <ol className="relative z-10 flex h-9 items-center justify-between gap-2">
+              {steps.map((step) => {
+                const stepNumber = getStepNumber(step.id);
+                const disabled = isStepDisabled(step.id);
+                const completed = isStepCompleted(step.id);
+                const isCurrent = current === step.id;
+                const statusLabel = completed ? "completed" : disabled ? "locked" : "available";
 
-              return (
-                <li key={step.id} className="flex-1 text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (!disabled) onStepChange(step.id);
-                    }}
-                    disabled={disabled}
-                    className={`relative z-20 mx-auto flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed ${
-                      isCurrent
-                        ? "border-blue-400 bg-blue-500 text-blue-950"
-                        : completed
-                          ? "border-emerald-400/60 bg-emerald-500 text-emerald-50"
-                          : "border-zinc-700 bg-zinc-800 text-zinc-300"
-                    }`}
-                    aria-current={isCurrent ? "step" : undefined}
-                    aria-disabled={disabled}
-                  >
-                    <span aria-hidden>{stepNumber}</span>
-                    <span className="sr-only">
-                      Step {stepNumber} of {PRACTICE_STEPS.length}, {step.label}, {statusLabel}
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ol>
+                return (
+                  <li key={step.id} className="flex-1 text-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!disabled) onStepChange(step.id);
+                      }}
+                      disabled={disabled}
+                      className={`relative z-20 mx-auto flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed ${
+                        isCurrent
+                          ? "border-blue-400 bg-blue-500 text-blue-950"
+                          : completed
+                            ? "border-emerald-400/60 bg-emerald-500 text-emerald-50"
+                            : "border-zinc-700 bg-zinc-800 text-zinc-300"
+                      }`}
+                      aria-current={isCurrent ? "step" : undefined}
+                      aria-disabled={disabled}
+                    >
+                      <span aria-hidden>{stepNumber}</span>
+                      <span className="sr-only">
+                        Step {stepNumber} of {PRACTICE_STEPS.length}, {step.label}, {statusLabel}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+          <div className="mt-3 px-6 text-center text-xs font-semibold uppercase tracking-wide text-zinc-300">
+            {STEP_META[current].label}
+          </div>
         </div>
-        <div className="mt-3 px-6 text-center text-xs font-semibold uppercase tracking-wide text-zinc-300">
-          {STEP_META[current].label}
-        </div>
-      </div>
+      ) : null}
 
       {/* Desktop */}
       <div className="hidden px-6 py-6 sm:block">

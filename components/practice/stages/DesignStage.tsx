@@ -26,6 +26,9 @@ type DesignStageProps = {
   onGoBack?: () => void;
   allowedComponentKinds?: ComponentKind[];
   showFooterControls?: boolean;
+  layout?: "guided" | "immersive";
+  onOpenPalette?: () => void;
+  onOpenSimulation?: () => void;
 };
 
 type TutorialStep = {
@@ -187,6 +190,9 @@ export default function DesignStage({
   onGoBack,
   allowedComponentKinds,
   showFooterControls = true,
+  layout = "guided",
+  onOpenPalette,
+  onOpenSimulation,
 }: DesignStageProps) {
   console.debug('[DesignStage] render nodes', design.nodes.map(node => ({ id: node.id, replicas: node.replicas })));
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -547,6 +553,100 @@ export default function DesignStage({
   }, [design.nodes, design.edges]);
 
   const canContinue = !locked && !readOnly && (designReady || designComplete);
+
+  if (layout === "immersive") {
+    return (
+      <div className="relative flex-1 min-h-[600px]">
+        <div className="relative flex h-full w-full flex-col overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/70 min-h-[600px]">
+          <div className="flex-1 min-h-[560px] p-4 sm:p-6">
+            <div className="relative h-full w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-950/40 min-h-[520px]">
+              {!locked && !readOnly && (selectedNodeId || selectedEdgeId) ? (
+                <div className="absolute left-4 top-4 z-30">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDeleteSelection();
+                      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+                        navigator.vibrate(30);
+                      }
+                    }}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200 shadow-lg transition hover:bg-rose-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 touch-manipulation"
+                    aria-label="Delete selected"
+                    title="Delete selected"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ) : null}
+
+              {!locked && !readOnly && onOpenSimulation ? (
+                <button
+                  type="button"
+                  onClick={onOpenSimulation}
+                  className="absolute right-4 top-4 z-30 inline-flex h-11 items-center justify-center gap-2 rounded-full border border-blue-400/40 bg-blue-500/20 px-4 text-sm font-semibold text-blue-100 shadow-lg transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 touch-manipulation"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 16 16" fill="none" aria-hidden>
+                    <path
+                      d="M6 3l4 5-4 5"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <span aria-hidden>Run</span>
+                  <span className="sr-only">Open simulation panel</span>
+                </button>
+              ) : null}
+
+              {!locked && !readOnly && onOpenPalette ? (
+                <button
+                  type="button"
+                  onClick={onOpenPalette}
+                  className="absolute bottom-4 right-4 z-30 flex h-12 w-12 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-blue-100 shadow-lg transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 touch-manipulation"
+                  aria-label="Open component palette"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden>
+                    <path
+                      d="M10 4v12M4 10h12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              ) : null}
+
+              {locked || readOnly ? (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/60 backdrop-blur-sm text-sm text-zinc-300">
+                  Shared view · editing disabled
+                </div>
+              ) : null}
+
+              <ReactFlowBoard
+                nodes={design.nodes}
+                edges={design.edges}
+                onConnect={handleConnect}
+                onDrop={handleDrop}
+                onNodesChange={handleNodesChange}
+                onEdgesChange={handleEdgesChange}
+                onDeleteNode={handleDeleteNode}
+                onUpdateReplicas={handleUpdateReplicas}
+                onNodeTouchStart={handleNodeTouchStart}
+                onNodeTouchEnd={handleNodeTouchEnd}
+                onEdgeSelect={handleEdgeSelect}
+                onNodeSelect={handleNodeSelect}
+                className={locked || readOnly ? "pointer-events-none opacity-60" : ""}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
