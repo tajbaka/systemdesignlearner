@@ -6,7 +6,7 @@ import { useMemo } from "react";
 type PracticeStepperProps = {
   current: PracticeStep;
   progress: PracticeProgress;
-  onStepChange: (step: PracticeStep) => void;
+  onStepChange: ((step: PracticeStep) => void) | ((step: PracticeStep) => Promise<void>);
   readOnly?: boolean;
   hideMobileStepper?: boolean;
 };
