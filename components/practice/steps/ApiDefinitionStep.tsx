@@ -84,7 +84,7 @@ export function ApiDefinitionStep() {
         </div>
       </div>
 
-      <section className="space-y-4">
+      <section className="space-y-4 lg:mx-auto lg:max-w-3xl">
         {endpoints.map((endpoint, index) => {
           const isOpen = openId === endpoint.id;
 

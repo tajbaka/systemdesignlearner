@@ -81,7 +81,7 @@ export function NonFunctionalRequirementsStep() {
         </div>
       </div>
 
-      <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
+      <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
         <div className="space-y-3">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
             Describe the constraints

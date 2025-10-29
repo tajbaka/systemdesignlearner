@@ -21,7 +21,7 @@ export function AuthGateStep() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
+      <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
         <div className="space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-200">
             Step 5 · Save progress
@@ -37,7 +37,7 @@ export function AuthGateStep() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
+      <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
         <div className="flex flex-col gap-4 sm:gap-5">
           <button
             type="button"
