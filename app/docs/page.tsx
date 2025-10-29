@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
+import { Button } from "@/components/ui/button";
 
 export default function DocsPage() {
   return (
@@ -306,12 +307,15 @@ export default function DocsPage() {
 
         {/* CTA */}
         <div className="text-center">
-          <Link
-            href="/play"
-            className="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-semibold text-base sm:text-lg transition-colors min-h-[44px]"
+          <Button
+            asChild
+            size="lg"
+            className="px-6 sm:px-8 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base sm:text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
           >
-            Start Practicing Now
-          </Link>
+            <Link href="/play">
+              Start Practicing Now
+            </Link>
+          </Button>
         </div>
       </div>
     </div>

@@ -1,6 +1,12 @@
 "use client";
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 export default function FeedbackPage() {
   const [formData, setFormData] = useState({
@@ -88,111 +94,133 @@ export default function FeedbackPage() {
         </div>
 
         {/* Form */}
-        <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <h2 className="text-2xl font-bold text-white mb-4">Share Your Feedback</h2>
+        <Card className="bg-zinc-800/50 border-zinc-700">
+          <CardHeader>
+            <CardTitle className="text-2xl text-white">Share Your Feedback</CardTitle>
+            <CardDescription className="text-zinc-400">
+              Help us improve by sharing your experience and suggestions
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-zinc-300">First name</Label>
+                  <Input
+                    type="text"
+                    id="firstName"
+                    name="firstName"
+                    placeholder="First name"
+                    required
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400 focus:border-emerald-500 focus:ring-emerald-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-zinc-300">Last name (optional)</Label>
+                  <Input
+                    type="text"
+                    id="lastName"
+                    name="lastName"
+                    placeholder="Last name"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400 focus:border-emerald-500 focus:ring-emerald-500"
+                  />
+                </div>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input
-                type="text"
-                name="firstName"
-                placeholder="First name"
-                required
-                value={formData.firstName}
-                onChange={handleChange}
-                className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-              />
-              <input
-                type="text"
-                name="lastName"
-                placeholder="Last name (optional)"
-                value={formData.lastName}
-                onChange={handleChange}
-                className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-              />
-            </div>
-
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-            />
-
-            <textarea
-              name="question"
-              placeholder="Your feedback or question"
-              rows={4}
-              required
-              value={formData.question}
-              onChange={handleChange}
-              className="w-full rounded-md border border-zinc-600 bg-transparent px-3 py-2 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-500"
-            />
-
-            {/* Consent Checkboxes */}
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  id="contact_ok"
-                  name="contact_ok"
-                  checked={formData.contact_ok}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-zinc-300">Email</Label>
+                <Input
+                  type="email"
+                  id="email"
+                  name="email"
+                  placeholder="your@email.com"
+                  required
+                  value={formData.email}
                   onChange={handleChange}
-                  className="mt-1 h-4 w-4 rounded border-zinc-600 bg-transparent text-emerald-500 focus:ring-emerald-500"
+                  className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400 focus:border-emerald-500 focus:ring-emerald-500"
                 />
-                <label htmlFor="contact_ok" className="text-sm text-zinc-300">
-                  <strong>It&apos;s okay to contact me</strong> about this feedback for clarification or follow-up questions.
-                </label>
               </div>
 
-              <div className="flex items-start space-x-3">
-                <input
-                  type="checkbox"
-                  id="marketing_ok"
-                  name="marketing_ok"
-                  checked={formData.marketing_ok}
+              <div className="space-y-2">
+                <Label htmlFor="question" className="text-zinc-300">Your feedback or question</Label>
+                <Textarea
+                  id="question"
+                  name="question"
+                  placeholder="Tell us what you think..."
+                  rows={4}
+                  required
+                  value={formData.question}
                   onChange={handleChange}
-                  className="mt-1 h-4 w-4 rounded border-zinc-600 bg-transparent text-emerald-500 focus:ring-emerald-500"
+                  className="bg-zinc-700 border-zinc-600 text-white placeholder-zinc-400 focus:border-emerald-500 focus:ring-emerald-500 resize-vertical"
                 />
-                <label htmlFor="marketing_ok" className="text-sm text-zinc-300">
-                  <strong>Subscribe me to updates</strong> about new features, product announcements, and system design content.
-                </label>
               </div>
-            </div>
 
-            {/* Status Messages */}
-            {message && (
-              <div className={`p-3 rounded-md text-sm ${
-                status === 'success'
-                  ? 'bg-green-900/50 border border-green-700 text-green-300'
-                  : 'bg-red-900/50 border border-red-700 text-red-300'
-              }`}>
-                {message}
+              {/* Consent Checkboxes */}
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="contact_ok"
+                    checked={formData.contact_ok}
+                    onCheckedChange={(checked) => {
+                      setFormData(prev => ({ ...prev, contact_ok: checked as boolean }));
+                    }}
+                    className="mt-1 border-zinc-600 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                  />
+                  <Label htmlFor="contact_ok" className="text-sm text-zinc-300 font-normal cursor-pointer">
+                    <strong>It&apos;s okay to contact me</strong> about this feedback for clarification or follow-up questions.
+                  </Label>
+                </div>
+
+                <div className="flex items-start space-x-3">
+                  <Checkbox
+                    id="marketing_ok"
+                    checked={formData.marketing_ok}
+                    onCheckedChange={(checked) => {
+                      setFormData(prev => ({ ...prev, marketing_ok: checked as boolean }));
+                    }}
+                    className="mt-1 border-zinc-600 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
+                  />
+                  <Label htmlFor="marketing_ok" className="text-sm text-zinc-300 font-normal cursor-pointer">
+                    <strong>Subscribe me to updates</strong> about new features, product announcements, and system design content.
+                  </Label>
+                </div>
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={status === 'submitting'}
-              className="inline-flex items-center rounded-md bg-emerald-600 px-5 py-2 text-white font-medium hover:bg-emerald-700 disabled:bg-emerald-800 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
-            >
-              {status === 'submitting' ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Submitting...
-                </>
-              ) : (
-                'Submit Feedback →'
+              {/* Status Messages */}
+              {message && (
+                <div className={`p-3 rounded-md text-sm ${
+                  status === 'success'
+                    ? 'bg-green-900/50 border border-green-700 text-green-300'
+                    : 'bg-red-900/50 border border-red-700 text-red-300'
+                }`}>
+                  {message}
+                </div>
               )}
-            </button>
-          </form>
-        </div>
+
+              <Button
+                type="submit"
+                disabled={status === 'submitting'}
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:cursor-not-allowed text-white font-medium transition-colors"
+              >
+                {status === 'submitting' ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 inline" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Feedback →'
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { track } from "@/lib/analytics";
 import { Navbar } from "@/components/Navbar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 const PROBLEMS = [
   {
@@ -35,91 +38,100 @@ export default function PracticePage() {
               </p>
             </div>
           </header>
-          <div className="w-full max-w-md space-y-2 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 md:max-w-xs md:space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-              Upcoming
-            </p>
-            <div>
-              <input
+          <Card className="w-full max-w-md md:max-w-xs bg-zinc-900/70 border-zinc-800">
+            <CardHeader className="space-y-2 pb-3">
+              <CardTitle className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                Upcoming
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Input
                 id="practice-search"
                 type="search"
                 disabled
-                className="mt-2 h-11 w-full rounded-full border border-dashed border-zinc-700 bg-zinc-900 px-4 text-sm text-zinc-500 min-h-[44px] focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="h-11 w-full border-dashed border-zinc-700 bg-zinc-900 text-zinc-500 min-h-[44px] focus-visible:ring-2 focus-visible:ring-blue-500"
                 placeholder="Filter problems"
               />
-            </div>
-            <p className="text-xs text-zinc-500">
-              Looking for something specific? Drop a request on{" "}
-              <Link href="/feedback" className="text-blue-200 underline-offset-2 hover:underline">
-                feedback
-              </Link>.
-            </p>
-          </div>
+              <p className="text-xs text-zinc-500">
+                Looking for something specific? Drop a request on{" "}
+                <Link href="/feedback" className="text-blue-200 underline-offset-2 hover:underline">
+                  feedback
+                </Link>.
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Problems Grid */}
         <div className="grid gap-4 sm:gap-6">
           {PROBLEMS.map((problem) => (
-            <div
+            <Card
               key={problem.slug}
-              className="bg-zinc-900 border border-zinc-700 rounded-xl p-4 sm:p-6 hover:border-zinc-600 transition-colors"
+              className="bg-zinc-900 border-zinc-700 hover:border-zinc-600 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10"
             >
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                {/* Problem Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="text-lg font-semibold text-white sm:text-xl">
-                      {problem.name}
-                    </h3>
-                    <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        problem.difficulty === 'Easy'
-                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                          : problem.difficulty === 'Medium'
-                          ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                      }`}>
-                        {problem.difficulty}
-                      </span>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  {/* Problem Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <CardTitle className="text-lg sm:text-xl text-white">
+                        {problem.name}
+                      </CardTitle>
+                      <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          problem.difficulty === 'Easy'
+                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                            : problem.difficulty === 'Medium'
+                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        }`}>
+                          {problem.difficulty}
+                        </span>
+                      </div>
+                    </div>
+
+                    <CardDescription className="text-sm text-zinc-400 mb-3 leading-relaxed">
+                      {problem.description}
+                    </CardDescription>
+
+                    <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+                      <div className="flex items-center gap-1">
+                        <span className="text-zinc-500">Topic:</span>
+                        <span className="rounded bg-zinc-800 px-2 py-1 text-zinc-200">
+                          {problem.topic}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-zinc-500">Time:</span>
+                        <span className="rounded bg-zinc-800 px-2 py-1 text-zinc-200">
+                          {problem.estimatedTime}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <p className="text-sm text-zinc-400 mb-3 leading-relaxed">
-                    {problem.description}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-3 text-xs sm:text-sm">
-                    <div className="flex items-center gap-1">
-                      <span className="text-zinc-500">Topic:</span>
-                      <span className="rounded bg-zinc-800 px-2 py-1 text-zinc-200">
-                        {problem.topic}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <span className="text-zinc-500">Time:</span>
-                      <span className="rounded bg-zinc-800 px-2 py-1 text-zinc-200">
-                        {problem.estimatedTime}
-                      </span>
-                    </div>
+                  {/* Action Button */}
+                  <div className="flex-shrink-0 w-full sm:w-auto">
+                    <Button
+                      asChild
+                      size="lg"
+                      className="h-12 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all duration-300 min-h-[44px] touch-manipulation sm:w-auto"
+                    >
+                      <Link
+                        href={`/practice/${problem.slug}`}
+                        onClick={() => track("practice_problem_selected", {
+                          slug: problem.slug,
+                          difficulty: problem.difficulty,
+                          topic: problem.topic
+                        })}
+                      >
+                        Start Practice
+                      </Link>
+                    </Button>
                   </div>
                 </div>
-
-                {/* Action Button */}
-                <div className="flex-shrink-0 w-full sm:w-auto">
-                  <Link
-                    href={`/practice/${problem.slug}`}
-                    onClick={() => track("practice_problem_selected", {
-                      slug: problem.slug,
-                      difficulty: problem.difficulty,
-                      topic: problem.topic
-                    })}
-                    className="inline-flex h-12 w-full items-center justify-center rounded-full bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 min-h-[44px] touch-manipulation sm:w-auto"
-                  >
-                    Start Practice
-                  </Link>
-                </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
 
