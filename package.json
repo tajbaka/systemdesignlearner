@@ -3,16 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node fix-util.js next dev --turbopack",
-    "build": "node fix-util.js next build",
-    "start": "node fix-util.js next start",
+    "dev": "node scripts/fix-util.js next dev --turbopack",
+    "build": "node scripts/fix-util.js next build",
+    "start": "node scripts/fix-util.js next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "next lint",
-    "generate-icons": "node generate-icons.js"
+    "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -28,7 +28,7 @@ const buildSharePayload = (state: ReturnType<typeof usePracticeSession>["state"]
 });
 
 export function ScoreShareStep() {
-  const { state, setStep, isReadOnly } = usePracticeSession();
+  const { state, setStep, isReadOnly: _isReadOnly } = usePracticeSession();
   const lastResult = state.run.lastResult;
   const score = lastResult?.scoreBreakdown;
   const outcome = score?.outcome ?? (lastResult?.failedByChaos ? "chaos_fail" : undefined);

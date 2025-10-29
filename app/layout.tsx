@@ -17,6 +17,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_VERCEL_URL
+      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+      : process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'https://www.systemdesignsandbox.com'
+  ),
   title: "System Design Sandbox - Master System Design Through Play",
   description: "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations of production scenarios.",
   icons: {

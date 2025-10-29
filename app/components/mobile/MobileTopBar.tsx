@@ -18,7 +18,7 @@ interface MobileTopBarProps {
 export default function MobileTopBar({
   componentCount: _componentCount,
   isReadOnly,
-  selectedNode: _selectedNode, // eslint-disable-line @typescript-eslint/no-unused-vars
+  selectedNode: _selectedNode,
   selectedScenario,
   onAddComponent,
   onResetView,

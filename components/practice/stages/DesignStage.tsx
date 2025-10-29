@@ -192,9 +192,9 @@ export default function DesignStage({
   allowedComponentKinds,
   showFooterControls = true,
   layout = "guided",
-  onOpenPalette,
-  onOpenSimulation,
-  showPaletteTrigger = true,
+  onOpenPalette: _onOpenPalette,
+  onOpenSimulation: _onOpenSimulation,
+  showPaletteTrigger: _showPaletteTrigger = true,
 }: DesignStageProps) {
   console.debug('[DesignStage] render nodes', design.nodes.map(node => ({ id: node.id, replicas: node.replicas })));
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);

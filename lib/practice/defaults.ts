@@ -12,7 +12,6 @@ import type {
   PracticeRunState,
   Requirements,
   PracticeApiDefinitionState,
-  ApiEndpoint,
 } from "./types";
 
 export const FUNCTIONAL_TOGGLES = [

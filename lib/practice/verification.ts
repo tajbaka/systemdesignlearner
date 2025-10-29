@@ -138,7 +138,7 @@ function itemToString(item: unknown): string {
 
     // Fallback: stringify the object
     return Object.entries(obj)
-      .filter(([_, value]) => value !== undefined && value !== null)
+      .filter(([, value]) => value !== undefined && value !== null)
       .map(([key, value]) => `${key}: ${value}`)
       .join(", ");
   }

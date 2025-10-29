@@ -77,11 +77,11 @@ const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
   },
 };
 
-const STEP_COMPONENTS: Record<PracticeStep, (props?: any) => ReactElement> = {
+const STEP_COMPONENTS: Record<PracticeStep, (props?: Record<string, unknown>) => ReactElement> = {
   functional: () => <FunctionalRequirementsStep />,
   nonFunctional: () => <NonFunctionalRequirementsStep />,
   api: () => <ApiDefinitionStep />,
-  sandbox: (props) => <SandboxStep {...props} />,
+  sandbox: (props) => <SandboxStep {...(props as Parameters<typeof SandboxStep>[0])} />,
   auth: () => <AuthGateStep />,
   score: () => <ScoreShareStep />,
 };
@@ -144,7 +144,12 @@ export function PracticeFlow() {
     setVerification({ isVerifying: true, result: null, error: null });
 
     try {
-      let body: any;
+      type VerificationBody =
+        | { step: "functional"; summary: string; selectedFeatures: Record<string, boolean> }
+        | { step: "nonFunctional"; notes: string; readRps: number; writeRps: number; p95RedirectMs: number; availability: string }
+        | { step: "api"; endpoints: unknown[]; selectedFeatures: Record<string, boolean> };
+
+      let body: VerificationBody | undefined;
 
       switch (currentStep) {
         case "functional":

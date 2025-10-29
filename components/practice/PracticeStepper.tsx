@@ -94,7 +94,7 @@ export function PracticeStepper({
         <div className="sm:hidden py-5">
           <div
             className="relative mb-2 h-9 px-6"
-            style={{ ["--dot" as any]: "36px" }}
+            style={{ "--dot": "36px" } as React.CSSProperties}
           >
             <div
               className="absolute h-0.5 bg-zinc-800/70 -z-10"
@@ -172,7 +172,7 @@ export function PracticeStepper({
       <div className="hidden px-6 py-6 sm:block">
         <ol
           className="relative mx-auto flex max-w-5xl list-none items-start justify-between"
-          style={{ ["--dot" as any]: "48px" }}
+          style={{ "--dot": "48px" } as React.CSSProperties}
         >
           <div
             className="absolute h-0.5 bg-zinc-800/70 z-0"
