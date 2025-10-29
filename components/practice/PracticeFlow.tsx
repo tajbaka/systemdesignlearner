@@ -221,7 +221,7 @@ export function PracticeFlow() {
   const helper = helperText();
 
   return (
-    <div className="flex w-full flex-1 flex-col gap-6 pb-28 min-h-0">
+    <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
       <PracticeStepper
         current={currentStep}
         progress={state.completed}
@@ -233,12 +233,32 @@ export function PracticeFlow() {
       <div
         className={
           isSandboxStep
-            ? "flex-1 min-h-0 flex flex-col gap-6"
-            : "flex flex-col gap-6"
+            ? "flex-1 min-h-0 overflow-hidden"
+            : "flex-1 overflow-y-auto pb-28"
         }
       >
-        {isSandboxStep ? <div className="flex-1 min-h-0">{stepContent}</div> : stepContent}
+        {isSandboxStep ? <div className="h-full w-full">{stepContent}</div> : <div className="px-4 py-6">{stepContent}</div>}
       </div>
+
+      {isSandboxStep ? (
+        <button
+          type="button"
+          onClick={() => setMobilePaletteOpen(true)}
+          disabled={isReadOnly}
+          className="fixed bottom-32 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-blue-100 transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-36 sm:right-6"
+          aria-label="Open component palette"
+        >
+          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden>
+            <path
+              d="M10 4v12M4 10h12"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      ) : null}
 
       <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">
         {renderFooter()}

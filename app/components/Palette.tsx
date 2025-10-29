@@ -15,8 +15,8 @@ interface PaletteProps {
 export default function Palette({
   componentLibrary,
   onSpawn,
-  title = "Components",
-  subtitle = "Drag to board or click to spawn at center.",
+  title = "",
+  subtitle = "",
   className,
   listClassName,
 }: PaletteProps) {

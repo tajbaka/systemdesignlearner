@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { notFound, useParams, useSearchParams } from "next/navigation";
 import PracticeFlow from "@/components/practice/PracticeFlow";
 import { PracticeSessionProvider } from "@/components/practice/session/PracticeSessionProvider";
@@ -13,6 +14,15 @@ export default function PracticeSlugPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const slug = params?.slug as string;
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
   if (slug !== VALID_SLUG) {
     notFound();
@@ -33,9 +43,9 @@ export default function PracticeSlugPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
+    <div className="flex h-screen flex-col overflow-hidden bg-zinc-950">
       <Navbar />
-      <main className="mx-auto flex w-full max-w-screen-2xl flex-col gap-8 px-4 pb-24 pt-6 sm:px-6 md:pt-8 lg:px-8">
+      <main className="flex-1 overflow-hidden">
         <PracticeSessionProvider sharedState={sharedState}>
           <PracticeFlow />
         </PracticeSessionProvider>

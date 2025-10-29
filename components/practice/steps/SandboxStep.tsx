@@ -84,7 +84,7 @@ export function SandboxStep({
 
   return (
     <>
-      <div className="relative flex w-full flex-1 min-h-[70vh]">
+      <div className="relative flex h-full w-full overflow-hidden">
         <DesignStage
           design={state.design}
           requirements={state.requirements}
@@ -104,6 +104,7 @@ export function SandboxStep({
             if (isReadOnly) return;
             onRunPanelChange(true);
           }}
+          showPaletteTrigger={false}
         />
       </div>
 
