@@ -23,16 +23,25 @@ const functionalLabels: Record<string, string> = {
 };
 
 const formatFunctional = (requirements: Requirements | undefined): string[] => {
-  if (!requirements?.functional) {
+  if (!requirements) {
     return ["Functional requirements pending."];
   }
 
-  return functionalOrder
-    .filter((key) => key in requirements.functional)
-    .map(
-      (key) =>
-        `- ${functionalLabels[key] ?? key}: ${requirements.functional[key] ? "Enabled" : "Deferred"}`
-    );
+  const lines: string[] = [];
+  if (requirements.functionalSummary.trim()) {
+    lines.push(`Summary: ${requirements.functionalSummary.trim()}`);
+    lines.push("");
+  }
+
+  lines.push(
+    ...functionalOrder
+      .filter((key) => key in requirements.functional)
+      .map(
+        (key) =>
+          `- ${functionalLabels[key] ?? key}: ${requirements.functional[key] ? "Enabled" : "Deferred"}`
+      )
+  );
+  return lines;
 };
 
 const formatNonFunctional = (requirements: Requirements | undefined): string[] => {
@@ -40,12 +49,19 @@ const formatNonFunctional = (requirements: Requirements | undefined): string[] =
     return ["Non-functional constraints pending."];
   }
   const nf = requirements.nonFunctional;
-  return [
+  const lines = [
     `- Read throughput target: ${nf.readRps.toLocaleString()} rps`,
     `- Write throughput target: ${nf.writeRps.toLocaleString()} rps`,
     `- P95 redirect latency: ${nf.p95RedirectMs} ms`,
     `- Availability: ${nf.availability}%`,
   ];
+  if (nf.rateLimitNotes.trim()) {
+    lines.push(`- Rate limit notes: ${nf.rateLimitNotes.trim()}`);
+  }
+  if (nf.notes.trim()) {
+    lines.push(`- Additional constraints: ${nf.notes.trim()}`);
+  }
+  return lines;
 };
 
 const formatDesign = (state: PracticeState): string[] => {

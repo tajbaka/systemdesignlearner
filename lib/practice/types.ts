@@ -25,12 +25,29 @@ export type NFConstraints = {
   readRps: number;
   writeRps: number;
   p95RedirectMs: number;
+  rateLimitNotes: string;
   availability: "99.0" | "99.9" | "99.99";
+  notes: string;
 };
 
 export type Requirements = {
+  functionalSummary: string;
   functional: Record<string, boolean>;
   nonFunctional: NFConstraints;
+};
+
+export type ApiEndpoint = {
+  id: string;
+  method: "GET" | "POST";
+  path: string;
+  body: string;
+  response: string;
+  suggested?: boolean;
+};
+
+export type PracticeApiDefinitionState = {
+  endpoints: ApiEndpoint[];
+  selectedId: string | null;
 };
 
 export type PracticeSimulationResult = {
@@ -62,19 +79,37 @@ export type PracticeRunState = {
   firstPassAt?: number;
 };
 
+export type PracticeAuthState = {
+  isAuthed: boolean;
+  skipped: boolean;
+};
+
+export type PracticeStep =
+  | "functional"
+  | "nonFunctional"
+  | "api"
+  | "sandbox"
+  | "auth"
+  | "score";
+
+export const PRACTICE_STEPS: PracticeStep[] = [
+  "functional",
+  "nonFunctional",
+  "api",
+  "sandbox",
+  "auth",
+  "score",
+];
+
+export type PracticeProgress = Record<PracticeStep, boolean>;
+
 export type PracticeState = {
   slug: "url-shortener";
   requirements: Requirements;
+  apiDefinition: PracticeApiDefinitionState;
   design: PracticeDesignState;
   run: PracticeRunState;
-  locked: {
-    brief: boolean;
-    design: boolean;
-    run: boolean;
-  };
+  auth: PracticeAuthState;
+  completed: PracticeProgress;
   updatedAt: number;
 };
-
-export type PracticeStep = "brief" | "design" | "run" | "review";
-
-export const PRACTICE_STEPS: PracticeStep[] = ["brief", "design", "run", "review"];

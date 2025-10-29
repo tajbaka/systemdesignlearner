@@ -2,7 +2,7 @@ import type { PracticeState } from "./types";
 
 const storageKey = (slug: PracticeState["slug"]) => `sds-practice-${slug}`;
 
-export const loadPractice = (slug: PracticeState["slug"]): PracticeState | null => {
+export const loadPractice = (slug: PracticeState["slug"]): PracticeState | Record<string, unknown> | null => {
   if (typeof window === "undefined") {
     return null;
   }
@@ -12,8 +12,8 @@ export const loadPractice = (slug: PracticeState["slug"]): PracticeState | null 
     if (!raw) {
       return null;
     }
-    const parsed = JSON.parse(raw) as PracticeState;
-    return parsed?.slug === slug ? parsed : null;
+    const parsed = JSON.parse(raw) as PracticeState | Record<string, unknown>;
+    return (parsed as PracticeState)?.slug === slug ? parsed : null;
   } catch (err) {
     console.warn("Failed to load practice state", err);
     return null;

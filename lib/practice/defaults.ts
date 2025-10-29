@@ -11,6 +11,8 @@ import type {
   PracticeDesignState,
   PracticeRunState,
   Requirements,
+  PracticeApiDefinitionState,
+  ApiEndpoint,
 } from "./types";
 
 export const FUNCTIONAL_TOGGLES = [
@@ -53,6 +55,7 @@ export const FUNCTIONAL_TOGGLES = [
 ] as const;
 
 export const makeDefaultRequirements = (): Requirements => ({
+  functionalSummary: "",
   functional: FUNCTIONAL_TOGGLES.reduce<Requirements["functional"]>((acc, toggle) => {
     acc[toggle.id] = toggle.default;
     return acc;
@@ -61,7 +64,9 @@ export const makeDefaultRequirements = (): Requirements => ({
     readRps: 5000,
     writeRps: 100,
     p95RedirectMs: 100,
+    rateLimitNotes: "",
     availability: "99.9",
+    notes: "",
   },
 });
 
@@ -184,15 +189,59 @@ export const makeDefaultRunState = (): PracticeRunState => ({
   chaosMode: false,
 });
 
+const suggestedEndpoint = (
+  partial: Pick<ApiEndpoint, "id" | "method" | "path" | "response"> &
+    Partial<ApiEndpoint>
+): ApiEndpoint => ({
+  body: "",
+  suggested: true,
+  ...partial,
+});
+
+export const makeDefaultApiDefinition = (): PracticeApiDefinitionState => ({
+  endpoints: [
+    suggestedEndpoint({
+      id: "post-shorten",
+      method: "POST",
+      path: "/shorten",
+      body: `{
+  "url": "https://example.com/path",
+  "customSlug": "launch"
+}`,
+      response: `{
+  "slug": "launch",
+  "shortUrl": "https://sho.rt/launch",
+  "expiresAt": null
+}`,
+    }),
+    suggestedEndpoint({
+      id: "get-slug",
+      method: "GET",
+      path: "/:slug",
+      response: `302 Redirect
+Location: https://example.com/path`,
+    }),
+  ],
+  selectedId: null,
+});
+
 export const makeInitialPracticeState = (): PracticeState => ({
   slug: "url-shortener",
   requirements: makeDefaultRequirements(),
+  apiDefinition: makeDefaultApiDefinition(),
   design: makeDefaultDesignState(),
   run: makeDefaultRunState(),
-  locked: {
-    brief: false,
-    design: false,
-    run: false,
+  auth: {
+    isAuthed: false,
+    skipped: false,
+  },
+  completed: {
+    functional: false,
+    nonFunctional: false,
+    api: false,
+    sandbox: false,
+    auth: false,
+    score: false,
   },
   updatedAt: Date.now(),
 });

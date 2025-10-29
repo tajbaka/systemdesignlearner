@@ -1,381 +1,249 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import type { PlacedNode, Edge } from "@/app/components/types";
+import Link from "next/link";
+import { useEffect, useMemo, useState, type ReactElement } from "react";
 import PracticeStepper from "@/components/practice/PracticeStepper";
-import BriefStage from "@/components/practice/stages/BriefStage";
-import DesignStage from "@/components/practice/stages/DesignStage";
-import RunStage from "@/components/practice/stages/RunStage";
-import ReviewPanel from "@/components/practice/ReviewPanel";
-import { loadPractice, savePractice } from "@/lib/practice/storage";
-import {
-  makeInitialPracticeState,
-  makeDefaultRequirements,
-} from "@/lib/practice/defaults";
-import type {
-  PracticeDesignState,
-  PracticeRunState,
-  PracticeState,
-  PracticeStep,
-  Requirements,
-} from "@/lib/practice/types";
+import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
+import FunctionalRequirementsStep from "@/components/practice/steps/FunctionalRequirementsStep";
+import NonFunctionalRequirementsStep from "@/components/practice/steps/NonFunctionalRequirementsStep";
+import ApiDefinitionStep from "@/components/practice/steps/ApiDefinitionStep";
+import SandboxStep from "@/components/practice/steps/SandboxStep";
+import AuthGateStep from "@/components/practice/steps/AuthGateStep";
+import ScoreShareStep from "@/components/practice/steps/ScoreShareStep";
+import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
-import { useScrollToTop } from "@/hooks/useScrollToTop";
 
-const PRACTICE_SLUG = "url-shortener";
+type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
-const deriveCurrentStep = (state: PracticeState): PracticeStep => {
-  if (!state.locked.brief) return "brief";
-  if (!state.locked.design) return "design";
-  if (!state.locked.run) return "run";
-  return "review";
+type StepConfig = {
+  id: PracticeStep;
+  showBack?: boolean;
+  showNext?: boolean;
+  nextLabel?: string;
+  nextDisabled?: (session: PracticeSessionValue) => boolean;
+  onNext?: (session: PracticeSessionValue) => void;
 };
 
-const isStepAccessible = (step: PracticeStep, locks: PracticeState["locked"]) => {
-  switch (step) {
-    case "brief":
-      return true;
-    case "design":
-      return locks.brief;
-    case "run":
-      return locks.design;
-    case "review":
-      return locks.run;
-    default:
-      return false;
-  }
+const completeStep = (session: PracticeSessionValue, step: PracticeStep) => {
+  if (session.isReadOnly || session.state.completed[step]) return;
+  session.markStep(step, true);
+  track("practice_step_completed", { slug: session.state.slug, step });
 };
 
-type LegacyPracticeState = Partial<{
-  slug: string;
-  requirements: Requirements;
-  locked: { req?: boolean; high?: boolean; low?: boolean };
-}>;
+const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
+  functional: {
+    id: "functional",
+    showBack: false,
+    nextLabel: "Next",
+    nextDisabled: (session) => !session.state.requirements.functionalSummary.trim(),
+    onNext: (session) => completeStep(session, "functional"),
+  },
+  nonFunctional: {
+    id: "nonFunctional",
+    showBack: true,
+    nextLabel: "Next",
+    nextDisabled: (session) => {
+      const nf = session.state.requirements.nonFunctional;
+      return nf.readRps <= 0 || nf.writeRps <= 0 || nf.p95RedirectMs <= 0;
+    },
+    onNext: (session) => completeStep(session, "nonFunctional"),
+  },
+  api: {
+    id: "api",
+    showBack: true,
+    nextLabel: "Next",
+    nextDisabled: (session) => session.state.apiDefinition.endpoints.length === 0,
+    onNext: (session) => completeStep(session, "api"),
+  },
+  sandbox: {
+    id: "sandbox",
+    showBack: true,
+    nextLabel: "Next",
+    nextDisabled: (session) => session.state.run.lastResult?.scoreBreakdown?.outcome !== "pass",
+    onNext: (session) => completeStep(session, "sandbox"),
+  },
+  auth: {
+    id: "auth",
+    showBack: true,
+    nextLabel: "Next",
+    nextDisabled: (session) => !(session.state.auth.isAuthed || session.state.auth.skipped),
+    onNext: (session) => completeStep(session, "auth"),
+  },
+  score: {
+    id: "score",
+    showBack: true,
+    showNext: false,
+  },
+};
 
-const cloneNodes = (nodes: PlacedNode[]) =>
-  nodes.map((node) => ({
-    ...node,
-    spec: { ...node.spec },
-  }));
+const STEP_COMPONENTS: Record<PracticeStep, (props?: any) => ReactElement> = {
+  functional: () => <FunctionalRequirementsStep />,
+  nonFunctional: () => <NonFunctionalRequirementsStep />,
+  api: () => <ApiDefinitionStep />,
+  sandbox: (props) => <SandboxStep {...props} />,
+  auth: () => <AuthGateStep />,
+  score: () => <ScoreShareStep />,
+};
 
-const cloneEdges = (edges: Edge[]) => edges.map((edge) => ({ ...edge }));
+export function PracticeFlow() {
+  const session = usePracticeSession();
+  const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly } = session;
+  const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
 
-const mergeState = (
-  stored: PracticeState | LegacyPracticeState | null
-): PracticeState => {
-  const base = makeInitialPracticeState();
-  if (!stored) {
-    return base;
-  }
+  useEffect(() => {
+    if (hydrated && !isReadOnly && currentStep === "score") {
+      completeStep(session, "score");
+    }
+  }, [hydrated, isReadOnly, currentStep, session]);
 
-  const isLegacy =
-    !("design" in stored) ||
-    !("run" in stored) ||
-    !(
-      "locked" in stored &&
-      stored.locked &&
-      typeof (stored as PracticeState).locked === "object" &&
-      "brief" in (stored as PracticeState).locked
+  useEffect(() => {
+    if (currentStep !== "sandbox") {
+      setMobilePaletteOpen(false);
+    }
+  }, [currentStep]);
+
+  const config = STEP_CONFIGS[currentStep];
+  const StepComponent = STEP_COMPONENTS[currentStep];
+
+  const nextDisabled = useMemo(() => (config?.nextDisabled ? config.nextDisabled(session) : false), [config, session]);
+  const showBack = config?.showBack ?? PRACTICE_STEPS.indexOf(currentStep) > 0;
+  const showNext = config?.showNext ?? true;
+  const nextLabel = config?.nextLabel ?? "Next";
+
+  if (!hydrated) {
+    return (
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 text-center text-sm text-zinc-400">
+        Preparing the practice flow…
+      </div>
     );
-
-  if (isLegacy) {
-    const legacy = stored as LegacyPracticeState;
-    const legacyRequirements = legacy.requirements
-      ? {
-          functional: {
-            ...base.requirements.functional,
-            ...legacy.requirements.functional,
-          },
-          nonFunctional: {
-            ...base.requirements.nonFunctional,
-            ...legacy.requirements.nonFunctional,
-          },
-        }
-      : base.requirements;
-
-    return {
-      ...base,
-      requirements: legacyRequirements,
-      locked: {
-        brief: Boolean(legacy.locked?.req),
-        design: false,
-        run: false,
-      },
-      updatedAt: Date.now(),
-    };
   }
 
-  const state = stored as PracticeState;
-
-  const mergedDesign: PracticeDesignState = {
-    ...base.design,
-    ...state.design,
-    nodes:
-      state.design?.nodes?.length
-        ? cloneNodes(state.design.nodes)
-        : cloneNodes(base.design.nodes),
-    edges: state.design?.edges
-      ? cloneEdges(state.design.edges)
-      : cloneEdges(base.design.edges),
-    redirectMode: state.design?.redirectMode ?? base.design.redirectMode,
+  const handleBack = () => {
+    if (isReadOnly) return;
+    goPrev();
   };
 
-  const mergedRun: PracticeRunState = {
-    ...base.run,
-    ...state.run,
+  const handleNext = () => {
+    if (isReadOnly) return;
+    config?.onNext?.(session);
+    goNext();
   };
 
-  return {
-    ...base,
-    ...state,
-    requirements: state.requirements ?? base.requirements,
-    design: mergedDesign,
-    run: mergedRun,
-    locked: {
-      brief: Boolean(state.locked?.brief),
-      design: Boolean(state.locked?.design),
-      run: Boolean(state.locked?.run),
-    },
-    updatedAt: state.updatedAt ?? Date.now(),
-  };
-};
+  const sandboxProps = currentStep === "sandbox"
+    ? { mobilePaletteOpen, onMobilePaletteChange: setMobilePaletteOpen }
+    : undefined;
 
-type PracticeFlowProps = {
-  sharedState?: PracticeState | null;
-};
-
-export const PracticeFlow = ({ sharedState }: PracticeFlowProps) => {
-  const [state, setState] = useState<PracticeState>(() =>
-    makeInitialPracticeState()
-  );
-  const [currentStep, setCurrentStep] = useState<PracticeStep>("brief");
-  const [hydrated, setHydrated] = useState(false);
-  const scrollToTop = useScrollToTop();
-
-  useEffect(() => {
-    if (sharedState) {
-      const readOnlyState = mergeState(sharedState);
-      const lockedState: PracticeState = {
-        ...readOnlyState,
-        locked: { brief: true, design: true, run: true },
-      };
-      setState(lockedState);
-      setCurrentStep("review");
-      setHydrated(true);
-      track("practice_shared_viewed", { slug: PRACTICE_SLUG });
-      return;
+  const renderFooter = () => {
+    if (currentStep === "score") {
+      return (
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            onClick={() => setStep("sandbox")}
+            className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
+          >
+            ← Back to sandbox
+          </button>
+          <Link
+            href="/"
+            className="inline-flex h-11 items-center justify-center rounded-full bg-blue-500 px-6 text-sm font-semibold text-blue-950 transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+          >
+            Home
+          </Link>
+        </div>
+      );
     }
 
-    const stored = loadPractice(PRACTICE_SLUG);
-    const merged = mergeState(stored);
-    setState(merged);
-    setCurrentStep(deriveCurrentStep(merged));
-    setHydrated(true);
+    return (
+      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-4">
+        {showBack ? (
+          <button
+            type="button"
+            onClick={handleBack}
+            disabled={isReadOnly}
+            className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-4 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            ← Back
+          </button>
+        ) : (
+          <span className="h-11" />
+        )}
 
-    track("practice_start", {
-      slug: PRACTICE_SLUG,
-      isFirstVisit: !stored,
-      hasProgress: Boolean(stored)
-    });
-  }, [sharedState]);
+        <div className="flex items-center gap-2">
+          {currentStep === "sandbox" ? (
+            <button
+              type="button"
+              onClick={() => setMobilePaletteOpen(true)}
+              disabled={isReadOnly}
+              className="inline-flex h-11 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              + Palette
+            </button>
+          ) : null}
 
-  useEffect(() => {
-    if (!hydrated || sharedState) return;
-    const timeout = window.setTimeout(() => {
-      savePractice(state);
-    }, 300);
-    return () => window.clearTimeout(timeout);
-  }, [state, hydrated, sharedState]);
-
-  const updateState = useCallback(
-    (updater: (prev: PracticeState) => PracticeState) => {
-      if (sharedState) return;
-      setState((prev) => {
-        const next = updater(prev);
-        return {
-          ...next,
-          updatedAt: Date.now(),
-        };
-      });
-    },
-    [sharedState]
-  );
-
-  const updateDesign = useCallback(
-    (updater: (prev: PracticeDesignState) => PracticeDesignState) => {
-      updateState((prev) => ({
-        ...prev,
-        design: updater(prev.design),
-      }));
-    },
-    [updateState]
-  );
-
-  const updateRun = useCallback(
-    (updater: (prev: PracticeRunState) => PracticeRunState) => {
-      updateState((prev) => ({
-        ...prev,
-        run: updater(prev.run),
-      }));
-    },
-    [updateState]
-  );
-
-  const handleStepChange = (step: PracticeStep) => {
-    if (!isStepAccessible(step, state.locked)) return;
-    setCurrentStep(step);
-    track("practice_step_viewed", { slug: PRACTICE_SLUG, step });
-    scrollToTop();
+          {showNext ? (
+            <button
+              type="button"
+              onClick={handleNext}
+              disabled={isReadOnly || nextDisabled}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 text-blue-950 transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:bg-zinc-600 disabled:text-zinc-300"
+            >
+              <span className="sr-only">{nextLabel}</span>
+              <svg aria-hidden className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M6 4l4 4-4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </button>
+          ) : null}
+        </div>
+      </div>
+    );
   };
 
-  const handleRequirementsChange = (requirements: Requirements) => {
-    updateState((prev) => ({
-      ...prev,
-      requirements,
-    }));
-    track("practice_requirements_changed", {
-      slug: PRACTICE_SLUG,
-      enabled: Object.values(requirements.functional).filter(Boolean).length,
-      read_rps: requirements.nonFunctional.readRps,
-      write_rps: requirements.nonFunctional.writeRps,
-      p95_latency: requirements.nonFunctional.p95RedirectMs,
-      availability: requirements.nonFunctional.availability,
-    });
-  };
-
-  const completeBrief = (requirements: Requirements) => {
-    const wasCompleted = state.locked.brief;
-    setCurrentStep("design");
-    updateState((prev) => ({
-      ...prev,
-      requirements,
-      locked: wasCompleted ? prev.locked : { ...prev.locked, brief: true },
-    }));
-    if (!wasCompleted) {
-      scrollToTop();
-      track("practice_step_completed", { slug: PRACTICE_SLUG, step: "brief" });
+  const helperText = () => {
+    if (isReadOnly) return null;
+    if (currentStep === "sandbox" && nextDisabled) {
+      return "Run the simulation and achieve a passing score to continue.";
     }
-  };
-
-  const completeDesign = () => {
-    const wasCompleted = state.locked.design;
-    setCurrentStep("run");
-    updateState((prev) => ({
-      ...prev,
-      locked: wasCompleted ? prev.locked : { ...prev.locked, design: true },
-    }));
-    if (!wasCompleted) {
-      scrollToTop();
-      track("practice_step_completed", { slug: PRACTICE_SLUG, step: "design" });
+    if (currentStep === "auth" && nextDisabled) {
+      return "Sign in or skip to unlock the finish step.";
     }
-  };
-
-  const completeRun = () => {
-    const wasCompleted = state.locked.run;
-    setCurrentStep("review");
-    updateState((prev) => ({
-      ...prev,
-      locked: wasCompleted ? prev.locked : { ...prev.locked, run: true },
-    }));
-    if (!wasCompleted) {
-      scrollToTop();
-      track("practice_step_completed", { slug: PRACTICE_SLUG, step: "run" });
+    if (currentStep === "nonFunctional" && nextDisabled) {
+      return "Enter positive numbers for throughput and latency targets.";
     }
+    return null;
   };
 
-  const goBackToBrief = () => {
-    setCurrentStep("brief");
-    scrollToTop();
-    track("practice_design_back_to_brief", { slug: PRACTICE_SLUG });
-  };
-
-  const goBackToDesign = () => {
-    setCurrentStep("design");
-    scrollToTop();
-    track("practice_step_goback", { slug: PRACTICE_SLUG, from: "run", to: "design" });
-  };
-
-  const goBackToRun = () => {
-    setCurrentStep("run");
-    scrollToTop();
-    track("practice_step_goback", { slug: PRACTICE_SLUG, from: "review", to: "run" });
-  };
-
-  const nextRenderableStep = useMemo(() => deriveCurrentStep(state), [state]);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    if (!isStepAccessible(currentStep, state.locked)) {
-      setCurrentStep(nextRenderableStep);
-    }
-  }, [hydrated, currentStep, nextRenderableStep, state.locked]);
-
-  const isReadOnly = Boolean(sharedState);
-
-  const isDesignStep = currentStep === "design";
+  const helper = helperText();
 
   return (
-    <div className="flex w-full flex-col gap-6">
+    <div className="flex w-full flex-col gap-6 pb-28">
       <PracticeStepper
         current={currentStep}
-        locks={state.locked}
-        onStepChange={handleStepChange}
+        progress={state.completed}
+        onStepChange={(step) => setStep(step)}
         readOnly={isReadOnly}
       />
 
-      {currentStep === "brief" ? (
-        <BriefStage
-          value={state.requirements ?? makeDefaultRequirements()}
-          locked={isReadOnly}
-          onChange={handleRequirementsChange}
-          onComplete={completeBrief}
-          readOnly={isReadOnly}
-        />
-      ) : (
-        <section
-          className={`transition-all ${
-            isDesignStep
-              ? "bg-transparent p-0 sm:p-0 border-none shadow-none"
-              : "rounded-3xl border border-zinc-700 bg-zinc-900 p-4 shadow-sm sm:p-6"
-          }`}
-        >
-          {currentStep === "design" ? (
-            <DesignStage
-              design={state.design}
-              requirements={state.requirements}
-              locked={isReadOnly}
-              readOnly={isReadOnly}
-              designComplete={state.locked.design}
-              updateDesign={updateDesign}
-              onContinue={completeDesign}
-              onGoBack={goBackToBrief}
-            />
-          ) : null}
+      <div className="space-y-6">
+        {StepComponent ? <StepComponent {...(sandboxProps ?? {})} /> : null}
+      </div>
 
-          {currentStep === "run" ? (
-            <RunStage
-              design={state.design}
-              run={state.run}
-              requirements={state.requirements}
-              locked={isReadOnly}
-              readOnly={isReadOnly}
-              updateRun={updateRun}
-              onContinue={completeRun}
-              onGoBack={goBackToDesign}
-            />
-          ) : null}
-
-          {currentStep === "review" ? (
-            <ReviewPanel
-              state={state}
-              readOnly={isReadOnly}
-              onGoBack={isReadOnly ? undefined : goBackToRun}
-            />
-          ) : null}
-        </section>
-      )}
+      <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">
+        {renderFooter()}
+        {helper ? (
+          <div className="mx-auto w-full max-w-5xl px-4 pb-4 text-xs text-amber-200">
+            {helper}
+          </div>
+        ) : null}
+      </footer>
     </div>
   );
-};
+}
 
 export default PracticeFlow;

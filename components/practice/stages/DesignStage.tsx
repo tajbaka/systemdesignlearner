@@ -24,6 +24,8 @@ type DesignStageProps = {
   updateDesign: UpdateDesignFn;
   onContinue: () => void;
   onGoBack?: () => void;
+  allowedComponentKinds?: ComponentKind[];
+  showFooterControls?: boolean;
 };
 
 type TutorialStep = {
@@ -183,16 +185,22 @@ export default function DesignStage({
   updateDesign,
   onContinue,
   onGoBack,
+  allowedComponentKinds,
+  showFooterControls = true,
 }: DesignStageProps) {
   console.debug('[DesignStage] render nodes', design.nodes.map(node => ({ id: node.id, replicas: node.replicas })));
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+  const allowedKinds = useMemo<ComponentKind[]>(
+    () => (allowedComponentKinds && allowedComponentKinds.length ? allowedComponentKinds : RECOMMENDED_COMPONENTS),
+    [allowedComponentKinds]
+  );
   const paletteItems = useMemo(
     () =>
       COMPONENT_LIBRARY.filter((component) =>
-        RECOMMENDED_COMPONENTS.includes(component.kind)
+        allowedKinds.includes(component.kind)
       ),
-    []
+    [allowedKinds]
   );
 
   const tutorialSteps = useMemo(() => tutorialStepsFor(requirements), [requirements]);
@@ -754,34 +762,36 @@ export default function DesignStage({
         </div>
       </section>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-        {onGoBack ? (
-          <button
-            type="button"
-            onClick={() => {
-              track("practice_design_goback_clicked", { slug: "url-shortener" });
-              onGoBack();
-            }}
-            disabled={locked || readOnly}
-            className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            ← Back to Requirements
-          </button>
-        ) : null}
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={() => {
-              track("practice_design_continue_clicked", { slug: "url-shortener" });
-              onContinue();
-            }}
-            disabled={!canContinue}
-            className="inline-flex h-12 items-center justify-center rounded-full bg-emerald-500 px-6 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-300"
-          >
-            Continue to Run
-          </button>
+      {showFooterControls ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          {onGoBack ? (
+            <button
+              type="button"
+              onClick={() => {
+                track("practice_design_goback_clicked", { slug: "url-shortener" });
+                onGoBack();
+              }}
+              disabled={locked || readOnly}
+              className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              ← Back to Requirements
+            </button>
+          ) : null}
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                track("practice_design_continue_clicked", { slug: "url-shortener" });
+                onContinue();
+              }}
+              disabled={!canContinue}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-emerald-500 px-6 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-300"
+            >
+              Continue to Run
+            </button>
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

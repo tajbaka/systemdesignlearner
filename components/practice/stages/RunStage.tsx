@@ -22,6 +22,8 @@ type RunStageProps = {
   updateRun: UpdateRunFn;
   onContinue: () => void;
   onGoBack?: () => void;
+  showFooterControls?: boolean;
+  continueLabel?: string;
 };
 
 const URL_SHORTENER = SCENARIOS.find((scenario) => scenario.id === "url-shortener")!;
@@ -130,6 +132,8 @@ export default function RunStage({
   updateRun,
   onContinue,
   onGoBack,
+  showFooterControls = true,
+  continueLabel = "Continue to Review",
 }: RunStageProps) {
   const [error, setError] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
@@ -434,39 +438,41 @@ export default function RunStage({
         ) : null}
       </section>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
-        {onGoBack ? (
-          <button
-            type="button"
-            onClick={() => {
-              track("practice_run_goback_clicked", { slug: "url-shortener", outcome });
-              onGoBack();
-            }}
-            disabled={locked || readOnly}
-            className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            ← Go Back to Design
-          </button>
-        ) : null}
-        <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            onClick={() => {
-              track("practice_run_continue_clicked", { slug: "url-shortener", outcome });
-              onContinue();
-            }}
-            disabled={!canContinue || locked || readOnly}
-            className="inline-flex h-12 items-center justify-center rounded-full bg-emerald-500 px-6 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-300"
-          >
-            Continue to Review
-          </button>
-          {!canContinue ? (
-            <span className="text-xs text-zinc-500">
-              Get a passing run to unlock the review step. Use the hints above to iterate.
-            </span>
+      {showFooterControls ? (
+        <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+          {onGoBack ? (
+            <button
+              type="button"
+              onClick={() => {
+                track("practice_run_goback_clicked", { slug: "url-shortener", outcome });
+                onGoBack();
+              }}
+              disabled={locked || readOnly}
+              className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              ← Go Back to Design
+            </button>
           ) : null}
+          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => {
+                track("practice_run_continue_clicked", { slug: "url-shortener", outcome });
+                onContinue();
+              }}
+              disabled={!canContinue || locked || readOnly}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-emerald-500 px-6 text-sm font-semibold text-emerald-950 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-300"
+            >
+              {continueLabel}
+            </button>
+            {!canContinue ? (
+              <span className="text-xs text-zinc-500">
+                Get a passing run to unlock the review step. Use the hints above to iterate.
+              </span>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
     </div>
   );
 }

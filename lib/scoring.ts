@@ -7,6 +7,7 @@ export interface ScoreBreakdown {
   costScore: number;
   totalScore: number;
   outcome: "pass" | "partial" | "fail" | "chaos_fail";
+  hints?: string[];
 }
 
 export function calculateScore(

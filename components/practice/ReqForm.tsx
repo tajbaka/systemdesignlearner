@@ -18,6 +18,7 @@ const ensureDefaults = (value?: Requirements): Requirements => {
   }
 
   const next: Requirements = {
+    functionalSummary: value.functionalSummary ?? "",
     functional: { ...value.functional },
     nonFunctional: { ...value.nonFunctional },
   };
@@ -39,6 +40,7 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
     if (readOnly || locked) return;
     const next: Requirements = {
       ...requirements,
+      functionalSummary: requirements.functionalSummary,
       functional: {
         ...requirements.functional,
         [id]: !requirements.functional[id],
