@@ -89,7 +89,7 @@ export function PracticeStepper({ current, progress, onStepChange, readOnly = fa
           style={{ ["--dot" as any]: "36px" }}
         >
           <div
-            className="absolute h-0.5 bg-zinc-800/70 z-0"
+            className="absolute h-0.5 bg-zinc-800/70 -z-10"
             style={{
               left: "calc(var(--dot) / 2)",
               right: "calc(var(--dot) / 2)",
@@ -98,7 +98,7 @@ export function PracticeStepper({ current, progress, onStepChange, readOnly = fa
             aria-hidden
           />
           <div
-            className="absolute overflow-hidden z-0"
+            className="absolute overflow-hidden -z-10"
             style={{
               left: "calc(var(--dot) / 2)",
               right: "calc(var(--dot) / 2)",
@@ -134,7 +134,7 @@ export function PracticeStepper({ current, progress, onStepChange, readOnly = fa
                       if (!disabled) onStepChange(step.id);
                     }}
                     disabled={disabled}
-                    className={`mx-auto flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed ${
+                    className={`relative z-20 mx-auto flex h-9 w-9 items-center justify-center rounded-full border text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed ${
                       isCurrent
                         ? "border-blue-400 bg-blue-500 text-blue-950"
                         : completed
