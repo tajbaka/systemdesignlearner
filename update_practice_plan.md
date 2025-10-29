@@ -33,9 +33,9 @@
 ### Step 1 — Functional Requirements
 - **Header:** `1 / 6` indicator, label `Functional Requirements`, scenario title `URL Shortener`.
 - **Content:** 
-  - Prompt `"What should this system do?"`.
-  - Textarea inside the existing mobile-style card container. Placeholder: `"Example: shorten URL, redirect by slug, custom alias, analytics, delete URL"`.
-  - Speech-to-text mic icon aligned with input right edge (reuse pattern from any existing voice UI; otherwise add simple `IconButton` placeholder).
+  - Prompt `"What should this system do?"` followed by a single, tall card with the summary textarea centered below the title—no extra badges or chips. 
+  - Placeholder copy `"Example: shorten URLs, redirect by slug, allow optional custom aliases and view counts."`.
+  - Speech-to-text mic button anchored inside the textarea (bottom-right) so users can type or speak without leaving the same input.
 - **Footer:** single `Next` button (reuse Bottom nav single-button state).
 - **Implementation notes:**
   - Reuse `MobileLayoutWrapper` + `CardInput`.
@@ -45,33 +45,28 @@
 ### Step 2 — Non-Functional Requirements
 - **Header:** `2 / 6`, label `Non-Functional Requirements`.
 - **Content:** 
-  - Prompt `"Define constraints and performance goals."`.
-  - Stack of form rows: Latency target (ms), Write RPS target, Read RPS target, Rate limit notes, Availability target.
-  - Multi-line notes textarea at bottom.
-  - Speech-to-text mic icon (same component as Step 1).
-  - Spacing should mirror `ReqForm.tsx` (check `antoniocoppe-system-design-sand…` reference).
+  - Same layout language as Step 1: title + single card with a tall textarea labelled `"Define constraints and performance goals."`.
+  - Within that textarea capture combined notes (latency, throughput, availability, rate limiting) instead of multiple numeric rows.
+  - Embed the same bottom-right speech-to-text button so users can dictate their constraints.
 - **Footer:** `Back` | `Next`.
 - **Implementation notes:**
-  - Extract shared input row styles from `ReqForm.tsx` into reusable primitive if needed.
-  - Store numeric inputs with validation messaging inline (but allow progression with blanks).
-  - Use existing bottom nav component in dual-button mode.
+  - Persist raw text, then parse/extract numbers server-side or during scoring if needed.
+  - Keep validation lightweight (warn but don’t block).
+  - Reuse dual-button bottom nav.
 
 ### Step 3 — API Definition
 - **Header:** `3 / 6`, label `API`.
 - **Content:** 
-  - Prompt `"Based on your requirements, define the API endpoints."`.
-  - Auto-suggest list (cards or rows) seeded with `POST /shorten`, `GET /:slug`. 
-  - Selecting suggestion opens detail editor panel:
-    - Method dropdown (read-only for seeded endpoints).
-    - Path input.
-    - Body JSON field (POST only).
-    - Response JSON preview (read-only for now, placeholder text).
-  - Ideally reuse bottom sheet / accordion patterns from scenario panels.
+  - Render a vertical stack of endpoint cards; each card mirrors the Step 1 textarea treatment:
+    - Header showing method + path (`POST /shorten`, `GET /:slug`, etc.).
+    - Inside, a large textarea for the request/response schema (auto-filled for seeded endpoints) with an inline speech-to-text button so users can dictate updates.
+    - Optional helper text below the textarea (e.g., “Describe request body or the redirect behavior”).
+  - Provide “Add endpoint” action that appends another card with the same textarea + mic pattern.
 - **Footer:** `Back` | `Next`.
 - **Implementation notes:**
-  - Data structure: `apiEndpoints: Array<{ id; method; path; body; response; isSuggested; }>` stored in state.
-  - Use bottom slide-up panel pattern from mobile (e.g., `BottomSheet.tsx`) for endpoint editor.
-  - Add ability to add custom endpoints later; keep UI scalable.
+  - Use `apiEndpoints: Array<{ id; method; path; notes; }>`; tie textarea value to `notes`.
+  - Seed with `POST /shorten`, `GET /:slug` but allow freeform additions.
+  - Keep speech button accessible (ARIA) and reuse the same component from Steps 1–2.
 
 ### Step 4 — High-Level Design (Sandbox)
 - **Header:** `4 / 6`, label `High-Level Design`.
@@ -186,4 +181,3 @@ Speech-to-text icon only appears on Steps 1–2; hide elsewhere.
 - Palette filtering mapping rules: derive from requirements keywords or explicit toggles?
 
 Document these decisions before implementation to keep `/practice` scenarios consistent.
-

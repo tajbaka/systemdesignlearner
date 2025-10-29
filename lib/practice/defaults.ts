@@ -189,40 +189,24 @@ export const makeDefaultRunState = (): PracticeRunState => ({
   chaosMode: false,
 });
 
-const suggestedEndpoint = (
-  partial: Pick<ApiEndpoint, "id" | "method" | "path" | "response"> &
-    Partial<ApiEndpoint>
-): ApiEndpoint => ({
-  body: "",
-  suggested: true,
-  ...partial,
-});
-
 export const makeDefaultApiDefinition = (): PracticeApiDefinitionState => ({
   endpoints: [
-    suggestedEndpoint({
+    {
       id: "post-shorten",
       method: "POST",
       path: "/shorten",
-      body: `{
-  "url": "https://example.com/path",
-  "customSlug": "launch"
-}`,
-      response: `{
-  "slug": "launch",
-  "shortUrl": "https://sho.rt/launch",
-  "expiresAt": null
-}`,
-    }),
-    suggestedEndpoint({
+      notes:
+        "Request: { url, customSlug? } → Response: { slug, shortUrl, expiresAt? }. Include validation and slug collision handling.",
+      suggested: true,
+    },
+    {
       id: "get-slug",
       method: "GET",
       path: "/:slug",
-      response: `302 Redirect
-Location: https://example.com/path`,
-    }),
+      notes: "Redirect 302 to the long URL. Mention cache behavior and how to handle expired/unknown slugs.",
+      suggested: true,
+    },
   ],
-  selectedId: null,
 });
 
 export const makeInitialPracticeState = (): PracticeState => ({

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 
 const MicIcon = () => (
@@ -23,26 +24,28 @@ const MicIcon = () => (
 
 export function NonFunctionalRequirementsStep() {
   const { state, setRequirements, isReadOnly } = usePracticeSession();
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const requirements = state.requirements;
   const nf = requirements.nonFunctional;
 
-  const handleNumberChange = (key: "readRps" | "writeRps" | "p95RedirectMs", raw: string) => {
-    const value = Number(raw);
+  const handleSummaryChange = (summary: string) => {
     setRequirements({
       ...requirements,
       nonFunctional: {
         ...nf,
-        [key]: Number.isFinite(value) ? value : 0,
+        notes: summary,
       },
     });
   };
 
-  const handleTextChange = (key: "rateLimitNotes" | "notes", value: string) => {
+  const handleNumberChange = (key: "readRps" | "writeRps" | "p95RedirectMs", value: string) => {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return;
     setRequirements({
       ...requirements,
       nonFunctional: {
         ...nf,
-        [key]: value,
+        [key]: parsed,
       },
     });
   };
@@ -58,117 +61,139 @@ export function NonFunctionalRequirementsStep() {
     });
   };
 
+  const handleRateLimitChange = (value: string) => {
+    setRequirements({
+      ...requirements,
+      nonFunctional: {
+        ...nf,
+        rateLimitNotes: value,
+      },
+    });
+  };
+
   return (
     <div className="space-y-6">
+      <div className="px-4 text-center sm:px-6">
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">
+            System goals
+          </h2>
+        </div>
+      </div>
+
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
-        <header className="flex items-start justify-between gap-4">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-200">
-              Step 2 · Non-functional guardrails
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-white sm:text-2xl">
-                Performance & reliability targets
-              </h2>
-              <p className="text-sm leading-relaxed text-zinc-300">
-                Anchor the design to latency, throughput, and availability goals. This drives down component choices later.
-              </p>
-            </div>
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
+            Describe the constraints
+          </h3>
+          <div className="relative rounded-2xl border border-zinc-700 bg-zinc-950/60">
+            <textarea
+              value={nf.notes}
+              onChange={(event) => handleSummaryChange(event.target.value)}
+              placeholder="Example: target 100ms P95 redirects with 5k read RPS, 100 write RPS. Require 99.9% availability and rate limit writes to 5/min per IP."
+              className="min-h-[200px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              disabled={isReadOnly}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                if (isReadOnly) return;
+                console.info("Speech capture not yet implemented");
+              }}
+              disabled={isReadOnly}
+              aria-label="Record your answer"
+              className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-blue-400/40 bg-blue-950/40 text-blue-200 transition hover:bg-blue-900/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <MicIcon />
+            </button>
           </div>
+
           <button
             type="button"
-            onClick={() => {
-              if (isReadOnly) return;
-              console.info("Speech capture not yet implemented");
-            }}
-            disabled={isReadOnly}
-            aria-label="Record your answer"
-            className="hidden h-10 w-10 items-center justify-center rounded-full border border-blue-400/40 bg-blue-950/40 text-blue-200 transition hover:bg-blue-900/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 sm:inline-flex"
+            onClick={() => setShowAdvanced((prev) => !prev)}
+            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-400 transition hover:text-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           >
-            <MicIcon />
-          </button>
-        </header>
-      </section>
-
-      <section className="space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="flex flex-col gap-2 text-sm text-zinc-200">
-            <span className="font-semibold text-white">Latency target (P95, ms)</span>
-            <input
-              type="number"
-              min={1}
-              step={10}
-              value={nf.p95RedirectMs}
-              onChange={(event) => handleNumberChange("p95RedirectMs", event.target.value)}
-              disabled={isReadOnly}
-              className="h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-base text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-sm text-zinc-200">
-            <span className="font-semibold text-white">Write throughput (requests / second)</span>
-            <input
-              type="number"
-              min={1}
-              step={10}
-              value={nf.writeRps}
-              onChange={(event) => handleNumberChange("writeRps", event.target.value)}
-              disabled={isReadOnly}
-              className="h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-base text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-sm text-zinc-200">
-            <span className="font-semibold text-white">Read throughput (requests / second)</span>
-            <input
-              type="number"
-              min={1}
-              step={100}
-              value={nf.readRps}
-              onChange={(event) => handleNumberChange("readRps", event.target.value)}
-              disabled={isReadOnly}
-              className="h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-base text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-            />
-          </label>
-          <label className="flex flex-col gap-2 text-sm text-zinc-200">
-            <span className="font-semibold text-white">Availability target</span>
-            <select
-              value={nf.availability}
-              onChange={(event) => handleAvailabilityChange(event.target.value)}
-              disabled={isReadOnly}
-              className="h-12 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-base text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+            {showAdvanced ? "Hide targets" : "Edit numeric targets"}
+            <svg
+              viewBox="0 0 16 16"
+              className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
+              fill="none"
             >
-              <option value="99.0">99.0%</option>
-              <option value="99.9">99.9%</option>
-              <option value="99.99">99.99%</option>
-            </select>
-          </label>
-        </div>
+              <path
+                d="M4 6l4 4 4-4"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
 
-        <div className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="flex flex-col gap-2 text-sm text-zinc-200">
-              <span className="font-semibold text-white">Rate limit notes</span>
-              <textarea
-                value={nf.rateLimitNotes}
-                onChange={(event) => handleTextChange("rateLimitNotes", event.target.value)}
-                placeholder="Example: throttle to 5 writes / min per IP; burst tokens stored in Redis."
-                disabled={isReadOnly}
-                className="min-h-[100px] resize-y rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-              />
-            </label>
-            <label className="flex flex-col gap-2 text-sm text-zinc-200">
-              <span className="font-semibold text-white">Other constraints</span>
-              <textarea
-                value={nf.notes}
-                onChange={(event) => handleTextChange("notes", event.target.value)}
-                placeholder="Example: comply with GDPR, prefer managed services, keep costs <$100 / month."
-                disabled={isReadOnly}
-                className="min-h-[100px] resize-y rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-              />
-            </label>
-          </div>
-          <div className="rounded-xl border border-amber-400/40 bg-amber-500/10 p-4 text-sm text-amber-100">
-            Tip: surface rate limits to clients early. Document burst limits alongside redirects-per-second to size your cache correctly.
-          </div>
+          {showAdvanced ? (
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="flex flex-col gap-2 text-sm text-zinc-200">
+                  <span className="font-semibold text-white">Latency target (P95, ms)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    step={10}
+                    value={nf.p95RedirectMs}
+                    onChange={(event) => handleNumberChange("p95RedirectMs", event.target.value)}
+                    disabled={isReadOnly}
+                    className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                </label>
+                <label className="flex flex-col gap-2 text-sm text-zinc-200">
+                  <span className="font-semibold text-white">Write throughput (requests / second)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    step={10}
+                    value={nf.writeRps}
+                    onChange={(event) => handleNumberChange("writeRps", event.target.value)}
+                    disabled={isReadOnly}
+                    className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                </label>
+                <label className="flex flex-col gap-2 text-sm text-zinc-200">
+                  <span className="font-semibold text-white">Read throughput (requests / second)</span>
+                  <input
+                    type="number"
+                    min={1}
+                    step={100}
+                    value={nf.readRps}
+                    onChange={(event) => handleNumberChange("readRps", event.target.value)}
+                    disabled={isReadOnly}
+                    className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                </label>
+                <label className="flex flex-col gap-2 text-sm text-zinc-200">
+                  <span className="font-semibold text-white">Availability target</span>
+                  <select
+                    value={nf.availability}
+                    onChange={(event) => handleAvailabilityChange(event.target.value)}
+                    disabled={isReadOnly}
+                    className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <option value="99.0">99.0%</option>
+                    <option value="99.9">99.9%</option>
+                    <option value="99.99">99.99%</option>
+                  </select>
+                </label>
+              </div>
+
+              <label className="flex flex-col gap-2 text-sm text-zinc-200">
+                <span className="font-semibold text-white">Rate limit notes</span>
+                <textarea
+                  value={nf.rateLimitNotes}
+                  onChange={(event) => handleRateLimitChange(event.target.value)}
+                  disabled={isReadOnly}
+                  className="min-h-[80px] resize-y rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                />
+              </label>
+            </div>
+          ) : null}
         </div>
       </section>
     </div>

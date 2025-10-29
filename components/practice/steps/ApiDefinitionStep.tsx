@@ -1,249 +1,242 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import BottomSheet from "@/app/components/BottomSheet";
+import { useEffect, useState } from "react";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import type { ApiEndpoint } from "@/lib/practice/types";
 
+const MicIcon = () => (
+  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">
+    <path
+      d="M12 3a2 2 0 0 0-2 2v6a2 2 0 1 0 4 0V5a2 2 0 0 0-2-2Z"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M19 11a7 7 0 0 1-14 0M12 21v-3"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const METHOD_OPTIONS: Array<ApiEndpoint["method"]> = ["GET", "POST"];
 
-const methodBadgeStyles: Record<ApiEndpoint["method"], string> = {
-  GET: "border-emerald-400/50 bg-emerald-500/15 text-emerald-100",
-  POST: "border-blue-400/50 bg-blue-500/15 text-blue-100",
-};
-
-const createCustomEndpoint = (): ApiEndpoint => ({
-  id: `custom-${crypto.randomUUID()}`,
+const createEndpoint = (): ApiEndpoint => ({
+  id: `endpoint-${crypto.randomUUID()}`,
   method: "GET",
   path: "/new-endpoint",
-  body: "",
-  response: "",
+  notes: "Describe request, response, and edge cases.",
   suggested: false,
 });
 
 export function ApiDefinitionStep() {
   const { state, setApiDefinition, isReadOnly } = usePracticeSession();
-  const { endpoints, selectedId } = state.apiDefinition;
-  const [sheetOpen, setSheetOpen] = useState(false);
+  const { endpoints } = state.apiDefinition;
+  const [openId, setOpenId] = useState<string | null>(() => endpoints[0]?.id ?? null);
 
-  const selectedEndpoint = useMemo(
-    () => endpoints.find((endpoint) => endpoint.id === selectedId),
-    [endpoints, selectedId]
-  );
+  useEffect(() => {
+    if (!openId || !endpoints.find((endpoint) => endpoint.id === openId)) {
+      setOpenId(endpoints[0]?.id ?? null);
+    }
+  }, [endpoints, openId]);
 
-  const openEditor = (endpointId: string) => {
+  const updateEndpoint = (id: string, updater: (endpoint: ApiEndpoint) => ApiEndpoint) => {
     if (isReadOnly) return;
     setApiDefinition((prev) => ({
       ...prev,
-      selectedId: endpointId,
-    }));
-    setSheetOpen(true);
-  };
-
-  const closeEditor = () => {
-    setSheetOpen(false);
-  };
-
-  const updateEndpoint = <Key extends keyof ApiEndpoint>(
-    key: Key,
-    value: ApiEndpoint[Key]
-  ) => {
-    if (!selectedEndpoint) return;
-    setApiDefinition((prev) => ({
-      ...prev,
       endpoints: prev.endpoints.map((endpoint) =>
-        endpoint.id === selectedEndpoint.id
-          ? { ...endpoint, [key]: value }
-          : endpoint
+        endpoint.id === id ? updater(endpoint) : endpoint
       ),
     }));
   };
 
-  const removeEndpoint = (endpointId: string) => {
-    setApiDefinition((prev) => {
-      const nextEndpoints = prev.endpoints.filter((endpoint) => endpoint.id !== endpointId);
-      return {
-        endpoints: nextEndpoints,
-        selectedId: nextEndpoints.length ? nextEndpoints[0].id : null,
-      };
-    });
-    setSheetOpen(false);
+  const addEndpoint = () => {
+    if (isReadOnly) return;
+    const next = createEndpoint();
+    setApiDefinition((prev) => ({
+      ...prev,
+      endpoints: [...prev.endpoints, next],
+    }));
+    setOpenId(next.id);
   };
 
-  const addEndpoint = () => {
-    const next = createCustomEndpoint();
+  const removeEndpoint = (id: string) => {
+    if (isReadOnly) return;
     setApiDefinition((prev) => ({
-      endpoints: [...prev.endpoints, next],
-      selectedId: next.id,
+      ...prev,
+      endpoints: prev.endpoints.filter((endpoint) => endpoint.id !== id),
     }));
-    setSheetOpen(true);
+    if (openId === id) {
+      const remaining = endpoints.filter((endpoint) => endpoint.id !== id);
+      setOpenId(remaining[0]?.id ?? null);
+    }
   };
 
   return (
-    <>
-      <div className="space-y-6">
-        <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-200">
-              Step 3 · API contract
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-white sm:text-2xl">
-                Draft the endpoints
-              </h2>
-              <p className="text-sm leading-relaxed text-zinc-300">
-                Start from the suggested routes. Tweak payloads so the design and data model stay in sync.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section className="space-y-4 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
-                Endpoints
-              </h3>
-              <p className="text-xs text-zinc-500">
-                Click an endpoint to review method, path, and payload details.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={addEndpoint}
-              disabled={isReadOnly}
-              className="inline-flex h-10 items-center justify-center rounded-full border border-blue-400/40 bg-blue-950/30 px-4 text-xs font-semibold text-blue-100 transition hover:bg-blue-900/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              + Add custom endpoint
-            </button>
-          </div>
-
-          <div className="space-y-2">
-            {endpoints.map((endpoint) => {
-              const isSelected = selectedId === endpoint.id;
-              return (
-                <button
-                  key={endpoint.id}
-                  type="button"
-                  onClick={() => openEditor(endpoint.id)}
-                  className={`flex w-full items-center justify-between gap-4 rounded-2xl border px-4 py-3 text-left transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                    isSelected
-                      ? "border-blue-400 bg-blue-950/40 text-blue-100"
-                      : "border-zinc-700 bg-zinc-900 text-zinc-200 hover:border-zinc-600"
-                  }`}
-                  disabled={isReadOnly}
-                >
-                  <div className="flex items-center gap-3 truncate">
-                    <span
-                      className={`inline-flex min-w-[56px] justify-center rounded-full border px-3 py-1 text-xs font-semibold uppercase ${
-                        methodBadgeStyles[endpoint.method] ?? "border-zinc-600 bg-zinc-800 text-zinc-200"
-                      }`}
-                    >
-                      {endpoint.method}
-                    </span>
-                    <span className="truncate text-sm font-semibold">
-                      {endpoint.path}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-zinc-400">
-                    {endpoint.suggested ? (
-                      <span className="inline-flex items-center gap-1 rounded-full border border-blue-400/40 px-3 py-1 text-blue-100">
-                        Suggested
-                      </span>
-                    ) : null}
-                    <span aria-hidden>→</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
+    <div className="space-y-6">
+      <div className="px-4 text-center sm:px-6">
+        <div className="space-y-3">
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">
+            Outline the API
+          </h2>
+          <p className="text-xs text-zinc-400 sm:text-sm">
+            Capture each endpoint’s purpose, payload, and edge cases. Speak or type directly into the card.
+          </p>
+        </div>
       </div>
 
-      <BottomSheet
-        isOpen={sheetOpen && Boolean(selectedEndpoint)}
-        onClose={closeEditor}
-        title={selectedEndpoint ? `${selectedEndpoint.method} ${selectedEndpoint.path}` : "Endpoint"}
-      >
-        {selectedEndpoint ? (
-          <div className="space-y-6">
-            <div className="grid gap-4">
-              <label className="flex flex-col gap-2 text-sm text-zinc-200">
-                <span className="font-semibold uppercase tracking-wide text-xs text-zinc-400">
-                  Method
-                </span>
+      <section className="space-y-4">
+        {endpoints.map((endpoint, index) => {
+          const isOpen = openId === endpoint.id;
+          return (
+          <article
+            key={endpoint.id}
+            className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6"
+          >
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
                 <select
-                  value={selectedEndpoint.method}
+                  value={endpoint.method}
                   onChange={(event) =>
-                    updateEndpoint("method", event.target.value as ApiEndpoint["method"])
+                    updateEndpoint(endpoint.id, (current) => ({
+                      ...current,
+                      method: event.target.value as ApiEndpoint["method"],
+                    }))
                   }
-                  disabled={selectedEndpoint.suggested || isReadOnly}
-                  className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={isReadOnly}
+                  className="h-10 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs font-semibold uppercase tracking-wide text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {METHOD_OPTIONS.map((method) => (
-                    <option key={method} value={method}>
-                      {method}
+                  {METHOD_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
                     </option>
                   ))}
                 </select>
-              </label>
-
-              <label className="flex flex-col gap-2 text-sm text-zinc-200">
-                <span className="font-semibold uppercase tracking-wide text-xs text-zinc-400">
-                  Path
-                </span>
                 <input
-                  value={selectedEndpoint.path}
-                  onChange={(event) => updateEndpoint("path", event.target.value)}
+                  value={endpoint.path}
+                  onChange={(event) =>
+                    updateEndpoint(endpoint.id, (current) => ({
+                      ...current,
+                      path: event.target.value,
+                    }))
+                  }
                   disabled={isReadOnly}
-                  className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="h-10 min-w-0 rounded-full border border-zinc-700 bg-zinc-900 px-4 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                 />
-              </label>
-            </div>
-
-            {selectedEndpoint.method === "POST" ? (
-              <label className="flex flex-col gap-2 text-sm text-zinc-200">
-                <span className="font-semibold uppercase tracking-wide text-xs text-zinc-400">
-                  Request body (JSON)
-                </span>
-                <textarea
-                  value={selectedEndpoint.body}
-                  onChange={(event) => updateEndpoint("body", event.target.value)}
-                  rows={6}
-                  disabled={isReadOnly}
-                  className="rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              </label>
-            ) : null}
-
-            <label className="flex flex-col gap-2 text-sm text-zinc-200">
-              <span className="font-semibold uppercase tracking-wide text-xs text-zinc-400">
-                Response (JSON or summary)
-              </span>
-              <textarea
-                value={selectedEndpoint.response}
-                onChange={(event) => updateEndpoint("response", event.target.value)}
-                rows={6}
-                disabled={isReadOnly}
-                className="rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-              />
-            </label>
-
-            {!selectedEndpoint.suggested && !isReadOnly ? (
-              <div className="flex justify-end">
+              </div>
+              <div className="flex items-center gap-3">
+                {!endpoint.suggested && !isReadOnly ? (
+                  <button
+                    type="button"
+                    onClick={() => removeEndpoint(endpoint.id)}
+                    className="hidden h-9 items-center justify-center rounded-full border border-rose-400/40 px-3 text-xs font-semibold text-rose-200 transition hover:bg-rose-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 sm:inline-flex"
+                  >
+                    Remove
+                  </button>
+                ) : null}
                 <button
                   type="button"
-                  onClick={() => removeEndpoint(selectedEndpoint.id)}
-                  className="inline-flex items-center gap-2 rounded-full border border-rose-500/40 px-4 py-2 text-xs font-semibold text-rose-200 transition hover:bg-rose-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
+                  onClick={() => setOpenId((current) => (current === endpoint.id ? null : endpoint.id))}
+                  className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-400 transition hover:text-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                  aria-expanded={isOpen}
+                >
+                  {isOpen ? "Collapse" : "Expand"}
+                  <svg
+                    viewBox="0 0 16 16"
+                    className={`h-3 w-3 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    aria-hidden
+                  >
+                    <path
+                      d="M4 6l4 4 4-4"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-zinc-300">
+                  {isOpen ? "Endpoint notes" : "Summary"}
+                </h3>
+                {endpoint.suggested ? (
+                  <span className="inline-flex items-center rounded-full border border-blue-400/40 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-blue-200">
+                    Suggested
+                  </span>
+                ) : null}
+              </div>
+              {isOpen ? (
+                <div className="relative mt-2 rounded-2xl border border-zinc-700 bg-zinc-950/60">
+                  <textarea
+                    value={endpoint.notes}
+                    onChange={(event) =>
+                      updateEndpoint(endpoint.id, (current) => ({
+                        ...current,
+                        notes: event.target.value,
+                      }))
+                    }
+                    placeholder="Example: Describe request body, success response, error codes, and how this ties back to requirements. Mention auth or rate limiting if applicable."
+                    disabled={isReadOnly}
+                    className="min-h-[180px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      console.info("Speech capture not yet implemented");
+                    }}
+                    disabled={isReadOnly}
+                    aria-label="Record your answer"
+                    className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-blue-400/40 bg-blue-950/40 text-blue-200 transition hover:bg-blue-900/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <MicIcon />
+                  </button>
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-zinc-400">
+                  {endpoint.notes || "No details captured yet."}
+                </p>
+              )}
+            </div>
+
+            <p className="mt-3 text-xs text-zinc-500">
+              Endpoint {index + 1} of {endpoints.length}
+            </p>
+            {!endpoint.suggested && !isReadOnly ? (
+              <div className="mt-3">
+                <button
+                  type="button"
+                  onClick={() => removeEndpoint(endpoint.id)}
+                  className="inline-flex h-9 items-center justify-center rounded-full border border-rose-400/40 px-3 text-xs font-semibold text-rose-200 transition hover:bg-rose-500/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
                 >
                   Remove endpoint
                 </button>
               </div>
             ) : null}
-          </div>
+          </article>
+        );
+        })}
+
+        {!isReadOnly ? (
+          <button
+            type="button"
+            onClick={addEndpoint}
+            className="inline-flex h-11 w-full items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed"
+          >
+            + Add endpoint
+          </button>
         ) : null}
-      </BottomSheet>
-    </>
+      </section>
+    </div>
   );
 }
 

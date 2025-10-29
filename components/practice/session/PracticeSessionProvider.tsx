@@ -93,14 +93,12 @@ const ensureApiDefinition = (value?: PracticeApiDefinitionState): PracticeApiDef
     id: endpoint.id ?? `endpoint-${index}`,
     method: endpoint.method ?? "GET",
     path: endpoint.path ?? "/",
-    body: endpoint.body ?? "",
-    response: endpoint.response ?? "",
+    notes: endpoint.notes ?? "",
     suggested: Boolean(endpoint.suggested),
   }));
 
   return {
     endpoints,
-    selectedId: value.selectedId ?? null,
   };
 };
 

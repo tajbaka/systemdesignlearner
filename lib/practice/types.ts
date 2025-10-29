@@ -40,14 +40,12 @@ export type ApiEndpoint = {
   id: string;
   method: "GET" | "POST";
   path: string;
-  body: string;
-  response: string;
+  notes: string;
   suggested?: boolean;
 };
 
 export type PracticeApiDefinitionState = {
   endpoints: ApiEndpoint[];
-  selectedId: string | null;
 };
 
 export type PracticeSimulationResult = {
