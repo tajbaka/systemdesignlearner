@@ -604,6 +604,7 @@ export default function DesignStage({
                   onNodeTouchEnd={handleNodeTouchEnd}
                   onEdgeSelect={handleEdgeSelect}
                   onNodeSelect={handleNodeSelect}
+                  miniMapBottomOffset={100}
                   className={locked || readOnly ? "pointer-events-none opacity-60" : ""}
                 />
               </div>
@@ -731,6 +732,7 @@ export default function DesignStage({
                   onNodeTouchEnd={handleNodeTouchEnd}
                   onEdgeSelect={handleEdgeSelect}
                   onNodeSelect={handleNodeSelect}
+                  miniMapBottomOffset={100}
                   className={locked || readOnly ? "pointer-events-none opacity-60" : ""}
                 />
               </div>

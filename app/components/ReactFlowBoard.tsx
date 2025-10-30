@@ -45,6 +45,7 @@ interface ReactFlowBoardProps {
   className?: string;
   style?: React.CSSProperties;
   showMiniMap?: boolean;
+  miniMapBottomOffset?: number;
 }
 
 // Inner component that uses React Flow hooks
@@ -65,6 +66,7 @@ function ReactFlowBoardInner({
   className,
   style,
   showMiniMap = true,
+  miniMapBottomOffset = 10,
 }: ReactFlowBoardProps) {
   // Initialize React Flow state from props
   const [rfNodes, setRfNodes, onRfNodesChange] = useNodesState<SystemDesignNode>([]);
@@ -412,7 +414,8 @@ function ReactFlowBoardInner({
               border: '1px solid rgba(255, 255, 255, 0.2)',
               width: 140,
               height: 105,
-              bottom: 120,
+              bottom: miniMapBottomOffset,
+              left: 10,
             }}
             position="bottom-left"
             className="hidden lg:block" // Hide on mobile, show on desktop
@@ -424,7 +427,7 @@ function ReactFlowBoardInner({
 }
 
 // Main component wrapped with ReactFlowProvider
-function ReactFlowBoard({ className, style, onNodeTouchStart, onNodeTouchEnd, onRenameNode, ...props }: ReactFlowBoardProps) {
+function ReactFlowBoard({ className, style, onNodeTouchStart, onNodeTouchEnd, onRenameNode, miniMapBottomOffset, ...props }: ReactFlowBoardProps) {
   return (
     <ReactFlowProvider>
       <ReactFlowBoardInner
@@ -433,6 +436,7 @@ function ReactFlowBoard({ className, style, onNodeTouchStart, onNodeTouchEnd, on
         onNodeTouchStart={onNodeTouchStart}
         onNodeTouchEnd={onNodeTouchEnd}
         onRenameNode={onRenameNode}
+        miniMapBottomOffset={miniMapBottomOffset}
         {...props}
       />
     </ReactFlowProvider>
