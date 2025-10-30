@@ -11,7 +11,7 @@ interface AuthModalProps {
   slug: string;
 }
 
-export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose: _onClose, onAuthenticated, slug }: AuthModalProps) {
   const { isSignedIn, user } = useUser();
 
   // Automatically call onAuthenticated when user signs in
@@ -55,6 +55,8 @@ export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalP
               <div className="flex justify-center py-4">
                 <SignIn
                   routing="hash"
+                  forceRedirectUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+                  fallbackRedirectUrl={typeof window !== 'undefined' ? window.location.href : undefined}
                   appearance={{
                     elements: {
                       rootBox: "mx-auto",
