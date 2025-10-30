@@ -8,9 +8,14 @@ class MockDataChannel {
   public onerror: ((err: unknown) => void) | null = null;
   public onmessage: ((event: { data: string }) => void) | null = null;
   public send = vi.fn();
-  public close = vi.fn();
+  public close = vi.fn(() => {
+    this.readyState = "closed";
+    this.onclose?.();
+  });
+  public readyState: RTCDataChannelState = "connecting";
 
   triggerOpen() {
+    this.readyState = "open";
     this.onopen?.();
   }
 
@@ -145,9 +150,51 @@ describe("useRealtimeStt", () => {
       });
     });
 
+    expect(result.current.isRecording).toBe(true);
+
+    act(() => {
+      result.current.stop();
+    });
+
+    expect(channel.send).toHaveBeenCalledWith(
+      expect.stringContaining('"input_audio_buffer.commit"')
+    );
+    expect(channel.send).toHaveBeenCalledWith(
+      expect.stringContaining('"response.create"')
+    );
+
     act(() => {
       channel.emitMessage({
+        type: "conversation.item.created",
+        item: {
+          id: "assistant-1",
+          type: "message",
+          role: "assistant",
+          content: [
+            {
+              type: "output_text",
+              text: { value: "Assistant response" },
+            },
+          ],
+        },
+      });
+      channel.emitMessage({
+        type: "conversation.item.created",
+        item: {
+          id: "user-1",
+          type: "message",
+          role: "user",
+          content: [
+            {
+              type: "input_text",
+              transcript: "hello world",
+            },
+          ],
+        },
+      });
+      channel.emitMessage({
         type: "conversation.item.input_audio_transcription.completed",
+        item_id: "user-1",
         transcript: "hello world",
       });
     });
@@ -156,17 +203,11 @@ describe("useRealtimeStt", () => {
       expect(onFinal).toHaveBeenCalledWith("hello world")
     );
 
-    expect(result.current.finalText).toBe("hello world");
-    expect(result.current.isRecording).toBe(true);
-
-    act(() => {
-      result.current.stop();
-    });
-
     await waitFor(() => expect(result.current.isRecording).toBe(false));
+    expect(result.current.finalText).toBe("hello world");
     expect(mockTrackStop).toHaveBeenCalled();
-    expect(channel.close).toHaveBeenCalled();
-    expect(peer?.close).toHaveBeenCalled();
+    await waitFor(() => expect(channel.close).toHaveBeenCalled());
+    await waitFor(() => expect(peer?.close).toHaveBeenCalled());
   });
 
   it("surfaces fetch errors from the token endpoint", async () => {

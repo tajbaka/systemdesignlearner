@@ -47,7 +47,7 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
     onFinal,
   });
 
-  const { isRecording, interimText, finalText, error, start, stop } =
+  const { isRecording, interimText, error, start, stop } =
     useWebSpeech ? webSpeechStt : realtimeStt;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -105,12 +105,6 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
     },
     [disabled, isRecording, start, stop]
   );
-
-  useEffect(() => {
-    if (finalText) {
-      onFinal(finalText);
-    }
-  }, [finalText, onFinal]);
 
   useEffect(() => {
     return () => {
