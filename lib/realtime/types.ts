@@ -62,6 +62,8 @@ export type SttHookOptions = {
 
 export type SttHookState = {
   isRecording: boolean;
+  isConnecting?: boolean;
+  isProcessing?: boolean;
   interimText: string;
   finalText: string;
   error: string | null;

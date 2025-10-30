@@ -20,6 +20,8 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
   const { stepId, onInterim, onFinal } = options;
 
   const [isRecording, setIsRecording] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [interimText, setInterimText] = useState("");
   const [finalText, setFinalText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -88,6 +90,8 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
     }
 
     setIsRecording(false);
+    setIsConnecting(false);
+    setIsProcessing(false);
     isRecordingRef.current = false;
     sessionIdRef.current = 0;
     setInterimText("");
@@ -157,6 +161,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       }
 
       setInterimText("");
+      setIsProcessing(false);
       clearCleanupTimeout();
 
       if (!isRecordingRef.current) {
@@ -250,12 +255,13 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
   }, []);
 
   const start = useCallback(async () => {
-    if (isRecording) {
-      console.log("Already recording, ignoring start");
+    if (isRecording || isConnecting) {
+      console.log("Already recording or connecting, ignoring start");
       return;
     }
 
     console.log("Starting recording...");
+    setIsConnecting(true);
     setError(null);
     setInterimText("");
 
@@ -338,6 +344,11 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         dc.send(JSON.stringify(sessionUpdate));
         console.log("Sent session update");
         clearCleanupTimeout();
+
+        setIsConnecting(false);
+        setIsRecording(true);
+        isRecordingRef.current = true;
+        console.log("Ready to record - speak now!");
       };
 
       dc.onclose = () => {
@@ -365,6 +376,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
             clearCleanupTimeout();
           } else if (msg.type === "input_audio_buffer.speech_stopped") {
             console.log("Speech stopped - will wait for transcription");
+            setIsProcessing(true);
           } else if (msg.type === "transcript.delta") {
             const delta =
               typeof (msg as any).delta === "string"
@@ -466,9 +478,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         sdp: answerSdp,
       });
 
-      setIsRecording(true);
-      isRecordingRef.current = true;
-      console.log("Recording started successfully");
+      console.log("Connection established, waiting for data channel...");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to start recording";
@@ -478,6 +488,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
     }
   }, [
     isRecording,
+    isConnecting,
     cleanup,
     clearCleanupTimeout,
     pushFinalTranscript,
@@ -493,6 +504,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
 
     console.log("Stopping recording...");
     setIsRecording(false);
+    setIsProcessing(true);
     isRecordingRef.current = false;
 
     if (
@@ -545,6 +557,8 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
 
   return {
     isRecording,
+    isConnecting,
+    isProcessing,
     interimText,
     finalText,
     error,

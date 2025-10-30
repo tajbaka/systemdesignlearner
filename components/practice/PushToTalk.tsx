@@ -23,6 +23,24 @@ const MicIcon = () => (
   </svg>
 );
 
+const LoadingSpinner = () => (
+  <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
+    <circle
+      className="opacity-25"
+      cx="12"
+      cy="12"
+      r="10"
+      stroke="currentColor"
+      strokeWidth="4"
+    />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    />
+  </svg>
+);
+
 type PushToTalkProps = {
   onFinal: (text: string) => void;
   disabled?: boolean;
@@ -47,7 +65,7 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
     onFinal,
   });
 
-  const { isRecording, interimText, error, start, stop } =
+  const { isRecording, isConnecting, isProcessing, interimText, error, start, stop } =
     useWebSpeech ? webSpeechStt : realtimeStt;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -124,15 +142,25 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
         onKeyDown={handleKeyDown}
-        disabled={disabled}
-        aria-label={isRecording ? "Stop recording" : "Record your answer"}
+        disabled={disabled || isConnecting || isProcessing}
+        aria-label={
+          isConnecting
+            ? "Connecting..."
+            : isProcessing
+            ? "Processing..."
+            : isRecording
+            ? "Stop recording"
+            : "Record your answer"
+        }
         className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 ${
           isRecording
-            ? "animate-pulse border-red-400/60 bg-red-950/60 text-red-200 hover:bg-red-900/80"
+            ? "animate-pulse border-red-500 bg-red-900 text-red-100 hover:bg-red-800"
+            : isConnecting || isProcessing
+            ? "border-yellow-400/40 bg-yellow-950/40 text-yellow-200"
             : "border-blue-400/40 bg-blue-950/40 text-blue-200 hover:bg-blue-900/60"
         }`}
       >
-        <MicIcon />
+        {isConnecting || isProcessing ? <LoadingSpinner /> : <MicIcon />}
       </button>
 
       {isRecording && interimText && (
@@ -146,14 +174,6 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
           {error}
         </div>
       )}
-
-      <button
-        type="button"
-        onClick={() => setMode((prev) => (prev === "hold" ? "toggle" : "hold"))}
-        className="text-[10px] uppercase tracking-wider text-zinc-500 transition hover:text-zinc-400"
-      >
-        {mode === "hold" ? "Hold mode" : "Toggle mode"}
-      </button>
     </div>
   );
 }
