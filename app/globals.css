@@ -367,3 +367,38 @@ html, body {
     @apply bg-background text-foreground;
   }
 }
+
+/* Clerk Social Buttons Custom Styling */
+.cl-socialButtonsBlockButton,
+.cl-socialButtonsBlockButton__github,
+.cl-socialButtonsBlockButton__google {
+  background: linear-gradient(135deg, #27272a 0%, #1f1f23 100%) !important; /* zinc-800 to darker gradient */
+  border: 1px solid #3f3f46 !important; /* zinc-700 - subtle border */
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03) inset !important;
+  transition: all 0.2s ease !important;
+  color: #fafafa !important; /* zinc-50 - near white */
+}
+
+.cl-socialButtonsBlockButton:hover,
+.cl-socialButtonsBlockButton__github:hover,
+.cl-socialButtonsBlockButton__google:hover {
+  background: linear-gradient(135deg, #3f3f46 0%, #27272a 100%) !important; /* zinc-700 gradient */
+  border-color: #52525b !important; /* zinc-600 */
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.2) inset !important;
+  transform: translateY(-1px) !important;
+  color: #ffffff !important; /* pure white on hover */
+}
+
+.cl-socialButtonsBlockButtonText,
+.cl-socialButtonsBlockButtonText__github,
+.cl-socialButtonsBlockButtonText__google {
+  color: #fafafa !important; /* zinc-50 - near white */
+  font-weight: 600 !important;
+}
+
+.cl-socialButtonsProviderIcon,
+.cl-socialButtonsProviderIcon__github,
+.cl-socialButtonsProviderIcon__google {
+  filter: brightness(1.1) contrast(1.1) !important;
+  opacity: 0.95 !important;
+}
