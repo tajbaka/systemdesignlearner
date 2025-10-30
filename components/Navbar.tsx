@@ -2,38 +2,153 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 export function Navbar() {
   const pathname = usePathname();
   const isOnSandbox = pathname === "/play";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
+  const [logoPosition, setLogoPosition] = useState({ x: 0, y: 0 });
+
+  // Check if this is the initial page load on landing page and calculate logo position
+  useEffect(() => {
+    // Only animate on the landing page (root path)
+    const isLandingPage = pathname === '/';
+
+    // Clear the animation flag on every mount (page load/reload)
+    // This ensures the animation plays every time someone visits or reloads the landing page
+    if (isLandingPage) {
+      sessionStorage.removeItem('logoAnimated');
+    }
+
+    const animated = sessionStorage.getItem('logoAnimated');
+
+    if (isLandingPage && !animated) {
+      sessionStorage.setItem('logoAnimated', 'true');
+      setHasAnimated(false);
+
+      // Calculate the final position of the logo after a small delay to ensure navbar is rendered
+      setTimeout(() => {
+        const logoElement = document.getElementById('navbar-logo-inner');
+        if (logoElement) {
+          const navbarRect = logoElement.getBoundingClientRect();
+
+          // Calculate offset from viewport center (50%, 50%) to navbar logo position
+          // We need to account for the -50% translate that centers the animated logo
+          const centerX = window.innerWidth / 2;
+          const centerY = window.innerHeight / 2;
+
+          // Get the actual position where we want the logo's left/top to be
+          // The animated logo is centered with translate(-50%, -50%), so we need to
+          // position it such that after the translate, it aligns with navbar
+          const xOffset = navbarRect.left - centerX;
+          const yOffset = navbarRect.top - centerY;
+
+          console.log('Navbar rect:', navbarRect);
+          console.log('Window center:', { x: centerX, y: centerY });
+          console.log('Calculated offset:', { x: xOffset, y: yOffset });
+
+          setLogoPosition({
+            x: xOffset,
+            y: yOffset,
+          });
+        }
+      }, 100);
+    } else {
+      setHasAnimated(true);
+    }
+  }, [pathname]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <nav className="bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800 sticky top-0 z-50 safe-area-inset">
-      <div className="flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <Link
-          href="/"
-          className="flex items-center space-x-2 hover:opacity-80 transition-opacity"
-          onClick={closeMenu}
-        >
-          <div className="w-8 h-8 bg-emerald-400 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-zinc-900 font-bold text-sm">SD</span>
+    <>
+      {/* Centered Logo Overlay - only shows on initial load */}
+      {!hasAnimated && (
+        <>
+          {/* Background overlay that fades out */}
+          <motion.div
+            className="fixed inset-0 z-[90] bg-zinc-900"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
+            style={{ pointerEvents: 'none' }}
+          />
+
+          {/* Logo that animates from center to navbar position */}
+          <motion.div
+            id="animated-logo"
+            className="fixed z-[100] left-1/2 top-1/2"
+            style={{
+              pointerEvents: 'none',
+              originX: 0,
+              originY: 0
+            }}
+            initial={{
+              scale: 1.5,
+              x: '-50%',
+              y: '-50%'
+            }}
+            animate={{
+              scale: 1,
+              x: logoPosition.x,
+              y: logoPosition.y,
+            }}
+            transition={{
+              duration: 1,
+              delay: 0.5,
+              ease: [0.43, 0.13, 0.23, 0.96]
+            }}
+            onAnimationComplete={() => {
+              setHasAnimated(true);
+            }}
+          >
+            <div id="animated-logo-inner" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-emerald-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="text-zinc-900 font-bold text-sm">SD</span>
+              </div>
+              <span className="text-lg sm:text-xl font-bold text-white hidden sm:block leading-tight">
+                System Design Sandbox
+              </span>
+              <span className="text-lg font-bold text-white sm:hidden leading-tight">
+                SDS
+              </span>
+            </div>
+          </motion.div>
+        </>
+      )}
+
+      <nav className="bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800 sticky top-0 z-50 safe-area-inset">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+          {/* Logo */}
+          <div id="navbar-logo" style={{ opacity: hasAnimated ? 1 : 0 }}>
+            <Link
+              href="/"
+              className="hover:opacity-80 transition-opacity"
+              onClick={closeMenu}
+            >
+              <div id="navbar-logo-inner" className="flex items-center space-x-2">
+                <div className="w-8 h-8 bg-emerald-400 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-zinc-900 font-bold text-sm">SD</span>
+                </div>
+                <span className="text-lg sm:text-xl font-bold text-white hidden sm:block leading-tight">
+                  System Design Sandbox
+                </span>
+                <span className="text-lg font-bold text-white sm:hidden leading-tight">
+                  SDS
+                </span>
+              </div>
+            </Link>
           </div>
-          <span className="text-lg sm:text-xl font-bold text-white hidden sm:block leading-tight">
-            System Design Sandbox
-          </span>
-          <span className="text-lg font-bold text-white sm:hidden leading-tight">
-            SDS
-          </span>
-        </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center space-x-6">
+        <div
+          className="hidden md:flex items-center space-x-6"
+          style={{ opacity: hasAnimated ? 1 : 0, transition: 'opacity 0.3s' }}
+        >
           <Link
             href="/practice"
             className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
@@ -70,6 +185,7 @@ export function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
+          style={{ opacity: hasAnimated ? 1 : 0, transition: 'opacity 0.3s' }}
           onClick={toggleMenu}
           className="md:hidden p-2 rounded-lg text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors flex items-center justify-center"
           aria-label="Toggle menu"
@@ -145,5 +261,6 @@ export function Navbar() {
         </div>
       )}
     </nav>
+    </>
   );
 }

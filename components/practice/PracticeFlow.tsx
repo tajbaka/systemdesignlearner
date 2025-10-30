@@ -13,6 +13,9 @@ import ScoreShareStep from "@/components/practice/steps/ScoreShareStep";
 import VerificationFeedback from "@/components/practice/VerificationFeedback";
 import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { OnboardingProvider, useOnboarding } from "@/components/practice/PracticeOnboarding";
+import { OnboardingTooltip } from "@/components/practice/OnboardingTooltip";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
@@ -92,16 +95,36 @@ type VerificationState = {
   error: string | null;
 };
 
-export function PracticeFlow() {
+function PracticeFlowInner() {
   const session = usePracticeSession();
   const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
+  const [showTooltips, setShowTooltips] = useState(false);
   const [verification, setVerification] = useState<VerificationState>({
     isVerifying: false,
     result: null,
     error: null,
   });
+
+  const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
+  const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
+
+  // Reset hideTooltipTemp when stage changes
+  useEffect(() => {
+    setHideTooltipTemp(false);
+  }, [stage]);
+
+  // Check if it's the first time visiting sandbox (fallback for users who skip onboarding)
+  useEffect(() => {
+    if (currentStep === "sandbox" && hydrated && !isActive) {
+      const hasSeenSandboxTips = localStorage.getItem("practice-sandbox-tips-seen");
+      if (!hasSeenSandboxTips) {
+        setShowTooltips(true);
+        localStorage.setItem("practice-sandbox-tips-seen", "true");
+      }
+    }
+  }, [currentStep, hydrated, isActive]);
 
   useEffect(() => {
     if (hydrated && !isReadOnly && currentStep === "score") {
@@ -346,45 +369,238 @@ export function PracticeFlow() {
 
   const helper = helperText();
 
+  // Render onboarding tooltips based on stage
+  const renderOnboardingTooltip = () => {
+    if (!isActive || hideTooltipTemp) return null;
+
+    switch (stage) {
+      case "welcome":
+        return (
+          <OnboardingTooltip
+            title="Welcome to System Design Practice!"
+            description="Let's walk through building a URL shortener together. I'll guide you step by step through defining requirements, designing the architecture, and testing your solution."
+            position={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
+            arrow="top"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+          />
+        );
+
+      case "functional-description":
+        return (
+          <OnboardingTooltip
+            title="Step 1: Define Functionality"
+            description="Describe the core features of your URL shortener in the text area to the right. What should users be able to do?"
+            position={{ top: "200px", left: "20px" }}
+            arrow="right"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+            highlightSelector="textarea[placeholder*='Example: shorten URLs']"
+          />
+        );
+
+      case "functional-next":
+        return (
+          <OnboardingTooltip
+            title="Continue"
+            description="Once you've described the functionality, click the Next button at the bottom-right to proceed."
+            position={{ top: "200px", left: "20px" }}
+            arrow="right"
+            onNext={() => {
+              setHideTooltipTemp(true);
+              nextStage();
+            }}
+            onSkip={skipOnboarding}
+            pulseSelector="footer button[type='button']:not([disabled])"
+            highlightSelector="footer button[type='button']:not([disabled])"
+            nextLabel="Got it!"
+          />
+        );
+
+      case "nonfunctional-description":
+        return (
+          <OnboardingTooltip
+            title="Step 2: Performance Constraints"
+            description="Describe performance requirements: latency targets, throughput (requests/sec), and availability goals."
+            position={{ top: "200px", left: "20px" }}
+            arrow="right"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+            highlightSelector="textarea[placeholder*='target 100ms']"
+          />
+        );
+
+      case "nonfunctional-targets":
+        return (
+          <OnboardingTooltip
+            title="Optional: Numeric Targets"
+            description="You can expand 'Edit numeric targets' to set specific numbers. This helps you design more precisely."
+            position={{ top: "200px", left: "20px" }}
+            arrow="right"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+            highlightSelector="button:has(svg[class*='rotate'])"
+          />
+        );
+
+      case "nonfunctional-next":
+        return (
+          <OnboardingTooltip
+            title="Continue"
+            description="Click Next at the bottom-right to move on to defining your API endpoints."
+            position={{ top: "200px", left: "20px" }}
+            arrow="right"
+            onNext={() => {
+              setHideTooltipTemp(true);
+              nextStage();
+            }}
+            onSkip={skipOnboarding}
+            pulseSelector="footer button[type='button']:not([disabled])"
+            highlightSelector="footer button[type='button']:not([disabled])"
+            nextLabel="Got it!"
+          />
+        );
+
+      case "api-description":
+        return (
+          <OnboardingTooltip
+            title="Step 3: Define API Endpoints"
+            description="Define the HTTP endpoints your service exposes. Describe request/response formats for creating short URLs and redirecting."
+            position={{ top: "200px", left: "20px" }}
+            arrow="right"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+            highlightSelector="article[class*='rounded-3xl']"
+          />
+        );
+
+      case "api-next":
+        return (
+          <OnboardingTooltip
+            title="Continue to Sandbox"
+            description="Next up: design your system architecture visually with drag-and-drop components!"
+            position={{ top: "200px", left: "20px" }}
+            arrow="right"
+            onNext={() => {
+              setHideTooltipTemp(true);
+              nextStage();
+            }}
+            onSkip={skipOnboarding}
+            pulseSelector="footer button[type='button']:not([disabled])"
+            highlightSelector="footer button[type='button']:not([disabled])"
+            nextLabel="Let's go!"
+          />
+        );
+
+      case "sandbox-welcome":
+        return (
+          <OnboardingTooltip
+            title="Step 4: Design Architecture"
+            description="Drag components to move them, connect them by dragging from edges. Build your architecture visually."
+            position={{ top: "140px", left: "20px" }}
+            arrow="right"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+          />
+        );
+
+      case "sandbox-add-component":
+        return (
+          <OnboardingTooltip
+            title="Add Components"
+            description="Click the + button (bottom-right) to add caches, databases, load balancers, and more."
+            position={{ top: "140px", left: "20px" }}
+            arrow="right"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+            pulseSelector="button[aria-label='Open component palette']"
+          />
+        );
+
+      case "sandbox-minimap":
+        return (
+          <OnboardingTooltip
+            title="Navigation"
+            description="Use the mini-map (bottom-left) to navigate around your diagram as it grows."
+            position={{ top: "140px", left: "20px" }}
+            arrow="right"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+            highlightSelector=".react-flow__minimap"
+          />
+        );
+
+      case "sandbox-run":
+        return (
+          <OnboardingTooltip
+            title="Test Your Design"
+            description="Run the simulation to test if your architecture meets the requirements. The system evaluates latency, throughput, and patterns."
+            position={{ top: "140px", left: "20px" }}
+            arrow="right"
+            onNext={nextStage}
+            onSkip={skipOnboarding}
+            nextLabel="Start building!"
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
-      <PracticeStepper
-        current={currentStep}
-        progress={state.completed}
-        onStepChange={(step) => setStep(step)}
-        readOnly={isReadOnly}
-        hideMobileStepper={isSandboxStep}
-      />
+    <TooltipProvider>
+      {renderOnboardingTooltip()}
+      <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
+        <PracticeStepper
+          current={currentStep}
+          progress={state.completed}
+          onStepChange={(step) => setStep(step)}
+          readOnly={isReadOnly}
+          hideMobileStepper={isSandboxStep}
+        />
 
-      <div
-        className={
-          isSandboxStep
-            ? "flex-1 min-h-0 overflow-hidden"
-            : "flex-1 overflow-y-auto pb-28"
-        }
-      >
-        {isSandboxStep ? <div className="h-full w-full">{stepContent}</div> : <div className="px-4 py-6">{stepContent}</div>}
-      </div>
-
-      {isSandboxStep ? (
-        <button
-          type="button"
-          onClick={() => setMobilePaletteOpen(true)}
-          disabled={isReadOnly}
-          className="fixed bottom-32 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-blue-100 transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-36 sm:right-6 lg:bottom-[120px] lg:right-6"
-          aria-label="Open component palette"
+        <div
+          className={
+            isSandboxStep
+              ? "flex-1 min-h-0 overflow-hidden"
+              : "flex-1 overflow-y-auto pb-28"
+          }
         >
-          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden>
-            <path
-              d="M10 4v12M4 10h12"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
-      ) : null}
+          {isSandboxStep ? <div className="h-full w-full">{stepContent}</div> : <div className="px-4 py-6">{stepContent}</div>}
+        </div>
+
+        {isSandboxStep ? (
+          <Tooltip open={showTooltips} onOpenChange={setShowTooltips}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                onClick={() => setMobilePaletteOpen(true)}
+                disabled={isReadOnly}
+                className="fixed bottom-32 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-blue-100 transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-36 sm:right-6 lg:bottom-[120px] lg:right-6"
+                aria-label="Open component palette"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden>
+                  <path
+                    d="M10 4v12M4 10h12"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent
+              side="left"
+              className="bg-blue-600 text-white border-blue-500 max-w-xs"
+              sideOffset={8}
+            >
+              <p className="font-semibold">Add Components</p>
+              <p className="text-xs mt-1">Click here to add services, databases, caches, and more to your architecture</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : null}
 
       <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">
         {verification.error ? (
@@ -411,7 +627,17 @@ export function PracticeFlow() {
           </div>
         ) : null}
       </footer>
-    </div>
+      </div>
+    </TooltipProvider>
+  );
+}
+
+// Wrapper component that provides onboarding context
+export function PracticeFlow() {
+  return (
+    <OnboardingProvider>
+      <PracticeFlowInner />
+    </OnboardingProvider>
   );
 }
 
