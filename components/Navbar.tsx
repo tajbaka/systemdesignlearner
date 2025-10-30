@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { UserButton, SignInButton, SignedIn, SignedOut, useAuth } from "@clerk/nextjs";
+import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 export function Navbar() {
   const pathname = usePathname();
