@@ -323,21 +323,15 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         const sessionUpdate = {
           type: "session.update",
           session: {
-            modalities: ["text", "audio"],
+            modalities: ["text"],
             instructions:
-              "You are a speech to text transcriber. Listen to the user's audio and respond with the exact transcription.",
-            voice: "verse",
+              "You are a speech-to-text transcription service. Your only job is to transcribe the user's speech. Do not respond, do not answer questions, do not engage in conversation. Only transcribe exactly what you hear.",
             input_audio_format: "pcm16",
             output_audio_format: "pcm16",
             input_audio_transcription: {
               model: "whisper-1",
             },
-            turn_detection: {
-              type: "server_vad",
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 500,
-            },
+            turn_detection: null,
           },
         };
 
