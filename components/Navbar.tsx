@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { UserButton, SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { UserButton, SignInButton, SignedIn, SignedOut, useAuth } from "@clerk/nextjs";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -174,27 +174,26 @@ export function Navbar() {
               Sandbox Active
             </div>
           ) : (
-            <Link
-              href="/play"
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              Try Sandbox
-            </Link>
+            <>
+              <SignedOut>
+                <SignInButton mode="modal" forceRedirectUrl="/play">
+                  <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm shadow-lg hover:shadow-emerald-500/50 transition-all duration-300">
+                    Try Sandbox
+                  </button>
+                </SignInButton>
+              </SignedOut>
+              <SignedIn>
+                <Link
+                  href="/play"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
+                >
+                  Try Sandbox
+                </Link>
+              </SignedIn>
+            </>
           )}
 
-          {/* Auth Buttons */}
-          <SignedOut>
-            <SignInButton mode="modal">
-              <button className="px-4 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800">
-                Sign In
-              </button>
-            </SignInButton>
-            <SignUpButton mode="modal">
-              <button className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg text-sm font-medium transition-colors">
-                Sign Up
-              </button>
-            </SignUpButton>
-          </SignedOut>
+          {/* User Button */}
           <SignedIn>
             <UserButton
               appearance={{
@@ -271,28 +270,27 @@ export function Navbar() {
                   Sandbox Active
                 </div>
               ) : (
-                <Link
-                  href="/play"
-                  className="block px-3 py-3 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg text-base font-medium text-center transition-colors"
-                  onClick={closeMenu}
-                >
-                  Try Sandbox
-                </Link>
+                <>
+                  <SignedOut>
+                    <SignInButton mode="modal" forceRedirectUrl="/play">
+                      <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 w-full">
+                        Try Sandbox
+                      </button>
+                    </SignInButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <Link
+                      href="/play"
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 w-full"
+                      onClick={closeMenu}
+                    >
+                      Try Sandbox
+                    </Link>
+                  </SignedIn>
+                </>
               )}
 
-              {/* Mobile Auth Buttons */}
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="w-full px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg text-base font-medium transition-colors">
-                    Sign In
-                  </button>
-                </SignInButton>
-                <SignUpButton mode="modal">
-                  <button className="w-full px-3 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-lg text-base font-medium transition-colors">
-                    Sign Up
-                  </button>
-                </SignUpButton>
-              </SignedOut>
+              {/* Mobile User Button */}
               <SignedIn>
                 <div className="flex items-center justify-center gap-3 px-3 py-3 bg-zinc-800 rounded-lg">
                   <UserButton
