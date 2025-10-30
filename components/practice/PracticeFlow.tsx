@@ -8,7 +8,6 @@ import FunctionalRequirementsStep from "@/components/practice/steps/FunctionalRe
 import NonFunctionalRequirementsStep from "@/components/practice/steps/NonFunctionalRequirementsStep";
 import ApiDefinitionStep from "@/components/practice/steps/ApiDefinitionStep";
 import SandboxStep from "@/components/practice/steps/SandboxStep";
-import AuthGateStep from "@/components/practice/steps/AuthGateStep";
 import ScoreShareStep from "@/components/practice/steps/ScoreShareStep";
 import VerificationFeedback from "@/components/practice/VerificationFeedback";
 import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
@@ -16,6 +15,8 @@ import { track } from "@/lib/analytics";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { OnboardingProvider, useOnboarding } from "@/components/practice/PracticeOnboarding";
 import { OnboardingTooltip } from "@/components/practice/OnboardingTooltip";
+import { useUser } from "@clerk/nextjs";
+import { AuthModal } from "@/components/practice/AuthModal";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
@@ -62,16 +63,9 @@ const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
   sandbox: {
     id: "sandbox",
     showBack: true,
-    nextLabel: "Next",
-    nextDisabled: (session) => session.state.run.lastResult?.scoreBreakdown?.outcome !== "pass",
+    nextLabel: "Run & Continue",
+    nextDisabled: () => false, // Always enabled - will trigger run if needed
     onNext: (session) => completeStep(session, "sandbox"),
-  },
-  auth: {
-    id: "auth",
-    showBack: true,
-    nextLabel: "Next",
-    nextDisabled: (session) => !(session.state.auth.isAuthed || session.state.auth.skipped),
-    onNext: (session) => completeStep(session, "auth"),
   },
   score: {
     id: "score",
@@ -85,7 +79,6 @@ const STEP_COMPONENTS: Record<PracticeStep, (props?: Record<string, unknown>) =>
   nonFunctional: () => <NonFunctionalRequirementsStep />,
   api: () => <ApiDefinitionStep />,
   sandbox: (props) => <SandboxStep {...(props as Parameters<typeof SandboxStep>[0])} />,
-  auth: () => <AuthGateStep />,
   score: () => <ScoreShareStep />,
 };
 
@@ -97,7 +90,7 @@ type VerificationState = {
 
 function PracticeFlowInner() {
   const session = usePracticeSession();
-  const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly } = session;
+  const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly, setAuth } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
@@ -106,9 +99,11 @@ function PracticeFlowInner() {
     result: null,
     error: null,
   });
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
   const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
+  const { isSignedIn } = useUser();
 
   // Reset hideTooltipTemp when stage changes
   useEffect(() => {
@@ -235,7 +230,26 @@ function PracticeFlowInner() {
 
   const proceedToNext = () => {
     config?.onNext?.(session);
-    goNext();
+
+    // After completing sandbox (step 4), check if user needs to authenticate
+    if (currentStep === "sandbox") {
+      // If user has already authenticated, proceed
+      if (state.auth.isAuthed) {
+        goNext();
+      }
+      // If user is signed in via Clerk but hasn't been marked as authenticated yet
+      // This handles the case where they signed in from navbar
+      else if (isSignedIn) {
+        setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
+        goNext();
+      }
+      // Otherwise, show auth modal (no skip option - must sign in)
+      else {
+        setShowAuthModal(true);
+      }
+    } else {
+      goNext();
+    }
   };
 
   const handleNext = async () => {
@@ -263,6 +277,91 @@ function PracticeFlowInner() {
       }
 
       // Either no warnings, or user clicked "Continue Anyway"
+      proceedToNext();
+    } else if (currentStep === "sandbox") {
+      // For sandbox step, check if simulation has been run and passed
+      const hasRun = state.run.lastResult !== null;
+      const result = state.run.lastResult;
+      const hasPassed = result?.scoreBreakdown?.outcome === "pass";
+
+      if (!hasRun) {
+        // Show message that simulation needs to be run
+        setVerification({
+          isVerifying: false,
+          result: {
+            canProceed: false,
+            blocking: ["You must run the simulation and achieve a passing score before continuing."],
+            warnings: [],
+          },
+          error: null,
+        });
+        return;
+      }
+
+      if (!hasPassed && result) {
+        // Build detailed feedback based on what failed
+        const blocking: string[] = [];
+        const warnings: string[] = [];
+
+        // Check SLO issues
+        if (!result.meetsLatency) {
+          blocking.push(
+            `Latency too high: Your design has ${result.latencyMsP95.toFixed(0)}ms p95 latency, but the target is ${state.requirements.nonFunctional.p95RedirectMs}ms or less.`
+          );
+        }
+
+        if (!result.meetsRps) {
+          blocking.push(
+            `Insufficient capacity: Your design handles ${result.capacityRps.toFixed(0)} RPS, but needs ${state.requirements.nonFunctional.readRps} RPS.`
+          );
+        }
+
+        // Check if chaos engineering failed
+        if (result.failedByChaos) {
+          blocking.push(
+            "Your architecture failed under chaos testing. Consider adding redundancy, load balancing, or failover mechanisms."
+          );
+        }
+
+        // Check acceptance criteria
+        if (result.acceptanceScore !== undefined && result.acceptanceScore < 100) {
+          const missingFeatures: string[] = [];
+          if (result.acceptanceResults) {
+            Object.entries(result.acceptanceResults).forEach(([key, passed]) => {
+              if (!passed) {
+                missingFeatures.push(key.replace(/-/g, " "));
+              }
+            });
+          }
+
+          if (missingFeatures.length > 0) {
+            blocking.push(
+              `Missing requirements: ${missingFeatures.join(", ")}`
+            );
+          }
+        }
+
+        // Add score information
+        if (result.scoreBreakdown) {
+          const score = result.scoreBreakdown;
+          warnings.push(
+            `Current score: ${score.totalScore.toFixed(0)}/100 (SLO: ${score.sloScore.toFixed(0)}/60, Checklist: ${score.checklistScore.toFixed(0)}/30, Cost: ${score.costScore.toFixed(0)}/10)`
+          );
+        }
+
+        setVerification({
+          isVerifying: false,
+          result: {
+            canProceed: false,
+            blocking: blocking.length > 0 ? blocking : ["Your design didn't pass the simulation. Please review the results and try again."],
+            warnings,
+          },
+          error: null,
+        });
+        return;
+      }
+
+      // Passed! Proceed to next
       proceedToNext();
     } else {
       // No verification needed
@@ -353,13 +452,21 @@ function PracticeFlowInner() {
     );
   };
 
+  const handleAuthModalAuthenticated = () => {
+    setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
+    setShowAuthModal(false);
+    goNext();
+  };
+
+  const handleAuthModalClose = () => {
+    // Don't allow closing without authenticating
+    // User must sign in to proceed
+  };
+
   const helperText = () => {
     if (isReadOnly) return null;
     if (currentStep === "sandbox" && nextDisabled) {
       return "Run the simulation and achieve a passing score to continue.";
-    }
-    if (currentStep === "auth" && nextDisabled) {
-      return "Sign in or skip to unlock the finish step.";
     }
     if (currentStep === "nonFunctional" && nextDisabled) {
       return "Enter positive numbers for throughput and latency targets.";
@@ -551,6 +658,12 @@ function PracticeFlowInner() {
   return (
     <TooltipProvider>
       {renderOnboardingTooltip()}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={handleAuthModalClose}
+        onAuthenticated={handleAuthModalAuthenticated}
+        slug={state.slug}
+      />
       <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
         <PracticeStepper
           current={currentStep}

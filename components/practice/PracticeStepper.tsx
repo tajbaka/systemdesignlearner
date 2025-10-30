@@ -38,11 +38,6 @@ const STEP_META: Record<PracticeStep, StepMeta> = {
     label: "Sandbox",
     description: "Design and iterate visually",
   },
-  auth: {
-    id: "auth",
-    label: "Save Progress",
-    description: "Sign in or skip",
-  },
   score: {
     id: "score",
     label: "Finish",

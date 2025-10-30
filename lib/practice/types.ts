@@ -87,7 +87,6 @@ export type PracticeStep =
   | "nonFunctional"
   | "api"
   | "sandbox"
-  | "auth"
   | "score";
 
 export const PRACTICE_STEPS: PracticeStep[] = [
@@ -95,7 +94,6 @@ export const PRACTICE_STEPS: PracticeStep[] = [
   "nonFunctional",
   "api",
   "sandbox",
-  "auth",
   "score",
 ];
 

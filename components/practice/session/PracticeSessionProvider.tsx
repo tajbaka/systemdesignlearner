@@ -112,7 +112,6 @@ const ensureProgress = (value?: PracticeProgress): PracticeProgress => ({
   nonFunctional: Boolean(value?.nonFunctional),
   api: Boolean(value?.api),
   sandbox: Boolean(value?.sandbox),
-  auth: Boolean(value?.auth),
   score: Boolean(value?.score),
 });
 
@@ -121,7 +120,6 @@ const migrateLegacyProgress = (locked?: LegacyLocked): PracticeProgress => ({
   nonFunctional: Boolean(locked?.brief),
   api: false,
   sandbox: Boolean(locked?.design),
-  auth: false,
   score: Boolean(locked?.run),
 });
 

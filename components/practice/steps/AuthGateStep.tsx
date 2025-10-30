@@ -2,16 +2,25 @@
 
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { track } from "@/lib/analytics";
+import { SignIn, useUser } from "@clerk/nextjs";
+import { useEffect } from "react";
 
 export function AuthGateStep() {
   const { state, setAuth, isReadOnly } = usePracticeSession();
   const { isAuthed, skipped } = state.auth;
+  const { isSignedIn, user } = useUser();
 
-  const handleAuth = (provider: "google" | "email") => {
-    if (isReadOnly) return;
-    setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
-    track("practice_auth_attempted", { slug: state.slug, provider });
-  };
+  // Automatically mark as authenticated when user signs in via Clerk
+  useEffect(() => {
+    if (isSignedIn && user && !isAuthed) {
+      setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
+      track("practice_auth_completed", {
+        slug: state.slug,
+        provider: "clerk",
+        userId: user.id
+      });
+    }
+  }, [isSignedIn, user, isAuthed, setAuth, state.slug]);
 
   const handleSkip = () => {
     if (isReadOnly) return;
@@ -39,45 +48,45 @@ export function AuthGateStep() {
 
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
         <div className="flex flex-col gap-4 sm:gap-5">
-          <button
-            type="button"
-            onClick={() => handleAuth("google")}
-            disabled={isReadOnly || isAuthed}
-            className="inline-flex h-12 w-full items-center justify-center gap-3 rounded-full border border-white/20 bg-white/5 px-6 text-sm font-semibold text-white transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-white text-blue-600 font-bold">
-              G
-            </span>
-            Continue with Google
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleAuth("email")}
-            disabled={isReadOnly || isAuthed}
-            className="inline-flex h-12 w-full items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 px-6 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Continue with Email
-          </button>
-
-          <p className="text-xs text-zinc-500">
-            We&apos;ll store your practice progress securely. No spam — just reminders for fresh drills.
-          </p>
-
-          <button
-            type="button"
-            onClick={handleSkip}
-            disabled={isReadOnly}
-            className="self-start text-xs font-semibold text-zinc-400 underline-offset-4 hover:text-zinc-200 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            Skip for now
-          </button>
-
-          {(isAuthed || skipped) ? (
+          {isSignedIn ? (
             <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-xs text-emerald-100">
-              {isAuthed ? "Great! Your progress will sync when you run again." : "Skip recorded. You can sign in later from the score screen."}
+              Great! You&apos;re signed in as {user?.primaryEmailAddress?.emailAddress}. Your progress will be saved.
             </div>
-          ) : null}
+          ) : (
+            <div className="flex justify-center">
+              <SignIn
+                appearance={{
+                  elements: {
+                    rootBox: "mx-auto",
+                    card: "bg-zinc-900/70 border-zinc-800",
+                  }
+                }}
+              />
+            </div>
+          )}
+
+          {!isSignedIn && (
+            <>
+              <p className="text-xs text-zinc-500">
+                We&apos;ll store your practice progress securely. No spam — just reminders for fresh drills.
+              </p>
+
+              <button
+                type="button"
+                onClick={handleSkip}
+                disabled={isReadOnly}
+                className="self-start text-xs font-semibold text-zinc-400 underline-offset-4 hover:text-zinc-200 hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Skip for now
+              </button>
+            </>
+          )}
+
+          {skipped && !isSignedIn && (
+            <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-xs text-emerald-100">
+              Skip recorded. You can sign in later from the score screen.
+            </div>
+          )}
         </div>
       </section>
     </div>

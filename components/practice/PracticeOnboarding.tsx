@@ -46,7 +46,6 @@ const STAGE_BY_STEP: Record<PracticeStep, OnboardingStage[]> = {
   nonFunctional: ["nonfunctional-description", "nonfunctional-targets", "nonfunctional-next"],
   api: ["api-description", "api-next"],
   sandbox: ["sandbox-welcome", "sandbox-add-component", "sandbox-minimap", "sandbox-run"],
-  auth: [],
   score: [],
 };
 

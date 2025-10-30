@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { UserButton, SignInButton, SignUpButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -168,7 +169,6 @@ export function Navbar() {
             Feedback
           </Link>
 
-
           {isOnSandbox ? (
             <div className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium">
               Sandbox Active
@@ -181,6 +181,29 @@ export function Navbar() {
               Try Sandbox
             </Link>
           )}
+
+          {/* Auth Buttons */}
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="px-4 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800">
+                Sign In
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white rounded-lg text-sm font-medium transition-colors">
+                Sign Up
+              </button>
+            </SignUpButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton
+              appearance={{
+                elements: {
+                  avatarBox: "w-9 h-9"
+                }
+              }}
+            />
+          </SignedIn>
         </div>
 
         {/* Mobile Menu Button */}
@@ -242,7 +265,7 @@ export function Navbar() {
               Feedback
             </Link>
 
-            <div className="pt-2">
+            <div className="pt-2 space-y-3">
               {isOnSandbox ? (
                 <div className="px-3 py-3 bg-emerald-600 text-white rounded-lg text-base font-medium text-center">
                   Sandbox Active
@@ -256,6 +279,32 @@ export function Navbar() {
                   Try Sandbox
                 </Link>
               )}
+
+              {/* Mobile Auth Buttons */}
+              <SignedOut>
+                <SignInButton mode="modal">
+                  <button className="w-full px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg text-base font-medium transition-colors">
+                    Sign In
+                  </button>
+                </SignInButton>
+                <SignUpButton mode="modal">
+                  <button className="w-full px-3 py-3 bg-blue-500 hover:bg-blue-400 text-white rounded-lg text-base font-medium transition-colors">
+                    Sign Up
+                  </button>
+                </SignUpButton>
+              </SignedOut>
+              <SignedIn>
+                <div className="flex items-center justify-center gap-3 px-3 py-3 bg-zinc-800 rounded-lg">
+                  <UserButton
+                    appearance={{
+                      elements: {
+                        avatarBox: "w-9 h-9"
+                      }
+                    }}
+                  />
+                  <span className="text-zinc-300 text-sm font-medium">Your Account</span>
+                </div>
+              </SignedIn>
             </div>
           </div>
         </div>

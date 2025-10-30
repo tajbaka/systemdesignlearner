@@ -7,6 +7,7 @@ import DesignStage from "@/components/practice/stages/DesignStage";
 import RunStage from "@/components/practice/stages/RunStage";
 import type { PracticeDesignState, Requirements } from "@/lib/practice/types";
 import BottomSheet from "@/app/components/BottomSheet";
+import { Sidebar } from "@/components/practice/Sidebar";
 import Palette from "@/app/components/Palette";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 
@@ -108,7 +109,8 @@ export function SandboxStep({
         />
       </div>
 
-      <BottomSheet
+      {/* Component Palette - Slides up from bottom with narrower width */}
+      <Sidebar
         isOpen={mobilePaletteOpen}
         onClose={() => onMobilePaletteChange(false)}
         title="Components"
@@ -126,7 +128,7 @@ export function SandboxStep({
                 nodes: [
                   ...prev.nodes,
                   {
-                    id: `mobile-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`,
+                    id: `${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`,
                     spec,
                     x: position.x,
                     y: position.y,
@@ -140,7 +142,7 @@ export function SandboxStep({
           className="h-full"
           listClassName="pb-10"
         />
-      </BottomSheet>
+      </Sidebar>
 
       <BottomSheet
         isOpen={runPanelOpen}

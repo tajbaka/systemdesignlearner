@@ -223,7 +223,6 @@ export const makeInitialPracticeState = (): PracticeState => ({
     nonFunctional: false,
     api: false,
     sandbox: false,
-    auth: false,
     score: false,
   },
   updatedAt: Date.now(),
