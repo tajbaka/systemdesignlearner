@@ -13,6 +13,18 @@ export function Navbar() {
   const [hasAnimated, setHasAnimated] = useState(false);
   const [logoPosition, setLogoPosition] = useState({ x: 0, y: 0 });
 
+  // Determine redirect URL based on current page
+  const getRedirectUrl = () => {
+    // If on landing page, redirect to /play
+    if (pathname === '/') {
+      return '/play';
+    }
+    // Otherwise, stay on current page (e.g., practice pages)
+    return pathname;
+  };
+
+  const redirectUrl = getRedirectUrl();
+
   // Check if this is the initial page load on landing page and calculate logo position
   useEffect(() => {
     // Only animate on the landing page (root path)
@@ -176,7 +188,10 @@ export function Navbar() {
           ) : (
             <>
               <SignedOut>
-                <SignInButton mode="modal" forceRedirectUrl="/play">
+                <SignInButton
+                  mode="modal"
+                  forceRedirectUrl={redirectUrl}
+                >
                   <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm shadow-lg hover:shadow-emerald-500/50 transition-all duration-300">
                     Try Sandbox
                   </button>
@@ -272,7 +287,10 @@ export function Navbar() {
               ) : (
                 <>
                   <SignedOut>
-                    <SignInButton mode="modal" forceRedirectUrl="/play">
+                    <SignInButton
+                      mode="modal"
+                      forceRedirectUrl={redirectUrl}
+                    >
                       <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 w-full">
                         Try Sandbox
                       </button>

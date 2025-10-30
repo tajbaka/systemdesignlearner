@@ -60,7 +60,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInFallbackRedirectUrl="/"
+      signUpFallbackRedirectUrl="/"
+    >
       <html lang="en" className="h-full dark">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark safe-area-inset`}>
           <Script
