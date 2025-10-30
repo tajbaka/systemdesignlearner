@@ -1,10 +1,39 @@
+import path from "path";
 import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
+
+const isCI = Boolean(process.env.CI);
+const isProduction = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
   /* config options here */
   turbopack: {
     root: __dirname,
+  },
+  webpack(config, { dev }) {
+    // Avoid webpack persisting very large serialized strings to disk while keeping repeat builds fast.
+    // Use an in-memory cache in dev for responsiveness and fall back to the filesystem cache for production builds.
+    config.cache = dev ? { type: "memory" } : { type: "filesystem" };
+
+    if (!dev) {
+      config.module?.rules?.push({
+        test: /node_modules[\\/]lucide-react[\\/]dist[\\/]esm[\\/]icons[\\/].*\\.js$/,
+        use: [
+          {
+            loader: path.resolve(__dirname, "scripts/strip-sourcemap-comment-loader.js"),
+          },
+        ],
+      });
+    }
+    return config;
+  },
+  eslint: {
+    // Skip rerunning ESLint locally; CI remains the gatekeeper.
+    ignoreDuringBuilds: !isCI,
+  },
+  typescript: {
+    // Use CI for type safety so local builds avoid duplicate work.
+    ignoreBuildErrors: !isCI,
   },
 
   // Add PostHog rewrites to support analytics ingestion endpoints
@@ -40,7 +69,7 @@ export default withSentryConfig(nextConfig, {
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
 
   // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: true,
+  widenClientFileUpload: isCI,
 
   // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
   // This can increase your server load as well as your hosting bill.
@@ -50,6 +79,8 @@ export default withSentryConfig(nextConfig, {
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
   disableLogger: true,
+
+  dryRun: !isProduction,
 
   // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
   // See the following for more information:

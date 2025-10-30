@@ -125,6 +125,9 @@ npm test
 
 # Watch mode
 npm run test:watch
+
+# Speech-to-text realtime pipeline
+npm test -- __tests__/hooks/useRealtimeStt.test.tsx
 ```
 
 ---
