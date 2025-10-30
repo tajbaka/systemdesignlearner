@@ -36,6 +36,13 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
   const interimTextRef = useRef(interimText);
   const processedItemIdsRef = useRef<Set<string>>(new Set());
   const processedTranscriptsRef = useRef<Set<string>>(new Set());
+  const startTimeRef = useRef<number>(0);
+  const readyTimeRef = useRef<number>(0);
+  const preWarmTokenRef = useRef<{
+    token: RealtimeSessionToken;
+    fetchedAt: number;
+  } | null>(null);
+  const isPreWarmingRef = useRef(false);
 
   useEffect(() => {
     currentStepIdRef.current = stepId;
@@ -143,12 +150,26 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
               ? `${prevWords.join(" ")} ${trimmed}`
               : trimmed;
             console.log("Setting final text (replaced):", updated);
+
+            if (readyTimeRef.current > 0) {
+              const processingTime = performance.now() - readyTimeRef.current;
+              console.log(`⏱️ Processing took ${Math.round(processingTime)}ms`);
+              readyTimeRef.current = 0;
+            }
+
             return updated;
           }
         }
 
         const next = prev ? `${prev} ${trimmed}` : trimmed;
         console.log("Setting final text:", next);
+
+        if (readyTimeRef.current > 0) {
+          const processingTime = performance.now() - readyTimeRef.current;
+          console.log(`⏱️ Processing took ${Math.round(processingTime)}ms`);
+          readyTimeRef.current = 0;
+        }
+
         return next;
       });
 
@@ -254,6 +275,39 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
     return null;
   }, []);
 
+  const preWarmToken = useCallback(async () => {
+    if (isPreWarmingRef.current || preWarmTokenRef.current) {
+      return;
+    }
+
+    isPreWarmingRef.current = true;
+    console.log("🔥 Pre-fetching session token...");
+
+    try {
+      const tokenResponse = await fetch("/api/realtime", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!tokenResponse.ok) {
+        console.error("Pre-warm: Failed to get session token");
+        isPreWarmingRef.current = false;
+        return;
+      }
+
+      const tokenData = (await tokenResponse.json()) as RealtimeSessionToken;
+      preWarmTokenRef.current = {
+        token: tokenData,
+        fetchedAt: Date.now(),
+      };
+      console.log("🔥 Session token ready! (valid for ~60s)");
+      isPreWarmingRef.current = false;
+    } catch (err) {
+      console.error("Pre-warm token fetch failed:", err);
+      isPreWarmingRef.current = false;
+    }
+  }, []);
+
   const start = useCallback(async () => {
     if (isRecording || isConnecting) {
       console.log("Already recording or connecting, ignoring start");
@@ -261,34 +315,68 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
     }
 
     console.log("Starting recording...");
+    startTimeRef.current = performance.now();
     setIsConnecting(true);
     setError(null);
     setInterimText("");
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: AUDIO_CONSTRAINTS,
-      });
-
       sessionIdRef.current += 1;
       const sessionId = sessionIdRef.current;
       processedItemIdsRef.current.clear();
       processedTranscriptsRef.current.clear();
 
-      mediaStreamRef.current = stream;
-      console.log("Got media stream with", stream.getAudioTracks().length, "audio tracks");
+      // Check if we have a pre-fetched token (valid for ~60s)
+      const preWarmedToken = preWarmTokenRef.current;
+      const tokenAge = preWarmedToken
+        ? Date.now() - preWarmedToken.fetchedAt
+        : null;
+      const usePreWarmedToken =
+        preWarmedToken && tokenAge !== null && tokenAge < 55000; // Use if less than 55s old
 
-      const tokenResponse = await fetch("/api/realtime", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
+      let stream: MediaStream;
+      let tokenData: RealtimeSessionToken;
 
-      if (!tokenResponse.ok) {
-        throw new Error("Failed to get session token");
+      if (usePreWarmedToken) {
+        console.log("⚡ Using pre-fetched token!");
+        preWarmTokenRef.current = null; // Consume the token
+
+        // Only need to get media stream
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: AUDIO_CONSTRAINTS,
+        });
+        tokenData = preWarmedToken.token;
+
+        // Start pre-fetching next token
+        setTimeout(() => preWarmToken(), 100);
+      } else {
+        if (preWarmedToken) {
+          console.log("Pre-fetched token expired, fetching fresh one");
+          preWarmTokenRef.current = null;
+        }
+
+        // Parallelize media and token fetch for faster startup
+        const [streamResult, tokenResponse] = await Promise.all([
+          navigator.mediaDevices.getUserMedia({
+            audio: AUDIO_CONSTRAINTS,
+          }),
+          fetch("/api/realtime", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+          }),
+        ]);
+
+        stream = streamResult;
+
+        if (!tokenResponse.ok) {
+          throw new Error("Failed to get session token");
+        }
+
+        tokenData = (await tokenResponse.json()) as RealtimeSessionToken;
       }
 
-      const tokenData =
-        (await tokenResponse.json()) as RealtimeSessionToken;
+      mediaStreamRef.current = stream;
+      console.log("Got media stream with", stream.getAudioTracks().length, "audio tracks");
       console.log("Got session token, expires at:", new Date(tokenData.expires_at * 1000));
 
       const pc = new RTCPeerConnection();
@@ -342,7 +430,9 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         setIsConnecting(false);
         setIsRecording(true);
         isRecordingRef.current = true;
-        console.log("Ready to record - speak now!");
+
+        const setupTime = performance.now() - startTimeRef.current;
+        console.log(`✅ Ready to record - speak now! (Setup took ${Math.round(setupTime)}ms)`);
       };
 
       dc.onclose = () => {
@@ -363,6 +453,11 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
              console.log("Ignoring event from stale session");
              return;
            }
+
+          // Ignore assistant response events since we only do transcription
+          if (msg.type.startsWith("response.text") || msg.type.startsWith("response.audio_transcript")) {
+            return;
+          }
 
           if (msg.type === "input_audio_buffer.speech_started") {
             console.log("Speech started - clearing interim");
@@ -488,6 +583,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
     pushFinalTranscript,
     extractTranscript,
     appendInterimTranscript,
+    preWarmToken,
   ]);
 
   const stop = useCallback(() => {
@@ -497,6 +593,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
     }
 
     console.log("Stopping recording...");
+    readyTimeRef.current = performance.now();
     setIsRecording(false);
     setIsProcessing(true);
     isRecordingRef.current = false;
@@ -548,6 +645,15 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       cleanup();
     };
   }, [cleanup]);
+
+  // Pre-fetch token on mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      preWarmToken();
+    }, 500); // Small delay to avoid blocking initial render
+
+    return () => clearTimeout(timer);
+  }, [preWarmToken]);
 
   return {
     isRecording,

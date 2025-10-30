@@ -41,21 +41,8 @@ export async function POST(req: NextRequest) {
         },
         body: JSON.stringify({
           model: "gpt-4o-realtime-preview-2024-12-17",
-          modalities: ["text", "audio"],
-          instructions:
-            "You are a speech to text transcriber. Listen to the user's audio input and respond with the exact transcription of what they said. Be concise and accurate.",
+          modalities: ["text"],
           voice: "verse",
-          input_audio_format: "pcm16",
-          output_audio_format: "pcm16",
-          input_audio_transcription: {
-            model: "whisper-1",
-          },
-          turn_detection: {
-            type: "server_vad",
-            threshold: 0.5,
-            prefix_padding_ms: 300,
-            silence_duration_ms: 500,
-          },
         }),
       }
     );
