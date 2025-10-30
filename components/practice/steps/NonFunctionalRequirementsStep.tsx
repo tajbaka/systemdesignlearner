@@ -2,25 +2,7 @@
 
 import { useState } from "react";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
-
-const MicIcon = () => (
-  <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">
-    <path
-      d="M12 3a2 2 0 0 0-2 2v6a2 2 0 1 0 4 0V5a2 2 0 0 0-2-2Z"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <path
-      d="M19 11a7 7 0 0 1-14 0M12 21v-3"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 
 export function NonFunctionalRequirementsStep() {
   const { state, setRequirements, isReadOnly } = usePracticeSession();
@@ -94,18 +76,14 @@ export function NonFunctionalRequirementsStep() {
               className="min-h-[200px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               disabled={isReadOnly}
             />
-            <button
-              type="button"
-              onClick={() => {
-                if (isReadOnly) return;
-                console.info("Speech capture not yet implemented");
-              }}
-              disabled={isReadOnly}
-              aria-label="Record your answer"
-              className="absolute bottom-3 right-3 inline-flex h-10 w-10 items-center justify-center rounded-full border border-blue-400/40 bg-blue-950/40 text-blue-200 transition hover:bg-blue-900/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <MicIcon />
-            </button>
+            <div className="absolute bottom-3 right-3">
+              <VoiceCaptureBridge
+                value={nf.notes}
+                onChange={handleSummaryChange}
+                stepId="nonFunctional"
+                disabled={isReadOnly}
+              />
+            </div>
           </div>
 
           <button
