@@ -82,7 +82,7 @@ export default function RootLayout({
         },
         elements: {
           // Root card styling
-          rootBox: 'bg-zinc-950',
+          rootBox: 'bg-transparent',
           card: 'bg-zinc-950 border border-zinc-800 shadow-2xl',
 
           // Header
@@ -145,7 +145,7 @@ export default function RootLayout({
           badge: 'bg-emerald-500/30 text-emerald-200 border-2 border-emerald-500/50 font-semibold',
 
           // Avatar
-          avatarBox: 'border-2 border-zinc-600',
+          avatarBox: 'border-0',
           avatarImage: 'rounded-full',
 
           // Spinner

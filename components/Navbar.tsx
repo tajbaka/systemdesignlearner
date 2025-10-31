@@ -214,7 +214,7 @@ export function Navbar() {
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: "w-9 h-9"
+                  avatarBox: "w-9 h-9 border-0"
                 }
               }}
             />
@@ -315,7 +315,7 @@ export function Navbar() {
                   <UserButton
                     appearance={{
                       elements: {
-                        avatarBox: "w-9 h-9"
+                        avatarBox: "w-9 h-9 border-0"
                       }
                     }}
                   />
