@@ -246,3 +246,12 @@ export { evaluateFunctionalRequirements } from "./engines/functional";
 export { evaluateNonFunctionalRequirements } from "./engines/nonFunctional";
 export { evaluateApiDefinition } from "./engines/api";
 export { evaluateDesign } from "./engines/design";
+
+// Re-export AI-enhanced functions
+export {
+  evaluateFunctionalWithAI,
+  evaluateApiWithAI,
+  evaluateDesignWithAI,
+  explainOverallScore,
+} from "./ai/hybrid";
+export { isAIAvailable } from "./ai/gemini";
