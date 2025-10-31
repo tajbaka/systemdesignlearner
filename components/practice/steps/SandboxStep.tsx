@@ -6,7 +6,6 @@ import { usePracticeSession } from "@/components/practice/session/PracticeSessio
 import DesignStage from "@/components/practice/stages/DesignStage";
 import RunStage from "@/components/practice/stages/RunStage";
 import type { PracticeDesignState, Requirements } from "@/lib/practice/types";
-import BottomSheet from "@/app/components/BottomSheet";
 import { Sidebar } from "@/components/practice/Sidebar";
 import Palette from "@/app/components/Palette";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
@@ -63,7 +62,7 @@ type SandboxStepProps = {
 export function SandboxStep({
   mobilePaletteOpen,
   onMobilePaletteChange,
-  runPanelOpen,
+  runPanelOpen: _runPanelOpen,
   onRunPanelChange,
 }: SandboxStepProps) {
   const {

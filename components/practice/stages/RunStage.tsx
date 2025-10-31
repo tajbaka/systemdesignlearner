@@ -8,7 +8,6 @@ import type { PracticeDesignState, PracticeRunState, Requirements, PracticeStepS
 import type { PlacedNode } from "@/app/components/types";
 import type { Scenario } from "@/lib/scenarios";
 import { track } from "@/lib/analytics";
-import { markScenarioCompleted } from "@/lib/scenarioProgress";
 import { logger } from "@/lib/logger";
 import {
   evaluateDesignOptimized,
