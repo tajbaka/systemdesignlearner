@@ -274,26 +274,6 @@ export function ScoreShareStep() {
                   </span>
                 </div>
               </div>
-
-              <div className="flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/60 p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
-                    5
-                  </div>
-                  <span className="text-sm font-medium text-zinc-200">Simulation</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-800">
-                    <div
-                      className="h-full bg-amber-500"
-                      style={{ width: `${(cumulativeScore.breakdown.simulation / 5) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-white w-16 text-right">
-                    {cumulativeScore.breakdown.simulation}/5
-                  </span>
-                </div>
-              </div>
             </div>
           </div>
 
