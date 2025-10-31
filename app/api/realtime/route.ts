@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { logger } from "@/lib/logger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("OpenAI API error:", errorText);
+      logger.error("OpenAI API error:", errorText);
       return NextResponse.json(
         { error: "Failed to create session" },
         { status: 500 }
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
       }
     );
   } catch (error) {
-    console.error("Realtime session error:", error);
+    logger.error("Realtime session error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

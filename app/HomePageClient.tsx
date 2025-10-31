@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { logger } from "@/lib/logger";
 import { Navbar } from "@/components/Navbar";
 import DemoBoard from "./components/DemoBoard";
 import { track } from "@/lib/analytics";
@@ -79,7 +80,7 @@ export function HomePageClient() {
       // Reset status after showing success message
       setTimeout(() => setFormStatus('idle'), 3000);
     } catch (error) {
-      console.error('Form submission error:', error);
+      logger.error('Form submission error:', error);
       setFormStatus('error');
 
       // Reset status after showing error message
@@ -142,7 +143,7 @@ export function HomePageClient() {
         setNewsletterMessage('');
       }, 3000);
     } catch (error) {
-      console.error('Newsletter subscription error:', error);
+      logger.error('Newsletter subscription error:', error);
       setNewsletterStatus('error');
       track("email_capture_error", { source: "homepage-footer" });
 

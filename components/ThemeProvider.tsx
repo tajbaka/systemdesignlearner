@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { logger } from "@/lib/logger";
 
 type Theme = "light" | "dark";
 
@@ -24,7 +25,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add("dark");
       body.classList.add("dark");
       localStorage.setItem("theme", initialTheme);
-      console.log('Applied dark class to html and body');
+      logger.log('Applied dark class to html and body');
     }
 
     setTheme(initialTheme);

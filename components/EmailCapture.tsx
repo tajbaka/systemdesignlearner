@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { track } from "@/lib/analytics";
+import { logger } from "@/lib/logger";
 
 type EmailCaptureStatus = "idle" | "submitting" | "success" | "error";
 
@@ -79,7 +80,7 @@ export function EmailCapture({
         track("email_capture_success", { source: "practice-review" });
       }
     } catch (error) {
-      console.error("Email capture failed", error);
+      logger.error("Email capture failed", error);
       setStatus("error");
       setMessage("Something went wrong. Try again in a moment.");
       track("email_capture_error", { source: "practice-review" });

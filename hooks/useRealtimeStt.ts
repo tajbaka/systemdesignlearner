@@ -7,6 +7,7 @@ import type {
   SttHookOptions,
   SttHookState,
 } from "@/lib/realtime/types";
+import { logger } from "@/lib/logger";
 
 const AUDIO_CONSTRAINTS: MediaTrackConstraints = {
   channelCount: 1,
@@ -64,34 +65,34 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
   }, []);
 
   const cleanup = useCallback(() => {
-    console.log("Cleanup called");
+    logger.log("Cleanup called");
 
     if (dataChannelRef.current) {
-      console.log("Closing data channel");
+      logger.log("Closing data channel");
       try {
         dataChannelRef.current.close();
       } catch (err) {
-        console.error("Error closing data channel:", err);
+        logger.error("Error closing data channel:", err);
       }
       dataChannelRef.current = null;
     }
 
     if (peerConnectionRef.current) {
-      console.log("Closing peer connection");
+      logger.log("Closing peer connection");
       try {
         peerConnectionRef.current.close();
       } catch (err) {
-        console.error("Error closing peer connection:", err);
+        logger.error("Error closing peer connection:", err);
       }
       peerConnectionRef.current = null;
     }
 
     if (mediaStreamRef.current) {
-      console.log("Stopping media stream");
+      logger.log("Stopping media stream");
       try {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       } catch (err) {
-        console.error("Error stopping media stream:", err);
+        logger.error("Error stopping media stream:", err);
       }
       mediaStreamRef.current = null;
     }
@@ -118,7 +119,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
 
       if (sourceId) {
         if (processedItemIdsRef.current.has(sourceId)) {
-          console.log("Transcript already processed for item:", sourceId);
+          logger.log("Transcript already processed for item:", sourceId);
           return;
         }
         processedItemIdsRef.current.add(sourceId);
@@ -127,12 +128,12 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       const existingEntry = processedTranscriptsRef.current.has(normalized);
 
       if (existingEntry && priority === "low") {
-        console.log("Skipping lower-priority duplicate transcript:", trimmed);
+        logger.log("Skipping lower-priority duplicate transcript:", trimmed);
         return;
       }
 
       if (existingEntry && priority === "high") {
-        console.log("Replacing with higher-quality transcript:", trimmed);
+        logger.log("Replacing with higher-quality transcript:", trimmed);
       }
 
       processedTranscriptsRef.current.add(normalized);
@@ -149,11 +150,11 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
             const updated = prevWords.length > 0
               ? `${prevWords.join(" ")} ${trimmed}`
               : trimmed;
-            console.log("Setting final text (replaced):", updated);
+            logger.log("Setting final text (replaced):", updated);
 
             if (readyTimeRef.current > 0) {
               const processingTime = performance.now() - readyTimeRef.current;
-              console.log(`⏱️ Processing took ${Math.round(processingTime)}ms`);
+              logger.log(`⏱️ Processing took ${Math.round(processingTime)}ms`);
               readyTimeRef.current = 0;
             }
 
@@ -162,11 +163,11 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         }
 
         const next = prev ? `${prev} ${trimmed}` : trimmed;
-        console.log("Setting final text:", next);
+        logger.log("Setting final text:", next);
 
         if (readyTimeRef.current > 0) {
           const processingTime = performance.now() - readyTimeRef.current;
-          console.log(`⏱️ Processing took ${Math.round(processingTime)}ms`);
+          logger.log(`⏱️ Processing took ${Math.round(processingTime)}ms`);
           readyTimeRef.current = 0;
         }
 
@@ -281,7 +282,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
     }
 
     isPreWarmingRef.current = true;
-    console.log("🔥 Pre-fetching session token...");
+    logger.log("🔥 Pre-fetching session token...");
 
     try {
       const tokenResponse = await fetch("/api/realtime", {
@@ -290,7 +291,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       });
 
       if (!tokenResponse.ok) {
-        console.error("Pre-warm: Failed to get session token");
+        logger.error("Pre-warm: Failed to get session token");
         isPreWarmingRef.current = false;
         return;
       }
@@ -300,21 +301,21 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         token: tokenData,
         fetchedAt: Date.now(),
       };
-      console.log("🔥 Session token ready! (valid for ~60s)");
+      logger.log("🔥 Session token ready! (valid for ~60s)");
       isPreWarmingRef.current = false;
     } catch (err) {
-      console.error("Pre-warm token fetch failed:", err);
+      logger.error("Pre-warm token fetch failed:", err);
       isPreWarmingRef.current = false;
     }
   }, []);
 
   const start = useCallback(async () => {
     if (isRecording || isConnecting) {
-      console.log("Already recording or connecting, ignoring start");
+      logger.log("Already recording or connecting, ignoring start");
       return;
     }
 
-    console.log("Starting recording...");
+    logger.log("Starting recording...");
     startTimeRef.current = performance.now();
     setIsConnecting(true);
     setError(null);
@@ -338,7 +339,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       let tokenData: RealtimeSessionToken;
 
       if (usePreWarmedToken) {
-        console.log("⚡ Using pre-fetched token!");
+        logger.log("⚡ Using pre-fetched token!");
         preWarmTokenRef.current = null; // Consume the token
 
         // Only need to get media stream
@@ -351,7 +352,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         setTimeout(() => preWarmToken(), 100);
       } else {
         if (preWarmedToken) {
-          console.log("Pre-fetched token expired, fetching fresh one");
+          logger.log("Pre-fetched token expired, fetching fresh one");
           preWarmTokenRef.current = null;
         }
 
@@ -376,12 +377,12 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       }
 
       mediaStreamRef.current = stream;
-      console.log("Got media stream with", stream.getAudioTracks().length, "audio tracks");
-      console.log("Got session token, expires at:", new Date(tokenData.expires_at * 1000));
+      logger.log("Got media stream with", stream.getAudioTracks().length, "audio tracks");
+      logger.log("Got session token, expires at:", new Date(tokenData.expires_at * 1000));
 
       const pc = new RTCPeerConnection();
       peerConnectionRef.current = pc;
-      console.log("Created peer connection");
+      logger.log("Created peer connection");
 
       pc.oniceconnectionstatechange = () => {
         if (
@@ -399,13 +400,13 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       }
 
       pc.addTrack(audioTrack, stream);
-      console.log("Added audio track to peer connection");
+      logger.log("Added audio track to peer connection");
 
       const dc = pc.createDataChannel("oai-events");
       dataChannelRef.current = dc;
 
       dc.onopen = () => {
-        console.info("Data channel opened");
+        logger.info("Data channel opened");
 
         // Send session update to enable transcription
         const sessionUpdate = {
@@ -424,7 +425,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         };
 
         dc.send(JSON.stringify(sessionUpdate));
-        console.log("Sent session update");
+        logger.log("Sent session update");
         clearCleanupTimeout();
 
         setIsConnecting(false);
@@ -432,25 +433,25 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         isRecordingRef.current = true;
 
         const setupTime = performance.now() - startTimeRef.current;
-        console.log(`✅ Ready to record - speak now! (Setup took ${Math.round(setupTime)}ms)`);
+        logger.log(`✅ Ready to record - speak now! (Setup took ${Math.round(setupTime)}ms)`);
       };
 
       dc.onclose = () => {
-        console.info("Data channel closed");
+        logger.info("Data channel closed");
       };
 
       dc.onerror = (err) => {
-        console.error("Data channel error:", err);
+        logger.error("Data channel error:", err);
         setError("Data channel error");
       };
 
       dc.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data) as RealtimeEvent;
-          console.log("Received event:", msg.type);
+          logger.log("Received event:", msg.type);
 
            if (sessionId !== sessionIdRef.current) {
-             console.log("Ignoring event from stale session");
+             logger.log("Ignoring event from stale session");
              return;
            }
 
@@ -460,11 +461,11 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
           }
 
           if (msg.type === "input_audio_buffer.speech_started") {
-            console.log("Speech started - clearing interim");
+            logger.log("Speech started - clearing interim");
             setInterimText("");
             clearCleanupTimeout();
           } else if (msg.type === "input_audio_buffer.speech_stopped") {
-            console.log("Speech stopped - will wait for transcription");
+            logger.log("Speech stopped - will wait for transcription");
             setIsProcessing(true);
           } else if (msg.type === "transcript.delta") {
             const delta =
@@ -483,7 +484,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
               typeof (msg as any).item_id === "string"
                 ? (msg as any).item_id
                 : undefined;
-            console.log("Transcript done:", transcriptContent);
+            logger.log("Transcript done:", transcriptContent);
             if (transcriptContent) {
               pushFinalTranscript(transcriptContent, itemId);
             }
@@ -502,7 +503,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
             if (transcriptContent) {
               const sourceId =
                 typeof item?.id === "string" ? (item.id as string) : undefined;
-              console.log("Conversation item transcript:", transcriptContent);
+              logger.log("Conversation item transcript:", transcriptContent);
               pushFinalTranscript(transcriptContent, sourceId);
             }
           } else if (msg.type === "conversation.item.input_audio_transcription.completed") {
@@ -511,7 +512,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
               typeof (msg as any).item_id === "string"
                 ? (msg as any).item_id
                 : undefined;
-            console.log("Transcription completed (low priority):", transcriptContent);
+            logger.log("Transcription completed (low priority):", transcriptContent);
             if (transcriptContent) {
               pushFinalTranscript(transcriptContent, itemId, "low");
             }
@@ -520,7 +521,7 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
               typeof (msg as any)?.error?.message === "string"
                 ? (msg as any).error.message
                 : "Transcription failed";
-            console.error("Transcription failed:", msg);
+            logger.error("Transcription failed:", msg);
             setError(errorMessage);
           } else if (msg.type === "response.audio_transcript.delta") {
             const delta = (msg as any).delta;
@@ -531,12 +532,12 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
             const transcript = (msg as any).transcript;
             const responseId = (msg as any).response_id || (msg as any).item_id;
             if (typeof transcript === "string" && transcript.trim()) {
-              console.log("Audio transcript done (preferred):", transcript);
+              logger.log("Audio transcript done (preferred):", transcript);
               pushFinalTranscript(transcript, responseId);
             }
           }
         } catch (err) {
-          console.error("Failed to parse event:", err);
+          logger.error("Failed to parse event:", err);
         }
       };
 
@@ -567,11 +568,11 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         sdp: answerSdp,
       });
 
-      console.log("Connection established, waiting for data channel...");
+      logger.log("Connection established, waiting for data channel...");
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Failed to start recording";
-      console.error("Failed to start recording:", err);
+      logger.error("Failed to start recording:", err);
       setError(message);
       cleanup();
     }
@@ -588,11 +589,11 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
 
   const stop = useCallback(() => {
     if (!isRecording) {
-      console.log("Not recording, ignoring stop");
+      logger.log("Not recording, ignoring stop");
       return;
     }
 
-    console.log("Stopping recording...");
+    logger.log("Stopping recording...");
     readyTimeRef.current = performance.now();
     setIsRecording(false);
     setIsProcessing(true);
@@ -609,18 +610,18 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
         dataChannelRef.current.send(
           JSON.stringify({ type: "response.create" })
         );
-        console.log("Requested transcription commit and response");
+        logger.log("Requested transcription commit and response");
       } catch (err) {
-        console.error("Failed to request transcription:", err);
+        logger.error("Failed to request transcription:", err);
       }
     }
 
     if (mediaStreamRef.current) {
-      console.log("Stopping media stream tracks after stop");
+      logger.log("Stopping media stream tracks after stop");
       try {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
       } catch (err) {
-        console.error("Error stopping tracks during stop:", err);
+        logger.error("Error stopping tracks during stop:", err);
       }
     }
 
@@ -629,15 +630,15 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
     cleanupTimeoutRef.current = setTimeout(() => {
       const fallback = interimTextRef.current.trim();
       if (fallback) {
-        console.log("Finalizing from interim transcript fallback:", fallback);
+        logger.log("Finalizing from interim transcript fallback:", fallback);
         pushFinalTranscript(fallback);
       } else {
         cleanup();
-        console.log("Cleanup completed after stop timeout");
+        logger.log("Cleanup completed after stop timeout");
       }
     }, 4000);
 
-    console.log("Recording stopped");
+    logger.log("Recording stopped");
   }, [clearCleanupTimeout, cleanup, isRecording, pushFinalTranscript]);
 
   useEffect(() => {

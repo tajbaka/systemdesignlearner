@@ -1,4 +1,5 @@
 import type { PracticeState } from "./types";
+import { logger } from "@/lib/logger";
 
 const storageKey = (slug: PracticeState["slug"]) => `sds-practice-${slug}`;
 
@@ -15,7 +16,7 @@ export const loadPractice = (slug: PracticeState["slug"]): PracticeState | Recor
     const parsed = JSON.parse(raw) as PracticeState | Record<string, unknown>;
     return (parsed as PracticeState)?.slug === slug ? parsed : null;
   } catch (err) {
-    console.warn("Failed to load practice state", err);
+    logger.warn("Failed to load practice state", err);
     return null;
   }
 };
@@ -28,6 +29,6 @@ export const savePractice = (state: PracticeState): void => {
   try {
     window.localStorage.setItem(storageKey(state.slug), JSON.stringify(state));
   } catch (err) {
-    console.warn("Failed to persist practice state", err);
+    logger.warn("Failed to persist practice state", err);
   }
 };

@@ -10,6 +10,7 @@ import type { PlacedNode } from "@/app/components/types";
 import type { Scenario } from "@/lib/scenarios";
 import { track } from "@/lib/analytics";
 import { markScenarioCompleted } from "@/lib/scenarioProgress";
+import { logger } from "@/lib/logger";
 
 type UpdateRunFn = (updater: (prev: PracticeRunState) => PracticeRunState) => void;
 
@@ -254,7 +255,7 @@ export default function RunStage({
         track("practice_pass_first", { scenario: "url-shortener", attempts: attemptCount });
       }
     } catch (err) {
-      console.error("Simulation error", err);
+      logger.error("Simulation error", err);
       setError("Simulation failed. Adjust your graph and try again.");
     } finally {
       setRunning(false);

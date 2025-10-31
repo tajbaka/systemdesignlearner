@@ -1,6 +1,7 @@
 import type { Requirements } from "./types";
 import type { ApiEndpoint } from "./types";
 import reference from "./reference/url-shortener.json";
+import { logger } from "@/lib/logger";
 
 export type VerificationResult = {
   canProceed: boolean;
@@ -165,7 +166,7 @@ export function parseVerificationResponse(text: string): VerificationResult {
         : [],
     };
   } catch (error) {
-    console.error("Failed to parse verification response:", error);
+    logger.error("Failed to parse verification response:", error);
     // On parse error, allow proceed but warn
     return {
       canProceed: true,

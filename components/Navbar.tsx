@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { logger } from "@/lib/logger";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -59,9 +60,9 @@ export function Navbar() {
           const xOffset = navbarRect.left - centerX;
           const yOffset = navbarRect.top - centerY;
 
-          console.log('Navbar rect:', navbarRect);
-          console.log('Window center:', { x: centerX, y: centerY });
-          console.log('Calculated offset:', { x: xOffset, y: yOffset });
+          logger.log('Navbar rect:', navbarRect);
+          logger.log('Window center:', { x: centerX, y: centerY });
+          logger.log('Calculated offset:', { x: xOffset, y: yOffset });
 
           setLogoPosition({
             x: xOffset,

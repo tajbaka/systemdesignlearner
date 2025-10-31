@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -70,7 +71,7 @@ export default function FeedbackPage() {
         setMessage('');
       }, 3000);
     } catch (error) {
-      console.error('Feedback submission error:', error);
+      logger.error('Feedback submission error:', error);
       setStatus('error');
       setMessage('Failed to submit feedback. Please try again.');
 

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import type { ApiEndpoint } from "@/lib/practice/types";
+import { logger } from "@/lib/logger";
 
 const MicIcon = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">
@@ -196,7 +197,7 @@ export function ApiDefinitionStep() {
                       type="button"
                       onClick={() => {
                         if (isReadOnly) return;
-                        console.info("Speech capture not yet implemented");
+                        logger.info("Speech capture not yet implemented");
                       }}
                       disabled={isReadOnly}
                       aria-label="Record your answer"

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { SttHookOptions, SttHookState } from "@/lib/realtime/types";
+import { logger } from "@/lib/logger";
 
 declare global {
   interface Window {
@@ -74,7 +75,7 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
       try {
         recognitionRef.current.stop();
       } catch (err) {
-        console.error("Error stopping recognition:", err);
+        logger.error("Error stopping recognition:", err);
       }
       recognitionRef.current = null;
     }
@@ -110,7 +111,7 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
       };
 
       recognition.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
+        logger.error("Speech recognition error:", event.error);
         if (event.error === "no-speech") {
           setError("No speech detected");
         } else if (event.error === "not-allowed") {

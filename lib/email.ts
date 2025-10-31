@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import { render } from '@react-email/components';
 import FeedbackConfirmationEmail from '@/emails/feedback-confirmation';
 import NewsletterConfirmationEmail from '@/emails/newsletter-confirmation';
+import { logger } from '@/lib/logger';
 
 // Initialize Resend with API key from environment variables
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -30,7 +31,7 @@ export async function sendFeedbackConfirmation({
   try {
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY) {
-      console.warn('RESEND_API_KEY not configured. Skipping email send.');
+      logger.warn('RESEND_API_KEY not configured. Skipping email send.');
       return { success: false, error: 'Email service not configured' };
     }
 
@@ -46,14 +47,14 @@ export async function sendFeedbackConfirmation({
     });
 
     if (error) {
-      console.error('Failed to send feedback confirmation email:', error);
+      logger.error('Failed to send feedback confirmation email:', error);
       return { success: false, error: error.message };
     }
 
-    console.log('Feedback confirmation email sent:', data);
+    logger.log('Feedback confirmation email sent:', data);
     return { success: true, data };
   } catch (error) {
-    console.error('Error sending feedback confirmation email:', error);
+    logger.error('Error sending feedback confirmation email:', error);
     return { success: false, error: String(error) };
   }
 }
@@ -67,7 +68,7 @@ export async function sendNewsletterConfirmation({
   try {
     // Check if Resend API key is configured
     if (!process.env.RESEND_API_KEY) {
-      console.warn('RESEND_API_KEY not configured. Skipping email send.');
+      logger.warn('RESEND_API_KEY not configured. Skipping email send.');
       return { success: false, error: 'Email service not configured' };
     }
 
@@ -83,14 +84,14 @@ export async function sendNewsletterConfirmation({
     });
 
     if (error) {
-      console.error('Failed to send newsletter confirmation email:', error);
+      logger.error('Failed to send newsletter confirmation email:', error);
       return { success: false, error: error.message };
     }
 
-    console.log('Newsletter confirmation email sent:', data);
+    logger.log('Newsletter confirmation email sent:', data);
     return { success: true, data };
   } catch (error) {
-    console.error('Error sending newsletter confirmation email:', error);
+    logger.error('Error sending newsletter confirmation email:', error);
     return { success: false, error: String(error) };
   }
 }

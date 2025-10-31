@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import posthog from "posthog-js";
+import { logger } from "@/lib/logger";
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -10,7 +11,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
     const apiKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
     if (!apiKey) {
-      console.warn("[PostHog] Missing NEXT_PUBLIC_POSTHOG_KEY");
+      logger.warn("[PostHog] Missing NEXT_PUBLIC_POSTHOG_KEY");
       return;
     }
 
@@ -27,7 +28,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
         // Expose PostHog to window for analytics.ts to use
         window.posthog = posthog;
         if (process.env.NODE_ENV === "development") {
-          console.log("[PostHog] Initialized successfully");
+          logger.log("[PostHog] Initialized successfully");
         }
       },
     });

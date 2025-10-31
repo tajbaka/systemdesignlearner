@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { sendNewsletterConfirmation } from '@/lib/email'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Log only unhandled errors
-      console.error('Supabase error:', error)
+      logger.error('Supabase error:', error)
       return NextResponse.json(
         { error: 'Failed to subscribe. Please try again.' },
         { status: 500 }
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     sendNewsletterConfirmation({
       to: email,
     }).catch(error => {
-      console.error('Failed to send newsletter confirmation email:', error);
+      logger.error('Failed to send newsletter confirmation email:', error);
     });
 
     return NextResponse.json(
@@ -69,7 +70,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     )
   } catch (error) {
-    console.error('Subscription error:', error)
+    logger.error('Subscription error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

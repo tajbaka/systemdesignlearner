@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactElement } from "react";
 import PracticeStepper from "@/components/practice/PracticeStepper";
+import { logger } from "@/lib/logger";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import FunctionalRequirementsStep from "@/components/practice/steps/FunctionalRequirementsStep";
 import NonFunctionalRequirementsStep from "@/components/practice/steps/NonFunctionalRequirementsStep";
@@ -218,7 +219,7 @@ function PracticeFlowInner() {
       setVerification({ isVerifying: false, result, error: null });
       return result;
     } catch (error) {
-      console.error("Verification error:", error);
+      logger.error("Verification error:", error);
       setVerification({
         isVerifying: false,
         result: null,

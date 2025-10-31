@@ -17,6 +17,7 @@ import MobileTopBar from "./mobile/MobileTopBar";
 import MobileSimulationPanel from "./mobile/MobileSimulationPanel";
 import BottomSheet from "./BottomSheet";
 import { decodeDesign } from "@/lib/shareLink";
+import { logger } from "@/lib/logger";
 
 // Simulation result type matching ScenarioPanel expectations
 interface SimulationResult {
@@ -130,7 +131,7 @@ export default function SystemDesignEditor() {
         setEdges(resolvedEdges);
       }
     } catch (error) {
-      console.warn("Failed to decode sandbox share payload", error);
+      logger.warn("Failed to decode sandbox share payload", error);
     }
   }, [specsByKind]);
 
@@ -327,7 +328,7 @@ export default function SystemDesignEditor() {
         setFailAttempts(0); // Reset on success
       }
     } catch (error) {
-      console.error("Simulation error:", error);
+      logger.error("Simulation error:", error);
       setSimulationError("Simulation failed due to an unexpected error. Check your design and try again.");
     }
   }, [selectedScenario, nodes, edges, chaosMode]);

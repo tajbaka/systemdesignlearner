@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { encodeDesign as encodeShare } from "@/lib/shareLink";
 import { EmailCapture } from "@/components/EmailCapture";
+import { logger } from "@/lib/logger";
 import { track } from "@/lib/analytics";
 import type { PracticeState } from "@/lib/practice/types";
 
@@ -149,7 +150,7 @@ export const ReviewPanel = ({
         setShareStatus("copied");
       })
       .catch((error) => {
-        console.error("Failed to copy share link", error);
+        logger.error("Failed to copy share link", error);
         setShareStatus("error");
       });
   };

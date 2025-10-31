@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRealtimeStt } from "@/hooks/useRealtimeStt";
 import { useWebSpeechStt } from "@/hooks/useWebSpeechStt";
+import { logger } from "@/lib/logger";
 
 const MicIcon = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">
@@ -71,20 +72,20 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (disabled || mode !== "hold") return;
     e.preventDefault(); // Prevent click from firing
-    console.log("Mouse down - starting recording");
+    logger.log("Mouse down - starting recording");
     start();
   }, [disabled, mode, start]);
 
   const handleMouseUp = useCallback((e: React.MouseEvent) => {
     if (disabled || mode !== "hold") return;
     e.preventDefault();
-    console.log("Mouse up - stopping recording");
+    logger.log("Mouse up - stopping recording");
     stop();
   }, [disabled, mode, stop]);
 
   const handleMouseLeave = useCallback(() => {
     if (disabled || mode !== "hold" || !isRecording) return;
-    console.log("Mouse leave - stopping recording");
+    logger.log("Mouse leave - stopping recording");
     stop();
   }, [disabled, mode, isRecording, stop]);
 

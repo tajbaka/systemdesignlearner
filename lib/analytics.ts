@@ -1,6 +1,7 @@
 "use client";
 
 import type { PostHog } from "posthog-js";
+import { logger } from "@/lib/logger";
 
 const isClient = () => typeof window !== "undefined";
 
@@ -22,7 +23,7 @@ export const track = (event: string, properties: Record<string, unknown> = {}): 
   const client = window.posthog;
   if (!client) {
     if (process.env.NODE_ENV === "development") {
-      console.warn("[analytics] PostHog not initialised yet – event dropped", event, properties);
+      logger.warn("[analytics] PostHog not initialised yet – event dropped", event, properties);
     }
     return;
   }

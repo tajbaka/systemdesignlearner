@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { notFound, useParams, useSearchParams } from "next/navigation";
 import PracticeFlow from "@/components/practice/PracticeFlow";
+import { logger } from "@/lib/logger";
 import { PracticeSessionProvider } from "@/components/practice/session/PracticeSessionProvider";
 import { decodeDesign } from "@/lib/shareLink";
 import { Navbar } from "@/components/Navbar";
@@ -38,7 +39,7 @@ export default function PracticeSlugPage() {
         sharedState = null;
       }
     } catch (error) {
-      console.warn("Failed to decode shared practice state", error);
+      logger.warn("Failed to decode shared practice state", error);
     }
   }
 

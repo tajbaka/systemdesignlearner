@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGeminiModel } from "@/lib/gemini";
+import { logger } from "@/lib/logger";
 import {
   buildFunctionalPrompt,
   buildNonFunctionalPrompt,
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(verification);
   } catch (error) {
-    console.error("Verification API error:", error);
+    logger.error("Verification API error:", error);
     return NextResponse.json(
       {
         error: "Verification service failed. Please try again.",

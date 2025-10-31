@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { encodeDesign as encodeShare } from "@/lib/shareLink";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { track } from "@/lib/analytics";
+import { logger } from "@/lib/logger";
 
 type ShareStatus = "idle" | "copied" | "error";
 
@@ -67,7 +68,7 @@ export function ScoreShareStep() {
         destination: "share_badge",
       });
     } catch (error) {
-      console.error("Share failed", error);
+      logger.error("Share failed", error);
       setShareStatus("error");
     }
   };

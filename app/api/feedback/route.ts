@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { sendFeedbackConfirmation } from '@/lib/email'
+import { logger } from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
       })
 
     if (feedbackError) {
-      console.error('Supabase feedback error:', feedbackError)
+      logger.error('Supabase feedback error:', feedbackError)
       return NextResponse.json(
         { error: 'Failed to submit feedback. Please try again.' },
         { status: 500 }
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
       name: name || undefined,
       feedback: feedback.trim(),
     }).catch(error => {
-      console.error('Failed to send feedback confirmation email:', error);
+      logger.error('Failed to send feedback confirmation email:', error);
     });
 
     return NextResponse.json(
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     )
   } catch (error) {
-    console.error('Feedback submission error:', error)
+    logger.error('Feedback submission error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

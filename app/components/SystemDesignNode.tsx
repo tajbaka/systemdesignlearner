@@ -5,6 +5,7 @@ import { Handle, Position, NodeProps, useReactFlow } from '@xyflow/react';
 import { SystemDesignNode as SystemDesignNodeType } from "./types";
 import { handleClass, isoClass } from "./styles";
 import { iconFor } from "./icons";
+import { logger } from "@/lib/logger";
 
 interface SystemDesignNodeProps extends NodeProps<SystemDesignNodeType> {
   isInPath?: boolean;
@@ -250,7 +251,7 @@ const SystemDesignNodeComponent = ({
               onClick={(e) => {
                 e.stopPropagation();
                 const newReplicas = Math.max(1, (data.replicas || 1) - 1);
-                console.debug('[SystemDesignNode] Decrease replicas', {
+                logger.log('[SystemDesignNode] Decrease replicas', {
                   id,
                   previous: data.replicas || 1,
                   next: newReplicas,
@@ -268,7 +269,7 @@ const SystemDesignNodeComponent = ({
               onClick={(e) => {
                 e.stopPropagation();
                 const newReplicas = (data.replicas || 1) + 1;
-                console.debug('[SystemDesignNode] Increase replicas', {
+                logger.log('[SystemDesignNode] Increase replicas', {
                   id,
                   previous: data.replicas || 1,
                   next: newReplicas,

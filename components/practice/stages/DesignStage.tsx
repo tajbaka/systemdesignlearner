@@ -13,6 +13,7 @@ import type {
 } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { logger } from "@/lib/logger";
 
 type UpdateDesignFn = (updater: (prev: PracticeDesignState) => PracticeDesignState) => void;
 
@@ -197,7 +198,7 @@ export default function DesignStage({
   onOpenSimulation: _onOpenSimulation,
   showPaletteTrigger: _showPaletteTrigger = true,
 }: DesignStageProps) {
-  console.debug('[DesignStage] render nodes', design.nodes.map(node => ({ id: node.id, replicas: node.replicas })));
+  logger.log('[DesignStage] render nodes', design.nodes.map(node => ({ id: node.id, replicas: node.replicas })));
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const allowedKinds = useMemo<ComponentKind[]>(

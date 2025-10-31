@@ -19,6 +19,7 @@ import { PlacedNode, Edge, SystemDesignNode, SystemDesignEdge } from "./types";
 import { placedNodeToReactFlowNode, edgeToReactFlowEdge, reactFlowEdgeToEdge, reactFlowNodeToPlacedNode } from "./types";
 import SystemDesignNodeComponent from "./SystemDesignNode";
 import BidirectionalEdge from "./BidirectionalEdge";
+import { logger } from "@/lib/logger";
 
 const nodeTypes = {
   systemDesignNode: SystemDesignNodeComponent,
@@ -86,7 +87,7 @@ function ReactFlowBoardInner({
   }, [rfNodes]);
 
   React.useEffect(() => {
-    console.debug('[ReactFlowBoard] syncing edges from props', rfEdges.map(edge => edge.id));
+    logger.log('[ReactFlowBoard] syncing edges from props', rfEdges.map(edge => edge.id));
     rfEdgesRef.current = rfEdges;
   }, [rfEdges]);
 
@@ -105,7 +106,7 @@ function ReactFlowBoardInner({
 
   // Update state when props change (but preserve existing positions)
   React.useEffect(() => {
-    console.debug('[ReactFlowBoard] props.nodes', nodes.map(node => ({ id: node.id, replicas: node.replicas })));
+    logger.log('[ReactFlowBoard] props.nodes', nodes.map(node => ({ id: node.id, replicas: node.replicas })));
     setRfNodes(currentNodes => {
       const currentNodeMap = new Map(currentNodes.map(node => [node.id, node]));
 
