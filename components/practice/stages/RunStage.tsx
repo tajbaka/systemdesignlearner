@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import confetti from "canvas-confetti";
 import { SCENARIOS } from "@/lib/scenarios";
 import { findScenarioPath } from "@/app/components/utils";
 import { simulate } from "@/app/components/simulation";
@@ -157,44 +156,8 @@ export default function RunStage({
     (run.lastResult?.failedByChaos ? "chaos_fail" : undefined);
   const canContinue = outcome === "pass";
 
-  // Confetti celebration on first-time pass
-  useEffect(() => {
-    if (!run.lastResult || outcome !== "pass") return;
-
-    const isFirstTime = markScenarioCompleted("url-shortener");
-
-    if (isFirstTime) {
-      // NeetCode-style confetti celebration
-      const duration = 3000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
-
-      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
-
-      const interval = window.setInterval(() => {
-        const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
-        const particleCount = 50 * (timeLeft / duration);
-
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
-        });
-        confetti({
-          ...defaults,
-          particleCount,
-          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
-        });
-      }, 250);
-
-      return () => clearInterval(interval);
-    }
-  }, [run.lastResult, outcome]);
+  // Confetti celebration moved to ScoreShareStep (final score page)
+  // Don't show confetti here during simulation
 
   const handleChaosToggle = useCallback(() => {
     if (locked || readOnly) return;
@@ -211,7 +174,12 @@ export default function RunStage({
     setError(null);
 
     try {
+      console.log("[RunStage] Running simulation");
+      console.log("[RunStage] Nodes:", design.nodes.map(n => ({ id: n.id, kind: n.spec.kind })));
+      console.log("[RunStage] Edges:", design.edges.map(e => ({ id: e.id, from: e.from, to: e.to })));
+
       const path = findScenarioPath(URL_SHORTENER, design.nodes, design.edges);
+      console.log("[RunStage] Found path:", path);
       if (path.missingKinds.length > 0) {
         setError(`Add the missing components to run simulation: ${path.missingKinds.join(", ")}`);
         setRunning(false);
@@ -226,6 +194,7 @@ export default function RunStage({
       // Evaluate design architecture (in background, non-blocking)
       if (setStepScore) {
         try {
+          logger.info("Starting design evaluation...");
           const config = await loadScoringConfig("url-shortener");
 
           // Evaluate design with AI
@@ -248,10 +217,24 @@ export default function RunStage({
             }
           );
 
+          logger.info("Design evaluation complete, score:", designScore.score, "/", designScore.maxScore);
           setStepScore("design", designScore);
         } catch (err) {
           logger.error("Design scoring failed", err);
-          // Continue with simulation even if design scoring fails
+          // Set a default score so it's not undefined
+          setStepScore("design", {
+            score: 0,
+            maxScore: 30,
+            percentage: 0,
+            blocking: [],
+            warnings: [{
+              category: "architecture",
+              severity: "warning",
+              message: "Design evaluation encountered an error. Your design may not have been fully scored.",
+            }],
+            positive: [],
+            suggestions: [],
+          });
         }
       }
 
@@ -342,6 +325,14 @@ export default function RunStage({
     requirements.nonFunctional.p95RedirectMs,
     requirements.nonFunctional.availability,
   ]);
+
+  // Expose handleRun globally so PracticeFlow can trigger it
+  useEffect(() => {
+    window._runSimulation = handleRun;
+    return () => {
+      delete window._runSimulation;
+    };
+  }, [handleRun]);
 
   return (
     <div className="flex flex-col gap-6">

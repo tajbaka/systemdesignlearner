@@ -145,11 +145,8 @@ export function SandboxStep({
         />
       </Sidebar>
 
-      <BottomSheet
-        isOpen={runPanelOpen}
-        onClose={() => onRunPanelChange(false)}
-        title="Simulation"
-      >
+      {/* Keep RunStage mounted but hidden so window._runSimulation is always available */}
+      <div style={{ display: 'none' }}>
         <RunStage
           design={state.design}
           run={state.run}
@@ -158,10 +155,10 @@ export function SandboxStep({
           readOnly={isReadOnly}
           updateRun={setRun}
           setStepScore={setStepScore}
-          onContinue={() => onRunPanelChange(false)}
+          onContinue={() => {}}
           showFooterControls={false}
         />
-      </BottomSheet>
+      </div>
     </>
   );
 }

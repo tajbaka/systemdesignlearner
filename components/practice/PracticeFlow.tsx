@@ -119,6 +119,7 @@ function PracticeFlowInner() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [scoringProgressSteps, setScoringProgressSteps] = useState<ProgressStep[]>([]);
   const [scoringFeedback, setScoringFeedback] = useState<FeedbackResult | null>(null);
+  const [waitingForSimulation, setWaitingForSimulation] = useState(false);
 
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
   const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
@@ -155,7 +156,163 @@ function PracticeFlowInner() {
     setVerification({ isVerifying: false, result: null, error: null });
     setScoringFeedback(null);
     setScoringProgressSteps([]);
+    setWaitingForSimulation(false);
   }, [currentStep]);
+
+  // Auto-show feedback when simulation completes
+  useEffect(() => {
+    console.log("[PracticeFlow useEffect] Auto-show feedback check:", {
+      waitingForSimulation,
+      currentStep,
+      hasRun: state.run.lastResult !== null,
+      hasDesignScore: state.scores?.design !== undefined,
+      designScore: state.scores?.design
+    });
+
+    if (!waitingForSimulation || currentStep !== "sandbox") return;
+
+    const hasRun = state.run.lastResult !== null;
+    const hasDesignScore = state.scores?.design !== undefined;
+
+    if (hasRun && hasDesignScore && state.scores?.design) {
+      console.log("[PracticeFlow useEffect] Building merged feedback...");
+      const result = state.run.lastResult;
+      const hasPassed = result?.scoreBreakdown?.outcome === "pass";
+      const designScore = state.scores.design;
+
+      if (!hasPassed && result) {
+        // Build failure feedback - treat as warnings, not blocking
+        console.log("[PracticeFlow useEffect] Simulation result:", result);
+        console.log("[PracticeFlow useEffect] Acceptance results:", result.acceptanceResults);
+        console.log("[PracticeFlow useEffect] Design score blocking:", designScore.blocking);
+        console.log("[PracticeFlow useEffect] Design score warnings:", designScore.warnings);
+
+        const warnings: string[] = [];
+        const suggestions: string[] = [];
+
+        if (!result.meetsLatency) {
+          warnings.push(
+            `Latency too high: Your design has ${result.latencyMsP95.toFixed(0)}ms p95 latency, but the target is ${state.requirements.nonFunctional.p95RedirectMs}ms or less.`
+          );
+          suggestions.push(
+            "Consider adding caching layers, CDN for static content, or optimizing database queries."
+          );
+        }
+
+        if (!result.meetsRps) {
+          warnings.push(
+            `Insufficient capacity: Your design handles ${result.capacityRps.toFixed(0)} RPS, but needs ${state.requirements.nonFunctional.readRps} RPS.`
+          );
+          suggestions.push(
+            "Add horizontal scaling, load balancers, or increase service replicas to handle more traffic."
+          );
+        }
+
+        if (result.failedByChaos) {
+          warnings.push(
+            "Your architecture failed under chaos testing. Single points of failure detected."
+          );
+          suggestions.push(
+            "Add redundancy, load balancing, database replication, or failover mechanisms to improve resilience."
+          );
+        }
+
+        if (result.acceptanceScore !== undefined && result.acceptanceScore < 100) {
+          const missingFeatures: string[] = [];
+          if (result.acceptanceResults) {
+            Object.entries(result.acceptanceResults).forEach(([key, passed]) => {
+              if (!passed) {
+                missingFeatures.push(key.replace(/-/g, " "));
+              }
+            });
+          }
+
+          if (missingFeatures.length > 0) {
+            warnings.push(`Missing requirements: ${missingFeatures.join(", ")}`);
+          }
+        }
+
+        const simulationFeedback: FeedbackResult = {
+          score: result.scoreBreakdown?.totalScore ?? 0,
+          maxScore: 30,
+          percentage: result.scoreBreakdown?.totalScore ?? 0,
+          blocking: [], // No hard blocking - allow continue
+          warnings: warnings.map(msg => ({ message: msg, category: "performance" as const, severity: "warning" as const })),
+          positive: [],
+          suggestions: suggestions.map(msg => ({ message: msg, category: "bestPractice" as const, severity: "info" as const })),
+        };
+
+        // Merge feedback - convert design "blocking" to warnings for sandbox step
+        // This allows users to continue even with architectural issues
+        // Filter out AI feedback that contradicts rule-based acceptance criteria
+        const acceptanceResults = result.acceptanceResults || {};
+        const cachePresent = acceptanceResults["cache-present"] === true;
+        const lbPresent = acceptanceResults["lb-service"] === true;
+        const analyticsPresent = acceptanceResults["analytics"] === true;
+
+        const filteredDesignBlocking = designScore.blocking.filter(b => {
+          // Remove cache-related warnings if cache is actually present
+          if (cachePresent && (b.relatedTo === "cache-aside" || b.relatedTo === "Cache (Redis)")) {
+            console.log("[PracticeFlow] Filtering out cache warning since cache is present:", b.message);
+            return false;
+          }
+          // Remove LB-related warnings if LB is actually present
+          if (lbPresent && (b.relatedTo === "Load Balancer" || b.relatedTo === "API Gateway")) {
+            console.log("[PracticeFlow] Filtering out LB warning since LB is present:", b.message);
+            return false;
+          }
+          // Remove analytics warnings if analytics is actually present
+          if (analyticsPresent && (b.relatedTo === "analytics" || b.relatedTo === "Message Queue (Kafka Topic)")) {
+            console.log("[PracticeFlow] Filtering out analytics warning since analytics is present:", b.message);
+            return false;
+          }
+          return true;
+        });
+
+        // Also filter warnings
+        const filteredDesignWarnings = designScore.warnings.filter(w => {
+          if (cachePresent && (w.relatedTo === "cache-aside" || w.relatedTo === "Cache (Redis)")) {
+            console.log("[PracticeFlow] Filtering out cache warning since cache is present:", w.message);
+            return false;
+          }
+          if (lbPresent && (w.relatedTo === "Load Balancer" || w.relatedTo === "API Gateway")) {
+            console.log("[PracticeFlow] Filtering out LB warning since LB is present:", w.message);
+            return false;
+          }
+          if (analyticsPresent && (w.relatedTo === "analytics" || w.relatedTo === "Message Queue (Kafka Topic)")) {
+            console.log("[PracticeFlow] Filtering out analytics warning since analytics is present:", w.message);
+            return false;
+          }
+          return true;
+        });
+
+        const mergedFeedback: FeedbackResult = {
+          score: designScore.score,
+          maxScore: designScore.maxScore,
+          percentage: designScore.percentage,
+          blocking: [], // No blocking - allow continue
+          warnings: [
+            ...simulationFeedback.warnings,
+            ...filteredDesignBlocking.map(b => ({ ...b, severity: "warning" as const })), // Convert blocking to warnings
+            ...filteredDesignWarnings
+          ],
+          positive: designScore.positive,
+          suggestions: [...simulationFeedback.suggestions, ...designScore.suggestions.slice(0, 2)],
+        };
+
+        console.log("[PracticeFlow useEffect] Merged feedback:", mergedFeedback);
+        setScoringFeedback(mergedFeedback);
+      } else {
+        // Passed - show design feedback
+        setScoringFeedback(designScore);
+      }
+
+      // Stop waiting and clear verifying AFTER setting feedback
+      console.log("[PracticeFlow useEffect] Clearing waitingForSimulation and verification");
+      setWaitingForSimulation(false);
+      setVerification({ isVerifying: false, result: null, error: null });
+    }
+  }, [waitingForSimulation, state.run.lastResult, state.scores?.design, state.requirements, currentStep]);
 
   const config = STEP_CONFIGS[currentStep];
   const StepComponent = STEP_COMPONENTS[currentStep];
@@ -296,19 +453,59 @@ function PracticeFlowInner() {
       // Always run scoring evaluation (no bypass for already scored)
       setVerification({ isVerifying: true, result: null, error: null });
 
-      // For sandbox step, check simulation first
+      // For sandbox step, check simulation status
       if (currentStep === "sandbox") {
         const hasRun = state.run.lastResult !== null;
         const result = state.run.lastResult;
         const hasPassed = result?.scoreBreakdown?.outcome === "pass";
+        const hasDesignScore = state.scores?.design !== undefined;
 
-        if (!hasRun) {
-          // Show message that simulation needs to be run
+        // If simulation hasn't been run or design score is missing, run it automatically
+        if (!hasRun || !hasDesignScore) {
+          if (window._runSimulation) {
+            logger.info("Automatically running simulation from Next button");
+            setWaitingForSimulation(true);
+            // Trigger simulation - the useEffect will handle showing feedback when complete
+            window._runSimulation();
+            return;
+          } else {
+            // Fallback: Show message if function not available
+            setVerification({
+              isVerifying: false,
+              result: {
+                canProceed: false,
+                blocking: ["Unable to run simulation. Please refresh the page and try again."],
+                warnings: [],
+              },
+              error: null,
+            });
+            return;
+          }
+        }
+
+        // If we reach here, simulation has already been run
+        // Check if feedback is already showing
+        if (scoringFeedback) {
+          // Feedback is already shown, check if can proceed
+          if (scoringFeedback.blocking.length === 0) {
+            // Can proceed - clear simulation state first
+            setWaitingForSimulation(false);
+            setVerification({ isVerifying: false, result: null, error: null });
+            proceedToNext();
+          }
+          // Otherwise stay on page with feedback
+          return;
+        }
+
+        // Need to show feedback - build it from current state
+        const designScore = state.scores?.design;
+        if (!designScore) {
+          // No design score, shouldn't happen
           setVerification({
             isVerifying: false,
             result: {
               canProceed: false,
-              blocking: ["You must run the simulation and achieve a passing score before continuing."],
+              blocking: ["Design evaluation is missing. Please run the simulation again."],
               warnings: [],
             },
             error: null,
@@ -316,32 +513,39 @@ function PracticeFlowInner() {
           return;
         }
 
+        // Build feedback from simulation results
         if (!hasPassed && result) {
-          // Build detailed feedback based on what failed
-          const blocking: string[] = [];
+          // Build failure feedback - treat as warnings, not blocking
           const warnings: string[] = [];
+          const suggestions: string[] = [];
 
-          // Check SLO issues
           if (!result.meetsLatency) {
-            blocking.push(
+            warnings.push(
               `Latency too high: Your design has ${result.latencyMsP95.toFixed(0)}ms p95 latency, but the target is ${state.requirements.nonFunctional.p95RedirectMs}ms or less.`
+            );
+            suggestions.push(
+              "Consider adding caching layers, CDN for static content, or optimizing database queries."
             );
           }
 
           if (!result.meetsRps) {
-            blocking.push(
+            warnings.push(
               `Insufficient capacity: Your design handles ${result.capacityRps.toFixed(0)} RPS, but needs ${state.requirements.nonFunctional.readRps} RPS.`
             );
-          }
-
-          // Check if chaos engineering failed
-          if (result.failedByChaos) {
-            blocking.push(
-              "Your architecture failed under chaos testing. Consider adding redundancy, load balancing, or failover mechanisms."
+            suggestions.push(
+              "Add horizontal scaling, load balancers, or increase service replicas to handle more traffic."
             );
           }
 
-          // Check acceptance criteria
+          if (result.failedByChaos) {
+            warnings.push(
+              "Your architecture failed under chaos testing. Single points of failure detected."
+            );
+            suggestions.push(
+              "Add redundancy, load balancing, database replication, or failover mechanisms to improve resilience."
+            );
+          }
+
           if (result.acceptanceScore !== undefined && result.acceptanceScore < 100) {
             const missingFeatures: string[] = [];
             if (result.acceptanceResults) {
@@ -353,35 +557,46 @@ function PracticeFlowInner() {
             }
 
             if (missingFeatures.length > 0) {
-              blocking.push(
-                `Missing requirements: ${missingFeatures.join(", ")}`
-              );
+              warnings.push(`Missing requirements: ${missingFeatures.join(", ")}`);
             }
           }
 
-          // Add score information
-          if (result.scoreBreakdown) {
-            const score = result.scoreBreakdown;
-            warnings.push(
-              `Current score: ${score.totalScore.toFixed(0)}/100 (SLO: ${score.sloScore.toFixed(0)}/60, Checklist: ${score.checklistScore.toFixed(0)}/30, Cost: ${score.costScore.toFixed(0)}/10)`
-            );
-          }
+          const simulationFeedback: FeedbackResult = {
+            score: result.scoreBreakdown?.totalScore ?? 0,
+            maxScore: 30,
+            percentage: result.scoreBreakdown?.totalScore ?? 0,
+            blocking: [], // No hard blocking - allow continue
+            warnings: warnings.map(msg => ({ message: msg, category: "performance" as const, severity: "warning" as const })),
+            positive: [],
+            suggestions: suggestions.map(msg => ({ message: msg, category: "bestPractice" as const, severity: "info" as const })),
+          };
 
-          setVerification({
-            isVerifying: false,
-            result: {
-              canProceed: false,
-              blocking: blocking.length > 0 ? blocking : ["Your design didn't pass the simulation. Please review the results and try again."],
-              warnings,
-            },
-            error: null,
-          });
+          // Merge feedback - convert design "blocking" to warnings for sandbox step
+          // This allows users to continue even with architectural issues
+          const mergedFeedback: FeedbackResult = {
+            score: designScore.score,
+            maxScore: designScore.maxScore,
+            percentage: designScore.percentage,
+            blocking: [], // No blocking - allow continue
+            warnings: [
+              ...simulationFeedback.warnings,
+              ...designScore.blocking.map(b => ({ ...b, severity: "warning" as const })), // Convert blocking to warnings
+              ...designScore.warnings
+            ],
+            positive: designScore.positive,
+            suggestions: [...simulationFeedback.suggestions, ...designScore.suggestions.slice(0, 2)],
+          };
+
+          setScoringFeedback(mergedFeedback);
+          setWaitingForSimulation(false);
+          setVerification({ isVerifying: false, result: null, error: null });
           return;
         }
 
-        // Passed! Proceed to next
+        // Passed - show design feedback
+        setScoringFeedback(designScore);
+        setWaitingForSimulation(false);
         setVerification({ isVerifying: false, result: null, error: null });
-        proceedToNext();
         return;
       }
 
@@ -840,8 +1055,13 @@ function PracticeFlowInner() {
               showScore={true}
               onRevise={() => {
                 setScoringFeedback(null);
-                // Clear the score so user can try again
-                setStepScore(currentStep as "functional" | "nonFunctional" | "api", undefined);
+                // For sandbox, clear design score so user can run simulation again
+                if (currentStep === "sandbox") {
+                  setStepScore("design", undefined);
+                } else {
+                  // Clear the score so user can try again
+                  setStepScore(currentStep as "functional" | "nonFunctional" | "api", undefined);
+                }
               }}
               onContinue={scoringFeedback.blocking.length === 0 ? proceedToNext : undefined}
             />

@@ -14,6 +14,11 @@ export function evaluateScenario(
     return n?.spec.kind || id;
   }).join(">");
 
+  console.log("[evaluateScenario] Path IDs:", pathIds);
+  console.log("[evaluateScenario] Text path:", textPath);
+  console.log("[evaluateScenario] Nodes:", nodes.map(n => ({ id: n.id, kind: n.spec.kind })));
+  console.log("[evaluateScenario] Edges:", edges);
+
   const results: Record<string, boolean> = {};
 
   const edgeConnects = (a: string, b: string) =>
@@ -38,6 +43,12 @@ export function evaluateScenario(
         break;
       case "cache-present":
         results[criterion.id] = textPath.includes("Cache (Redis)") || textPath.includes("Object Cache (Memcached)");
+        console.log("[evaluateScenario] cache-present check:", {
+          textPath,
+          includesRedis: textPath.includes("Cache (Redis)"),
+          includesMemcached: textPath.includes("Object Cache (Memcached)"),
+          result: results[criterion.id]
+        });
         break;
       case "lb-service":
         results[criterion.id] = textPath.includes("Load Balancer") || textPath.includes("API Gateway");
@@ -100,6 +111,7 @@ export function evaluateScenario(
     }
   }
 
+  console.log("[evaluateScenario] Final results:", results);
   return results;
 }
 
