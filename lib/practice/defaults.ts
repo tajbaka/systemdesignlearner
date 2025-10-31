@@ -193,7 +193,7 @@ export const makeDefaultApiDefinition = (): PracticeApiDefinitionState => ({
     {
       id: "post-shorten",
       method: "POST",
-      path: "/shorten",
+      path: "/api/v1/urls",
       notes:
         "Request: { url, customSlug? } → Response: { slug, shortUrl, expiresAt? }. Include validation and slug collision handling.",
       suggested: true,
@@ -201,7 +201,7 @@ export const makeDefaultApiDefinition = (): PracticeApiDefinitionState => ({
     {
       id: "get-slug",
       method: "GET",
-      path: "/:slug",
+      path: "/{slug}",
       notes: "Redirect 302 to the long URL. Mention cache behavior and how to handle expired/unknown slugs.",
       suggested: true,
     },

@@ -12,7 +12,6 @@ import type {
   FeedbackItem,
   IScoringEngine,
   NFRQuestion,
-  NFRRange,
 } from "../types";
 
 export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalScoringInput, NonFunctionalScoringConfig> {
@@ -291,7 +290,7 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
     const availabilityNum = parseFloat(input.availability);
     if (!isNaN(availabilityNum) && availabilityNum >= 99.99) {
       warnings.push({
-        category: "availability",
+        category: "performance",
         severity: "warning",
         message: "99.99% availability requires multi-region deployment, automated failover, and comprehensive monitoring.",
         actionable: "Ensure your design includes redundancy at every layer.",

@@ -21,7 +21,7 @@ import type {
   GraphPath,
   PathNode,
 } from "../types";
-import type { PlacedNode, Edge, ComponentKind } from "@/app/components/types";
+import type { PlacedNode, Edge } from "@/app/components/types";
 
 export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, DesignScoringConfig> {
   /**
@@ -78,6 +78,17 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
 
     // Overall feedback
     const percentage = (score / maxScore) * 100;
+
+    // Add blocking issue if score is too low (below 30%)
+    if (percentage < 30 && blocking.length === 0) {
+      blocking.push({
+        category: "architecture",
+        severity: "blocking",
+        message: `Your architecture design score is too low (${percentage.toFixed(0)}%). You need at least 30% to proceed.`,
+        actionable: "Add critical components to your design: Web servers, API layer, Service layer, and Database. Connect them to form a complete data flow path.",
+      });
+    }
+
     if (blocking.length === 0) {
       if (percentage >= 90) {
         positive.unshift({
@@ -249,7 +260,7 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     nodes: PlacedNode[],
     edges: Edge[],
     paths: CriticalPath[],
-    functionalReqs: Record<string, boolean>
+    _functionalReqs: Record<string, boolean>
   ): {
     score: number;
     blocking: FeedbackItem[];
@@ -430,7 +441,7 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
   /**
    * Select the best path from multiple options
    */
-  private selectBestPath(paths: GraphPath[], config: CriticalPath): GraphPath {
+  private selectBestPath(paths: GraphPath[], _config: CriticalPath): GraphPath {
     // Prefer valid paths
     const validPaths = paths.filter((p) => p.valid);
     if (validPaths.length > 0) {
@@ -516,7 +527,7 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     // Check NFR thresholds
     if (pattern.triggeredBy.nfrThresholds) {
       for (const [key, threshold] of Object.entries(pattern.triggeredBy.nfrThresholds)) {
-        const value = (nfrValues as any)[key];
+        const value = (nfrValues as Record<string, unknown>)[key];
         if (typeof value === "number" && value >= threshold) {
           return true;
         }

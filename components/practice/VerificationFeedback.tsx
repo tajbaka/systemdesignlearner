@@ -3,22 +3,24 @@
 import type { FeedbackResult } from "@/lib/scoring/types";
 
 type VerificationFeedbackProps = {
-  blocking: string[];
-  warnings: string[];
-  onRevise: () => void;
+  blocking?: string[];
+  warnings?: string[];
+  onRevise?: () => void;
   onContinue?: () => void;
   // New scoring props
   feedbackResult?: FeedbackResult;
   showScore?: boolean;
+  className?: string;
 };
 
 export function VerificationFeedback({
-  blocking,
-  warnings,
+  blocking = [],
+  warnings = [],
   onRevise,
   onContinue,
   feedbackResult,
   showScore = true,
+  className = "",
 }: VerificationFeedbackProps) {
   // Use feedbackResult if provided, otherwise use legacy props
   const blockingMessages = feedbackResult ? feedbackResult.blocking.map((f) => f.message) : blocking;
@@ -31,15 +33,15 @@ export function VerificationFeedback({
   const hasPositive = positiveMessages.length > 0;
   const hasSuggestions = suggestionMessages.length > 0;
 
-  // Show positive feedback even if no issues
-  const showPositiveFeedback = hasPositive && !hasBlocking && !hasWarnings;
+  // Show feedback if there's anything to show
+  const showFeedback = hasBlocking || hasWarnings || hasPositive || hasSuggestions;
 
-  if (!hasBlocking && !hasWarnings && !showPositiveFeedback) {
+  if (!showFeedback) {
     return null;
   }
 
   return (
-    <div className="animate-slide-down overflow-hidden">
+    <div className={`animate-slide-down overflow-hidden ${className}`}>
       <div
         className={`rounded-2xl border p-4 ${
           hasBlocking
@@ -162,25 +164,32 @@ export function VerificationFeedback({
             )}
 
             <div className="flex items-center gap-3 pt-2">
-              <button
-                type="button"
-                onClick={onRevise}
-                className={`inline-flex h-10 items-center justify-center rounded-full px-5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 ${
-                  hasBlocking
-                    ? "bg-rose-500/20 text-rose-100 hover:bg-rose-500/30 focus-visible:ring-rose-400"
-                    : "bg-amber-500/20 text-amber-100 hover:bg-amber-500/30 focus-visible:ring-amber-400"
-                }`}
-              >
-                Revise
-              </button>
+              {/* Only show Revise if there are warnings or blocking issues */}
+              {(hasBlocking || hasWarnings) && (
+                <button
+                  type="button"
+                  onClick={onRevise}
+                  className={`inline-flex h-10 items-center justify-center rounded-full px-5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 ${
+                    hasBlocking
+                      ? "bg-rose-500/20 text-rose-100 hover:bg-rose-500/30 focus-visible:ring-rose-400"
+                      : "bg-amber-500/20 text-amber-100 hover:bg-amber-500/30 focus-visible:ring-amber-400"
+                  }`}
+                >
+                  Revise
+                </button>
+              )}
 
               {!hasBlocking && onContinue ? (
                 <button
                   type="button"
                   onClick={onContinue}
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-full bg-white/10 px-5 text-sm font-semibold text-white transition hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+                  className={`inline-flex h-10 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition focus:outline-none focus-visible:ring-2 ${
+                    hasWarnings
+                      ? "bg-white/10 text-white hover:bg-white/20 focus-visible:ring-white/70"
+                      : "bg-emerald-500/20 text-emerald-100 hover:bg-emerald-500/30 focus-visible:ring-emerald-400"
+                  }`}
                 >
-                  Continue Anyway
+                  {hasWarnings ? "Continue Anyway" : "Continue"}
                   <svg className="h-3 w-3" viewBox="0 0 12 12" fill="none">
                     <path
                       d="M4 2l4 4-4 4"

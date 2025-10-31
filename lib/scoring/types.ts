@@ -6,7 +6,7 @@
  */
 
 import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
-import type { ApiEndpoint, Requirements } from "@/lib/practice/types";
+import type { ApiEndpoint } from "@/lib/practice/types";
 
 // ============================================================================
 // Core Scoring Types

@@ -173,6 +173,17 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
 
     // Overall feedback
     const percentage = (score / maxScore) * 100;
+
+    // Add blocking issue if score is too low (below 40%)
+    if (percentage < 40 && blocking.length === 0) {
+      blocking.push({
+        category: "requirement",
+        severity: "blocking",
+        message: `Your API design score is too low (${percentage.toFixed(0)}%). You need at least 40% to proceed.`,
+        actionable: "Define the required API endpoints for your URL shortener. At minimum, you need endpoints to create short URLs and redirect users.",
+      });
+    }
+
     if (blocking.length === 0) {
       if (percentage >= 90) {
         positive.unshift({
@@ -224,7 +235,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       try {
         const regex = new RegExp(config.pathPatternRegex);
         pathMatch = regex.test(endpoint.path);
-      } catch (e) {
+      } catch (_e) {
         // Fallback to simple match
         pathMatch = endpoint.path.toLowerCase().includes(config.pathPattern.toLowerCase());
       }

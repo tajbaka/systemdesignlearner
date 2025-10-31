@@ -1,5 +1,6 @@
 import type { PlacedNode, Edge } from "@/app/components/types";
 import type { ScoreBreakdown } from "@/lib/scoring";
+import type { FeedbackResult } from "@/lib/scoring/types";
 
 export type HighLevelChoice = {
   presetId: "db_only" | "cache_primary" | "global_edge_cache";
@@ -99,6 +100,14 @@ export const PRACTICE_STEPS: PracticeStep[] = [
 
 export type PracticeProgress = Record<PracticeStep, boolean>;
 
+export type PracticeStepScores = {
+  functional?: FeedbackResult;
+  nonFunctional?: FeedbackResult;
+  api?: FeedbackResult;
+  design?: FeedbackResult;
+  simulation?: FeedbackResult;
+};
+
 export type PracticeState = {
   slug: "url-shortener";
   requirements: Requirements;
@@ -107,5 +116,6 @@ export type PracticeState = {
   run: PracticeRunState;
   auth: PracticeAuthState;
   completed: PracticeProgress;
+  scores?: PracticeStepScores;
   updatedAt: number;
 };

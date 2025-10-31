@@ -2,11 +2,11 @@
   "problemId": "url-shortener",
   "title": "URL Shortener",
   "description": "Design a scalable URL shortening service that creates short, unique links and redirects users to original URLs",
-  "totalScore": 100,
+  "totalScore": 95,
   "steps": {
     "functional": {
-      "maxScore": 25,
-      "minKeywordsMatch": 2,
+      "maxScore": 20,
+      "minKeywordsMatch": 1,
       "minTextLength": 50,
       "coreRequirements": [
         {
@@ -73,28 +73,6 @@
           "examplePhrases": [
             "Every short URL is guaranteed to be unique",
             "Use hashing or sequential IDs to prevent collisions"
-          ]
-        },
-        {
-          "id": "api-endpoints",
-          "label": "API Endpoints",
-          "description": "System should expose REST APIs for creating and accessing short URLs",
-          "keywords": [
-            "api",
-            "endpoint",
-            "rest",
-            "http",
-            "post",
-            "get",
-            "interface",
-            "service"
-          ],
-          "weight": 5,
-          "required": true,
-          "category": "core",
-          "examplePhrases": [
-            "Expose POST /shorten and GET /{shortId} endpoints",
-            "RESTful API for URL operations"
           ]
         }
       ],
@@ -344,8 +322,8 @@
         {
           "id": "redirect-short-url",
           "method": "GET",
-          "pathPattern": "/(api/v1/)?[a-zA-Z0-9]+",
-          "pathPatternRegex": "^(/api/v\\d+/)?\\{?[a-zA-Z0-9_-]+\\}?$",
+          "pathPattern": "/{slug}",
+          "pathPatternRegex": "^(/api/v\\d+)?/?(\\{[a-zA-Z0-9_-]+\\}|:[a-zA-Z0-9_-]+|[a-zA-Z0-9_-]+)$",
           "purpose": "Redirect to the original long URL",
           "requiredBy": [
             "redirection"

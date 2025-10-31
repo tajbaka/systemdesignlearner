@@ -254,4 +254,20 @@ export {
   evaluateDesignWithAI,
   explainOverallScore,
 } from "./ai/hybrid";
+
+// Re-export optimized functions (recommended - faster with deduplication)
+export {
+  evaluateFunctionalOptimized,
+  evaluateApiOptimized,
+  evaluateDesignOptimized,
+} from "./ai/optimized";
+
+// Re-export progress tracking
+export type { ProgressStep, ProgressCallback, EvaluationProgress } from "./ai/progress";
+export {
+  createFunctionalProgress,
+  createApiProgress,
+  createDesignProgress,
+} from "./ai/progress";
+
 export { isAIAvailable } from "./ai/gemini";

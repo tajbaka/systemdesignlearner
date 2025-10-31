@@ -28,6 +28,11 @@ import {
   isAIAvailable,
 } from "./gemini";
 
+// Deduplication utilities available but not currently used
+// import { deduplicateFeedback, consolidateFeedback, extractUniqueAIInsights, simplifyMessage, groupFeedbackByContext, mergeGroupedFeedback } from "./deduplication";
+
+import type { EvaluationProgress } from "./progress";
+
 /**
  * Enhanced functional requirements evaluation with AI
  */
@@ -37,12 +42,16 @@ export async function evaluateFunctionalWithAI(
   options: {
     useAI?: boolean;
     explainScore?: boolean;
+    progress?: EvaluationProgress;
   } = {}
 ): Promise<FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean }> {
   const useAI = options.useAI !== false && isAIAvailable();
+  const progress = options.progress;
 
   // Step 1: Run rule-based scoring (always fast)
+  progress?.start(0, "Running rule-based analysis...");
   const ruleBasedResult = evaluateFunctionalRequirements(input, config);
+  progress?.complete(0, "Rule-based complete");
 
   if (!useAI) {
     return ruleBasedResult;
@@ -155,7 +164,7 @@ export async function evaluateApiWithAI(
     useAI?: boolean;
     explainScore?: boolean;
   } = {}
-): Promise<FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean; aiAnalysis?: any }> {
+): Promise<FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean; aiAnalysis?: unknown }> {
   const useAI = options.useAI !== false && isAIAvailable();
 
   // Step 1: Run rule-based scoring
@@ -237,7 +246,7 @@ export async function evaluateDesignWithAI(
     useAI?: boolean;
     explainScore?: boolean;
   } = {}
-): Promise<FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean; aiAnalysis?: any }> {
+): Promise<FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean; aiAnalysis?: unknown }> {
   const useAI = options.useAI !== false && isAIAvailable();
 
   // Step 1: Run rule-based scoring

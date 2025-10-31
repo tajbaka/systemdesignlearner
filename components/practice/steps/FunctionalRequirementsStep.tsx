@@ -4,7 +4,7 @@ import { usePracticeSession } from "@/components/practice/session/PracticeSessio
 import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 
 export function FunctionalRequirementsStep() {
-  const { state, setRequirements, isReadOnly } = usePracticeSession();
+  const { state, setRequirements, setStepScore, isReadOnly } = usePracticeSession();
   const requirements = state.requirements;
 
   const handleSummaryChange = (summary: string) => {
@@ -12,6 +12,10 @@ export function FunctionalRequirementsStep() {
       ...requirements,
       functionalSummary: summary,
     });
+    // Clear the score when user changes their answer
+    if (state.scores?.functional) {
+      setStepScore("functional", undefined);
+    }
   };
 
   return (
@@ -25,7 +29,7 @@ export function FunctionalRequirementsStep() {
       </div>
 
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
             What should it do?
           </h3>
@@ -46,6 +50,7 @@ export function FunctionalRequirementsStep() {
               />
             </div>
           </div>
+
         </div>
       </section>
     </div>

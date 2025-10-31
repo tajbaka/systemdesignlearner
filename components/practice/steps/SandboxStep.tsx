@@ -70,6 +70,7 @@ export function SandboxStep({
     state,
     setDesign,
     setRun,
+    setStepScore,
     isReadOnly,
   } = usePracticeSession();
 
@@ -156,6 +157,7 @@ export function SandboxStep({
           locked={isReadOnly}
           readOnly={isReadOnly}
           updateRun={setRun}
+          setStepScore={setStepScore}
           onContinue={() => onRunPanelChange(false)}
           showFooterControls={false}
         />

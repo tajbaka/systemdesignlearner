@@ -5,14 +5,21 @@ import confetti from "canvas-confetti";
 import { SCENARIOS } from "@/lib/scenarios";
 import { findScenarioPath } from "@/app/components/utils";
 import { simulate } from "@/app/components/simulation";
-import type { PracticeDesignState, PracticeRunState, Requirements } from "@/lib/practice/types";
+import type { PracticeDesignState, PracticeRunState, Requirements, PracticeStepScores } from "@/lib/practice/types";
 import type { PlacedNode } from "@/app/components/types";
 import type { Scenario } from "@/lib/scenarios";
 import { track } from "@/lib/analytics";
 import { markScenarioCompleted } from "@/lib/scenarioProgress";
 import { logger } from "@/lib/logger";
+import {
+  evaluateDesignOptimized,
+  scoreSimulation,
+  loadScoringConfig,
+} from "@/lib/scoring/index";
+import type { FeedbackResult } from "@/lib/scoring/types";
 
 type UpdateRunFn = (updater: (prev: PracticeRunState) => PracticeRunState) => void;
+type SetStepScoreFn = (step: keyof PracticeStepScores, result: FeedbackResult) => void;
 
 type RunStageProps = {
   design: PracticeDesignState;
@@ -21,6 +28,7 @@ type RunStageProps = {
   locked: boolean;
   readOnly?: boolean;
   updateRun: UpdateRunFn;
+  setStepScore?: SetStepScoreFn;
   onContinue: () => void;
   onGoBack?: () => void;
   showFooterControls?: boolean;
@@ -131,6 +139,7 @@ export default function RunStage({
   locked,
   readOnly = false,
   updateRun,
+  setStepScore,
   onContinue,
   onGoBack,
   showFooterControls = true,
@@ -214,6 +223,38 @@ export default function RunStage({
         return;
       }
 
+      // Evaluate design architecture (in background, non-blocking)
+      if (setStepScore) {
+        try {
+          const config = await loadScoringConfig("url-shortener");
+
+          // Evaluate design with AI
+          const designScore = await evaluateDesignOptimized(
+            {
+              nodes: design.nodes,
+              edges: design.edges,
+              functionalRequirements: requirements.functional,
+              nfrValues: {
+                readRps: requirements.nonFunctional.readRps,
+                writeRps: requirements.nonFunctional.writeRps,
+                p95RedirectMs: requirements.nonFunctional.p95RedirectMs,
+                availability: requirements.nonFunctional.availability,
+              },
+            },
+            config.steps.design,
+            {
+              useAI: true,
+              explainScore: false, // Skip explanation for faster evaluation
+            }
+          );
+
+          setStepScore("design", designScore);
+        } catch (err) {
+          logger.error("Design scoring failed", err);
+          // Continue with simulation even if design scoring fails
+        }
+      }
+
       const result = simulate(
         URL_SHORTENER,
         path.nodeIds,
@@ -222,6 +263,30 @@ export default function RunStage({
         run.chaosMode,
         Math.random
       );
+
+      // Convert simulation result to FeedbackResult and save
+      if (setStepScore) {
+        try {
+          const config = await loadScoringConfig("url-shortener");
+
+          const simulationScore = scoreSimulation(
+            {
+              meetsRps: result.meetsRps,
+              meetsLatency: result.meetsLatency,
+              failedByChaos: result.failedByChaos,
+              actualRps: result.capacityRps,
+              targetRps: URL_SHORTENER.requiredRps,
+              actualLatency: result.latencyMsP95,
+              targetLatency: URL_SHORTENER.latencyBudgetMsP95,
+            },
+            config
+          );
+
+          setStepScore("simulation", simulationScore);
+        } catch (err) {
+          logger.error("Simulation scoring failed", err);
+        }
+      }
 
       updateRun((prev) => {
         const attempts = prev.attempts + 1;
@@ -270,6 +335,12 @@ export default function RunStage({
     run.firstPassAt,
     running,
     updateRun,
+    setStepScore,
+    requirements.functional,
+    requirements.nonFunctional.readRps,
+    requirements.nonFunctional.writeRps,
+    requirements.nonFunctional.p95RedirectMs,
+    requirements.nonFunctional.availability,
   ]);
 
   return (

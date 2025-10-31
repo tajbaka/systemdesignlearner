@@ -35,7 +35,7 @@ const createEndpoint = (): ApiEndpoint => ({
 });
 
 export function ApiDefinitionStep() {
-  const { state, setApiDefinition, isReadOnly } = usePracticeSession();
+  const { state, setApiDefinition, setStepScore, isReadOnly } = usePracticeSession();
   const endpoints = useMemo(() => state.apiDefinition.endpoints, [state.apiDefinition.endpoints]);
   const [openId, setOpenId] = useState<string | null>(() => endpoints[0]?.id ?? null);
 
@@ -53,6 +53,10 @@ export function ApiDefinitionStep() {
         endpoint.id === id ? updater(endpoint) : endpoint
       ),
     }));
+    // Clear the score when user changes their answer
+    if (state.scores?.api) {
+      setStepScore("api", undefined);
+    }
   };
 
   const addEndpoint = () => {
@@ -63,6 +67,10 @@ export function ApiDefinitionStep() {
       endpoints: [...prev.endpoints, next],
     }));
     setOpenId(next.id);
+    // Clear the score when endpoints change
+    if (state.scores?.api) {
+      setStepScore("api", undefined);
+    }
   };
 
   const removeEndpoint = (id: string) => {
@@ -74,6 +82,10 @@ export function ApiDefinitionStep() {
     if (openId === id) {
       const remaining = endpoints.filter((endpoint) => endpoint.id !== id);
       setOpenId(remaining[0]?.id ?? null);
+    }
+    // Clear the score when endpoints change
+    if (state.scores?.api) {
+      setStepScore("api", undefined);
     }
   };
 
@@ -216,15 +228,19 @@ export function ApiDefinitionStep() {
           );
         })}
 
-        {!isReadOnly ? (
-          <button
-            type="button"
-            onClick={addEndpoint}
-            className="inline-flex h-11 w-full items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed"
-          >
-            + Add endpoint
-          </button>
-        ) : null}
+        <div className="space-y-4">
+          {!isReadOnly ? (
+            <button
+              type="button"
+              onClick={addEndpoint}
+              disabled={isReadOnly}
+              className="inline-flex h-11 w-full items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              + Add endpoint
+            </button>
+          ) : null}
+
+        </div>
       </section>
     </div>
   );

@@ -5,7 +5,7 @@ import { usePracticeSession } from "@/components/practice/session/PracticeSessio
 import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 
 export function NonFunctionalRequirementsStep() {
-  const { state, setRequirements, isReadOnly } = usePracticeSession();
+  const { state, setRequirements, setStepScore, isReadOnly } = usePracticeSession();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const requirements = state.requirements;
   const nf = requirements.nonFunctional;
@@ -18,6 +18,10 @@ export function NonFunctionalRequirementsStep() {
         notes: summary,
       },
     });
+    // Clear the score when user changes their answer
+    if (state.scores?.nonFunctional) {
+      setStepScore("nonFunctional", undefined);
+    }
   };
 
   const handleNumberChange = (key: "readRps" | "writeRps" | "p95RedirectMs", value: string) => {
@@ -172,6 +176,7 @@ export function NonFunctionalRequirementsStep() {
               </label>
             </div>
           ) : null}
+
         </div>
       </section>
     </div>

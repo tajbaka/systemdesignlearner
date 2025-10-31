@@ -18,8 +18,10 @@ import {
   type PracticeRunState,
   type PracticeState,
   type PracticeStep,
+  type PracticeStepScores,
   type Requirements,
 } from "@/lib/practice/types";
+import type { FeedbackResult } from "@/lib/scoring/types";
 import {
   makeDefaultApiDefinition,
   makeDefaultRequirements,
@@ -184,6 +186,7 @@ type PracticeSessionContextValue = {
   setRun: (updater: (prev: PracticeRunState) => PracticeRunState) => void;
   setAuth: (updater: (prev: PracticeAuthState) => PracticeAuthState) => void;
   markStep: (step: PracticeStep, value: boolean) => void;
+  setStepScore: (step: keyof PracticeStepScores, result: FeedbackResult | undefined) => void;
 };
 
 const PracticeSessionContext = createContext<PracticeSessionContextValue | undefined>(undefined);
@@ -323,6 +326,19 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
     [setStateWithTimestamp]
   );
 
+  const setStepScore = useCallback(
+    (step: keyof PracticeStepScores, result: FeedbackResult | undefined) => {
+      setStateWithTimestamp((prev) => ({
+        ...prev,
+        scores: {
+          ...prev.scores,
+          [step]: result,
+        },
+      }));
+    },
+    [setStateWithTimestamp]
+  );
+
   const setStep = useCallback(
     (step: PracticeStep) => {
       if (isReadOnly) {
@@ -366,6 +382,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       setRun,
       setAuth,
       markStep,
+      setStepScore,
     }),
     [
       state,
@@ -381,6 +398,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       setRun,
       setAuth,
       markStep,
+      setStepScore,
     ]
   );
 

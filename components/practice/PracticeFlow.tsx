@@ -11,6 +11,7 @@ import ApiDefinitionStep from "@/components/practice/steps/ApiDefinitionStep";
 import SandboxStep from "@/components/practice/steps/SandboxStep";
 import ScoreShareStep from "@/components/practice/steps/ScoreShareStep";
 import VerificationFeedback from "@/components/practice/VerificationFeedback";
+import { EvaluationProgress } from "@/components/practice/EvaluationProgress";
 import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -18,6 +19,16 @@ import { OnboardingProvider, useOnboarding } from "@/components/practice/Practic
 import { OnboardingTooltip } from "@/components/practice/OnboardingTooltip";
 import { useUser } from "@clerk/nextjs";
 import { AuthModal } from "@/components/practice/AuthModal";
+import {
+  evaluateFunctionalOptimized,
+  evaluateNonFunctionalRequirements,
+  evaluateApiOptimized,
+  createFunctionalProgress,
+  createApiProgress,
+  loadScoringConfig,
+} from "@/lib/scoring/index";
+import type { FeedbackResult } from "@/lib/scoring/types";
+import type { ProgressStep } from "@/lib/scoring/ai/progress";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
@@ -58,7 +69,12 @@ const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
     id: "api",
     showBack: true,
     nextLabel: "Next",
-    nextDisabled: (session) => session.state.apiDefinition.endpoints.length === 0,
+    nextDisabled: (session) => {
+      const endpoints = session.state.apiDefinition.endpoints;
+      if (endpoints.length === 0) return true;
+      // Require at least some meaningful content in notes for each endpoint
+      return endpoints.some(ep => !ep.notes.trim() || ep.notes.trim().length < 10);
+    },
     onNext: (session) => completeStep(session, "api"),
   },
   sandbox: {
@@ -91,7 +107,7 @@ type VerificationState = {
 
 function PracticeFlowInner() {
   const session = usePracticeSession();
-  const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly, setAuth } = session;
+  const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly, setAuth, setStepScore } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
@@ -101,6 +117,8 @@ function PracticeFlowInner() {
     error: null,
   });
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [scoringProgressSteps, setScoringProgressSteps] = useState<ProgressStep[]>([]);
+  const [scoringFeedback, setScoringFeedback] = useState<FeedbackResult | null>(null);
 
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
   const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
@@ -133,8 +151,10 @@ function PracticeFlowInner() {
       setMobilePaletteOpen(false);
       setRunPanelOpen(false);
     }
-    // Clear verification state when step changes
+    // Clear verification and scoring state when step changes
     setVerification({ isVerifying: false, result: null, error: null });
+    setScoringFeedback(null);
+    setScoringProgressSteps([]);
   }, [currentStep]);
 
   const config = STEP_CONFIGS[currentStep];
@@ -159,73 +179,86 @@ function PracticeFlowInner() {
     goPrev();
   };
 
-  const verifyStep = async () => {
-    setVerification({ isVerifying: true, result: null, error: null });
+  const evaluateCurrentStep = async (): Promise<FeedbackResult | null> => {
+    setScoringProgressSteps([]);
+    setScoringFeedback(null);
 
     try {
-      type VerificationBody =
-        | { step: "functional"; summary: string; selectedFeatures: Record<string, boolean> }
-        | { step: "nonFunctional"; notes: string; readRps: number; writeRps: number; p95RedirectMs: number; availability: string }
-        | { step: "api"; endpoints: unknown[]; selectedFeatures: Record<string, boolean> };
-
-      let body: VerificationBody | undefined;
+      const config = await loadScoringConfig("url-shortener");
+      let result: FeedbackResult;
 
       switch (currentStep) {
-        case "functional":
-          body = {
-            step: "functional",
-            summary: state.requirements.functionalSummary,
-            selectedFeatures: state.requirements.functional,
-          };
-          break;
+        case "functional": {
+          const progress = createFunctionalProgress();
+          progress.onProgress(setScoringProgressSteps);
 
-        case "nonFunctional":
-          body = {
-            step: "nonFunctional",
-            notes: state.requirements.nonFunctional.notes,
-            readRps: state.requirements.nonFunctional.readRps,
-            writeRps: state.requirements.nonFunctional.writeRps,
-            p95RedirectMs: state.requirements.nonFunctional.p95RedirectMs,
-            availability: state.requirements.nonFunctional.availability,
-          };
+          result = await evaluateFunctionalOptimized(
+            {
+              functionalSummary: state.requirements.functionalSummary,
+              selectedRequirements: state.requirements.functional,
+            },
+            config.steps.functional,
+            {
+              useAI: true,
+              explainScore: true,
+              progress,
+            }
+          );
           break;
+        }
 
-        case "api":
-          body = {
-            step: "api",
-            endpoints: state.apiDefinition.endpoints,
-            selectedFeatures: state.requirements.functional,
-          };
+        case "nonFunctional": {
+          result = evaluateNonFunctionalRequirements(
+            {
+              readRps: state.requirements.nonFunctional.readRps,
+              writeRps: state.requirements.nonFunctional.writeRps,
+              p95RedirectMs: state.requirements.nonFunctional.p95RedirectMs,
+              availability: state.requirements.nonFunctional.availability,
+              rateLimitNotes: state.requirements.nonFunctional.rateLimitNotes,
+              functionalRequirements: state.requirements.functional,
+            },
+            config.steps.nonFunctional
+          );
           break;
+        }
+
+        case "api": {
+          const progress = createApiProgress();
+          progress.onProgress(setScoringProgressSteps);
+
+          result = await evaluateApiOptimized(
+            {
+              endpoints: state.apiDefinition.endpoints,
+              functionalRequirements: state.requirements.functional,
+            },
+            config.steps.api,
+            {
+              useAI: true,
+              explainScore: true,
+              progress,
+            }
+          );
+          break;
+        }
+
+        case "sandbox": {
+          // For sandbox, we don't evaluate design here - we check simulation results
+          // Design scoring happens during simulation
+          return null;
+        }
 
         default:
-          // No verification needed for other steps
-          return { canProceed: true, blocking: [], warnings: [] };
+          return null;
       }
 
-      const response = await fetch("/api/practice/verify-step", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error || errorData.message || "Verification failed";
-        throw new Error(errorMessage);
-      }
-
-      const result = await response.json();
-      setVerification({ isVerifying: false, result, error: null });
+      setScoringFeedback(result);
+      setStepScore(currentStep as "functional" | "nonFunctional" | "api", result);
       return result;
     } catch (error) {
-      logger.error("Verification error:", error);
-      setVerification({
-        isVerifying: false,
-        result: null,
-        error: "Verification service unavailable. Please try again.",
-      });
+      logger.error("Scoring evaluation failed:", error);
       return null;
+    } finally {
+      setScoringProgressSteps([]);
     }
   };
 
@@ -256,113 +289,131 @@ function PracticeFlowInner() {
   const handleNext = async () => {
     if (isReadOnly) return;
 
-    // Steps that need verification
-    const stepsNeedingVerification: PracticeStep[] = ["functional", "nonFunctional", "api"];
+    // Steps that need scoring evaluation (including sandbox for design scoring)
+    const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
 
-    if (stepsNeedingVerification.includes(currentStep)) {
-      const result = await verifyStep();
+    if (stepsNeedingScoring.includes(currentStep)) {
+      // Always run scoring evaluation (no bypass for already scored)
+      setVerification({ isVerifying: true, result: null, error: null });
 
-      if (!result) {
-        // Verification API failed - user must retry
-        return;
-      }
+      // For sandbox step, check simulation first
+      if (currentStep === "sandbox") {
+        const hasRun = state.run.lastResult !== null;
+        const result = state.run.lastResult;
+        const hasPassed = result?.scoreBreakdown?.outcome === "pass";
 
-      if (!result.canProceed) {
-        // Blocking issues - user must revise
-        return;
-      }
-
-      if (result.warnings.length > 0 && !verification.result) {
-        // Show warnings, wait for user action
-        return;
-      }
-
-      // Either no warnings, or user clicked "Continue Anyway"
-      proceedToNext();
-    } else if (currentStep === "sandbox") {
-      // For sandbox step, check if simulation has been run and passed
-      const hasRun = state.run.lastResult !== null;
-      const result = state.run.lastResult;
-      const hasPassed = result?.scoreBreakdown?.outcome === "pass";
-
-      if (!hasRun) {
-        // Show message that simulation needs to be run
-        setVerification({
-          isVerifying: false,
-          result: {
-            canProceed: false,
-            blocking: ["You must run the simulation and achieve a passing score before continuing."],
-            warnings: [],
-          },
-          error: null,
-        });
-        return;
-      }
-
-      if (!hasPassed && result) {
-        // Build detailed feedback based on what failed
-        const blocking: string[] = [];
-        const warnings: string[] = [];
-
-        // Check SLO issues
-        if (!result.meetsLatency) {
-          blocking.push(
-            `Latency too high: Your design has ${result.latencyMsP95.toFixed(0)}ms p95 latency, but the target is ${state.requirements.nonFunctional.p95RedirectMs}ms or less.`
-          );
+        if (!hasRun) {
+          // Show message that simulation needs to be run
+          setVerification({
+            isVerifying: false,
+            result: {
+              canProceed: false,
+              blocking: ["You must run the simulation and achieve a passing score before continuing."],
+              warnings: [],
+            },
+            error: null,
+          });
+          return;
         }
 
-        if (!result.meetsRps) {
-          blocking.push(
-            `Insufficient capacity: Your design handles ${result.capacityRps.toFixed(0)} RPS, but needs ${state.requirements.nonFunctional.readRps} RPS.`
-          );
-        }
+        if (!hasPassed && result) {
+          // Build detailed feedback based on what failed
+          const blocking: string[] = [];
+          const warnings: string[] = [];
 
-        // Check if chaos engineering failed
-        if (result.failedByChaos) {
-          blocking.push(
-            "Your architecture failed under chaos testing. Consider adding redundancy, load balancing, or failover mechanisms."
-          );
-        }
-
-        // Check acceptance criteria
-        if (result.acceptanceScore !== undefined && result.acceptanceScore < 100) {
-          const missingFeatures: string[] = [];
-          if (result.acceptanceResults) {
-            Object.entries(result.acceptanceResults).forEach(([key, passed]) => {
-              if (!passed) {
-                missingFeatures.push(key.replace(/-/g, " "));
-              }
-            });
-          }
-
-          if (missingFeatures.length > 0) {
+          // Check SLO issues
+          if (!result.meetsLatency) {
             blocking.push(
-              `Missing requirements: ${missingFeatures.join(", ")}`
+              `Latency too high: Your design has ${result.latencyMsP95.toFixed(0)}ms p95 latency, but the target is ${state.requirements.nonFunctional.p95RedirectMs}ms or less.`
             );
           }
+
+          if (!result.meetsRps) {
+            blocking.push(
+              `Insufficient capacity: Your design handles ${result.capacityRps.toFixed(0)} RPS, but needs ${state.requirements.nonFunctional.readRps} RPS.`
+            );
+          }
+
+          // Check if chaos engineering failed
+          if (result.failedByChaos) {
+            blocking.push(
+              "Your architecture failed under chaos testing. Consider adding redundancy, load balancing, or failover mechanisms."
+            );
+          }
+
+          // Check acceptance criteria
+          if (result.acceptanceScore !== undefined && result.acceptanceScore < 100) {
+            const missingFeatures: string[] = [];
+            if (result.acceptanceResults) {
+              Object.entries(result.acceptanceResults).forEach(([key, passed]) => {
+                if (!passed) {
+                  missingFeatures.push(key.replace(/-/g, " "));
+                }
+              });
+            }
+
+            if (missingFeatures.length > 0) {
+              blocking.push(
+                `Missing requirements: ${missingFeatures.join(", ")}`
+              );
+            }
+          }
+
+          // Add score information
+          if (result.scoreBreakdown) {
+            const score = result.scoreBreakdown;
+            warnings.push(
+              `Current score: ${score.totalScore.toFixed(0)}/100 (SLO: ${score.sloScore.toFixed(0)}/60, Checklist: ${score.checklistScore.toFixed(0)}/30, Cost: ${score.costScore.toFixed(0)}/10)`
+            );
+          }
+
+          setVerification({
+            isVerifying: false,
+            result: {
+              canProceed: false,
+              blocking: blocking.length > 0 ? blocking : ["Your design didn't pass the simulation. Please review the results and try again."],
+              warnings,
+            },
+            error: null,
+          });
+          return;
         }
 
-        // Add score information
-        if (result.scoreBreakdown) {
-          const score = result.scoreBreakdown;
-          warnings.push(
-            `Current score: ${score.totalScore.toFixed(0)}/100 (SLO: ${score.sloScore.toFixed(0)}/60, Checklist: ${score.checklistScore.toFixed(0)}/30, Cost: ${score.costScore.toFixed(0)}/10)`
-          );
-        }
+        // Passed! Proceed to next
+        setVerification({ isVerifying: false, result: null, error: null });
+        proceedToNext();
+        return;
+      }
 
+      // For other steps, run scoring evaluation
+      const result = await evaluateCurrentStep();
+      setVerification({ isVerifying: false, result: null, error: null });
+
+      if (!result) {
+        // Evaluation failed - show error
         setVerification({
           isVerifying: false,
-          result: {
-            canProceed: false,
-            blocking: blocking.length > 0 ? blocking : ["Your design didn't pass the simulation. Please review the results and try again."],
-            warnings,
-          },
-          error: null,
+          result: null,
+          error: "Evaluation failed. Please try again.",
         });
         return;
       }
 
-      // Passed! Proceed to next
+      // Always show feedback (even for perfect scores)
+      // Check if there are blocking issues (score too low)
+      if (result.blocking.length > 0) {
+        // Show feedback, user must revise
+        return;
+      }
+
+      // If warnings, suggestions, or positive feedback, show it and allow continue
+      if (result.warnings.length > 0 || result.suggestions.length > 0 || result.positive.length > 0) {
+        // Feedback is already shown via scoringFeedback state
+        // User can click "Continue" to proceed
+        return;
+      }
+
+      // Edge case: no feedback at all (shouldn't happen), proceed automatically
       proceedToNext();
     } else {
       // No verification needed
@@ -388,15 +439,33 @@ function PracticeFlowInner() {
           <button
             type="button"
             onClick={() => setStep("sandbox")}
-            className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
           >
-            ← Back to sandbox
+            <span className="sr-only">Back to sandbox</span>
+            <svg aria-hidden className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M10 12l-4-4 4-4"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
           <Link
             href="/"
-            className="inline-flex h-11 items-center justify-center rounded-full bg-blue-500 px-6 text-sm font-semibold text-blue-950 transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 text-blue-950 transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
           >
-            Home
+            <span className="sr-only">Home</span>
+            <svg aria-hidden className="h-4 w-4" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M10 3L3 9v8a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V9l-7-6z"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </Link>
         </div>
       );
@@ -471,6 +540,9 @@ function PracticeFlowInner() {
     }
     if (currentStep === "nonFunctional" && nextDisabled) {
       return "Enter positive numbers for throughput and latency targets.";
+    }
+    if (currentStep === "api" && nextDisabled) {
+      return "Add meaningful descriptions (at least 10 characters) for each API endpoint.";
     }
     return null;
   };
@@ -669,7 +741,39 @@ function PracticeFlowInner() {
         <PracticeStepper
           current={currentStep}
           progress={state.completed}
-          onStepChange={(step) => setStep(step)}
+          onStepChange={async (step) => {
+            // If navigating forward and current step needs scoring, evaluate it first
+            const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
+            const currentIndex = PRACTICE_STEPS.indexOf(currentStep);
+            const targetIndex = PRACTICE_STEPS.indexOf(step);
+
+            if (
+              !isReadOnly &&
+              targetIndex > currentIndex &&
+              stepsNeedingScoring.includes(currentStep)
+            ) {
+              // Always evaluate current step before allowing navigation (no bypass)
+              setVerification({ isVerifying: true, result: null, error: null });
+              const result = await evaluateCurrentStep();
+              setVerification({ isVerifying: false, result: null, error: null });
+
+              if (result && result.blocking.length === 0) {
+                // Evaluation passed or has warnings only, allow navigation
+                setStep(step);
+              } else if (!result) {
+                // Evaluation failed
+                setVerification({
+                  isVerifying: false,
+                  result: null,
+                  error: "Please complete the current step before continuing.",
+                });
+              }
+              // If blocking issues, stay on current step and show feedback
+            } else {
+              // No evaluation needed or navigating backward
+              setStep(step);
+            }
+          }}
           readOnly={isReadOnly}
           hideMobileStepper={isSandboxStep}
         />
@@ -724,6 +828,25 @@ function PracticeFlowInner() {
             </div>
           </div>
         ) : null}
+        {scoringProgressSteps.length > 0 && (
+          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
+            <EvaluationProgress steps={scoringProgressSteps} />
+          </div>
+        )}
+        {scoringFeedback && (
+          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
+            <VerificationFeedback
+              feedbackResult={scoringFeedback}
+              showScore={true}
+              onRevise={() => {
+                setScoringFeedback(null);
+                // Clear the score so user can try again
+                setStepScore(currentStep as "functional" | "nonFunctional" | "api", undefined);
+              }}
+              onContinue={scoringFeedback.blocking.length === 0 ? proceedToNext : undefined}
+            />
+          </div>
+        )}
         {verification.result && (verification.result.blocking.length > 0 || verification.result.warnings.length > 0) ? (
           <div className="mx-auto w-full max-w-5xl px-4 pt-4">
             <VerificationFeedback
