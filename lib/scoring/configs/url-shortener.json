@@ -1,0 +1,752 @@
+{
+  "problemId": "url-shortener",
+  "title": "URL Shortener",
+  "description": "Design a scalable URL shortening service that creates short, unique links and redirects users to original URLs",
+  "totalScore": 100,
+  "steps": {
+    "functional": {
+      "maxScore": 25,
+      "minKeywordsMatch": 2,
+      "minTextLength": 50,
+      "coreRequirements": [
+        {
+          "id": "url-shortening",
+          "label": "URL Shortening",
+          "description": "Service must accept long URLs and generate short, compact aliases",
+          "keywords": [
+            "shorten",
+            "create",
+            "generate",
+            "alias",
+            "short url",
+            "short link",
+            "compact",
+            "slug"
+          ],
+          "weight": 5,
+          "required": true,
+          "category": "core",
+          "examplePhrases": [
+            "Users can submit a long URL and receive a shortened version",
+            "System generates unique short links for any URL"
+          ]
+        },
+        {
+          "id": "redirection",
+          "label": "URL Redirection",
+          "description": "When accessing a short URL, users should be redirected to the original long URL",
+          "keywords": [
+            "redirect",
+            "forward",
+            "resolve",
+            "lookup",
+            "301",
+            "302",
+            "navigate",
+            "send to"
+          ],
+          "weight": 5,
+          "required": true,
+          "category": "core",
+          "examplePhrases": [
+            "Accessing the short URL redirects to the original destination",
+            "System performs HTTP 301/302 redirect to long URL"
+          ]
+        },
+        {
+          "id": "uniqueness",
+          "label": "Uniqueness Guarantee",
+          "description": "Each generated short URL must be unique to prevent collisions",
+          "keywords": [
+            "unique",
+            "collision",
+            "duplicate",
+            "hash",
+            "base62",
+            "distinct",
+            "no conflict",
+            "guarantee"
+          ],
+          "weight": 5,
+          "required": true,
+          "category": "core",
+          "examplePhrases": [
+            "Every short URL is guaranteed to be unique",
+            "Use hashing or sequential IDs to prevent collisions"
+          ]
+        },
+        {
+          "id": "api-endpoints",
+          "label": "API Endpoints",
+          "description": "System should expose REST APIs for creating and accessing short URLs",
+          "keywords": [
+            "api",
+            "endpoint",
+            "rest",
+            "http",
+            "post",
+            "get",
+            "interface",
+            "service"
+          ],
+          "weight": 5,
+          "required": true,
+          "category": "core",
+          "examplePhrases": [
+            "Expose POST /shorten and GET /{shortId} endpoints",
+            "RESTful API for URL operations"
+          ]
+        }
+      ],
+      "optionalRequirements": [
+        {
+          "id": "custom-aliases",
+          "label": "Custom Aliases",
+          "description": "Users can optionally specify custom short URLs instead of system-generated ones",
+          "keywords": [
+            "custom",
+            "vanity",
+            "personalized",
+            "user-defined",
+            "choose",
+            "specific"
+          ],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Users can request custom aliases like example.com/my-link",
+            "Support vanity URLs chosen by users"
+          ]
+        },
+        {
+          "id": "link-expiration",
+          "label": "Link Expiration",
+          "description": "Short URLs can have optional expiration dates after which they become invalid",
+          "keywords": [
+            "expir",
+            "ttl",
+            "temporary",
+            "time-limited",
+            "timeout",
+            "lifetime"
+          ],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Links can expire after a specified time period",
+            "Support TTL for temporary URLs"
+          ]
+        },
+        {
+          "id": "basic-analytics",
+          "label": "Analytics & Metrics",
+          "description": "Track and provide metrics on link usage such as click counts and geographic data",
+          "keywords": [
+            "analytics",
+            "metrics",
+            "clicks",
+            "count",
+            "stats",
+            "track",
+            "monitor",
+            "views"
+          ],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Track number of clicks per short URL",
+            "Collect analytics on geographic location and referrers"
+          ]
+        },
+        {
+          "id": "user-accounts",
+          "label": "User Authentication",
+          "description": "Support user accounts for managing personal short URLs",
+          "keywords": [
+            "auth",
+            "login",
+            "account",
+            "user",
+            "register",
+            "sign in",
+            "api key"
+          ],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Users can create accounts to manage their URLs",
+            "API key authentication for programmatic access"
+          ]
+        },
+        {
+          "id": "admin-delete",
+          "label": "URL Management & Deletion",
+          "description": "Users should be able to view, edit, and delete their created short URLs",
+          "keywords": [
+            "delete",
+            "remove",
+            "manage",
+            "list",
+            "edit",
+            "update",
+            "admin"
+          ],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Users can delete URLs they no longer need",
+            "Dashboard to view and manage all created links"
+          ]
+        }
+      ]
+    },
+    "nonFunctional": {
+      "maxScore": 20,
+      "questions": [
+        {
+          "id": "read-rps",
+          "prompt": "Expected read requests per second (redirects)",
+          "category": "scale",
+          "optimalRanges": {
+            "min": 1000,
+            "max": 100000,
+            "target": 10000,
+            "unit": "RPS"
+          },
+          "weight": 5,
+          "feedbackTemplates": {
+            "tooLow": "Consider realistic production traffic. Most URL shorteners handle 1K+ RPS.",
+            "tooHigh": "Over 100K RPS requires significant infrastructure. Ensure your design scales appropriately.",
+            "optimal": "Good scale target! This is achievable with proper caching and horizontal scaling."
+          }
+        },
+        {
+          "id": "write-rps",
+          "prompt": "Expected write requests per second (new URLs created)",
+          "category": "scale",
+          "optimalRanges": {
+            "min": 10,
+            "max": 10000,
+            "target": 100,
+            "unit": "RPS"
+          },
+          "weight": 3,
+          "feedbackTemplates": {
+            "tooLow": "Even small services typically see 10+ URL creations per second.",
+            "tooHigh": "Over 10K writes/sec is extremely high. Ensure your database can handle this throughput.",
+            "optimal": "Realistic write volume. Read-heavy workload is typical for URL shorteners."
+          }
+        },
+        {
+          "id": "p95-latency",
+          "prompt": "Target P95 redirect latency",
+          "category": "performance",
+          "optimalRanges": {
+            "min": 5,
+            "max": 200,
+            "target": 50,
+            "unit": "ms"
+          },
+          "weight": 5,
+          "feedbackTemplates": {
+            "tooLow": "Sub-5ms P95 latency requires edge caching and aggressive optimization.",
+            "tooHigh": "Over 200ms redirects create poor user experience. Aim for sub-100ms.",
+            "optimal": "Excellent latency target! Achievable with caching layer and optimized queries."
+          }
+        },
+        {
+          "id": "availability",
+          "prompt": "Target availability (uptime %)",
+          "category": "availability",
+          "optimalRanges": {
+            "min": 99.0,
+            "max": 99.99,
+            "target": 99.9,
+            "unit": "%"
+          },
+          "weight": 4,
+          "feedbackTemplates": {
+            "tooLow": "Below 99% availability means significant downtime (3.5+ days/year). Aim higher.",
+            "tooHigh": "99.99% requires multi-region deployment, redundancy, and sophisticated monitoring.",
+            "optimal": "Great balance! 99.9% is achievable with load balancing and replica sets."
+          }
+        },
+        {
+          "id": "rate-limiting",
+          "prompt": "Rate limiting requirements",
+          "category": "security",
+          "optimalRanges": {
+            "min": 10,
+            "max": 1000,
+            "target": 100,
+            "unit": "req/min"
+          },
+          "weight": 3,
+          "requiredBy": [
+            "rate-limiting"
+          ],
+          "feedbackTemplates": {
+            "tooLow": "10 req/min is very restrictive. Consider legitimate use cases.",
+            "tooHigh": "Over 1000 req/min per user may not effectively prevent abuse.",
+            "optimal": "Good rate limit! Balances legitimate usage with abuse prevention.",
+            "missing": "Since you selected rate limiting as a requirement, specify the threshold."
+          }
+        }
+      ],
+      "decisionRules": [
+        {
+          "condition": {
+            "functionalRequirementId": "rate-limiting",
+            "required": true
+          },
+          "questions": [
+            "rate-limiting"
+          ]
+        }
+      ]
+    },
+    "api": {
+      "maxScore": 20,
+      "evaluationCriteria": {
+        "hasCorrectMethods": 5,
+        "pathDesignQuality": 5,
+        "documentationQuality": 5,
+        "alignsWithRequirements": 5
+      },
+      "requiredEndpoints": [
+        {
+          "id": "create-short-url",
+          "method": "POST",
+          "pathPattern": "/api/v1/(shorten|urls)",
+          "pathPatternRegex": "^/api/v\\d+/(shorten|urls)$",
+          "purpose": "Create a new short URL from a long URL",
+          "requiredBy": [
+            "url-shortening"
+          ],
+          "weight": 7,
+          "required": true,
+          "documentationHints": [
+            "request",
+            "body",
+            "response",
+            "url",
+            "error"
+          ],
+          "minDocumentationLength": 40,
+          "examplePath": "/api/v1/shorten",
+          "exampleNotes": "POST with { url: string, customAlias?: string, expiresAt?: timestamp }. Returns { shortId: string, shortUrl: string }. Errors: 400 (invalid URL), 409 (alias taken)."
+        },
+        {
+          "id": "redirect-short-url",
+          "method": "GET",
+          "pathPattern": "/(api/v1/)?[a-zA-Z0-9]+",
+          "pathPatternRegex": "^(/api/v\\d+/)?\\{?[a-zA-Z0-9_-]+\\}?$",
+          "purpose": "Redirect to the original long URL",
+          "requiredBy": [
+            "redirection"
+          ],
+          "weight": 7,
+          "required": true,
+          "documentationHints": [
+            "redirect",
+            "301",
+            "302",
+            "error",
+            "not found"
+          ],
+          "minDocumentationLength": 30,
+          "examplePath": "/{shortId}",
+          "exampleNotes": "GET /{shortId} returns HTTP 301/302 redirect to original URL. Returns 404 if not found or expired."
+        },
+        {
+          "id": "analytics-stats",
+          "method": "GET",
+          "pathPattern": "/api/v1/(stats|analytics)/",
+          "pathPatternRegex": "^/api/v\\d+/(stats|analytics)/.*$",
+          "purpose": "Retrieve analytics and metrics for a short URL",
+          "requiredBy": [
+            "basic-analytics"
+          ],
+          "weight": 6,
+          "required": false,
+          "documentationHints": [
+            "clicks",
+            "count",
+            "analytics",
+            "metrics"
+          ],
+          "minDocumentationLength": 30,
+          "examplePath": "/api/v1/stats/{shortId}",
+          "exampleNotes": "Returns { clicks: number, lastAccessed: timestamp, referrers: [] }. Requires auth if user-specific."
+        }
+      ],
+      "optionalEndpoints": [
+        {
+          "id": "delete-url",
+          "method": "DELETE",
+          "pathPattern": "/api/v1/urls/",
+          "pathPatternRegex": "^/api/v\\d+/urls/.*$",
+          "purpose": "Delete a short URL",
+          "requiredBy": [
+            "admin-delete"
+          ],
+          "weight": 2,
+          "required": false,
+          "documentationHints": [
+            "delete",
+            "remove",
+            "auth"
+          ],
+          "minDocumentationLength": 20,
+          "examplePath": "/api/v1/urls/{shortId}",
+          "exampleNotes": "DELETE requires authentication. Returns 204 on success, 403 if unauthorized."
+        },
+        {
+          "id": "list-urls",
+          "method": "GET",
+          "pathPattern": "/api/v1/urls",
+          "pathPatternRegex": "^/api/v\\d+/urls$",
+          "purpose": "List all URLs for authenticated user",
+          "requiredBy": [
+            "user-accounts",
+            "admin-delete"
+          ],
+          "weight": 2,
+          "required": false,
+          "documentationHints": [
+            "list",
+            "pagination",
+            "auth"
+          ],
+          "minDocumentationLength": 20,
+          "examplePath": "/api/v1/urls",
+          "exampleNotes": "Returns paginated list of user's URLs. Requires authentication."
+        },
+        {
+          "id": "update-url",
+          "method": "PUT",
+          "pathPattern": "/api/v1/urls/",
+          "pathPatternRegex": "^/api/v\\d+/urls/.*$",
+          "purpose": "Update a short URL's properties",
+          "requiredBy": [
+            "admin-delete"
+          ],
+          "weight": 1,
+          "required": false,
+          "documentationHints": [
+            "update",
+            "edit",
+            "auth"
+          ],
+          "minDocumentationLength": 20,
+          "examplePath": "/api/v1/urls/{shortId}",
+          "exampleNotes": "PUT to update expiration or destination. Requires auth."
+        }
+      ]
+    },
+    "design": {
+      "maxScore": 30,
+      "scoreBreakdown": {
+        "coreArchitecture": 15,
+        "optionalComponents": 10,
+        "connections": 5
+      },
+      "componentRequirements": [
+        {
+          "kind": "Service",
+          "required": true,
+          "requiredBy": [
+            "url-shortening",
+            "redirection"
+          ],
+          "weight": 5,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "You need a Service component to handle URL creation and redirection logic.",
+            "present": "Good! Service component is present to handle core business logic."
+          }
+        },
+        {
+          "kind": "Cache (Redis)",
+          "required": true,
+          "requiredBy": [
+            "redirection"
+          ],
+          "alternativesAccepted": [
+            "Cache (Memcached)"
+          ],
+          "weight": 5,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "A cache layer (Redis/Memcached) is essential for fast redirects.",
+            "present": "Excellent! Cache will dramatically improve redirect latency.",
+            "insufficientReplicas": "Consider adding cache replicas for high availability."
+          }
+        },
+        {
+          "kind": "DB (Postgres)",
+          "required": true,
+          "requiredBy": [
+            "url-shortening"
+          ],
+          "alternativesAccepted": [
+            "DB (MySQL)",
+            "DB (MongoDB)"
+          ],
+          "weight": 5,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "You need a database to persist URL mappings.",
+            "present": "Good choice! Database will reliably store all URL mappings.",
+            "insufficientReplicas": "For high availability, consider adding read replicas."
+          }
+        },
+        {
+          "kind": "Message Queue (Kafka Topic)",
+          "required": false,
+          "requiredBy": [
+            "basic-analytics"
+          ],
+          "alternativesAccepted": [
+            "Message Queue (RabbitMQ)",
+            "Message Queue (SQS)"
+          ],
+          "weight": 3,
+          "feedbackTemplates": {
+            "missing": "Since you selected analytics, add a message queue for async event processing.",
+            "present": "Smart! Async processing with queue won't slow down redirects."
+          }
+        },
+        {
+          "kind": "Worker Pool",
+          "required": false,
+          "requiredBy": [
+            "basic-analytics"
+          ],
+          "weight": 2,
+          "feedbackTemplates": {
+            "missing": "Analytics requires workers to process click events asynchronously.",
+            "present": "Good! Workers will process analytics without blocking redirects."
+          }
+        },
+        {
+          "kind": "Rate Limiter",
+          "required": false,
+          "requiredBy": [
+            "rate-limiting"
+          ],
+          "weight": 2,
+          "feedbackTemplates": {
+            "missing": "Add a Rate Limiter component to enforce request throttling.",
+            "present": "Excellent! Rate limiter will protect against abuse."
+          }
+        },
+        {
+          "kind": "CDN",
+          "required": false,
+          "weight": 2,
+          "feedbackTemplates": {
+            "present": "Great thinking! CDN provides global low-latency access."
+          }
+        },
+        {
+          "kind": "Load Balancer",
+          "required": false,
+          "weight": 2,
+          "feedbackTemplates": {
+            "present": "Good! Load balancer enables horizontal scaling."
+          }
+        }
+      ],
+      "criticalPaths": [
+        {
+          "id": "redirect-path",
+          "name": "Redirect Path (Read)",
+          "description": "The critical path from user request to URL redirect",
+          "startComponents": [
+            "Web",
+            "API Gateway"
+          ],
+          "endComponents": [
+            "DB (Postgres)",
+            "DB (MySQL)",
+            "DB (MongoDB)"
+          ],
+          "mustInclude": [
+            "Service",
+            "Cache (Redis)"
+          ],
+          "mustNotInclude": [],
+          "maxHops": 7,
+          "minHops": 4,
+          "weight": 10,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "Your redirect path is missing critical components (Service or Cache).",
+            "present": "Perfect! Your redirect path flows through cache for fast lookups.",
+            "suboptimal": "Consider optimizing the redirect path to reduce latency."
+          }
+        },
+        {
+          "id": "analytics-async-path",
+          "name": "Analytics Processing Path",
+          "description": "Async path for processing click analytics",
+          "startComponents": [
+            "Service"
+          ],
+          "endComponents": [
+            "Worker Pool"
+          ],
+          "mustInclude": [
+            "Message Queue (Kafka Topic)"
+          ],
+          "maxHops": 3,
+          "weight": 5,
+          "required": false,
+          "feedbackTemplates": {
+            "missing": "Analytics should use async processing: Service → Queue → Workers.",
+            "present": "Excellent async design! Analytics won't slow redirects.",
+            "suboptimal": "Analytics path looks good but verify it's fully decoupled from main flow."
+          }
+        }
+      ],
+      "architecturePatterns": [
+        {
+          "id": "cache-aside",
+          "name": "Cache-Aside Pattern",
+          "description": "Service checks cache first, falls back to DB on miss, then updates cache",
+          "requiredComponents": [
+            "Service",
+            "Cache (Redis)",
+            "DB (Postgres)"
+          ],
+          "requiredConnections": [
+            {
+              "from": "Service",
+              "to": "Cache (Redis)"
+            },
+            {
+              "from": "Cache (Redis)",
+              "to": "DB (Postgres)"
+            }
+          ],
+          "forbiddenConnections": [],
+          "triggeredBy": {
+            "functionalReqs": [
+              "redirection"
+            ]
+          },
+          "weight": 10,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "Implement cache-aside pattern: Service → Cache → DB for fast redirects.",
+            "present": "Excellent! Cache-aside pattern will deliver sub-50ms redirects.",
+            "incorrect": "Cache should sit between Service and DB, not as a parallel path."
+          }
+        },
+        {
+          "id": "async-analytics",
+          "name": "Async Event Processing",
+          "description": "Click events sent to queue for async processing by workers",
+          "requiredComponents": [
+            "Service",
+            "Message Queue (Kafka Topic)",
+            "Worker Pool"
+          ],
+          "requiredConnections": [
+            {
+              "from": "Service",
+              "to": "Message Queue (Kafka Topic)"
+            },
+            {
+              "from": "Message Queue (Kafka Topic)",
+              "to": "Worker Pool"
+            }
+          ],
+          "triggeredBy": {
+            "functionalReqs": [
+              "basic-analytics"
+            ]
+          },
+          "weight": 5,
+          "required": false,
+          "feedbackTemplates": {
+            "missing": "Use async pattern for analytics: Service → Queue → Workers.",
+            "present": "Perfect async design! Main redirect flow stays fast.",
+            "incorrect": "Workers should consume from queue, not connect directly to Service."
+          }
+        },
+        {
+          "id": "rate-limiting-layer",
+          "name": "Rate Limiting Layer",
+          "description": "Rate limiter sits between API Gateway and Service",
+          "requiredComponents": [
+            "Rate Limiter",
+            "Service"
+          ],
+          "requiredConnections": [
+            {
+              "from": "API Gateway",
+              "to": "Rate Limiter"
+            },
+            {
+              "from": "Rate Limiter",
+              "to": "Service"
+            }
+          ],
+          "triggeredBy": {
+            "functionalReqs": [
+              "rate-limiting"
+            ]
+          },
+          "weight": 3,
+          "required": false,
+          "feedbackTemplates": {
+            "missing": "Place rate limiter between API Gateway and Service.",
+            "present": "Good! Rate limiter guards your service from abuse.",
+            "incorrect": "Rate limiter should be inline, not a side path."
+          }
+        },
+        {
+          "id": "horizontal-scaling",
+          "name": "Horizontal Scaling",
+          "description": "Multiple replicas of critical components with load balancer",
+          "requiredComponents": [
+            "Load Balancer"
+          ],
+          "requiredConnections": [],
+          "triggeredBy": {
+            "nfrThresholds": {
+              "readRps": 10000
+            }
+          },
+          "weight": 3,
+          "required": false,
+          "feedbackTemplates": {
+            "missing": "With 10K+ RPS, you need horizontal scaling (Load Balancer + replicas).",
+            "present": "Excellent! Load balancing enables handling high traffic.",
+            "incorrect": "Verify your Service has multiple replicas to benefit from load balancer."
+          }
+        }
+      ]
+    },
+    "simulation": {
+      "maxScore": 5,
+      "criteria": {
+        "meetsRps": 2,
+        "meetsLatency": 2,
+        "passesChaos": 1
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "author": "System Design Sandbox",
+    "lastUpdated": "2025-10-31"
+  }
+}
