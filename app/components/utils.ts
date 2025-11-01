@@ -22,17 +22,16 @@ export function snapToGrid(value: number): number {
   return Math.round(value / 24) * 24;
 }
 
-// Given a scenario, try to find a path in the current graph that hits the flow kinds in order (allowing optional steps)
-export function findScenarioPath(
-  scenario: Scenario,
-  nodes: PlacedNode[],
-  edges: Edge[]
-): { nodeIds: NodeId[]; missingKinds: string[] } {
-  type State = { current: NodeId | null; path: NodeId[]; visited: Set<NodeId> };
-
-
-  // Precompute adjacency list for outgoing edges (bidirectional)
+/**
+ * Build bidirectional adjacency map from edges
+ * Treats all edges as bidirectional - user can draw arrows in either direction
+ *
+ * @param edges - Array of edges with from/to node IDs
+ * @returns Map of nodeId -> Set of connected nodeIds
+ */
+export function buildBidirectionalAdjacency(edges: Edge[]): Map<NodeId, Set<NodeId>> {
   const adjacency = new Map<NodeId, Set<NodeId>>();
+
   for (const edge of edges) {
     // Add both directions since users might connect arrows in either direction
     const list1 = adjacency.get(edge.from) ?? new Set<NodeId>();
@@ -43,6 +42,72 @@ export function findScenarioPath(
     list2.add(edge.from);
     adjacency.set(edge.to, list2);
   }
+
+  return adjacency;
+}
+
+/**
+ * Check if there's a connection between two component kinds (bidirectional)
+ * Matches any nodes of the specified kinds, not specific node instances
+ *
+ * @param nodes - Array of placed nodes
+ * @param edges - Array of edges
+ * @param fromKind - Source component kind (e.g., "Service")
+ * @param toKind - Target component kind (e.g., "Cache (Redis)")
+ * @returns true if any connection exists between nodes of these kinds
+ */
+export function hasConnectionBetweenKinds(
+  nodes: PlacedNode[],
+  edges: Edge[],
+  fromKind: string,
+  toKind: string
+): boolean {
+  // Helper to match component kind including alternatives
+  const matchesKind = (nodeKind: string, targetKind: string): boolean => {
+    if (nodeKind === targetKind) return true;
+
+    // Check if base types match (e.g., "DB (Postgres)" matches "DB (MySQL)")
+    const baseTarget = targetKind.split(' ')[0];
+    const baseNode = nodeKind.split(' ')[0];
+
+    return baseTarget === baseNode;
+  };
+
+  // Find all nodes matching each kind
+  const fromNodes = nodes.filter((n) => matchesKind(n.spec.kind, fromKind));
+  const toNodes = nodes.filter((n) => matchesKind(n.spec.kind, toKind));
+
+  if (fromNodes.length === 0 || toNodes.length === 0) {
+    return false;
+  }
+
+  // Check if any edge exists between any pair (bidirectional)
+  for (const fromNode of fromNodes) {
+    for (const toNode of toNodes) {
+      const hasEdge = edges.some(
+        (edge) =>
+          (edge.from === fromNode.id && edge.to === toNode.id) ||
+          (edge.from === toNode.id && edge.to === fromNode.id) // Bidirectional!
+      );
+      if (hasEdge) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+// Given a scenario, try to find a path in the current graph that hits the flow kinds in order (allowing optional steps)
+export function findScenarioPath(
+  scenario: Scenario,
+  nodes: PlacedNode[],
+  edges: Edge[]
+): { nodeIds: NodeId[]; missingKinds: string[] } {
+  type State = { current: NodeId | null; path: NodeId[]; visited: Set<NodeId> };
+
+  // Use shared bidirectional adjacency builder
+  const adjacency = buildBidirectionalAdjacency(edges);
 
   console.log("[findScenarioPath] Adjacency map:");
   adjacency.forEach((neighbors, nodeId) => {

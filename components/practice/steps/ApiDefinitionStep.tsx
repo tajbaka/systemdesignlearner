@@ -29,8 +29,8 @@ const METHOD_OPTIONS: Array<ApiEndpoint["method"]> = ["GET", "POST"];
 const createEndpoint = (): ApiEndpoint => ({
   id: `endpoint-${crypto.randomUUID()}`,
   method: "GET",
-  path: "/new-endpoint",
-  notes: "Describe request, response, and edge cases.",
+  path: "new-endpoint",
+  notes: "",
   suggested: false,
 });
 
@@ -127,17 +127,25 @@ export function ApiDefinitionStep() {
                       </option>
                     ))}
                   </select>
-                  <input
-                    value={endpoint.path}
-                    onChange={(event) =>
-                      updateEndpoint(endpoint.id, (current) => ({
-                        ...current,
-                        path: event.target.value,
-                      }))
-                    }
-                    disabled={isReadOnly}
-                    className="h-10 min-w-[160px] flex-1 rounded-full border border-zinc-700 bg-zinc-900 px-4 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                  />
+                  <div className="relative h-10 min-w-[160px] flex-1">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-zinc-100 pointer-events-none">
+                      /
+                    </span>
+                    <input
+                      value={endpoint.path}
+                      onChange={(event) => {
+                        let value = event.target.value;
+                        // Remove any leading slashes
+                        value = value.replace(/^\/+/, "");
+                        updateEndpoint(endpoint.id, (current) => ({
+                          ...current,
+                          path: value,
+                        }));
+                      }}
+                      disabled={isReadOnly}
+                      className="h-10 w-full rounded-full border border-zinc-700 bg-zinc-900 pl-6 pr-4 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    />
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {!endpoint.suggested && !isReadOnly ? (

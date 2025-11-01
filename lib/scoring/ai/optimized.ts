@@ -185,13 +185,13 @@ export async function evaluateApiOptimized(
       .filter(([_, v]) => v)
       .map(([k, _]) => k);
 
-    // Run rule-based and AI in parallel
+    // Run rule-based and AI analysis in parallel
     const [ruleBasedResult, aiAnalysis] = await Promise.all([
       Promise.resolve(evaluateApiDefinition(input, config)),
       analyzeApiDesign(input.endpoints, functionalReqList),
     ]);
 
-    progress?.update(0, 80, "Merging feedback...");
+    progress?.update(0, 70, "Merging feedback...");
 
     // Collect all feedback
     const allFeedback: FeedbackItem[] = [
@@ -228,6 +228,43 @@ export async function evaluateApiOptimized(
     const topWarnings = warnings.slice(0, 3);
     const topPositive = positive.slice(0, 3);
 
+    // Generate improvement path if score is below 100%
+    progress?.update(0, 85, "Generating improvement suggestions...");
+    let improvementSuggestions: FeedbackItem[] = [];
+    const percentage = ruleBasedResult.percentage;
+
+    if (percentage < 100 && percentage >= 40) {
+      try {
+        const { generateImprovementPath } = await import("./gemini");
+        const improvementPath = await generateImprovementPath(
+          ruleBasedResult.score,
+          config.maxScore,
+          input.endpoints,
+          {
+            positive: topPositive,
+            warnings: topWarnings,
+            suggestions: aiAnalysis.suggestions.map(s => ({ message: s })),
+          },
+          functionalReqList
+        );
+
+        improvementSuggestions = [
+          ...improvementPath.improvements.map((msg) => ({
+            category: "architecture" as const,
+            severity: "info" as const,
+            message: `📈 ${msg}`,
+          })),
+          ...improvementPath.examples.map((msg) => ({
+            category: "architecture" as const,
+            severity: "info" as const,
+            message: `💡 ${msg}`,
+          })),
+        ];
+      } catch (error) {
+        console.error("Failed to generate improvement path:", error);
+      }
+    }
+
     progress?.complete(0, "API analysis complete!");
 
     // Optional explanation
@@ -244,6 +281,18 @@ export async function evaluateApiOptimized(
       progress?.complete(1);
     }
 
+    // Combine AI suggestions with improvement path
+    const allSuggestions = [
+      ...aiAnalysis.suggestions
+        .slice(0, 2)
+        .map((s) => ({
+          category: "architecture" as const,
+          severity: "info" as const,
+          message: `💡 ${s}`,
+        })),
+      ...improvementSuggestions.slice(0, 3), // Top 3 improvement suggestions
+    ];
+
     return {
       score: ruleBasedResult.score,
       maxScore: config.maxScore,
@@ -251,13 +300,7 @@ export async function evaluateApiOptimized(
       blocking: topBlocking,
       warnings: topWarnings,
       positive: topPositive,
-      suggestions: aiAnalysis.suggestions
-        .slice(0, 2)
-        .map((s) => ({
-          category: "architecture" as const,
-          severity: "info" as const,
-          message: `💡 ${s}`,
-        })),
+      suggestions: allSuggestions,
       aiExplanation,
       aiEnhanced: true,
     };

@@ -265,6 +265,84 @@ Your response (JSON only):`;
 }
 
 /**
+ * Generate actionable improvement suggestions to reach 100% score
+ */
+export async function generateImprovementPath(
+  currentScore: number,
+  maxScore: number,
+  endpoints: Array<{ method: string; path: string; notes: string }>,
+  feedback: {
+    positive: Array<{ message: string }>;
+    warnings: Array<{ message: string }>;
+    suggestions: Array<{ message: string }>;
+  },
+  functionalRequirements: string[]
+): Promise<{
+  improvements: string[];
+  examples: string[];
+}> {
+  const client = getGeminiClient();
+  const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const percentage = Math.round((currentScore / maxScore) * 100);
+
+  const prompt = `You are an API design coach helping a student improve their REST API design from ${percentage}% to 100%.
+
+Current Score: ${currentScore}/${maxScore} (${percentage}%)
+Functional Requirements: ${functionalRequirements.join(", ")}
+
+Current API Endpoints:
+${endpoints.map((ep) => `${ep.method} ${ep.path}\n  Documentation: ${ep.notes || "None"}`).join("\n\n")}
+
+Current Feedback:
+Strengths:
+${feedback.positive.map(p => `- ${p.message}`).join("\n")}
+
+Issues:
+${feedback.warnings.map(w => `- ${w.message}`).join("\n")}
+
+Existing Suggestions:
+${feedback.suggestions.map(s => `- ${s.message}`).join("\n")}
+
+Task: Provide specific, actionable advice to reach 100% score. Focus on:
+1. What's missing or incomplete in the current design
+2. How to improve documentation quality (mention specific keywords: request, response, error, authentication, rate limiting, validation)
+3. What optional endpoints would make this a complete API
+4. Concrete examples of better documentation
+
+Be concise and actionable. Provide 3-5 improvement suggestions and 2-3 concrete examples.
+
+Respond with JSON:
+{
+  "improvements": ["improvement 1", "improvement 2", "improvement 3"],
+  "examples": ["example 1 showing better documentation", "example 2 showing missing endpoint"]
+}
+
+Your response (JSON only):`;
+
+  try {
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return {
+        improvements: ["Consider adding more detailed documentation for each endpoint"],
+        examples: ["Example: Describe request body format, response structure, and error codes"],
+      };
+    }
+
+    return JSON.parse(jsonMatch[0]);
+  } catch (error) {
+    console.error("Error generating improvement path:", error);
+    return {
+      improvements: ["Review your endpoint documentation for completeness"],
+      examples: ["Include request/response formats and error handling details"],
+    };
+  }
+}
+
+/**
  * Analyze system architecture for patterns and anti-patterns
  */
 export async function analyzeArchitecture(

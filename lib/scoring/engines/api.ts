@@ -103,14 +103,14 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
             severity: "blocking",
             message: `Missing required endpoint: ${requiredConfig.method} ${requiredConfig.examplePath || requiredConfig.pathPattern}`,
             relatedTo: requiredConfig.id,
-            actionable: `Add endpoint for: ${requiredConfig.purpose}`,
+            actionable: `Add a ${requiredConfig.method} endpoint for: ${requiredConfig.purpose}`,
           });
 
-          if (requiredConfig.examplePath) {
+          if (requiredConfig.exampleNotes) {
             suggestions.push({
               category: "architecture",
               severity: "info",
-              message: `Example path: ${requiredConfig.examplePath}`,
+              message: `Example: ${requiredConfig.exampleNotes}`,
               relatedTo: requiredConfig.id,
             });
           }
@@ -176,11 +176,18 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
 
     // Add blocking issue if score is too low (below 40%)
     if (percentage < 40 && blocking.length === 0) {
+      const missingEndpoints = config.requiredEndpoints
+        .filter(req => !matchedRequired.has(req.id))
+        .map(req => `${req.method} ${req.examplePath || req.pathPattern}`)
+        .join(", ");
+
       blocking.push({
         category: "requirement",
         severity: "blocking",
         message: `Your API design score is too low (${percentage.toFixed(0)}%). You need at least 40% to proceed.`,
-        actionable: "Define the required API endpoints for your URL shortener. At minimum, you need endpoints to create short URLs and redirect users.",
+        actionable: missingEndpoints
+          ? `Add or improve these required endpoints: ${missingEndpoints}`
+          : "Improve documentation for your endpoints. Include request/response formats, error codes, and how they align with requirements.",
       });
     }
 
@@ -229,19 +236,22 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     // Check method match (exact or flexible)
     const methodMatch = endpoint.method === config.method;
 
+    // Normalize path - ensure it starts with /
+    const normalizedPath = endpoint.path.startsWith('/') ? endpoint.path : `/${endpoint.path}`;
+
     // Check path match (regex or exact)
     let pathMatch = false;
     if (config.pathPatternRegex) {
       try {
         const regex = new RegExp(config.pathPatternRegex);
-        pathMatch = regex.test(endpoint.path);
+        pathMatch = regex.test(normalizedPath);
       } catch (_e) {
         // Fallback to simple match
-        pathMatch = endpoint.path.toLowerCase().includes(config.pathPattern.toLowerCase());
+        pathMatch = normalizedPath.toLowerCase().includes(config.pathPattern.toLowerCase());
       }
     } else {
       // Simple substring match
-      pathMatch = endpoint.path.toLowerCase().includes(config.pathPattern.toLowerCase());
+      pathMatch = normalizedPath.toLowerCase().includes(config.pathPattern.toLowerCase());
     }
 
     return methodMatch && pathMatch;

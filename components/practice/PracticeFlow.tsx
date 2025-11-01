@@ -1,129 +1,72 @@
 "use client";
 
-import Link from "next/link";
-import { useEffect, useMemo, useState, type ReactElement } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PracticeStepper from "@/components/practice/PracticeStepper";
-import { logger } from "@/lib/logger";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
-import FunctionalRequirementsStep from "@/components/practice/steps/FunctionalRequirementsStep";
-import NonFunctionalRequirementsStep from "@/components/practice/steps/NonFunctionalRequirementsStep";
-import ApiDefinitionStep from "@/components/practice/steps/ApiDefinitionStep";
-import SandboxStep from "@/components/practice/steps/SandboxStep";
-import ScoreShareStep from "@/components/practice/steps/ScoreShareStep";
-import VerificationFeedback from "@/components/practice/VerificationFeedback";
-import { EvaluationProgress } from "@/components/practice/EvaluationProgress";
-import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
-import { track } from "@/lib/analytics";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { OnboardingProvider, useOnboarding } from "@/components/practice/PracticeOnboarding";
 import { OnboardingTooltip } from "@/components/practice/OnboardingTooltip";
 import { useUser } from "@clerk/nextjs";
 import { AuthModal } from "@/components/practice/AuthModal";
-import {
-  evaluateFunctionalOptimized,
-  evaluateNonFunctionalRequirements,
-  evaluateApiOptimized,
-  createFunctionalProgress,
-  createApiProgress,
-  loadScoringConfig,
-} from "@/lib/scoring/index";
-import type { FeedbackResult } from "@/lib/scoring/types";
-import type { ProgressStep } from "@/lib/scoring/ai/progress";
-
-type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
-
-type StepConfig = {
-  id: PracticeStep;
-  showBack?: boolean;
-  showNext?: boolean;
-  nextLabel?: string;
-  nextDisabled?: (session: PracticeSessionValue) => boolean;
-  onNext?: (session: PracticeSessionValue) => void;
-};
-
-const completeStep = (session: PracticeSessionValue, step: PracticeStep) => {
-  if (session.isReadOnly || session.state.completed[step]) return;
-  session.markStep(step, true);
-  track("practice_step_completed", { slug: session.state.slug, step });
-};
-
-const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
-  functional: {
-    id: "functional",
-    showBack: false,
-    nextLabel: "Next",
-    nextDisabled: (session) => !session.state.requirements.functionalSummary.trim(),
-    onNext: (session) => completeStep(session, "functional"),
-  },
-  nonFunctional: {
-    id: "nonFunctional",
-    showBack: true,
-    nextLabel: "Next",
-    nextDisabled: (session) => {
-      const nf = session.state.requirements.nonFunctional;
-      return nf.readRps <= 0 || nf.writeRps <= 0 || nf.p95RedirectMs <= 0;
-    },
-    onNext: (session) => completeStep(session, "nonFunctional"),
-  },
-  api: {
-    id: "api",
-    showBack: true,
-    nextLabel: "Next",
-    nextDisabled: (session) => {
-      const endpoints = session.state.apiDefinition.endpoints;
-      if (endpoints.length === 0) return true;
-      // Require at least some meaningful content in notes for each endpoint
-      return endpoints.some(ep => !ep.notes.trim() || ep.notes.trim().length < 10);
-    },
-    onNext: (session) => completeStep(session, "api"),
-  },
-  sandbox: {
-    id: "sandbox",
-    showBack: true,
-    nextLabel: "Run & Continue",
-    nextDisabled: () => false, // Always enabled - will trigger run if needed
-    onNext: (session) => completeStep(session, "sandbox"),
-  },
-  score: {
-    id: "score",
-    showBack: true,
-    showNext: false,
-  },
-};
-
-const STEP_COMPONENTS: Record<PracticeStep, (props?: Record<string, unknown>) => ReactElement> = {
-  functional: () => <FunctionalRequirementsStep />,
-  nonFunctional: () => <NonFunctionalRequirementsStep />,
-  api: () => <ApiDefinitionStep />,
-  sandbox: (props) => <SandboxStep {...(props as Parameters<typeof SandboxStep>[0])} />,
-  score: () => <ScoreShareStep />,
-};
-
-type VerificationState = {
-  isVerifying: boolean;
-  result: { canProceed: boolean; blocking: string[]; warnings: string[] } | null;
-  error: string | null;
-};
+import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
+import { STEP_CONFIGS, getHelperText, completeStep } from "@/lib/practice/step-configs";
+import { usePracticeScoring } from "@/hooks/usePracticeScoring";
+import { useSandboxEvaluation } from "@/hooks/useSandboxEvaluation";
+import { usePracticeNavigation } from "@/hooks/usePracticeNavigation";
+import { PracticeFooter } from "@/components/practice/PracticeFooter";
+import { PracticeStepContent } from "@/components/practice/PracticeStepContent";
+import { PracticeFeedbackPanel } from "@/components/practice/PracticeFeedbackPanel";
 
 function PracticeFlowInner() {
   const session = usePracticeSession();
-  const { hydrated, state, currentStep, setStep, goNext, goPrev, isReadOnly, setAuth, setStepScore } = session;
+  const { hydrated, currentStep, setStep, isReadOnly } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
-  const [verification, setVerification] = useState<VerificationState>({
-    isVerifying: false,
-    result: null,
-    error: null,
-  });
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [scoringProgressSteps, setScoringProgressSteps] = useState<ProgressStep[]>([]);
-  const [scoringFeedback, setScoringFeedback] = useState<FeedbackResult | null>(null);
-  const [waitingForSimulation, setWaitingForSimulation] = useState(false);
 
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
   const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
   const { isSignedIn } = useUser();
+
+  // Scoring hook
+  const {
+    verification,
+    setVerification,
+    scoringProgressSteps,
+    scoringFeedback,
+    setScoringFeedback,
+    evaluateCurrentStep,
+    clearScoring,
+    clearVerification,
+  } = usePracticeScoring();
+
+  // Sandbox evaluation hook
+  const { waitingForSimulation, setWaitingForSimulation, buildSandboxFeedback } = useSandboxEvaluation(
+    session,
+    currentStep,
+    setScoringFeedback,
+    setVerification
+  );
+
+  // Navigation hook
+  const {
+    handleNext,
+    handleBack,
+    proceedToNext,
+    showAuthModal,
+    handleAuthModalAuthenticated,
+    handleAuthModalClose,
+  } = usePracticeNavigation(session, {
+    verification,
+    setVerification,
+    scoringFeedback,
+    setScoringFeedback,
+    waitingForSimulation,
+    setWaitingForSimulation,
+    evaluateCurrentStep,
+    buildSandboxFeedback,
+    isSignedIn: isSignedIn ?? false,
+  });
 
   // Reset hideTooltipTemp when stage changes
   useEffect(() => {
@@ -153,169 +96,13 @@ function PracticeFlowInner() {
       setRunPanelOpen(false);
     }
     // Clear verification and scoring state when step changes
-    setVerification({ isVerifying: false, result: null, error: null });
-    setScoringFeedback(null);
-    setScoringProgressSteps([]);
+    clearVerification();
+    clearScoring();
     setWaitingForSimulation(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
-  // Auto-show feedback when simulation completes
-  useEffect(() => {
-    console.log("[PracticeFlow useEffect] Auto-show feedback check:", {
-      waitingForSimulation,
-      currentStep,
-      hasRun: state.run.lastResult !== null,
-      hasDesignScore: state.scores?.design !== undefined,
-      designScore: state.scores?.design
-    });
-
-    if (!waitingForSimulation || currentStep !== "sandbox") return;
-
-    const hasRun = state.run.lastResult !== null;
-    const hasDesignScore = state.scores?.design !== undefined;
-
-    if (hasRun && hasDesignScore && state.scores?.design) {
-      console.log("[PracticeFlow useEffect] Building merged feedback...");
-      const result = state.run.lastResult;
-      const hasPassed = result?.scoreBreakdown?.outcome === "pass";
-      const designScore = state.scores.design;
-
-      if (!hasPassed && result) {
-        // Build failure feedback - treat as warnings, not blocking
-        console.log("[PracticeFlow useEffect] Simulation result:", result);
-        console.log("[PracticeFlow useEffect] Acceptance results:", result.acceptanceResults);
-        console.log("[PracticeFlow useEffect] Design score blocking:", designScore.blocking);
-        console.log("[PracticeFlow useEffect] Design score warnings:", designScore.warnings);
-
-        const warnings: string[] = [];
-        const suggestions: string[] = [];
-
-        if (!result.meetsLatency) {
-          warnings.push(
-            `Latency too high: Your design has ${result.latencyMsP95.toFixed(0)}ms p95 latency, but the target is ${state.requirements.nonFunctional.p95RedirectMs}ms or less.`
-          );
-          suggestions.push(
-            "Consider adding caching layers, CDN for static content, or optimizing database queries."
-          );
-        }
-
-        if (!result.meetsRps) {
-          warnings.push(
-            `Insufficient capacity: Your design handles ${result.capacityRps.toFixed(0)} RPS, but needs ${state.requirements.nonFunctional.readRps} RPS.`
-          );
-          suggestions.push(
-            "Add horizontal scaling, load balancers, or increase service replicas to handle more traffic."
-          );
-        }
-
-        if (result.failedByChaos) {
-          warnings.push(
-            "Your architecture failed under chaos testing. Single points of failure detected."
-          );
-          suggestions.push(
-            "Add redundancy, load balancing, database replication, or failover mechanisms to improve resilience."
-          );
-        }
-
-        if (result.acceptanceScore !== undefined && result.acceptanceScore < 100) {
-          const missingFeatures: string[] = [];
-          if (result.acceptanceResults) {
-            Object.entries(result.acceptanceResults).forEach(([key, passed]) => {
-              if (!passed) {
-                missingFeatures.push(key.replace(/-/g, " "));
-              }
-            });
-          }
-
-          if (missingFeatures.length > 0) {
-            warnings.push(`Missing requirements: ${missingFeatures.join(", ")}`);
-          }
-        }
-
-        const simulationFeedback: FeedbackResult = {
-          score: result.scoreBreakdown?.totalScore ?? 0,
-          maxScore: 30,
-          percentage: result.scoreBreakdown?.totalScore ?? 0,
-          blocking: [], // No hard blocking - allow continue
-          warnings: warnings.map(msg => ({ message: msg, category: "performance" as const, severity: "warning" as const })),
-          positive: [],
-          suggestions: suggestions.map(msg => ({ message: msg, category: "bestPractice" as const, severity: "info" as const })),
-        };
-
-        // Merge feedback - convert design "blocking" to warnings for sandbox step
-        // This allows users to continue even with architectural issues
-        // Filter out AI feedback that contradicts rule-based acceptance criteria
-        const acceptanceResults = result.acceptanceResults || {};
-        const cachePresent = acceptanceResults["cache-present"] === true;
-        const lbPresent = acceptanceResults["lb-service"] === true;
-        const analyticsPresent = acceptanceResults["analytics"] === true;
-
-        const filteredDesignBlocking = designScore.blocking.filter(b => {
-          // Remove cache-related warnings if cache is actually present
-          if (cachePresent && (b.relatedTo === "cache-aside" || b.relatedTo === "Cache (Redis)")) {
-            console.log("[PracticeFlow] Filtering out cache warning since cache is present:", b.message);
-            return false;
-          }
-          // Remove LB-related warnings if LB is actually present
-          if (lbPresent && (b.relatedTo === "Load Balancer" || b.relatedTo === "API Gateway")) {
-            console.log("[PracticeFlow] Filtering out LB warning since LB is present:", b.message);
-            return false;
-          }
-          // Remove analytics warnings if analytics is actually present
-          if (analyticsPresent && (b.relatedTo === "analytics" || b.relatedTo === "Message Queue (Kafka Topic)")) {
-            console.log("[PracticeFlow] Filtering out analytics warning since analytics is present:", b.message);
-            return false;
-          }
-          return true;
-        });
-
-        // Also filter warnings
-        const filteredDesignWarnings = designScore.warnings.filter(w => {
-          if (cachePresent && (w.relatedTo === "cache-aside" || w.relatedTo === "Cache (Redis)")) {
-            console.log("[PracticeFlow] Filtering out cache warning since cache is present:", w.message);
-            return false;
-          }
-          if (lbPresent && (w.relatedTo === "Load Balancer" || w.relatedTo === "API Gateway")) {
-            console.log("[PracticeFlow] Filtering out LB warning since LB is present:", w.message);
-            return false;
-          }
-          if (analyticsPresent && (w.relatedTo === "analytics" || w.relatedTo === "Message Queue (Kafka Topic)")) {
-            console.log("[PracticeFlow] Filtering out analytics warning since analytics is present:", w.message);
-            return false;
-          }
-          return true;
-        });
-
-        const mergedFeedback: FeedbackResult = {
-          score: designScore.score,
-          maxScore: designScore.maxScore,
-          percentage: designScore.percentage,
-          blocking: [], // No blocking - allow continue
-          warnings: [
-            ...simulationFeedback.warnings,
-            ...filteredDesignBlocking.map(b => ({ ...b, severity: "warning" as const })), // Convert blocking to warnings
-            ...filteredDesignWarnings
-          ],
-          positive: designScore.positive,
-          suggestions: [...simulationFeedback.suggestions, ...designScore.suggestions.slice(0, 2)],
-        };
-
-        console.log("[PracticeFlow useEffect] Merged feedback:", mergedFeedback);
-        setScoringFeedback(mergedFeedback);
-      } else {
-        // Passed - show design feedback
-        setScoringFeedback(designScore);
-      }
-
-      // Stop waiting and clear verifying AFTER setting feedback
-      console.log("[PracticeFlow useEffect] Clearing waitingForSimulation and verification");
-      setWaitingForSimulation(false);
-      setVerification({ isVerifying: false, result: null, error: null });
-    }
-  }, [waitingForSimulation, state.run.lastResult, state.scores?.design, state.requirements, currentStep]);
-
   const config = STEP_CONFIGS[currentStep];
-  const StepComponent = STEP_COMPONENTS[currentStep];
   const isSandboxStep = currentStep === "sandbox";
 
   const nextDisabled = useMemo(() => (config?.nextDisabled ? config.nextDisabled(session) : false), [config, session]);
@@ -331,438 +118,7 @@ function PracticeFlowInner() {
     );
   }
 
-  const handleBack = () => {
-    if (isReadOnly) return;
-    goPrev();
-  };
-
-  const evaluateCurrentStep = async (): Promise<FeedbackResult | null> => {
-    setScoringProgressSteps([]);
-    setScoringFeedback(null);
-
-    try {
-      const config = await loadScoringConfig("url-shortener");
-      let result: FeedbackResult;
-
-      switch (currentStep) {
-        case "functional": {
-          const progress = createFunctionalProgress();
-          progress.onProgress(setScoringProgressSteps);
-
-          result = await evaluateFunctionalOptimized(
-            {
-              functionalSummary: state.requirements.functionalSummary,
-              selectedRequirements: state.requirements.functional,
-            },
-            config.steps.functional,
-            {
-              useAI: true,
-              explainScore: true,
-              progress,
-            }
-          );
-          break;
-        }
-
-        case "nonFunctional": {
-          result = evaluateNonFunctionalRequirements(
-            {
-              readRps: state.requirements.nonFunctional.readRps,
-              writeRps: state.requirements.nonFunctional.writeRps,
-              p95RedirectMs: state.requirements.nonFunctional.p95RedirectMs,
-              availability: state.requirements.nonFunctional.availability,
-              rateLimitNotes: state.requirements.nonFunctional.rateLimitNotes,
-              functionalRequirements: state.requirements.functional,
-            },
-            config.steps.nonFunctional
-          );
-          break;
-        }
-
-        case "api": {
-          const progress = createApiProgress();
-          progress.onProgress(setScoringProgressSteps);
-
-          result = await evaluateApiOptimized(
-            {
-              endpoints: state.apiDefinition.endpoints,
-              functionalRequirements: state.requirements.functional,
-            },
-            config.steps.api,
-            {
-              useAI: true,
-              explainScore: true,
-              progress,
-            }
-          );
-          break;
-        }
-
-        case "sandbox": {
-          // For sandbox, we don't evaluate design here - we check simulation results
-          // Design scoring happens during simulation
-          return null;
-        }
-
-        default:
-          return null;
-      }
-
-      setScoringFeedback(result);
-      setStepScore(currentStep as "functional" | "nonFunctional" | "api", result);
-      return result;
-    } catch (error) {
-      logger.error("Scoring evaluation failed:", error);
-      return null;
-    } finally {
-      setScoringProgressSteps([]);
-    }
-  };
-
-  const proceedToNext = () => {
-    config?.onNext?.(session);
-
-    // After completing sandbox (step 4), check if user needs to authenticate
-    if (currentStep === "sandbox") {
-      // If user has already authenticated, proceed
-      if (state.auth.isAuthed) {
-        goNext();
-      }
-      // If user is signed in via Clerk but hasn't been marked as authenticated yet
-      // This handles the case where they signed in from navbar
-      else if (isSignedIn) {
-        setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
-        goNext();
-      }
-      // Otherwise, show auth modal (no skip option - must sign in)
-      else {
-        setShowAuthModal(true);
-      }
-    } else {
-      goNext();
-    }
-  };
-
-  const handleNext = async () => {
-    if (isReadOnly) return;
-
-    // Steps that need scoring evaluation (including sandbox for design scoring)
-    const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
-
-    if (stepsNeedingScoring.includes(currentStep)) {
-      // Always run scoring evaluation (no bypass for already scored)
-      setVerification({ isVerifying: true, result: null, error: null });
-
-      // For sandbox step, check simulation status
-      if (currentStep === "sandbox") {
-        const hasRun = state.run.lastResult !== null;
-        const result = state.run.lastResult;
-        const hasPassed = result?.scoreBreakdown?.outcome === "pass";
-        const hasDesignScore = state.scores?.design !== undefined;
-
-        // If simulation hasn't been run or design score is missing, run it automatically
-        if (!hasRun || !hasDesignScore) {
-          if (window._runSimulation) {
-            logger.info("Automatically running simulation from Next button");
-            setWaitingForSimulation(true);
-            // Trigger simulation - the useEffect will handle showing feedback when complete
-            window._runSimulation();
-            return;
-          } else {
-            // Fallback: Show message if function not available
-            setVerification({
-              isVerifying: false,
-              result: {
-                canProceed: false,
-                blocking: ["Unable to run simulation. Please refresh the page and try again."],
-                warnings: [],
-              },
-              error: null,
-            });
-            return;
-          }
-        }
-
-        // If we reach here, simulation has already been run
-        // Check if feedback is already showing
-        if (scoringFeedback) {
-          // Feedback is already shown, check if can proceed
-          if (scoringFeedback.blocking.length === 0) {
-            // Can proceed - clear simulation state first
-            setWaitingForSimulation(false);
-            setVerification({ isVerifying: false, result: null, error: null });
-            proceedToNext();
-          }
-          // Otherwise stay on page with feedback
-          return;
-        }
-
-        // Need to show feedback - build it from current state
-        const designScore = state.scores?.design;
-        if (!designScore) {
-          // No design score, shouldn't happen
-          setVerification({
-            isVerifying: false,
-            result: {
-              canProceed: false,
-              blocking: ["Design evaluation is missing. Please run the simulation again."],
-              warnings: [],
-            },
-            error: null,
-          });
-          return;
-        }
-
-        // Build feedback from simulation results
-        if (!hasPassed && result) {
-          // Build failure feedback - treat as warnings, not blocking
-          const warnings: string[] = [];
-          const suggestions: string[] = [];
-
-          if (!result.meetsLatency) {
-            warnings.push(
-              `Latency too high: Your design has ${result.latencyMsP95.toFixed(0)}ms p95 latency, but the target is ${state.requirements.nonFunctional.p95RedirectMs}ms or less.`
-            );
-            suggestions.push(
-              "Consider adding caching layers, CDN for static content, or optimizing database queries."
-            );
-          }
-
-          if (!result.meetsRps) {
-            warnings.push(
-              `Insufficient capacity: Your design handles ${result.capacityRps.toFixed(0)} RPS, but needs ${state.requirements.nonFunctional.readRps} RPS.`
-            );
-            suggestions.push(
-              "Add horizontal scaling, load balancers, or increase service replicas to handle more traffic."
-            );
-          }
-
-          if (result.failedByChaos) {
-            warnings.push(
-              "Your architecture failed under chaos testing. Single points of failure detected."
-            );
-            suggestions.push(
-              "Add redundancy, load balancing, database replication, or failover mechanisms to improve resilience."
-            );
-          }
-
-          if (result.acceptanceScore !== undefined && result.acceptanceScore < 100) {
-            const missingFeatures: string[] = [];
-            if (result.acceptanceResults) {
-              Object.entries(result.acceptanceResults).forEach(([key, passed]) => {
-                if (!passed) {
-                  missingFeatures.push(key.replace(/-/g, " "));
-                }
-              });
-            }
-
-            if (missingFeatures.length > 0) {
-              warnings.push(`Missing requirements: ${missingFeatures.join(", ")}`);
-            }
-          }
-
-          const simulationFeedback: FeedbackResult = {
-            score: result.scoreBreakdown?.totalScore ?? 0,
-            maxScore: 30,
-            percentage: result.scoreBreakdown?.totalScore ?? 0,
-            blocking: [], // No hard blocking - allow continue
-            warnings: warnings.map(msg => ({ message: msg, category: "performance" as const, severity: "warning" as const })),
-            positive: [],
-            suggestions: suggestions.map(msg => ({ message: msg, category: "bestPractice" as const, severity: "info" as const })),
-          };
-
-          // Merge feedback - convert design "blocking" to warnings for sandbox step
-          // This allows users to continue even with architectural issues
-          const mergedFeedback: FeedbackResult = {
-            score: designScore.score,
-            maxScore: designScore.maxScore,
-            percentage: designScore.percentage,
-            blocking: [], // No blocking - allow continue
-            warnings: [
-              ...simulationFeedback.warnings,
-              ...designScore.blocking.map(b => ({ ...b, severity: "warning" as const })), // Convert blocking to warnings
-              ...designScore.warnings
-            ],
-            positive: designScore.positive,
-            suggestions: [...simulationFeedback.suggestions, ...designScore.suggestions.slice(0, 2)],
-          };
-
-          setScoringFeedback(mergedFeedback);
-          setWaitingForSimulation(false);
-          setVerification({ isVerifying: false, result: null, error: null });
-          return;
-        }
-
-        // Passed - show design feedback
-        setScoringFeedback(designScore);
-        setWaitingForSimulation(false);
-        setVerification({ isVerifying: false, result: null, error: null });
-        return;
-      }
-
-      // For other steps, run scoring evaluation
-      const result = await evaluateCurrentStep();
-      setVerification({ isVerifying: false, result: null, error: null });
-
-      if (!result) {
-        // Evaluation failed - show error
-        setVerification({
-          isVerifying: false,
-          result: null,
-          error: "Evaluation failed. Please try again.",
-        });
-        return;
-      }
-
-      // Always show feedback (even for perfect scores)
-      // Check if there are blocking issues (score too low)
-      if (result.blocking.length > 0) {
-        // Show feedback, user must revise
-        return;
-      }
-
-      // If warnings, suggestions, or positive feedback, show it and allow continue
-      if (result.warnings.length > 0 || result.suggestions.length > 0 || result.positive.length > 0) {
-        // Feedback is already shown via scoringFeedback state
-        // User can click "Continue" to proceed
-        return;
-      }
-
-      // Edge case: no feedback at all (shouldn't happen), proceed automatically
-      proceedToNext();
-    } else {
-      // No verification needed
-      proceedToNext();
-    }
-  };
-
-  const sandboxProps = currentStep === "sandbox"
-    ? {
-        mobilePaletteOpen,
-        onMobilePaletteChange: setMobilePaletteOpen,
-        runPanelOpen,
-        onRunPanelChange: setRunPanelOpen,
-      }
-    : undefined;
-
-  const stepContent = StepComponent ? <StepComponent {...(sandboxProps ?? {})} /> : null;
-
-  const renderFooter = () => {
-    if (currentStep === "score") {
-      return (
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="button"
-            onClick={() => setStep("sandbox")}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
-          >
-            <span className="sr-only">Back to sandbox</span>
-            <svg aria-hidden className="h-4 w-4" viewBox="0 0 16 16" fill="none">
-              <path
-                d="M10 12l-4-4 4-4"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <Link
-            href="/"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 text-blue-950 transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
-          >
-            <span className="sr-only">Home</span>
-            <svg aria-hidden className="h-4 w-4" viewBox="0 0 20 20" fill="none">
-              <path
-                d="M10 3L3 9v8a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1V9l-7-6z"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </Link>
-        </div>
-      );
-    }
-
-    return (
-      <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-4">
-        {showBack ? (
-          <button
-            type="button"
-            onClick={handleBack}
-            disabled={isReadOnly}
-            className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-4 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            ← Back
-          </button>
-        ) : (
-          <span className="h-11" />
-        )}
-
-        <div className="flex items-center gap-2">
-          {showNext ? (
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={isReadOnly || nextDisabled || verification.isVerifying}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 text-blue-950 transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300 disabled:cursor-not-allowed disabled:bg-zinc-600 disabled:text-zinc-300"
-            >
-              <span className="sr-only">{verification.isVerifying ? "Verifying..." : nextLabel}</span>
-              {verification.isVerifying ? (
-                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-              ) : (
-                <svg aria-hidden className="h-4 w-4" viewBox="0 0 16 16" fill="none">
-                  <path
-                    d="M6 4l4 4-4 4"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              )}
-            </button>
-          ) : null}
-        </div>
-      </div>
-    );
-  };
-
-  const handleAuthModalAuthenticated = () => {
-    setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
-    setShowAuthModal(false);
-    goNext();
-  };
-
-  const handleAuthModalClose = () => {
-    // Don't allow closing without authenticating
-    // User must sign in to proceed
-  };
-
-  const helperText = () => {
-    if (isReadOnly) return null;
-    if (currentStep === "sandbox" && nextDisabled) {
-      return "Run the simulation and achieve a passing score to continue.";
-    }
-    if (currentStep === "nonFunctional" && nextDisabled) {
-      return "Enter positive numbers for throughput and latency targets.";
-    }
-    if (currentStep === "api" && nextDisabled) {
-      return "Add meaningful descriptions (at least 10 characters) for each API endpoint.";
-    }
-    return null;
-  };
-
-  const helper = helperText();
+  const helperText = getHelperText(currentStep, nextDisabled, isReadOnly);
 
   // Render onboarding tooltips based on stage
   const renderOnboardingTooltip = () => {
@@ -950,12 +306,12 @@ function PracticeFlowInner() {
         isOpen={showAuthModal}
         onClose={handleAuthModalClose}
         onAuthenticated={handleAuthModalAuthenticated}
-        slug={state.slug}
+        slug={session.state.slug}
       />
       <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
         <PracticeStepper
           current={currentStep}
-          progress={state.completed}
+          progress={session.state.completed}
           onStepChange={async (step) => {
             // If navigating forward and current step needs scoring, evaluate it first
             const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
@@ -969,7 +325,7 @@ function PracticeFlowInner() {
             ) {
               // Always evaluate current step before allowing navigation (no bypass)
               setVerification({ isVerifying: true, result: null, error: null });
-              const result = await evaluateCurrentStep();
+              const result = await evaluateCurrentStep(currentStep, session);
               setVerification({ isVerifying: false, result: null, error: null });
 
               if (result && result.blocking.length === 0) {
@@ -1000,7 +356,13 @@ function PracticeFlowInner() {
               : "flex-1 overflow-y-auto pb-28"
           }
         >
-          {isSandboxStep ? <div className="h-full w-full">{stepContent}</div> : <div className="px-4 py-6">{stepContent}</div>}
+          <PracticeStepContent
+            currentStep={currentStep}
+            mobilePaletteOpen={mobilePaletteOpen}
+            onMobilePaletteChange={setMobilePaletteOpen}
+            runPanelOpen={runPanelOpen}
+            onRunPanelChange={setRunPanelOpen}
+          />
         </div>
 
         {isSandboxStep ? (
@@ -1035,55 +397,40 @@ function PracticeFlowInner() {
           </Tooltip>
         ) : null}
 
-      <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">
-        {verification.error ? (
-          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
-            <div className="rounded-2xl border border-rose-400/40 bg-rose-500/10 p-4">
-              <p className="text-sm text-rose-200">{verification.error}</p>
-            </div>
-          </div>
-        ) : null}
-        {scoringProgressSteps.length > 0 && (
-          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
-            <EvaluationProgress steps={scoringProgressSteps} />
-          </div>
-        )}
-        {scoringFeedback && (
-          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
-            <VerificationFeedback
-              feedbackResult={scoringFeedback}
-              showScore={true}
-              onRevise={() => {
-                setScoringFeedback(null);
-                // For sandbox, clear design score so user can run simulation again
-                if (currentStep === "sandbox") {
-                  setStepScore("design", undefined);
-                } else {
-                  // Clear the score so user can try again
-                  setStepScore(currentStep as "functional" | "nonFunctional" | "api", undefined);
-                }
-              }}
-              onContinue={scoringFeedback.blocking.length === 0 ? proceedToNext : undefined}
-            />
-          </div>
-        )}
-        {verification.result && (verification.result.blocking.length > 0 || verification.result.warnings.length > 0) ? (
-          <div className="mx-auto w-full max-w-5xl px-4 pt-4">
-            <VerificationFeedback
-              blocking={verification.result.blocking}
-              warnings={verification.result.warnings}
-              onRevise={() => setVerification({ isVerifying: false, result: null, error: null })}
-              onContinue={verification.result.canProceed ? proceedToNext : undefined}
-            />
-          </div>
-        ) : null}
-        {renderFooter()}
-        {helper ? (
-          <div className="mx-auto w-full max-w-5xl px-4 pb-4 text-xs text-amber-200">
-            {helper}
-          </div>
-        ) : null}
-      </footer>
+        <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">
+          <PracticeFeedbackPanel
+            currentStep={currentStep}
+            verification={verification}
+            scoringProgressSteps={scoringProgressSteps}
+            scoringFeedback={scoringFeedback}
+            helperText={helperText}
+            onRevise={() => {
+              setScoringFeedback(null);
+              // For sandbox, clear design score so user can run simulation again
+              if (currentStep === "sandbox") {
+                session.setStepScore("design", undefined);
+              } else {
+                // Clear the score so user can try again
+                session.setStepScore(currentStep as "functional" | "nonFunctional" | "api", undefined);
+              }
+            }}
+            onContinue={proceedToNext}
+            onClearVerification={clearVerification}
+          />
+
+          <PracticeFooter
+            currentStep={currentStep}
+            showBack={showBack}
+            showNext={showNext}
+            nextLabel={nextLabel}
+            nextDisabled={nextDisabled}
+            isReadOnly={isReadOnly}
+            isVerifying={verification.isVerifying}
+            onBack={handleBack}
+            onNext={handleNext}
+            onBackToSandbox={() => setStep("sandbox")}
+          />
+        </footer>
       </div>
     </TooltipProvider>
   );

@@ -22,6 +22,7 @@ import type {
   PathNode,
 } from "../types";
 import type { PlacedNode, Edge } from "@/app/components/types";
+import { hasConnectionBetweenKinds } from "@/app/components/utils";
 
 export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, DesignScoringConfig> {
   /**
@@ -545,9 +546,20 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     edges: Edge[],
     pattern: ArchitecturePattern
   ): { success: boolean; incorrect: boolean } {
+    // Helper to match component kind including alternatives
+    const matchesKind = (nodeKind: string, targetKind: string): boolean => {
+      if (nodeKind === targetKind) return true;
+
+      // Check if base types match (e.g., "DB (Postgres)" matches "DB (MySQL)")
+      const baseTarget = targetKind.split(' ')[0];
+      const baseNode = nodeKind.split(' ')[0];
+
+      return baseTarget === baseNode;
+    };
+
     // Check required components exist
     for (const requiredKind of pattern.requiredComponents) {
-      const hasComponent = nodes.some((node) => node.spec.kind === requiredKind);
+      const hasComponent = nodes.some((node) => matchesKind(node.spec.kind, requiredKind));
       if (!hasComponent) {
         return { success: false, incorrect: false };
       }
@@ -576,27 +588,26 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
 
   /**
    * Check if a connection exists between component types
+   * Uses shared bidirectional connection logic from utils.ts
+   * Now treats ALL connections as bidirectional to match simulation behavior
    */
   private checkConnection(
     nodes: PlacedNode[],
     edges: Edge[],
     connection: ArchitecturePattern["requiredConnections"][0]
   ): boolean {
-    const fromNodes = nodes.filter((n) => n.spec.kind === connection.from);
-    const toNodes = nodes.filter((n) => n.spec.kind === connection.to);
+    console.log(`[checkConnection] Checking ${connection.from} -> ${connection.to}`);
 
-    for (const fromNode of fromNodes) {
-      for (const toNode of toNodes) {
-        const hasEdge = edges.some(
-          (edge) =>
-            (edge.from === fromNode.id && edge.to === toNode.id) ||
-            (connection.bidirectional && edge.from === toNode.id && edge.to === fromNode.id)
-        );
-        if (hasEdge) return true;
-      }
-    }
+    // Use shared connection checker (always bidirectional)
+    const hasConnection = hasConnectionBetweenKinds(
+      nodes,
+      edges,
+      connection.from,
+      connection.to
+    );
 
-    return false;
+    console.log(`[checkConnection] Result: ${hasConnection}`);
+    return hasConnection;
   }
 }
 
