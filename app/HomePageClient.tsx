@@ -379,13 +379,52 @@ export function HomePageClient() {
                 </ul>
               </div>
               <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
-                <div className="text-center">
-                  <div className="inline-block bg-zinc-900/50 border border-zinc-700 rounded-lg px-6 py-4 mb-4">
-                    <code className="text-sm text-emerald-400 font-mono">
-                      system-design-sandbox.com/share?d=eyJub2RlcyI6...
-                    </code>
+                <div className="w-full max-w-md space-y-4">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="flex-1 h-px bg-zinc-700"></div>
+                    <span className="text-xs text-zinc-500 font-mono">ITERATIONS</span>
+                    <div className="flex-1 h-px bg-zinc-700"></div>
                   </div>
-                  <p className="text-sm text-zinc-500">One-click sharing with URL encoding</p>
+
+                  <Card className="bg-zinc-900/50 border-zinc-700">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm text-white">Version 1: Basic Setup</CardTitle>
+                        <span className="text-xs text-red-400">Failed</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between text-zinc-400">
+                          <span>P95 Latency</span>
+                          <span className="text-red-400 font-mono">145ms</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="flex justify-center">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    </svg>
+                  </div>
+
+                  <Card className="bg-zinc-900/50 border-emerald-500/50">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-sm text-white">Version 2: With Caching</CardTitle>
+                        <span className="text-xs text-emerald-400">Passed</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between text-zinc-400">
+                          <span>P95 Latency</span>
+                          <span className="text-emerald-400 font-mono">82ms</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
               </div>
             </div>
