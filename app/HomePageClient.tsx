@@ -242,7 +242,7 @@ export function HomePageClient() {
           {/* Step 2: Design Your Architecture */}
           <div className="border-b border-zinc-800">
             <div className="grid lg:grid-cols-2">
-              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800 order-2 lg:order-1">
+              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
                 <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 02</p>
                 <h3 className="mb-4 text-3xl font-bold tracking-tight">Design Your Architecture</h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
@@ -270,7 +270,7 @@ export function HomePageClient() {
                   </li>
                 </ul>
               </div>
-              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px] order-1 lg:order-2">
+              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
                 <div className="w-full max-w-2xl">
                   <Image
                     src="/Screen Recording 2025-11-03 at 11.36.04-fast.gif"
@@ -350,7 +350,7 @@ export function HomePageClient() {
           {/* Step 4: Learn & Iterate */}
           <div>
             <div className="grid lg:grid-cols-2">
-              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800 order-2 lg:order-1">
+              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
                 <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 04</p>
                 <h3 className="mb-4 text-3xl font-bold tracking-tight">Learn & Iterate</h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
@@ -378,7 +378,7 @@ export function HomePageClient() {
                   </li>
                 </ul>
               </div>
-              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px] order-1 lg:order-2">
+              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
                 <div className="text-center">
                   <div className="inline-block bg-zinc-900/50 border border-zinc-700 rounded-lg px-6 py-4 mb-4">
                     <code className="text-sm text-emerald-400 font-mono">
