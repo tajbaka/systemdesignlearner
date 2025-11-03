@@ -1,92 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { logger } from "@/lib/logger";
 import { Navbar } from "@/components/Navbar";
 import DemoBoard from "./components/DemoBoard";
 import { track } from "@/lib/analytics";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 
 export function HomePageClient() {
-  const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [newsletterMessage, setNewsletterMessage] = useState<string>('');
-
-  // Animation variants for features section
-  const container = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15, delayChildren: 0.2 }
-    }
-  };
-
-  const item = {
-    hidden: { y: 30, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        type: "spring" as const,
-        stiffness: 100
-      }
-    }
-  };
-
-  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setFormStatus('submitting');
-
-    const form = e.currentTarget;
-    const formData = new FormData(form);
-    const data = {
-      email: formData.get('email') as string,
-      name: formData.get('name') as string,
-      feedback: formData.get('feedback') as string,
-    };
-
-    try {
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit feedback');
-      }
-
-      setFormStatus('success');
-
-      // Reset form after success
-      form.reset();
-
-      // Reset status after showing success message
-      setTimeout(() => setFormStatus('idle'), 3000);
-    } catch (error) {
-      logger.error('Form submission error:', error);
-      setFormStatus('error');
-
-      // Reset status after showing error message
-      setTimeout(() => setFormStatus('idle'), 3000);
-    }
-  };
 
   const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -344,10 +272,13 @@ export function HomePageClient() {
               </div>
               <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px] order-1 lg:order-2">
                 <div className="w-full max-w-2xl">
-                  <img
+                  <Image
                     src="/Screen Recording 2025-11-03 at 11.36.04-fast.gif"
                     alt="Drag-and-drop interface with visual feedback"
+                    width={800}
+                    height={600}
                     className="w-full h-auto rounded-lg shadow-2xl border border-zinc-700"
+                    unoptimized
                   />
                 </div>
               </div>
@@ -423,7 +354,7 @@ export function HomePageClient() {
                 <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 04</p>
                 <h3 className="mb-4 text-3xl font-bold tracking-tight">Learn & Iterate</h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
-                  Understand why your design works (or doesn't). Share your solutions with others
+                  Understand why your design works (or doesn&apos;t). Share your solutions with others
                   or fork existing designs to learn different approaches to the same problem.
                 </p>
                 <ul className="space-y-3 text-zinc-400">
