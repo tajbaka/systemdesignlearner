@@ -50,31 +50,93 @@
     ]
   },
   "nonFunctional": {
-    "latency": {
-      "min": 10,
-      "max": 500,
-      "recommended": 100,
-      "unit": "ms",
-      "description": "P95 latency for redirect operations"
-    },
-    "readThroughput": {
-      "min": 100,
-      "max": 100000,
-      "recommended": 5000,
-      "unit": "rps",
-      "description": "Read requests per second (redirects)"
-    },
-    "writeThroughput": {
-      "min": 10,
-      "max": 10000,
-      "recommended": 100,
-      "unit": "rps",
-      "description": "Write requests per second (URL creation)"
-    },
-    "availability": {
-      "acceptable": ["99.0", "99.9", "99.99"],
-      "recommended": "99.9"
-    }
+    "categories": [
+      {
+        "id": "latency",
+        "label": "Latency",
+        "description": "How quickly should the system respond to redirect requests?",
+        "examples": [
+          "Redirects should be fast (under 100ms)",
+          "Sub-second response time for URL lookups",
+          "Minimize latency for good user experience"
+        ],
+        "quantitative": {
+          "min": 10,
+          "max": 500,
+          "recommended": 100,
+          "unit": "ms",
+          "metric": "P95 latency for redirect operations"
+        }
+      },
+      {
+        "id": "readThroughput",
+        "label": "Read Throughput",
+        "description": "How many redirect requests should the system handle per second?",
+        "examples": [
+          "Support high read volume (thousands of redirects per second)",
+          "Handle viral content spikes",
+          "Read-heavy workload optimization"
+        ],
+        "quantitative": {
+          "min": 100,
+          "max": 100000,
+          "recommended": 5000,
+          "unit": "rps",
+          "metric": "Read requests per second (redirects)"
+        }
+      },
+      {
+        "id": "writeThroughput",
+        "label": "Write Throughput",
+        "description": "How many URL creation requests should the system handle per second?",
+        "examples": [
+          "Support moderate write volume",
+          "100+ URL creations per second",
+          "Lower write volume compared to reads"
+        ],
+        "quantitative": {
+          "min": 10,
+          "max": 10000,
+          "recommended": 100,
+          "unit": "rps",
+          "metric": "Write requests per second (URL creation)"
+        }
+      },
+      {
+        "id": "availability",
+        "label": "Availability",
+        "description": "How reliable should the system be? What level of downtime is acceptable?",
+        "examples": [
+          "High availability with minimal downtime",
+          "99.9% uptime (about 8 hours downtime per year)",
+          "Critical service requiring redundancy"
+        ],
+        "quantitative": {
+          "acceptable": ["99.0", "99.9", "99.99"],
+          "recommended": "99.9"
+        }
+      },
+      {
+        "id": "scalability",
+        "label": "Scalability",
+        "description": "How should the system scale as traffic grows?",
+        "examples": [
+          "Horizontal scaling for increased load",
+          "Auto-scale based on traffic patterns",
+          "Handle 10x traffic spikes during viral events"
+        ]
+      },
+      {
+        "id": "consistency",
+        "label": "Consistency",
+        "description": "What are the consistency requirements?",
+        "examples": [
+          "Eventual consistency acceptable for analytics",
+          "Strong consistency for URL creation to prevent duplicates",
+          "Read-after-write consistency for immediate redirects"
+        ]
+      }
+    ]
   },
   "apiEndpoints": [
     {

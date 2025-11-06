@@ -6,7 +6,7 @@ import PracticeFlow from "@/components/practice/PracticeFlow";
 import { logger } from "@/lib/logger";
 import { PracticeSessionProvider } from "@/components/practice/session/PracticeSessionProvider";
 import { decodeDesign } from "@/lib/shareLink";
-import { Navbar } from "@/components/Navbar";
+import { PracticeSidebar } from "@/components/practice/PracticeSidebar";
 import type { PracticeState } from "@/lib/practice/types";
 
 const VALID_SLUG = "url-shortener";
@@ -45,7 +45,7 @@ export default function PracticeSlugPage() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-zinc-950">
-      <Navbar />
+      <PracticeSidebar />
       <main className="flex-1 overflow-hidden">
         <PracticeSessionProvider sharedState={sharedState}>
           <PracticeFlow />

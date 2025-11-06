@@ -89,7 +89,7 @@ export function NonFunctionalRequirementsStep() {
             <textarea
               value={nf.notes}
               onChange={(event) => handleSummaryChange(event.target.value)}
-              placeholder="Example: target 100ms P95 redirects with 5k read RPS, 100 write RPS. Require 99.9% availability and rate limit writes to 5/min per IP."
+              placeholder="Example: The system should handle high read volume with fast redirects (sub-second latency). Needs high availability with minimal downtime. Should scale horizontally for traffic spikes."
               className={`min-h-[200px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
                 !hasNotes && !isReadOnly
                   ? 'focus-visible:ring-2 focus-visible:ring-red-500'
