@@ -32,8 +32,10 @@ export const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
     showBack: true,
     nextLabel: "Next",
     nextDisabled: (session) => {
+      // Allow progression even without numeric values
+      // Only require that user has written some notes
       const nf = session.state.requirements.nonFunctional;
-      return nf.readRps <= 0 || nf.writeRps <= 0 || nf.p95RedirectMs <= 0;
+      return !nf.notes.trim();
     },
     onNext: (session) => completeStep(session, "nonFunctional"),
   },
@@ -77,7 +79,7 @@ export const getHelperText = (
     return "Run the simulation and achieve a passing score to continue.";
   }
   if (currentStep === "nonFunctional" && nextDisabled) {
-    return "Enter positive numbers for throughput and latency targets.";
+    return "Please describe the performance constraints before continuing.";
   }
   if (currentStep === "api" && nextDisabled) {
     return "Add meaningful descriptions (at least 10 characters) for each API endpoint.";

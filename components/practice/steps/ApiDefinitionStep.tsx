@@ -39,6 +39,13 @@ export function ApiDefinitionStep() {
   const endpoints = useMemo(() => state.apiDefinition.endpoints, [state.apiDefinition.endpoints]);
   const [openId, setOpenId] = useState<string | null>(() => endpoints[0]?.id ?? null);
 
+  // Check if there are any validation issues
+  const hasNoEndpoints = endpoints.length === 0;
+  const validEndpoints = endpoints.filter(ep => ep.path.trim().length > 0);
+  const hasNoValidEndpoints = validEndpoints.length === 0;
+  const endpointsWithIssues = validEndpoints.filter(ep => !ep.notes.trim() || ep.notes.trim().length < 10);
+  const hasValidationIssues = hasNoEndpoints || hasNoValidEndpoints || endpointsWithIssues.length > 0;
+
   useEffect(() => {
     if (!openId || !endpoints.some((endpoint) => endpoint.id === openId)) {
       setOpenId(endpoints[0]?.id ?? null);
@@ -98,13 +105,30 @@ export function ApiDefinitionStep() {
       </div>
 
       <section className="space-y-4 lg:mx-auto lg:max-w-3xl">
+        {(hasNoEndpoints || hasNoValidEndpoints) && !isReadOnly && (
+          <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-3">
+            <p className="text-xs text-red-400">
+              {hasNoEndpoints
+                ? "Please add at least one API endpoint before continuing."
+                : "Please define at least one endpoint with a path and description."}
+            </p>
+          </div>
+        )}
+
         {endpoints.map((endpoint, index) => {
           const isOpen = openId === endpoint.id;
+          const hasPath = endpoint.path.trim().length > 0;
+          const hasValidNotes = endpoint.notes.trim().length >= 10;
+          const hasError = hasPath && !hasValidNotes && !isReadOnly;
 
           return (
             <article
               key={endpoint.id}
-              className={`overflow-hidden rounded-3xl border border-zinc-800 bg-zinc-900/70 transition-[max-height,opacity] duration-300 ${
+              className={`overflow-hidden rounded-3xl border transition-[max-height,opacity] duration-300 ${
+                hasError
+                  ? 'border-red-500/50 bg-red-950/10'
+                  : 'border-zinc-800 bg-zinc-900/70'
+              } ${
                 isOpen ? "max-h-[999px] opacity-100" : "max-h-[120px] opacity-80"
               }`}
             >
@@ -200,7 +224,11 @@ export function ApiDefinitionStep() {
 
               {isOpen ? (
                 <div className="px-4 pb-4 sm:px-6">
-                  <div className="relative mt-2 rounded-2xl border border-zinc-700 bg-zinc-950/60">
+                  <div className={`relative mt-2 rounded-2xl border ${
+                    hasError
+                      ? 'border-red-500/50 bg-red-950/20'
+                      : 'border-zinc-700 bg-zinc-950/60'
+                  }`}>
                     <textarea
                       value={endpoint.notes}
                       onChange={(event) =>
@@ -209,9 +237,13 @@ export function ApiDefinitionStep() {
                           notes: event.target.value,
                         }))
                       }
-                      placeholder="Example: Describe request body, success response, error codes, and how this ties back to requirements. Mention auth or rate limiting if applicable."
+                      placeholder="Describe the request/response format, validation, and any special behavior."
                       disabled={isReadOnly}
-                      className="min-h-[180px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                      className={`min-h-[180px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
+                        hasError
+                          ? 'focus-visible:ring-2 focus-visible:ring-red-500'
+                          : 'focus-visible:ring-2 focus-visible:ring-blue-500'
+                      } disabled:cursor-not-allowed disabled:opacity-60`}
                     />
                     <button
                       type="button"
@@ -226,6 +258,12 @@ export function ApiDefinitionStep() {
                       <MicIcon />
                     </button>
                   </div>
+
+                  {hasError && (
+                    <p className="mt-2 text-xs text-red-400">
+                      Please add a meaningful description (at least 10 characters).
+                    </p>
+                  )}
 
                   <p className="mt-3 text-xs text-zinc-500">
                     Endpoint {index + 1} of {endpoints.length}

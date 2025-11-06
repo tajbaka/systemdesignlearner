@@ -215,10 +215,10 @@ const SystemDesignNodeComponent = ({
 
       <div className={`${handleClass} text-zinc-200`}>{data.spec.kind}</div>
       <div className="p-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center gap-3">
           {(() => {
             const Icon = iconFor(data.spec.kind);
-            return <Icon className="text-zinc-200" size={18} />;
+            return <Icon className="text-zinc-200" size={24} />;
           })()}
           {isEditing ? (
             <input
@@ -243,46 +243,6 @@ const SystemDesignNodeComponent = ({
               {data.customLabel || data.spec.label}
             </div>
           )}
-        </div>
-        <div className="text-[11px] text-zinc-300 mt-1 flex items-center justify-between pointer-events-auto">
-          <span>{data.spec.baseLatencyMs}ms · {data.spec.capacityRps * (data.replicas || 1)} rps</span>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const newReplicas = Math.max(1, (data.replicas || 1) - 1);
-                logger.log('[SystemDesignNode] Decrease replicas', {
-                  id,
-                  previous: data.replicas || 1,
-                  next: newReplicas,
-                });
-                updateLocalReplicas(newReplicas);
-                onUpdateReplicas?.(id, newReplicas);
-              }}
-              className="w-4 h-4 rounded bg-zinc-600 hover:bg-zinc-500 text-zinc-300 text-xs flex items-center justify-center leading-none pointer-events-auto"
-              title="Decrease replicas"
-            >
-              −
-            </button>
-            <span className="text-xs text-zinc-400 min-w-[12px] text-center">{data.replicas || 1}</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                const newReplicas = (data.replicas || 1) + 1;
-                logger.log('[SystemDesignNode] Increase replicas', {
-                  id,
-                  previous: data.replicas || 1,
-                  next: newReplicas,
-                });
-                updateLocalReplicas(newReplicas);
-                onUpdateReplicas?.(id, newReplicas);
-              }}
-              className="w-4 h-4 rounded bg-zinc-600 hover:bg-zinc-500 text-zinc-300 text-xs flex items-center justify-center leading-none pointer-events-auto"
-              title="Increase replicas"
-            >
-              +
-            </button>
-          </div>
         </div>
       </div>
 

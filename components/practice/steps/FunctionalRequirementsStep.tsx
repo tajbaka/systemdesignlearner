@@ -7,6 +7,9 @@ export function FunctionalRequirementsStep() {
   const { state, setRequirements, setStepScore, isReadOnly } = usePracticeSession();
   const requirements = state.requirements;
 
+  const isEmpty = !requirements.functionalSummary.trim();
+  const showError = isEmpty && requirements.functionalSummary.length > 0;
+
   const handleSummaryChange = (summary: string) => {
     setRequirements({
       ...requirements,
@@ -30,15 +33,28 @@ export function FunctionalRequirementsStep() {
 
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
-            What should it do?
-          </h3>
-          <div className="relative rounded-2xl border border-zinc-700 bg-zinc-950/60">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
+              What should it do?
+            </h3>
+            {isEmpty && !isReadOnly && (
+              <span className="text-xs text-red-400">Required</span>
+            )}
+          </div>
+          <div className={`relative rounded-2xl border ${
+            isEmpty && !isReadOnly
+              ? 'border-red-500/50 bg-red-950/20'
+              : 'border-zinc-700 bg-zinc-950/60'
+          }`}>
             <textarea
               value={requirements.functionalSummary}
               onChange={(event) => handleSummaryChange(event.target.value)}
               placeholder="Example: shorten URLs, redirect by slug, allow optional custom aliases and view counts."
-              className="min-h-[200px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className={`min-h-[200px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
+                isEmpty && !isReadOnly
+                  ? 'focus-visible:ring-2 focus-visible:ring-red-500'
+                  : 'focus-visible:ring-2 focus-visible:ring-blue-500'
+              }`}
               disabled={isReadOnly}
             />
             <div className="absolute bottom-3 right-3">
@@ -50,7 +66,11 @@ export function FunctionalRequirementsStep() {
               />
             </div>
           </div>
-
+          {isEmpty && !isReadOnly && (
+            <p className="text-xs text-red-400">
+              Please describe the functional requirements before continuing.
+            </p>
+          )}
         </div>
       </section>
     </div>
