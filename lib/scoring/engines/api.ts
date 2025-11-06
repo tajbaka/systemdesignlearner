@@ -176,18 +176,19 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
 
     // Add blocking issue if score is too low (below 40%)
     if (percentage < 40 && blocking.length === 0) {
-      const missingEndpoints = config.requiredEndpoints
-        .filter(req => !matchedRequired.has(req.id))
-        .map(req => `${req.method} ${req.examplePath || req.pathPattern}`)
-        .join(", ");
+      // Generate specific actionable feedback based on what's missing
+      const feedback = this.generateLowScoreFeedback(
+        input,
+        config,
+        matchedRequired,
+        percentage
+      );
 
       blocking.push({
         category: "requirement",
         severity: "blocking",
-        message: `Your API design score is too low (${percentage.toFixed(0)}%). You need at least 40% to proceed.`,
-        actionable: missingEndpoints
-          ? `Add or improve these required endpoints: ${missingEndpoints}`
-          : "Improve documentation for your endpoints. Include request/response formats, error codes, and how they align with requirements.",
+        message: feedback.message,
+        actionable: feedback.actionable,
       });
     }
 
@@ -345,6 +346,83 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       const found = normalizedText.includes(keyword.toLowerCase());
       return { keyword, found };
     });
+  }
+
+  /**
+   * Generate specific, actionable feedback for low API scores
+   */
+  private generateLowScoreFeedback(
+    input: ApiScoringInput,
+    config: ApiScoringConfig,
+    matchedRequired: Set<string>,
+    percentage: number
+  ): { message: string; actionable: string } {
+    // Find missing required endpoints
+    const missingRequired = config.requiredEndpoints.filter(
+      (req) => !matchedRequired.has(req.id)
+    );
+
+    // Find endpoints with poor documentation
+    const poorlyDocumented = input.endpoints.filter((endpoint) => {
+      const matchingConfig = config.requiredEndpoints.find((config) =>
+        this.endpointMatches(endpoint, config)
+      );
+      if (!matchingConfig) return false;
+      return this.assessDocumentationQuality(endpoint, matchingConfig) < 0.6;
+    });
+
+    // Build specific feedback
+    const issues: string[] = [];
+    const actions: string[] = [];
+
+    if (missingRequired.length > 0) {
+      issues.push(`missing ${missingRequired.length} required endpoint${missingRequired.length > 1 ? "s" : ""}`);
+
+      missingRequired.forEach((config) => {
+        actions.push(
+          `• Add ${config.method} ${config.examplePath || config.pathPattern} - ${config.purpose}`
+        );
+      });
+    }
+
+    if (poorlyDocumented.length > 0) {
+      issues.push(`${poorlyDocumented.length} endpoint${poorlyDocumented.length > 1 ? "s need" : " needs"} better documentation`);
+
+      poorlyDocumented.forEach((endpoint) => {
+        const matchingConfig = config.requiredEndpoints.find((config) =>
+          this.endpointMatches(endpoint, config)
+        );
+        if (matchingConfig) {
+          actions.push(
+            `• ${endpoint.method} ${endpoint.path}: Include ${matchingConfig.documentationHints.slice(0, 3).join(", ")}`
+          );
+        }
+      });
+    }
+
+    // If we still don't have specific issues, check for empty notes
+    if (actions.length === 0) {
+      const emptyNotes = input.endpoints.filter(
+        (e) => !e.notes || e.notes.trim().length < 20
+      );
+      if (emptyNotes.length > 0) {
+        emptyNotes.forEach((endpoint) => {
+          actions.push(
+            `• ${endpoint.method} ${endpoint.path}: Add details about request body, response format, and error handling`
+          );
+        });
+      }
+    }
+
+    const message = issues.length > 0
+      ? `Your API design needs work: ${issues.join(", ")}. Score: ${percentage.toFixed(0)}% (need 40%+)`
+      : `Your API design score is ${percentage.toFixed(0)}% (need 40%+). Improve endpoint documentation.`;
+
+    const actionable = actions.length > 0
+      ? `\n${actions.join("\n")}`
+      : "Add request/response details, status codes, and error handling to your endpoint descriptions.";
+
+    return { message, actionable };
   }
 }
 

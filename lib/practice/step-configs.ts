@@ -24,7 +24,11 @@ export const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
     id: "functional",
     showBack: false,
     nextLabel: "Next",
-    nextDisabled: (session) => !session.state.requirements.functionalSummary.trim(),
+    nextDisabled: (session) => {
+      const summary = session.state.requirements.functionalSummary.trim();
+      // Require at least 50 characters for meaningful description
+      return !summary || summary.length < 50;
+    },
     onNext: (session) => completeStep(session, "functional"),
   },
   nonFunctional: {
@@ -75,6 +79,9 @@ export const getHelperText = (
   isReadOnly: boolean
 ): string | null => {
   if (isReadOnly) return null;
+  if (currentStep === "functional" && nextDisabled) {
+    return "Please provide a detailed description (at least 50 characters) of what the system should do.";
+  }
   if (currentStep === "sandbox" && nextDisabled) {
     return "Run the simulation and achieve a passing score to continue.";
   }

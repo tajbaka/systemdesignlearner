@@ -137,6 +137,11 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
   ): { score: number; feedback?: FeedbackItem } {
     const value = this.extractValue(question.id, input);
 
+    // Skip evaluation if value is 0 (not provided by user)
+    if (value === 0) {
+      return { score: 0 };
+    }
+
     if (value === null || value === undefined) {
       // Required question not answered
       if (question.requiredBy && question.requiredBy.length > 0) {

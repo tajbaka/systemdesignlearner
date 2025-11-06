@@ -38,6 +38,7 @@ export function ApiDefinitionStep() {
   const { state, setApiDefinition, setStepScore, isReadOnly } = usePracticeSession();
   const endpoints = useMemo(() => state.apiDefinition.endpoints, [state.apiDefinition.endpoints]);
   const [openId, setOpenId] = useState<string | null>(() => endpoints[0]?.id ?? null);
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set([endpoints[0]?.id].filter(Boolean)));
 
   // Check if there are any validation issues
   const hasNoEndpoints = endpoints.length === 0;
@@ -51,6 +52,18 @@ export function ApiDefinitionStep() {
       setOpenId(endpoints[0]?.id ?? null);
     }
   }, [endpoints, openId]);
+
+  const toggleEndpoint = (id: string) => {
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
 
   const updateEndpoint = (id: string, updater: (endpoint: ApiEndpoint) => ApiEndpoint) => {
     if (isReadOnly) return;
@@ -74,6 +87,8 @@ export function ApiDefinitionStep() {
       endpoints: [...prev.endpoints, next],
     }));
     setOpenId(next.id);
+    // Automatically expand the new endpoint
+    setExpandedIds(prev => new Set([...prev, next.id]));
     // Clear the score when endpoints change
     if (state.scores?.api) {
       setStepScore("api", undefined);
@@ -90,6 +105,12 @@ export function ApiDefinitionStep() {
       const remaining = endpoints.filter((endpoint) => endpoint.id !== id);
       setOpenId(remaining[0]?.id ?? null);
     }
+    // Remove from expanded set
+    setExpandedIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
     // Clear the score when endpoints change
     if (state.scores?.api) {
       setStepScore("api", undefined);
@@ -116,7 +137,7 @@ export function ApiDefinitionStep() {
         )}
 
         {endpoints.map((endpoint, index) => {
-          const isOpen = openId === endpoint.id;
+          const isOpen = expandedIds.has(endpoint.id);
           const hasPath = endpoint.path.trim().length > 0;
           const hasValidNotes = endpoint.notes.trim().length >= 10;
           const hasError = hasPath && !hasValidNotes && !isReadOnly;
@@ -192,14 +213,7 @@ export function ApiDefinitionStep() {
                   ) : null}
                   <button
                     type="button"
-                    onClick={() =>
-                      setOpenId((current) => {
-                        if (current !== endpoint.id) return endpoint.id;
-                        if (endpoints.length <= 1) return endpoint.id;
-                        const nextEndpoint = endpoints[(index + 1) % endpoints.length];
-                        return nextEndpoint?.id ?? endpoint.id;
-                      })
-                    }
+                    onClick={() => toggleEndpoint(endpoint.id)}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-700 text-zinc-300 transition hover:border-blue-400 hover:text-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                     aria-expanded={isOpen}
                     aria-label={isOpen ? "Collapse endpoint" : "Expand endpoint"}

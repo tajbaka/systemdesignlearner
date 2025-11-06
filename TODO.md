@@ -4,41 +4,78 @@
 >
 > **Design Principle**: Mobile-first design for all components
 
+---
+
+## 📊 Implementation Status Summary
+
+**Overall Progress: ~65% Complete (9/14 core items)**
+
+### ✅ Fully Implemented (9 items)
+1. Pre-submission validation for requirements (functional reqs) - `FunctionalRequirementsStep.tsx:55-86`
+2. Next button behavior (single arrow, disabled states) - `PracticeFooter.tsx:85-112`
+3. Step progression control (locking, visual states) - `PracticeStepper.tsx:73-78, 126-207`
+4. API Definition cleanup (example text removed, slash auto-strip) - `ApiDefinitionStep.tsx:108-116`
+5. Hamburger menu + sidebar (mobile & desktop) - `PracticeSidebar.tsx:15-232`
+6. Sandbox card redesign (SystemDesignNode clean) - `SystemDesignNode.tsx:216-246`
+7. Auth modal simplification (no skip button, no clutter) - `AuthGateStep.tsx:26-42`
+8. Forward slash auto-removal from endpoints - `ApiDefinitionStep.tsx:108-116`
+9. Step locking with clear visual indicators - `PracticeStepper.tsx`
+
+### ⚠️ Partially Done (3 items)
+1. **NFR validation** - Shows info box but doesn't parse text for numbers - `NonFunctionalRequirementsStep.tsx:81-87`
+2. **API validation** - Works but uses error box instead of tooltip - `ApiDefinitionStep.tsx:155-167`
+3. **Performance metrics removal** - `SystemDesignNode.tsx` clean, but `NodeCard.tsx:118` still has metrics
+
+### ❌ Not Started (2 major items)
+1. **Tooltip-based error messages** - Tooltip component exists but not integrated
+2. **Interview-style hints system** - Full Socratic method guidance not implemented
+
+---
+
 ## 🎯 High Priority
 
 ### Validation & Error Handling
 
-- [ ] **Pre-submission validation for requirements advice**
+- [x] **Pre-submission validation for requirements advice** ✅ DONE
   - Move advice/recommendation box validation to frontend
   - Highlight the requirements box in red when empty/invalid
   - Show frontend error message without hitting the API
   - Prevent submission until requirements are properly filled
   - **Implementation**: Client-side validation before API call
+  - **Location**: `FunctionalRequirementsStep.tsx:55-86`
 
-- [ ] **Non-functional requirements validation**
+- [~] **Non-functional requirements validation** ⚠️ PARTIAL
   - Add warning/notice when numeric values are not provided for NFRs
   - **ALLOW** progression even without quantitative metrics (numbers optional)
   - Show a gentle reminder that quantitative metrics are preferred (e.g., "Consider adding specific numbers like '100ms' for latency")
   - Don't block users, but educate them on best practices
+  - **Status**: Shows blue info box but doesn't parse text for numeric patterns
+  - **Location**: `NonFunctionalRequirementsStep.tsx:81-87`
 
-- [ ] **API endpoint validation**
+- [~] **API endpoint validation** ⚠️ PARTIAL
   - Handle empty endpoint submissions gracefully
   - Highlight API definition box in red when empty/incomplete
   - Prevent moving forward without at least one valid API endpoint defined
   - Use tooltip-based error (not error box) to indicate what's missing
+  - **Status**: Validation works but uses error box instead of tooltip
+  - **Location**: `ApiDefinitionStep.tsx:155-167`
 
 ### Navigation & Flow Control
 
-- [ ] **Fix "Next" button behavior**
+- [x] **Fix "Next" button behavior** ✅ DONE
   - Ensure "Next" button (arrow) works consistently when a step is completed
   - Remove any redundant "Continue" button if present
   - **Single, clear CTA**: Keep only the current arrow button, don't add new buttons
   - Button should be disabled/locked until step requirements are met
+  - **Status**: Single arrow button, disables when invalid, shows spinner
+  - **Location**: `PracticeFooter.tsx:85-112`
 
-- [ ] **Step progression control**
+- [x] **Step progression control** ✅ DONE
   - Lock steps until prerequisites are met (disable clicking ahead)
   - Clear visual indication: completed (green check) vs. locked (gray/disabled)
   - User cannot skip ahead without completing current step
+  - **Status**: Fully implemented with visual states (blue=current, green=complete, gray=locked)
+  - **Location**: `PracticeStepper.tsx:73-78, 126-207`
 
 ## 💡 User Experience Improvements
 
@@ -58,7 +95,7 @@
 
 ### Content & Text Refinement
 
-- [ ] **API Definition Step cleanup**
+- [x] **API Definition Step cleanup** ✅ DONE
   - **Remove this entire example text**:
     > "Request: { url, customSlug? } → Response: { slug, shortUrl, expiresAt? }. Include validation and slug collision handling. Redirect 302 to the long URL. Mention cache behavior and how to handle expired/unknown slugs."
   - Keep interface clean and focused on the task itself
@@ -66,18 +103,22 @@
     - Remove leading `/` from `/{shortId}` → show as `{shortId}`
     - Remove leading `/` from `/{slug}` → show as `{slug}`
     - **Reason**: The forward slash is already hardcoded and non-editable in the UI
+  - **Status**: Example text removed, forward slashes auto-stripped
+  - **Location**: `ApiDefinitionStep.tsx:108-116`
 
-- [ ] **Remove performance metrics labels in sandbox**
+- [~] **Remove performance metrics labels in sandbox** ⚠️ NEEDS VERIFICATION
   - Remove ALL instances of "ms" (milliseconds) labels and their numeric values
   - Remove ALL instances of "rps" (requests per second) labels and their numeric values
   - Keep the component performance info internal, don't clutter UI with these details
   - **File location**: Check sandbox component cards (NodeCard or similar)
+  - **Status**: `SystemDesignNode.tsx` is clean, but `NodeCard.tsx:118` still has metrics
+  - **TODO**: Verify which component is used in practice sandbox
 
 ## 🎨 UI/UX Polish (Mobile-First)
 
 ### Visual Improvements
 
-- [ ] **Redesign sandbox component cards**
+- [x] **Redesign sandbox component cards** ✅ DONE (in SystemDesignNode.tsx)
   - **Larger icons**: Increase symbol/icon size for better visibility at standard zoom
   - **Layout change**:
     - Icon: Vertically centered, left-aligned
@@ -87,34 +128,38 @@
     - Replica controls: The `−` / `1` / `+` buttons
     - The entire bottom metadata row
   - **Result**: Clean card with just icon + name
-  - **File**: Likely `SystemDesignNode.tsx` or `NodeCard.tsx`
+  - **File**: `SystemDesignNode.tsx:216-246` ✅ (but NodeCard.tsx:118 still needs cleanup)
 
-- [ ] **Error messaging with tooltips**
+- [ ] **Error messaging with tooltips** ❌ NOT DONE
   - Replace error boxes with tooltip-based error messages
   - Less intrusive, cleaner interface
   - Contextual errors appear near the relevant input field
   - Dismiss on click outside or after timeout
   - **Mobile consideration**: Tooltips must work on touch (not just hover)
+  - **Status**: Tooltip component exists but not integrated into validation steps
+  - **Affects**: FunctionalRequirementsStep, NonFunctionalRequirementsStep, ApiDefinitionStep
 
 ### Navigation Redesign - Mobile-First
 
-- [ ] **🍔 Hamburger menu + sidebar for Practice mode**
+- [x] **🍔 Hamburger menu + sidebar for Practice mode** ✅ DONE
   - **Scope**: Apply ONLY to `/practice` page and onwards (not homepage)
   - **Mobile-first design**: Primary experience optimized for mobile
   - **Components to build**:
-    1. **Hamburger icon button**: Fixed position (top-left or top-right)
-    2. **Sliding sidebar**: Overlay that slides in from left/right
-    3. **Sidebar content**: Current navbar items (logo, links, user menu)
-    4. **Backdrop**: Dark overlay when sidebar is open (click to close)
+    1. **Hamburger icon button**: Fixed position (top-left or top-right) ✅
+    2. **Sliding sidebar**: Overlay that slides in from left/right ✅
+    3. **Sidebar content**: Current navbar items (logo, links, user menu) ✅
+    4. **Backdrop**: Dark overlay when sidebar is open (click to close) ✅
   - **Behavior**:
-    - Default: Hamburger menu visible in practice mode
-    - Sidebar hidden by default, opens on hamburger click
-    - Smooth slide-in/out animation
-    - Close on: backdrop click, close button, or navigation
-  - **Desktop**: Consider keeping sidebar always visible on large screens (> 1024px)
-  - **Accessibility**: ESC key closes sidebar, focus trap when open
+    - Default: Hamburger menu visible in practice mode ✅
+    - Sidebar hidden by default, opens on hamburger click ✅
+    - Smooth slide-in/out animation ✅
+    - Close on: backdrop click, close button, or navigation ✅
+  - **Desktop**: Consider keeping sidebar always visible on large screens (> 1024px) ✅
+  - **Accessibility**: ESC key closes sidebar, focus trap when open ✅
+  - **Status**: Fully implemented with mobile hamburger and expanding desktop sidebar
+  - **Location**: `PracticeSidebar.tsx:15-232`
 
-- [ ] **Simplify/remove top step indicator**
+- [ ] **Simplify/remove top step indicator** ❌ NOT EVALUATED YET
   - **Evaluate**: Do users need the full step-through display at top?
   - **Test**: Try showing only current step name (not full stepper)
   - **Mobile priority**: Top stepper takes valuable vertical space on mobile
@@ -124,25 +169,26 @@
 
 ### Sign In/Up UI Simplification
 
-- [ ] **Simplify auth modal for first-time users**
+- [x] **Simplify auth modal for first-time users** ✅ MOSTLY DONE
   - **What to remove**:
-    1. ❌ "Skip for now" button/link
-    2. ❌ Top explanatory text above the sign-in card
-    3. ❌ "Don't have an account? Sign up" footer text in Clerk component
-    4. ❌ The entire **outer wrapper container** (the one with the blue badge and celebration message)
+    1. ❌ "Skip for now" button/link ✅ NOT PRESENT
+    2. ❌ Top explanatory text above the sign-in card ✅ REMOVED
+    3. ❌ "Don't have an account? Sign up" footer text in Clerk component ✅ REMOVED
+    4. ❌ The entire **outer wrapper container** (the one with the blue badge and celebration message) ✅ CLEAN
   - **What to keep**:
-    - ✅ Just the inner Clerk component (the actual sign-in form)
-    - ✅ Simple congratulations message if needed
+    - ✅ Just the inner Clerk component (the actual sign-in form) ✅
+    - ✅ Simple congratulations message if needed (currently shows "Congrats! 🎉")
   - **Simplified structure**:
     ```
     Before:
     [Outer container with "Save progress" badge → "Sign in to see results! 🎉" → description → [Clerk SignIn component]]
 
     After:
-    [Clerk SignIn component] + optional simple "Congrats!" text
+    [Clerk SignIn component] + optional simple "Congrats!" text ✅
     ```
   - **Goal**: Reduce visual clutter, make auth feel lighter and faster
-  - **File**: Likely `AuthModal.tsx` or `AuthGateStep.tsx`
+  - **File**: `AuthGateStep.tsx:26-42`
+  - **Status**: Modal is clean, could optionally remove "Congrats! 🎉" for even simpler look
 
 ## 📊 Testing Requirements
 

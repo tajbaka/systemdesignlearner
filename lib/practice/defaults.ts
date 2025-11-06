@@ -60,9 +60,9 @@ export const makeDefaultRequirements = (): Requirements => ({
     return acc;
   }, {}),
   nonFunctional: {
-    readRps: 5000,
-    writeRps: 100,
-    p95RedirectMs: 100,
+    readRps: 0,
+    writeRps: 0,
+    p95RedirectMs: 0,
     rateLimitNotes: "",
     availability: "99.9",
     notes: "",
@@ -194,15 +194,14 @@ export const makeDefaultApiDefinition = (): PracticeApiDefinitionState => ({
       id: "post-shorten",
       method: "POST",
       path: "api/v1/urls",
-      notes:
-        "Request: { url, customSlug? } → Response: { slug, shortUrl, expiresAt? }. Include validation and slug collision handling.",
+      notes: "",
       suggested: true,
     },
     {
       id: "get-slug",
       method: "GET",
       path: "{slug}",
-      notes: "Redirect 302 to the long URL. Mention cache behavior and how to handle expired/unknown slugs.",
+      notes: "",
       suggested: true,
     },
   ],

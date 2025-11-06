@@ -7,8 +7,10 @@ export function FunctionalRequirementsStep() {
   const { state, setRequirements, setStepScore, isReadOnly } = usePracticeSession();
   const requirements = state.requirements;
 
-  const isEmpty = !requirements.functionalSummary.trim();
-  const showError = isEmpty && requirements.functionalSummary.length > 0;
+  const trimmedLength = requirements.functionalSummary.trim().length;
+  const isEmpty = trimmedLength === 0;
+  const isTooShort = trimmedLength > 0 && trimmedLength < 50;
+  const hasError = isEmpty || isTooShort;
 
   const handleSummaryChange = (summary: string) => {
     setRequirements({
@@ -37,12 +39,21 @@ export function FunctionalRequirementsStep() {
             <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
               What should it do?
             </h3>
-            {isEmpty && !isReadOnly && (
-              <span className="text-xs text-red-400">Required</span>
-            )}
+            <div className="flex items-center gap-3">
+              {!isReadOnly && (
+                <span className={`text-xs ${
+                  trimmedLength >= 50 ? 'text-emerald-400' : trimmedLength > 0 ? 'text-amber-400' : 'text-zinc-500'
+                }`}>
+                  {trimmedLength}/50
+                </span>
+              )}
+              {hasError && !isReadOnly && (
+                <span className="text-xs text-red-400">Required</span>
+              )}
+            </div>
           </div>
           <div className={`relative rounded-2xl border ${
-            isEmpty && !isReadOnly
+            hasError && !isReadOnly
               ? 'border-red-500/50 bg-red-950/20'
               : 'border-zinc-700 bg-zinc-950/60'
           }`}>
@@ -51,7 +62,7 @@ export function FunctionalRequirementsStep() {
               onChange={(event) => handleSummaryChange(event.target.value)}
               placeholder="Example: shorten URLs, redirect by slug, allow optional custom aliases and view counts."
               className={`min-h-[200px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
-                isEmpty && !isReadOnly
+                hasError && !isReadOnly
                   ? 'focus-visible:ring-2 focus-visible:ring-red-500'
                   : 'focus-visible:ring-2 focus-visible:ring-blue-500'
               }`}
@@ -66,9 +77,11 @@ export function FunctionalRequirementsStep() {
               />
             </div>
           </div>
-          {isEmpty && !isReadOnly && (
+          {hasError && !isReadOnly && (
             <p className="text-xs text-red-400">
-              Please describe the functional requirements before continuing.
+              {isEmpty
+                ? "Please describe the functional requirements before continuing."
+                : `Please provide more detail (at least 50 characters). Current: ${trimmedLength}`}
             </p>
           )}
         </div>

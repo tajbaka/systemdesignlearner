@@ -55,13 +55,19 @@ export function buildNonFunctionalPrompt(
 ) {
   const nf = reference.nonFunctional;
 
+  // Extract categories from the JSON structure
+  const readThroughput = nf.categories.find(c => c.id === "readThroughput");
+  const writeThroughput = nf.categories.find(c => c.id === "writeThroughput");
+  const latency = nf.categories.find(c => c.id === "latency");
+  const availabilityCategory = nf.categories.find(c => c.id === "availability");
+
   return `You are verifying non-functional requirements for a URL Shortener system design.
 
 **Acceptable Ranges:**
-- Read throughput: ${nf.readThroughput.min}-${nf.readThroughput.max} rps (recommended: ${nf.readThroughput.recommended})
-- Write throughput: ${nf.writeThroughput.min}-${nf.writeThroughput.max} rps (recommended: ${nf.writeThroughput.recommended})
-- P95 latency: ${nf.latency.min}-${nf.latency.max} ms (recommended: ${nf.latency.recommended})
-- Availability: ${nf.availability.acceptable.join(", ")}
+- Read throughput: ${readThroughput?.quantitative?.min}-${readThroughput?.quantitative?.max} rps (recommended: ${readThroughput?.quantitative?.recommended})
+- Write throughput: ${writeThroughput?.quantitative?.min}-${writeThroughput?.quantitative?.max} rps (recommended: ${writeThroughput?.quantitative?.recommended})
+- P95 latency: ${latency?.quantitative?.min}-${latency?.quantitative?.max} ms (recommended: ${latency?.quantitative?.recommended})
+- Availability: ${availabilityCategory?.quantitative?.acceptable?.join(", ")}
 
 **User's Input:**
 Text: ${notes}

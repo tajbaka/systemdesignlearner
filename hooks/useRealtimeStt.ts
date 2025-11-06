@@ -291,7 +291,14 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       });
 
       if (!tokenResponse.ok) {
-        logger.error("Pre-warm: Failed to get session token");
+        const errorText = await tokenResponse.text().catch(() => "Unable to read error");
+        // Only log in development - pre-warming is a performance optimization, not critical
+        if (process.env.NODE_ENV === "development") {
+          logger.warn(
+            `Pre-warm: Session token unavailable (${tokenResponse.status})`,
+            errorText
+          );
+        }
         isPreWarmingRef.current = false;
         return;
       }
@@ -304,7 +311,10 @@ export function useRealtimeStt(options: SttHookOptions): SttHookState {
       logger.log("🔥 Session token ready! (valid for ~60s)");
       isPreWarmingRef.current = false;
     } catch (err) {
-      logger.error("Pre-warm token fetch failed:", err);
+      // Silently fail - pre-warming is optional, token will be fetched when actually needed
+      if (process.env.NODE_ENV === "development") {
+        logger.warn("Pre-warm token fetch failed:", err);
+      }
       isPreWarmingRef.current = false;
     }
   }, []);

@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 
 export function NonFunctionalRequirementsStep() {
   const { state, setRequirements, setStepScore, isReadOnly } = usePracticeSession();
-  const [showAdvanced, setShowAdvanced] = useState(false);
   const requirements = state.requirements;
   const nf = requirements.nonFunctional;
 
@@ -26,39 +24,6 @@ export function NonFunctionalRequirementsStep() {
     if (state.scores?.nonFunctional) {
       setStepScore("nonFunctional", undefined);
     }
-  };
-
-  const handleNumberChange = (key: "readRps" | "writeRps" | "p95RedirectMs", value: string) => {
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed)) return;
-    setRequirements({
-      ...requirements,
-      nonFunctional: {
-        ...nf,
-        [key]: parsed,
-      },
-    });
-  };
-
-  const handleAvailabilityChange = (value: string) => {
-    if (!["99.0", "99.9", "99.99"].includes(value)) return;
-    setRequirements({
-      ...requirements,
-      nonFunctional: {
-        ...nf,
-        availability: value as typeof nf.availability,
-      },
-    });
-  };
-
-  const handleRateLimitChange = (value: string) => {
-    setRequirements({
-      ...requirements,
-      nonFunctional: {
-        ...nf,
-        rateLimitNotes: value,
-      },
-    });
   };
 
   return (
@@ -120,93 +85,6 @@ export function NonFunctionalRequirementsStep() {
               </p>
             </div>
           )}
-
-          <button
-            type="button"
-            onClick={() => setShowAdvanced((prev) => !prev)}
-            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-zinc-400 transition hover:text-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-          >
-            {showAdvanced ? "Hide targets" : "Edit numeric targets"}
-            <svg
-              viewBox="0 0 16 16"
-              className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
-              fill="none"
-            >
-              <path
-                d="M4 6l4 4 4-4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-
-          {showAdvanced ? (
-            <div className="space-y-4">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="flex flex-col gap-2 text-sm text-zinc-200">
-                  <span className="font-semibold text-white">Latency target (P95, ms)</span>
-                  <input
-                    type="number"
-                    min={1}
-                    step={10}
-                    value={nf.p95RedirectMs}
-                    onChange={(event) => handleNumberChange("p95RedirectMs", event.target.value)}
-                    disabled={isReadOnly}
-                    className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                  />
-                </label>
-                <label className="flex flex-col gap-2 text-sm text-zinc-200">
-                  <span className="font-semibold text-white">Write throughput (requests / second)</span>
-                  <input
-                    type="number"
-                    min={1}
-                    step={10}
-                    value={nf.writeRps}
-                    onChange={(event) => handleNumberChange("writeRps", event.target.value)}
-                    disabled={isReadOnly}
-                    className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                  />
-                </label>
-                <label className="flex flex-col gap-2 text-sm text-zinc-200">
-                  <span className="font-semibold text-white">Read throughput (requests / second)</span>
-                  <input
-                    type="number"
-                    min={1}
-                    step={100}
-                    value={nf.readRps}
-                    onChange={(event) => handleNumberChange("readRps", event.target.value)}
-                    disabled={isReadOnly}
-                    className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                  />
-                </label>
-                <label className="flex flex-col gap-2 text-sm text-zinc-200">
-                  <span className="font-semibold text-white">Availability target</span>
-                  <select
-                    value={nf.availability}
-                    onChange={(event) => handleAvailabilityChange(event.target.value)}
-                    disabled={isReadOnly}
-                    className="h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    <option value="99.0">99.0%</option>
-                    <option value="99.9">99.9%</option>
-                    <option value="99.99">99.99%</option>
-                  </select>
-                </label>
-              </div>
-
-              <label className="flex flex-col gap-2 text-sm text-zinc-200">
-                <span className="font-semibold text-white">Rate limit notes</span>
-                <textarea
-                  value={nf.rateLimitNotes}
-                  onChange={(event) => handleRateLimitChange(event.target.value)}
-                  disabled={isReadOnly}
-                  className="min-h-[80px] resize-y rounded-xl border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                />
-              </label>
-            </div>
-          ) : null}
 
         </div>
       </section>

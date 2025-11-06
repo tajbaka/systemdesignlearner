@@ -2,6 +2,7 @@ import type { FeedbackResult } from "@/lib/scoring/types";
 import type { ProgressStep } from "@/lib/scoring/ai/progress";
 import type { PracticeStep } from "@/lib/practice/types";
 import VerificationFeedback from "@/components/practice/VerificationFeedback";
+import { FeedbackModal } from "@/components/practice/FeedbackModal";
 import { EvaluationProgress } from "@/components/practice/EvaluationProgress";
 import type { VerificationState } from "@/hooks/usePracticeScoring";
 
@@ -48,16 +49,12 @@ export function PracticeFeedbackPanel({
         </div>
       )}
 
-      {scoringFeedback && (
-        <div className="mx-auto w-full max-w-5xl px-4 pt-4">
-          <VerificationFeedback
-            feedbackResult={scoringFeedback}
-            showScore={true}
-            onRevise={onRevise}
-            onContinue={scoringFeedback.blocking.length === 0 ? onContinue : undefined}
-          />
-        </div>
-      )}
+      <FeedbackModal
+        isOpen={!!scoringFeedback}
+        feedbackResult={scoringFeedback!}
+        onRevise={onRevise}
+        onContinue={onContinue}
+      />
 
       {verification.result && (verification.result.blocking.length > 0 || verification.result.warnings.length > 0) ? (
         <div className="mx-auto w-full max-w-5xl px-4 pt-4">
@@ -67,12 +64,6 @@ export function PracticeFeedbackPanel({
             onRevise={onClearVerification}
             onContinue={verification.result.canProceed ? onContinue : undefined}
           />
-        </div>
-      ) : null}
-
-      {helperText && !hasFeedback ? (
-        <div className="mx-auto w-full max-w-5xl px-4 pb-4 text-xs text-amber-200">
-          {helperText}
         </div>
       ) : null}
     </>
