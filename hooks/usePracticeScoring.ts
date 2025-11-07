@@ -69,6 +69,7 @@ export function usePracticeScoring() {
               p95RedirectMs: session.state.requirements.nonFunctional.p95RedirectMs,
               availability: session.state.requirements.nonFunctional.availability,
               rateLimitNotes: session.state.requirements.nonFunctional.rateLimitNotes,
+              notes: session.state.requirements.nonFunctional.notes,
               functionalRequirements: session.state.requirements.functional,
             },
             config.steps.nonFunctional

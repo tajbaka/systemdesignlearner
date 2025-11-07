@@ -73,7 +73,7 @@ export function FeedbackModal({
               {passed ? "Good progress!" : "Almost there!"}
             </h2>
             <p className="text-sm text-zinc-400">
-              Score: {feedbackResult.score}/{feedbackResult.maxScore} ({Math.round(feedbackResult.percentage)}%)
+              Score: {Math.round(feedbackResult.score * 100) / 100}/{feedbackResult.maxScore} ({Math.round(feedbackResult.percentage)}%)
             </p>
           </div>
         </div>

@@ -109,15 +109,6 @@ export function findScenarioPath(
   // Use shared bidirectional adjacency builder
   const adjacency = buildBidirectionalAdjacency(edges);
 
-  console.log("[findScenarioPath] Adjacency map:");
-  adjacency.forEach((neighbors, nodeId) => {
-    const node = nodes.find(n => n.id === nodeId);
-    console.log(`  ${node?.spec.kind || nodeId} -> [${Array.from(neighbors).map(nId => {
-      const n = nodes.find(n => n.id === nId);
-      return n?.spec.kind || nId;
-    }).join(", ")}]`);
-  });
-
   // Index nodes by component kind so we can quickly look up candidates per flow step
   const byKind = new Map<string, NodeId[]>();
   for (const node of nodes) {
@@ -201,9 +192,6 @@ export function findScenarioPath(
     const node = nodes.find(n => n.id === id);
     return node?.spec.kind || id;
   });
-  console.log("[findScenarioPath] Best path found:", pathKinds.join(" -> "));
-  console.log("[findScenarioPath] Missing kinds:", Array.from(missingKinds));
-
   return { nodeIds: bestState.path, missingKinds: Array.from(missingKinds) };
 }
 

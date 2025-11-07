@@ -186,6 +186,8 @@ export const makeDefaultDesignState = (): PracticeDesignState => ({
 export const makeDefaultRunState = (): PracticeRunState => ({
   attempts: 0,
   chaosMode: false,
+  isRunning: false,
+  lastResult: null,
 });
 
 export const makeDefaultApiDefinition = (): PracticeApiDefinitionState => ({

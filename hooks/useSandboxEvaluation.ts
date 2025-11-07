@@ -157,35 +157,34 @@ export function useSandboxEvaluation(
 
   // Auto-show feedback when simulation completes
   useEffect(() => {
+    const lastResult = session.state.run.lastResult ?? null;
     console.log("[useSandboxEvaluation useEffect] Auto-show feedback check:", {
       waitingForSimulation,
       currentStep,
-      hasRun: session.state.run.lastResult !== null,
+      hasRun: Boolean(lastResult),
       hasDesignScore: session.state.scores?.design !== undefined,
       designScore: session.state.scores?.design
     });
 
     if (!waitingForSimulation || currentStep !== "sandbox") return;
 
-    const hasRun = session.state.run.lastResult !== null;
+    const hasRun = Boolean(lastResult);
     const hasDesignScore = session.state.scores?.design !== undefined;
 
-    // Safety timeout: If simulation doesn't complete within 10 seconds, clear waiting state
+    // Safety timeout: If simulation doesn't complete within 20 seconds, clear waiting state
+    // This is a fallback - proper errors should be shown by RunStage
     const timeoutId = setTimeout(() => {
       if (waitingForSimulation) {
         console.log("[useSandboxEvaluation useEffect] Simulation timeout - clearing waiting state");
         setWaitingForSimulation(false);
+        // Don't set verification error here - let RunStage handle error display
         setVerification({
           isVerifying: false,
-          result: {
-            canProceed: false,
-            blocking: ["Simulation timed out. Please try running again."],
-            warnings: [],
-          },
+          result: null,
           error: null,
         });
       }
-    }, 10000);
+    }, 20000);
 
     if (hasRun && hasDesignScore) {
       clearTimeout(timeoutId);

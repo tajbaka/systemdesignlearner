@@ -439,7 +439,7 @@
             "redirection"
           ],
           "alternativesAccepted": [
-            "Cache (Memcached)"
+            "Object Cache (Memcached)"
           ],
           "weight": 5,
           "minReplicas": 1,

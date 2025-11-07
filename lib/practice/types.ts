@@ -74,7 +74,8 @@ export type PracticeDesignState = {
 export type PracticeRunState = {
   attempts: number;
   chaosMode: boolean;
-  lastResult?: PracticeSimulationResult & { completedAt: number };
+  isRunning: boolean;
+  lastResult: (PracticeSimulationResult & { completedAt: number }) | null;
   firstPassAt?: number;
 };
 

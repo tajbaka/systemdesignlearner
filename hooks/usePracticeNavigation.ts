@@ -5,6 +5,8 @@ import type { usePracticeSession } from "@/components/practice/session/PracticeS
 import type { VerificationState } from "./usePracticeScoring";
 import { STEP_CONFIGS } from "@/lib/practice/step-configs";
 import { logger } from "@/lib/logger";
+import { validateDesignForScenario } from "@/lib/practice/validation";
+import { SCENARIOS } from "@/lib/scenarios";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
@@ -27,6 +29,7 @@ export function usePracticeNavigation(
   session: PracticeSessionValue,
   options: NavigationOptions
 ) {
+  const scenario = SCENARIOS.find((item) => item.id === session.slug) ?? SCENARIOS[0];
   const [showAuthModal, setShowAuthModal] = useState(false);
   const {
     verification,
@@ -58,6 +61,8 @@ export function usePracticeNavigation(
       }
       // Otherwise, show auth modal (no skip option - must sign in)
       else {
+        // Close the feedback modal before showing auth modal
+        setScoringFeedback(null);
         setShowAuthModal(true);
       }
     } else {
@@ -78,23 +83,58 @@ export function usePracticeNavigation(
     const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
 
     if (stepsNeedingScoring.includes(session.currentStep)) {
-      // Always run scoring evaluation (no bypass for already scored)
-      setVerification({ isVerifying: true, result: null, error: null });
-
-      // For sandbox step, check simulation status
       if (session.currentStep === "sandbox") {
-        const hasRun = session.state.run.lastResult !== null;
-        const result = session.state.run.lastResult;
+        const result = session.state.run.lastResult ?? null;
+        const hasRun = Boolean(result);
         const hasPassed = result?.scoreBreakdown?.outcome === "pass";
         const hasDesignScore = session.state.scores?.design !== undefined;
 
         // If simulation hasn't been run or design score is missing, run it automatically
         if (!hasRun || !hasDesignScore) {
+          const validation = validateDesignForScenario(
+            scenario,
+            session.state.design.nodes,
+            session.state.design.edges
+          );
+
+          if (!validation.ok) {
+            setWaitingForSimulation(false);
+
+            const validationFeedback: FeedbackResult = {
+              score: 0,
+              maxScore: 35,
+              percentage: 0,
+              blocking: [
+                {
+                  category: "architecture",
+                  severity: "blocking",
+                  message: validation.message,
+                  actionable:
+                    validation.missingComponents.length > 0
+                      ? `Add: ${validation.missingComponents.join(", ")}`
+                      : undefined,
+                },
+              ],
+              warnings: [],
+              positive: [],
+              suggestions: [],
+            };
+
+            setScoringFeedback(validationFeedback);
+            setVerification({ isVerifying: false, result: null, error: null });
+            return;
+          }
+
           if (window._runSimulation) {
             logger.info("Automatically running simulation from Next button");
             setWaitingForSimulation(true);
-            // Trigger simulation - the useEffect will handle showing feedback when complete
-            window._runSimulation();
+            if (typeof window.requestAnimationFrame === "function") {
+              window.requestAnimationFrame(() => {
+                window._runSimulation?.();
+              });
+            } else {
+              setTimeout(() => window._runSimulation?.(), 0);
+            }
             return;
           } else {
             // Fallback: Show message if function not available
@@ -110,6 +150,8 @@ export function usePracticeNavigation(
             return;
           }
         }
+
+        setVerification({ isVerifying: true, result: null, error: null });
 
         // If we reach here, simulation has already been run
         // Check if feedback is already showing
@@ -145,6 +187,9 @@ export function usePracticeNavigation(
         setVerification({ isVerifying: false, result: null, error: null });
         return;
       }
+
+      // Non-sandbox steps: run scoring evaluation immediately
+      setVerification({ isVerifying: true, result: null, error: null });
 
       // For other steps, run scoring evaluation
       const result = await evaluateCurrentStep(session.currentStep, session);

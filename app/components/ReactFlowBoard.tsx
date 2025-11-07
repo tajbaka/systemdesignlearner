@@ -87,7 +87,6 @@ function ReactFlowBoardInner({
   }, [rfNodes]);
 
   React.useEffect(() => {
-    logger.log('[ReactFlowBoard] syncing edges from props', rfEdges.map(edge => edge.id));
     rfEdgesRef.current = rfEdges;
   }, [rfEdges]);
 
@@ -106,7 +105,6 @@ function ReactFlowBoardInner({
 
   // Update state when props change (but preserve existing positions)
   React.useEffect(() => {
-    logger.log('[ReactFlowBoard] props.nodes', nodes.map(node => ({ id: node.id, replicas: node.replicas })));
     setRfNodes(currentNodes => {
       const currentNodeMap = new Map(currentNodes.map(node => [node.id, node]));
 

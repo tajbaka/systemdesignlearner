@@ -142,7 +142,10 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
       requirements: ensureRequirements(candidate.requirements),
       apiDefinition: ensureApiDefinition(candidate.apiDefinition),
       design: candidate.design ?? defaults.design,
-      run: candidate.run ?? defaults.run,
+      run: {
+        ...defaults.run,
+        ...(candidate.run ?? {}),
+      },
       auth: ensureAuthState(candidate.auth),
       completed: ensureProgress(candidate.completed),
       updatedAt: candidate.updatedAt ?? Date.now(),
@@ -156,7 +159,10 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
     requirements: ensureRequirements(legacy.requirements as Requirements),
     apiDefinition: ensureApiDefinition(),
     design: legacy.design ?? defaults.design,
-    run: legacy.run ?? defaults.run,
+    run: {
+      ...defaults.run,
+      ...(legacy.run ?? {}),
+    },
     auth: ensureAuthState(),
     completed: migrateLegacyProgress(legacy.locked),
     updatedAt: legacy.updatedAt ?? Date.now(),

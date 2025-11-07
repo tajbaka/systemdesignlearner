@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SCENARIOS } from "@/lib/scenarios";
-import { findScenarioPath } from "@/app/components/utils";
 import { simulate } from "@/app/components/simulation";
+import { validateDesignForScenario } from "@/lib/practice/validation";
 import type { PracticeDesignState, PracticeRunState, Requirements, PracticeStepScores } from "@/lib/practice/types";
 import type { PlacedNode } from "@/app/components/types";
 import type { Scenario } from "@/lib/scenarios";
@@ -144,7 +144,6 @@ export default function RunStage({
   continueLabel = "Continue to Review",
 }: RunStageProps) {
   const [error, setError] = useState<string | null>(null);
-  const [running, setRunning] = useState(false);
 
   const hints = useMemo(
     () => deriveHints(run.lastResult, requirements, design.nodes, URL_SHORTENER),
@@ -159,170 +158,196 @@ export default function RunStage({
   // Don't show confetti here during simulation
 
   const handleChaosToggle = useCallback(() => {
-    if (locked || readOnly) return;
+    if (locked || readOnly || run.isRunning) return;
     updateRun((prev) => ({
       ...prev,
       chaosMode: !prev.chaosMode,
     }));
     track("practice_run_chaos_toggled", { slug: "url-shortener" });
-  }, [locked, readOnly, updateRun]);
+  }, [locked, readOnly, run.isRunning, updateRun]);
 
   const handleRun = useCallback(async () => {
-    if (locked || readOnly || running) return;
-    setRunning(true);
+    if (locked || readOnly || run.isRunning) return;
+
+    const validation = validateDesignForScenario(URL_SHORTENER, design.nodes, design.edges);
+    if (!validation.ok) {
+      setError(validation.message);
+      if (typeof window !== "undefined" && (window as any)._clearWaitingForSimulation) {
+        (window as any)._clearWaitingForSimulation();
+      }
+      return;
+    }
+
+    updateRun((prev) => ({
+      ...prev,
+      isRunning: true,
+    }));
     setError(null);
 
     try {
-      console.log("[RunStage] Running simulation");
-      console.log("[RunStage] Nodes:", design.nodes.map(n => ({ id: n.id, kind: n.spec.kind })));
-      console.log("[RunStage] Edges:", design.edges.map(e => ({ id: e.id, from: e.from, to: e.to })));
+      const validatedPath = validation.path;
+      // FIX Issue #2: Add timeout wrapper to prevent hanging simulation
+      const simulationPromise = (async () => {
+        console.log("[RunStage] Running simulation");
+        console.log("[RunStage] Nodes:", design.nodes.map((n) => ({ id: n.id, kind: n.spec.kind })));
+        console.log("[RunStage] Edges:", design.edges.map((e) => ({ id: e.id, from: e.from, to: e.to })));
+        console.log("[RunStage] Using validated path:", validatedPath);
 
-      const path = findScenarioPath(URL_SHORTENER, design.nodes, design.edges);
-      console.log("[RunStage] Found path:", path);
-      if (path.missingKinds.length > 0) {
-        setError(`Add the missing components to run simulation: ${path.missingKinds.join(", ")}`);
-        setRunning(false);
-        return;
-      }
-      if (path.nodeIds.length === 0) {
-        setError("No valid path found. Connect nodes from Web to DB before running.");
-        setRunning(false);
-        return;
-      }
+        // Evaluate design architecture (in background, non-blocking)
+        if (setStepScore) {
+          try {
+            logger.info("Starting design evaluation...");
+            const config = await loadScoringConfig("url-shortener");
 
-      // Evaluate design architecture (in background, non-blocking)
-      if (setStepScore) {
-        try {
-          logger.info("Starting design evaluation...");
-          const config = await loadScoringConfig("url-shortener");
-
-          // Evaluate design with AI
-          const designScore = await evaluateDesignOptimized(
-            {
-              nodes: design.nodes,
-              edges: design.edges,
-              functionalRequirements: requirements.functional,
-              nfrValues: {
-                readRps: requirements.nonFunctional.readRps,
-                writeRps: requirements.nonFunctional.writeRps,
-                p95RedirectMs: requirements.nonFunctional.p95RedirectMs,
-                availability: requirements.nonFunctional.availability,
+            // Evaluate design with AI
+            const designScore = await evaluateDesignOptimized(
+              {
+                nodes: design.nodes,
+                edges: design.edges,
+                functionalRequirements: requirements.functional,
+                nfrValues: {
+                  readRps: requirements.nonFunctional.readRps,
+                  writeRps: requirements.nonFunctional.writeRps,
+                  p95RedirectMs: requirements.nonFunctional.p95RedirectMs,
+                  availability: requirements.nonFunctional.availability,
+                },
               },
-            },
-            config.steps.design,
-            {
-              useAI: true,
-              explainScore: false, // Skip explanation for faster evaluation
-            }
-          );
+              config.steps.design,
+              {
+                useAI: true,
+                explainScore: false,
+              }
+            );
 
-          logger.info("Design evaluation complete, score:", designScore.score, "/", designScore.maxScore);
-          setStepScore("design", designScore);
-        } catch (err) {
-          logger.error("Design scoring failed", err);
-          // Set a default score so it's not undefined
-          setStepScore("design", {
-            score: 0,
-            maxScore: 30,
-            percentage: 0,
-            blocking: [],
-            warnings: [{
-              category: "architecture",
-              severity: "warning",
-              message: "Design evaluation encountered an error. Your design may not have been fully scored.",
-            }],
-            positive: [],
-            suggestions: [],
-          });
+            logger.info("Design evaluation complete, score:", designScore.score, "/", designScore.maxScore);
+            setStepScore("design", designScore);
+          } catch (err) {
+            logger.error("Design scoring failed", err);
+            // Set a default score so it's not undefined
+            setStepScore("design", {
+              score: 0,
+              maxScore: 30,
+              percentage: 0,
+              blocking: [],
+              warnings: [
+                {
+                  category: "architecture",
+                  severity: "warning",
+                  message: "Design evaluation encountered an error. Your design may not have been fully scored.",
+                },
+              ],
+              positive: [],
+              suggestions: [],
+            });
+          }
         }
-      }
 
-      const result = simulate(
-        URL_SHORTENER,
-        path.nodeIds,
-        design.nodes,
-        design.edges,
-        run.chaosMode,
-        Math.random
+        const result = simulate(
+          URL_SHORTENER,
+          validatedPath,
+          design.nodes,
+          design.edges,
+          run.chaosMode,
+          Math.random
+        );
+
+        // Convert simulation result to FeedbackResult and save
+        if (setStepScore) {
+          try {
+            const config = await loadScoringConfig("url-shortener");
+
+            const simulationScore = scoreSimulation(
+              {
+                meetsRps: result.meetsRps,
+                meetsLatency: result.meetsLatency,
+                failedByChaos: result.failedByChaos,
+                actualRps: result.capacityRps,
+                targetRps: URL_SHORTENER.requiredRps,
+                actualLatency: result.latencyMsP95,
+                targetLatency: URL_SHORTENER.latencyBudgetMsP95,
+              },
+              config
+            );
+
+            setStepScore("simulation", simulationScore);
+          } catch (err) {
+            logger.error("Simulation scoring failed", err);
+          }
+        }
+
+        updateRun((prev) => {
+          const attempts = prev.attempts + 1;
+          const pass = result.scoreBreakdown?.outcome === "pass";
+          const firstPassAt = pass && !prev.firstPassAt ? Date.now() : prev.firstPassAt;
+
+          return {
+            ...prev,
+            attempts,
+            lastResult: {
+              ...result,
+              completedAt: Date.now(),
+            },
+            firstPassAt,
+          };
+        });
+
+        track("practice_run_completed", {
+          slug: "url-shortener",
+          attempts: run.attempts + 1,
+          outcome:
+            result.scoreBreakdown?.outcome ?? (result.failedByChaos ? "chaos_fail" : "unknown"),
+          chaos: run.chaosMode,
+          latency: result.latencyMsP95,
+          capacity: result.capacityRps,
+        });
+
+        if (result.scoreBreakdown?.outcome === "pass" && !run.firstPassAt) {
+          const attemptCount = run.attempts + 1;
+          track("practice_run_first_pass", { slug: "url-shortener", attempts: attemptCount });
+          track("practice_pass_first", { scenario: "url-shortener", attempts: attemptCount });
+        }
+      })();
+
+      // FIX Issue #2: Add timeout promise (15 seconds)
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("Simulation timeout")), 15000)
       );
 
-      // Convert simulation result to FeedbackResult and save
-      if (setStepScore) {
-        try {
-          const config = await loadScoringConfig("url-shortener");
-
-          const simulationScore = scoreSimulation(
-            {
-              meetsRps: result.meetsRps,
-              meetsLatency: result.meetsLatency,
-              failedByChaos: result.failedByChaos,
-              actualRps: result.capacityRps,
-              targetRps: URL_SHORTENER.requiredRps,
-              actualLatency: result.latencyMsP95,
-              targetLatency: URL_SHORTENER.latencyBudgetMsP95,
-            },
-            config
-          );
-
-          setStepScore("simulation", simulationScore);
-        } catch (err) {
-          logger.error("Simulation scoring failed", err);
-        }
-      }
-
-      updateRun((prev) => {
-        const attempts = prev.attempts + 1;
-        const pass = result.scoreBreakdown?.outcome === "pass";
-        const firstPassAt = pass && !prev.firstPassAt ? Date.now() : prev.firstPassAt;
-
-        return {
-          ...prev,
-          attempts,
-          lastResult: {
-            ...result,
-            completedAt: Date.now(),
-          },
-          firstPassAt,
-        };
-      });
-
-      track("practice_run_completed", {
-        slug: "url-shortener",
-        attempts: run.attempts + 1,
-        outcome:
-          result.scoreBreakdown?.outcome ?? (result.failedByChaos ? "chaos_fail" : "unknown"),
-        chaos: run.chaosMode,
-        latency: result.latencyMsP95,
-        capacity: result.capacityRps,
-      });
-
-      if (result.scoreBreakdown?.outcome === "pass" && !run.firstPassAt) {
-        const attemptCount = run.attempts + 1;
-        track("practice_run_first_pass", { slug: "url-shortener", attempts: attemptCount });
-        track("practice_pass_first", { scenario: "url-shortener", attempts: attemptCount });
-      }
+      // Race between simulation and timeout
+      await Promise.race([simulationPromise, timeoutPromise]);
     } catch (err) {
       logger.error("Simulation error", err);
-      setError("Simulation failed. Adjust your graph and try again.");
+      if (typeof window !== "undefined" && (window as any)._clearWaitingForSimulation) {
+        (window as any)._clearWaitingForSimulation();
+      }
+
+      if (err instanceof Error && err.message === "Simulation timeout") {
+        setError("Simulation timed out after 15 seconds. Please simplify your design or try again.");
+      } else {
+        setError("Simulation failed. Adjust your graph and try again.");
+      }
     } finally {
-      setRunning(false);
+      updateRun((prev) => ({
+        ...prev,
+        isRunning: false,
+      }));
     }
   }, [
     design.edges,
     design.nodes,
     locked,
     readOnly,
+    requirements.functional,
+    requirements.nonFunctional.availability,
+    requirements.nonFunctional.p95RedirectMs,
+    requirements.nonFunctional.readRps,
+    requirements.nonFunctional.writeRps,
     run.attempts,
     run.chaosMode,
     run.firstPassAt,
-    running,
-    updateRun,
+    run.isRunning,
     setStepScore,
-    requirements.functional,
-    requirements.nonFunctional.readRps,
-    requirements.nonFunctional.writeRps,
-    requirements.nonFunctional.p95RedirectMs,
-    requirements.nonFunctional.availability,
+    updateRun,
   ]);
 
   // Expose handleRun globally so PracticeFlow can trigger it
@@ -381,10 +406,10 @@ export default function RunStage({
           <button
             type="button"
             onClick={handleRun}
-            disabled={locked || readOnly || running}
+            disabled={locked || readOnly || run.isRunning}
             className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:bg-zinc-700"
           >
-            {running ? (
+            {run.isRunning ? (
               <>
                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" role="presentation">
                   <circle

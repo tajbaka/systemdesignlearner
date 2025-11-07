@@ -1,8 +1,8 @@
 /**
  * Non-Functional Requirements Scoring Engine
  *
- * Evaluates user's NFRs (scale, performance, availability) against
- * realistic ranges and provides context-aware feedback.
+ * Evaluates user's NFRs qualitatively based on whether they mention
+ * key aspects like performance, scalability, availability, etc.
  */
 
 import type {
@@ -12,11 +12,12 @@ import type {
   FeedbackItem,
   IScoringEngine,
   NFRQuestion,
+  QualitativeAspect,
 } from "../types";
 
 export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalScoringInput, NonFunctionalScoringConfig> {
   /**
-   * Evaluate non-functional requirements
+   * Evaluate non-functional requirements qualitatively
    */
   evaluate(input: NonFunctionalScoringInput, config: NonFunctionalScoringConfig): FeedbackResult {
     const blocking: FeedbackItem[] = [];
@@ -26,34 +27,67 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
 
     let score = 0;
     const maxScore = config.maxScore;
+    const notes = input.notes || "";
+    const notesLower = notes.toLowerCase();
 
-    // Determine which questions to ask based on functional requirements
-    const applicableQuestions = this.getApplicableQuestions(
-      config.questions,
-      config.decisionRules,
-      input.functionalRequirements
-    );
+    // Check minimum text length
+    const minLength = config.minTextLength || 50;
+    if (notes.trim().length < minLength) {
+      blocking.push({
+        category: "requirement",
+        severity: "blocking",
+        message: `Please provide more detail about your non-functional requirements (at least ${minLength} characters).`,
+        actionable: "Describe performance, scalability, availability, and other quality attributes.",
+      });
+      return {
+        score: 0,
+        maxScore,
+        percentage: 0,
+        blocking,
+        warnings,
+        positive,
+        suggestions,
+      };
+    }
 
-    // Evaluate each applicable question
-    for (const question of applicableQuestions) {
-      const result = this.evaluateQuestion(question, input);
+    // Check for qualitative aspects (new structure)
+    if (config.qualitativeAspects) {
+      for (const aspect of config.qualitativeAspects) {
+        const result = this.evaluateQualitativeAspect(aspect, notesLower);
+        score += result.score;
 
-      score += result.score;
-
-      if (result.feedback) {
-        if (result.feedback.severity === "blocking") {
-          blocking.push(result.feedback);
-        } else if (result.feedback.severity === "warning") {
-          warnings.push(result.feedback);
-        } else if (result.feedback.severity === "positive") {
-          positive.push(result.feedback);
+        if (result.feedback) {
+          if (result.feedback.severity === "positive") {
+            positive.push(result.feedback);
+          } else if (result.feedback.severity === "warning") {
+            warnings.push(result.feedback);
+          }
         }
       }
     }
+    // Fallback to old questions structure if it exists
+    else if (config.questions) {
+      const applicableQuestions = this.getApplicableQuestions(
+        config.questions,
+        config.decisionRules || [],
+        input.functionalRequirements || {}
+      );
 
-    // Check for unrealistic combinations
-    const combinationWarnings = this.checkRealisticCombinations(input);
-    warnings.push(...combinationWarnings);
+      for (const question of applicableQuestions) {
+        const result = this.evaluateQuestion(question, input);
+        score += result.score;
+
+        if (result.feedback) {
+          if (result.feedback.severity === "blocking") {
+            blocking.push(result.feedback);
+          } else if (result.feedback.severity === "warning") {
+            warnings.push(result.feedback);
+          } else if (result.feedback.severity === "positive") {
+            positive.push(result.feedback);
+          }
+        }
+      }
+    }
 
     // Overall feedback
     const percentage = (score / maxScore) * 100;
@@ -62,19 +96,26 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
         positive.unshift({
           category: "performance",
           severity: "positive",
-          message: "Excellent NFRs! Your scale and performance targets are well-balanced and realistic.",
+          message: "Excellent NFRs! You've covered all the key quality attributes.",
         });
       } else if (percentage >= 75) {
         positive.unshift({
           category: "performance",
           severity: "positive",
-          message: "Good NFR choices! Your requirements are reasonable and achievable.",
+          message: "Good NFR coverage! Your requirements touch on important quality attributes.",
         });
-      } else if (warnings.length > 0) {
+      } else if (percentage >= 50) {
         suggestions.push({
           category: "performance",
           severity: "info",
-          message: "Review your NFRs - some values may need adjustment for a production-ready system.",
+          message: "Consider adding more detail about scalability, availability, or performance characteristics.",
+        });
+      } else {
+        warnings.push({
+          category: "requirement",
+          severity: "warning",
+          message: "Your NFRs could be more comprehensive. Think about performance, scale, availability, and reliability.",
+          actionable: "Add specific qualities like 'fast redirects', 'high availability', or 'handles traffic spikes'.",
         });
       }
     }
@@ -88,6 +129,33 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
       positive,
       suggestions,
     };
+  }
+
+  /**
+   * Evaluate a qualitative aspect by checking for keywords
+   */
+  private evaluateQualitativeAspect(
+    aspect: QualitativeAspect,
+    notesLower: string
+  ): { score: number; feedback?: FeedbackItem } {
+    // Check if any keywords are mentioned
+    const mentionedKeywords = aspect.keywords.filter((keyword) =>
+      notesLower.includes(keyword.toLowerCase())
+    );
+
+    if (mentionedKeywords.length > 0) {
+      return {
+        score: aspect.weight,
+        feedback: {
+          category: "performance",
+          severity: "positive",
+          message: `Good! You mentioned ${aspect.label.toLowerCase()} concerns.`,
+          relatedTo: aspect.id,
+        },
+      };
+    }
+
+    return { score: 0 };
   }
 
   /**
@@ -108,10 +176,12 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
     }
 
     // Apply decision rules
-    for (const rule of decisionRules) {
-      const conditionMet = functionalRequirements[rule.condition.functionalRequirementId] === rule.condition.required;
-      if (conditionMet) {
-        rule.questions.forEach((q) => applicable.add(q));
+    if (decisionRules) {
+      for (const rule of decisionRules) {
+        const conditionMet = functionalRequirements[rule.condition.functionalRequirementId] === rule.condition.required;
+        if (conditionMet) {
+          rule.questions.forEach((q) => applicable.add(q));
+        }
       }
     }
 

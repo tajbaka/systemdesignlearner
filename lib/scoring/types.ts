@@ -114,10 +114,29 @@ export type NFRDecisionRule = {
   questions: string[]; // NFRQuestion IDs
 };
 
+export type QualitativeAspect = {
+  id: string;
+  label: string;
+  description: string;
+  keywords: string[];
+  weight: number;
+  examplePhrases?: string[];
+};
+
 export type NonFunctionalScoringConfig = {
   maxScore: 20;
-  questions: NFRQuestion[];
-  decisionRules: NFRDecisionRule[];
+  minTextLength?: number;
+  // New qualitative structure
+  qualitativeAspects?: QualitativeAspect[];
+  evaluationCriteria?: {
+    mentionsPerformance?: number;
+    mentionsScalability?: number;
+    mentionsAvailability?: number;
+    mentionsReliability?: number;
+  };
+  // Old quantitative structure (kept for backward compatibility)
+  questions?: NFRQuestion[];
+  decisionRules?: NFRDecisionRule[];
 };
 
 export type NonFunctionalScoringInput = {

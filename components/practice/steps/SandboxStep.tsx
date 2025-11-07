@@ -135,6 +135,7 @@ export function SandboxStep({
           requirements={state.requirements}
           locked={isReadOnly}
           readOnly={isReadOnly}
+          simulationLocked={state.run.isRunning}
           designComplete={state.completed.sandbox}
           updateDesign={setDesign}
           onContinue={() => {}}

@@ -102,6 +102,16 @@ function PracticeFlowInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
+  // Expose callback to clear waiting state (called by RunStage on error)
+  useEffect(() => {
+    (window as any)._clearWaitingForSimulation = () => {
+      setWaitingForSimulation(false);
+    };
+    return () => {
+      delete (window as any)._clearWaitingForSimulation;
+    };
+  }, [setWaitingForSimulation]);
+
   const config = STEP_CONFIGS[currentStep];
   const isSandboxStep = currentStep === "sandbox";
 
@@ -406,11 +416,7 @@ function PracticeFlowInner() {
             helperText={helperText}
             onRevise={() => {
               setScoringFeedback(null);
-              // For sandbox, clear design score so user can run simulation again
-              if (currentStep === "sandbox") {
-                session.setStepScore("design", undefined);
-              } else {
-                // Clear the score so user can try again
+              if (currentStep !== "sandbox") {
                 session.setStepScore(currentStep as "functional" | "nonFunctional" | "api", undefined);
               }
             }}

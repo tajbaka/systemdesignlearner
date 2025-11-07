@@ -14,6 +14,7 @@ import type {
 import { track } from "@/lib/analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { logger } from "@/lib/logger";
+import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 
 type UpdateDesignFn = (updater: (prev: PracticeDesignState) => PracticeDesignState) => void;
 
@@ -32,6 +33,7 @@ type DesignStageProps = {
   onOpenPalette?: () => void;
   onOpenSimulation?: () => void;
   showPaletteTrigger?: boolean;
+  simulationLocked?: boolean;
 };
 
 type TutorialStep = {
@@ -187,6 +189,7 @@ export default function DesignStage({
   requirements,
   locked,
   readOnly = false,
+  simulationLocked = false,
   designComplete = false,
   updateDesign,
   onContinue,
@@ -198,7 +201,16 @@ export default function DesignStage({
   onOpenSimulation: _onOpenSimulation,
   showPaletteTrigger: _showPaletteTrigger = true,
 }: DesignStageProps) {
-  logger.log('[DesignStage] render nodes', design.nodes.map(node => ({ id: node.id, replicas: node.replicas })));
+  // Access session to clear simulation state when design changes
+  const session = usePracticeSession();
+  const editingLocked = locked || readOnly || simulationLocked;
+  const lockMessage = readOnly
+    ? "Shared view · editing disabled"
+    : simulationLocked
+      ? "Simulation running… editing will unlock when the run completes."
+      : locked
+        ? "Editing locked for this session."
+        : null;
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const allowedKinds = useMemo<ComponentKind[]>(
@@ -283,26 +295,30 @@ export default function DesignStage({
   }, [stepCount, updateDesign]);
 
   const handleSkipGuidance = useCallback(() => {
-    if (design.guidedDismissed || locked || readOnly) return;
+    if (design.guidedDismissed || editingLocked) return;
     updateDesign((prev) => ({
       ...prev,
       guidedDismissed: true,
       freeModeUnlocked: true,
     }));
     track("practice_design_guided_skipped", { slug: "url-shortener", step: currentStep?.id ?? "unknown" });
-  }, [design.guidedDismissed, updateDesign, currentStep?.id, locked, readOnly]);
+  }, [design.guidedDismissed, updateDesign, currentStep?.id, editingLocked]);
 
   const addNode = useCallback(
     (kind: ComponentKind, position?: { x: number; y: number }) => {
-      if (locked || readOnly) return;
+      if (editingLocked) return;
       const spec = componentSpecFor(kind);
       const nodePosition = position ?? nextPosition(design.nodes);
+      // FIX Issue #15: Use crypto.randomUUID() to prevent ID collisions
+      const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       updateDesign((prev) => ({
         ...prev,
         nodes: [
           ...prev.nodes,
           {
-            id: `node-${kind}-${Date.now()}`,
+            id: `node-${kind}-${uniqueId}`,
             spec,
             x: nodePosition.x,
             y: nodePosition.y,
@@ -310,14 +326,31 @@ export default function DesignStage({
           },
         ],
       }));
+
+      // FIX Issue #1: Clear simulation state when design changes
+      session.setRun((prev) => ({
+        ...prev,
+        lastResult: null,
+        isRunning: false,
+      }));
+
+      // FIX Issue #1: Clear design score when design changes
+      session.setStepScore("design", undefined);
+      session.setStepScore("simulation", undefined);
+
       track("practice_design_node_added", { slug: "url-shortener", kind });
     },
-    [design.nodes, locked, readOnly, updateDesign]
+    [design.nodes, editingLocked, updateDesign, session]
   );
 
   const handleConnect = useCallback(
     (edge: Edge) => {
-      if (locked || readOnly) return;
+      if (editingLocked) return;
+      let didChange = false;
+      // FIX Issue #15: Use crypto.randomUUID() to prevent ID collisions
+      const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       updateDesign((prev) => {
         const exists = prev.edges.some(
           (existing) =>
@@ -327,19 +360,32 @@ export default function DesignStage({
         if (exists) {
           return prev;
         }
+        didChange = true;
         return {
           ...prev,
           edges: [
             ...prev.edges,
             {
               ...edge,
-              id: `edge-${Date.now()}`,
+              id: `edge-${uniqueId}`,
             },
           ],
         };
       });
+
+      // FIX Issue #1: Clear simulation state when design changes (only if edge was actually added)
+      if (didChange) {
+        session.setRun((prev) => ({
+          ...prev,
+          lastResult: null,
+        }));
+
+        // FIX Issue #1: Clear design score when design changes
+        session.setStepScore("design", undefined);
+        session.setStepScore("simulation", undefined);
+      }
     },
-    [locked, readOnly, updateDesign]
+    [editingLocked, updateDesign, session]
   );
 
   const handleDrop = useCallback(
@@ -351,7 +397,7 @@ export default function DesignStage({
 
   const handleNodesChange = useCallback(
     (nextNodes: PlacedNode[]) => {
-      if (locked || readOnly) return;
+      if (editingLocked) return;
       let prunedEdges: Edge[] = [];
       updateDesign((prev) => {
         const edges = pruneEdges(prev.edges, nextNodes);
@@ -362,6 +408,18 @@ export default function DesignStage({
           edges,
         };
       });
+
+      // FIX Issue #1: Clear simulation state when design changes
+      session.setRun((prev) => ({
+        ...prev,
+        lastResult: null,
+        isRunning: false,
+      }));
+
+      // FIX Issue #1: Clear design score when design changes
+      session.setStepScore("design", undefined);
+      session.setStepScore("simulation", undefined);
+
       setSelectedNodeId((prev) =>
         prev && nextNodes.some((node) => node.id === prev) ? prev : null
       );
@@ -369,26 +427,38 @@ export default function DesignStage({
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [locked, readOnly, updateDesign]
+    [editingLocked, updateDesign, session]
   );
 
   const handleEdgesChange = useCallback(
     (nextEdges: Edge[]) => {
-      if (locked || readOnly) return;
+      if (editingLocked) return;
       updateDesign((prev) => ({
         ...prev,
         edges: nextEdges,
       }));
+
+      // FIX Issue #1: Clear simulation state when design changes
+      session.setRun((prev) => ({
+        ...prev,
+        lastResult: null,
+        isRunning: false,
+      }));
+
+      // FIX Issue #1: Clear design score when design changes
+      session.setStepScore("design", undefined);
+      session.setStepScore("simulation", undefined);
+
       setSelectedEdgeId((prev) =>
         prev && nextEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [locked, readOnly, updateDesign]
+    [editingLocked, updateDesign, session]
   );
 
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
-      if (locked || readOnly) return;
+      if (editingLocked) return;
       let prunedEdges: Edge[] = [];
       updateDesign((prev) => {
         const nodes = prev.nodes.filter((node) => node.id !== nodeId);
@@ -396,26 +466,50 @@ export default function DesignStage({
         prunedEdges = edges;
         return { ...prev, nodes, edges };
       });
+
+      // FIX Issue #1: Clear simulation state when design changes
+      session.setRun((prev) => ({
+        ...prev,
+        lastResult: null,
+        isRunning: false,
+      }));
+
+      // FIX Issue #1: Clear design score when design changes
+      session.setStepScore("design", undefined);
+      session.setStepScore("simulation", undefined);
+
       setSelectedNodeId((prev) => (prev === nodeId ? null : prev));
       setSelectedEdgeId((prev) =>
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [locked, readOnly, updateDesign]
+    [editingLocked, updateDesign, session]
   );
 
   const handleUpdateReplicas = useCallback(
     (nodeId: string, replicas: number) => {
-      if (locked || readOnly) return;
+      if (editingLocked) return;
       updateDesign((prev) => ({
         ...prev,
         nodes: prev.nodes.map(node =>
           node.id === nodeId ? { ...node, replicas } : node
         ),
       }));
+
+      // FIX Issue #1: Clear simulation state when design changes (replicas affect capacity)
+      session.setRun((prev) => ({
+        ...prev,
+        lastResult: null,
+        isRunning: false,
+      }));
+
+      // FIX Issue #1: Clear design score when design changes
+      session.setStepScore("design", undefined);
+      session.setStepScore("simulation", undefined);
+
       track("practice_design_node_replicas_changed", { slug: "url-shortener", nodeId, replicas });
     },
-    [locked, readOnly, updateDesign]
+    [editingLocked, updateDesign, session]
   );
 
   const handleEdgeSelect = useCallback((edgeId: string | null) => {
@@ -433,22 +527,34 @@ export default function DesignStage({
   }, []);
 
   const handleNodeTouchStart = useCallback((nodeId: string) => {
-    if (locked || readOnly) return;
+    if (editingLocked) return;
     setSelectedNodeId(nodeId);
     setSelectedEdgeId(null);
-  }, [locked, readOnly]);
+  }, [editingLocked]);
 
   const handleNodeTouchEnd = useCallback(() => {
     // Touch end currently unused; reserved for future mobile gestures
   }, []);
 
   const handleDeleteSelection = useCallback(() => {
-    if (locked || readOnly) return;
+    if (editingLocked) return;
     if (selectedEdgeId) {
       updateDesign((prev) => ({
         ...prev,
         edges: prev.edges.filter((edge) => edge.id !== selectedEdgeId),
       }));
+
+      // FIX Issue #1: Clear simulation state when design changes
+      session.setRun((prev) => ({
+        ...prev,
+        lastResult: null,
+        isRunning: false,
+      }));
+
+      // FIX Issue #1: Clear design score when design changes
+      session.setStepScore("design", undefined);
+      session.setStepScore("simulation", undefined);
+
       setSelectedEdgeId(null);
       return;
     }
@@ -460,12 +566,24 @@ export default function DesignStage({
         prunedEdges = edges;
         return { ...prev, nodes, edges };
       });
+
+      // FIX Issue #1: Clear simulation state when design changes
+      session.setRun((prev) => ({
+        ...prev,
+        lastResult: null,
+        isRunning: false,
+      }));
+
+      // FIX Issue #1: Clear design score when design changes
+      session.setStepScore("design", undefined);
+      session.setStepScore("simulation", undefined);
+
       setSelectedNodeId(null);
       setSelectedEdgeId((prev) =>
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     }
-  }, [locked, readOnly, selectedEdgeId, selectedNodeId, updateDesign]);
+  }, [editingLocked, selectedEdgeId, selectedNodeId, updateDesign, session]);
 
   const serviceNode = useMemo(
     () => design.nodes.find((node) => node.spec.kind === "Service"),
@@ -556,7 +674,7 @@ export default function DesignStage({
     });
   }, [design.nodes, design.edges]);
 
-  const canContinue = !locked && !readOnly && (designReady || designComplete);
+  const canContinue = !editingLocked && (designReady || designComplete);
 
   if (layout === "immersive") {
     return (
@@ -565,8 +683,8 @@ export default function DesignStage({
           <div className="relative flex h-full w-full flex-col overflow-hidden bg-zinc-950 min-h-[600px] sm:rounded-3xl sm:border sm:border-zinc-800 sm:bg-zinc-900/70 lg:rounded-none lg:border-none lg:bg-zinc-950">
             <div className="flex-1 min-h-[560px] p-2 sm:p-6 lg:p-0">
               <div className="relative h-full w-full overflow-hidden bg-zinc-950 min-h-[520px] sm:rounded-2xl sm:border sm:border-zinc-800 sm:bg-zinc-950/40 lg:rounded-none lg:border-none lg:bg-zinc-950">
-                {!locked && !readOnly && (selectedNodeId || selectedEdgeId) ? (
-                  <div className="absolute left-4 top-4 z-30">
+                {!editingLocked && (selectedNodeId || selectedEdgeId) ? (
+                  <div className="absolute right-4 top-4 z-30 sm:left-4 sm:right-auto">
                     <button
                       type="button"
                       onClick={() => {
@@ -586,9 +704,9 @@ export default function DesignStage({
                   </div>
                 ) : null}
 
-                {locked || readOnly ? (
+                {lockMessage ? (
                   <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/60 backdrop-blur-sm text-sm text-zinc-300">
-                    Shared view · editing disabled
+                    {lockMessage}
                   </div>
                 ) : null}
 
@@ -606,7 +724,7 @@ export default function DesignStage({
                   onEdgeSelect={handleEdgeSelect}
                   onNodeSelect={handleNodeSelect}
                   miniMapBottomOffset={100}
-                  className={locked || readOnly ? "pointer-events-none opacity-60" : ""}
+                  className={editingLocked ? "pointer-events-none opacity-60" : ""}
                 />
               </div>
             </div>
@@ -695,7 +813,7 @@ export default function DesignStage({
           <div className="order-2 rounded-3xl border border-zinc-800 bg-zinc-900/60 p-3 sm:order-1 lg:order-2 lg:px-6 lg:py-6 sm:p-4">
             <div className="rounded-2xl border border-zinc-800 bg-zinc-950/40 p-2 lg:p-6">
               <div className="relative h-[65vh] min-h-[420px] max-h-[640px] sm:h-[70vh] lg:h-[640px] lg:max-h-none rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900/50">
-                {!locked && !readOnly && (selectedNodeId || selectedEdgeId) ? (
+                {!editingLocked && (selectedNodeId || selectedEdgeId) ? (
                   <div className="absolute top-3 right-3 z-30">
                     <button
                       type="button"
@@ -715,9 +833,9 @@ export default function DesignStage({
                     </button>
                   </div>
                 ) : null}
-                {locked || readOnly ? (
+                {lockMessage ? (
                   <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/60 backdrop-blur-sm text-sm text-zinc-300">
-                    Shared view · editing disabled
+                    {lockMessage}
                   </div>
                 ) : null}
                 <ReactFlowBoard
@@ -734,7 +852,7 @@ export default function DesignStage({
                   onEdgeSelect={handleEdgeSelect}
                   onNodeSelect={handleNodeSelect}
                   miniMapBottomOffset={100}
-                  className={locked || readOnly ? "pointer-events-none opacity-60" : ""}
+                  className={editingLocked ? "pointer-events-none opacity-60" : ""}
                 />
               </div>
             </div>
@@ -752,7 +870,7 @@ export default function DesignStage({
                     type="button"
                     onClick={handleSkipGuidance}
                     className="rounded-full border border-zinc-700 px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-300 transition hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
-                    disabled={locked || readOnly}
+                    disabled={editingLocked}
                   >
                     Skip
                   </button>
@@ -840,7 +958,7 @@ export default function DesignStage({
                 track("practice_design_goback_clicked", { slug: "url-shortener" });
                 onGoBack();
               }}
-              disabled={locked || readOnly}
+              disabled={editingLocked}
               className="inline-flex h-12 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
             >
               ← Back to Requirements
