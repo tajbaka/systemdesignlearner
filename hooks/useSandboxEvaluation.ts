@@ -38,15 +38,6 @@ function buildSandboxFeedback(
       );
     }
 
-    if (!result.meetsRps) {
-      warnings.push(
-        `Insufficient capacity: Your design handles ${result.capacityRps.toFixed(0)} RPS, but needs ${session.state.requirements.nonFunctional.readRps} RPS.`
-      );
-      suggestions.push(
-        "Add horizontal scaling, load balancers, or increase service replicas to handle more traffic."
-      );
-    }
-
     if (result.failedByChaos) {
       warnings.push(
         "Your architecture failed under chaos testing. Single points of failure detected."

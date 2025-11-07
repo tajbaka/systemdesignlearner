@@ -2,7 +2,7 @@
   "problemId": "url-shortener",
   "title": "URL Shortener",
   "description": "Design a scalable URL shortening service that creates short, unique links and redirects users to original URLs",
-  "totalScore": 95,
+  "totalScore": 100,
   "steps": {
     "functional": {
       "maxScore": 20,
@@ -428,10 +428,10 @@
       ]
     },
     "design": {
-      "maxScore": 30,
+      "maxScore": 35,
       "scoreBreakdown": {
         "coreArchitecture": 15,
-        "optionalComponents": 10,
+        "optionalComponents": 15,
         "connections": 5
       },
       "componentRequirements": [
