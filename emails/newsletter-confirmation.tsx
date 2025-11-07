@@ -4,7 +4,6 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Link,
   Preview,
   Section,
@@ -69,7 +68,7 @@ export const NewsletterConfirmationEmail = ({
           </Text>
 
           <Text style={text} className="text">
-            You'll now receive emails about:
+            You&rsquo;ll now receive emails about:
           </Text>
 
           <Section style={listContainer} className="list-container">
@@ -96,10 +95,10 @@ export const NewsletterConfirmationEmail = ({
 
           <Section style={unsubscribeContainer}>
             <Text style={unsubscribeText}>
-              You're receiving this email because you subscribed at{' '}
+              You&rsquo;re receiving this email because you subscribed at{" "}
               <Link style={link} href="https://www.systemdesignsandbox.com/">
                 systemdesignsandbox.com
-              </Link>{' '}
+              </Link>{" "}
               with the email address: {email}
             </Text>
             <Text style={unsubscribeText}>

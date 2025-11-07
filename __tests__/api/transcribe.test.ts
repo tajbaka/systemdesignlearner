@@ -149,12 +149,15 @@ describe("/api/transcribe", () => {
   });
 
   it("forwards language parameter to OpenAI", async () => {
-    const fetchMock = vi.fn(async () => ({
+    const fetchMock = vi.fn<
+      [RequestInfo | URL, RequestInit?],
+      Promise<Response>
+    >(async () => ({
       ok: true,
       json: async () => ({ text: "bonjour" }),
-    })) as unknown as typeof fetch;
+    }));
 
-    globalThis.fetch = fetchMock;
+    globalThis.fetch = fetchMock as unknown as typeof fetch;
 
     const formData = new FormData();
     const audioBlob = new Blob(["fake audio"], { type: "audio/webm" });
@@ -168,7 +171,11 @@ describe("/api/transcribe", () => {
     await POST(request);
 
     expect(fetchMock).toHaveBeenCalled();
-    const [, options] = (fetchMock as any).mock.calls[0];
+    const [, options] = fetchMock.mock.calls[0] as Parameters<typeof fetch>;
+    expect(options).toBeDefined();
+    if (!options) {
+      throw new Error("Fetch was called without options");
+    }
     const sentFormData = options.body as FormData;
     expect(sentFormData.get("language")).toBe("fr");
   });

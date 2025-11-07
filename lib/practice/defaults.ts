@@ -144,16 +144,12 @@ const specFor = (kind: ComponentKind) => {
 };
 
 const SEED_NODE_BLUEPRINTS: Array<{ id: string; kind: ComponentKind; x: number; y: number }> = [
-  { id: "seed-web", kind: "Web", x: -360, y: -40 },
-  { id: "seed-api", kind: "API Gateway", x: -120, y: -40 },
-  { id: "seed-service", kind: "Service", x: 120, y: -40 },
-  { id: "seed-db", kind: "DB (Postgres)", x: 360, y: -40 },
+  { id: "seed-web", kind: "Web", x: -200, y: 0 },
+  { id: "seed-api", kind: "API Gateway", x: 100, y: 0 },
 ];
 
 const SEED_EDGE_BLUEPRINTS: Array<{ id: string; from: string; to: string; linkLatencyMs: number }> = [
   { id: "seed-edge-web-api", from: "seed-web", to: "seed-api", linkLatencyMs: 15 },
-  { id: "seed-edge-api-service", from: "seed-api", to: "seed-service", linkLatencyMs: 10 },
-  { id: "seed-edge-service-db", from: "seed-service", to: "seed-db", linkLatencyMs: 12 },
 ];
 
 const buildSeedNodes = (): PlacedNode[] =>

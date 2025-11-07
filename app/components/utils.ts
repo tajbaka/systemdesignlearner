@@ -188,10 +188,6 @@ export function findScenarioPath(
     { current: null, path: [], visited: new Set() }
   );
 
-  const pathKinds = bestState.path.map(id => {
-    const node = nodes.find(n => n.id === id);
-    return node?.spec.kind || id;
-  });
   return { nodeIds: bestState.path, missingKinds: Array.from(missingKinds) };
 }
 

@@ -7,7 +7,6 @@ process.on('warning', (warning) => {
 });
 
 // Start the actual command
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { spawn } = require('child_process');
 
 const args = process.argv.slice(2);

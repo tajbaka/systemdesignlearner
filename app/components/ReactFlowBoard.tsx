@@ -19,7 +19,6 @@ import { PlacedNode, Edge, SystemDesignNode, SystemDesignEdge } from "./types";
 import { placedNodeToReactFlowNode, edgeToReactFlowEdge, reactFlowEdgeToEdge, reactFlowNodeToPlacedNode } from "./types";
 import SystemDesignNodeComponent from "./SystemDesignNode";
 import BidirectionalEdge from "./BidirectionalEdge";
-import { logger } from "@/lib/logger";
 
 const nodeTypes = {
   systemDesignNode: SystemDesignNodeComponent,

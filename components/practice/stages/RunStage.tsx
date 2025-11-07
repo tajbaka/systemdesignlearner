@@ -172,8 +172,8 @@ export default function RunStage({
     const validation = validateDesignForScenario(URL_SHORTENER, design.nodes, design.edges);
     if (!validation.ok) {
       setError(validation.message);
-      if (typeof window !== "undefined" && (window as any)._clearWaitingForSimulation) {
-        (window as any)._clearWaitingForSimulation();
+      if (typeof window !== "undefined") {
+        window._clearWaitingForSimulation?.();
       }
       return;
     }
@@ -317,8 +317,8 @@ export default function RunStage({
       await Promise.race([simulationPromise, timeoutPromise]);
     } catch (err) {
       logger.error("Simulation error", err);
-      if (typeof window !== "undefined" && (window as any)._clearWaitingForSimulation) {
-        (window as any)._clearWaitingForSimulation();
+      if (typeof window !== "undefined") {
+        window._clearWaitingForSimulation?.();
       }
 
       if (err instanceof Error && err.message === "Simulation timeout") {

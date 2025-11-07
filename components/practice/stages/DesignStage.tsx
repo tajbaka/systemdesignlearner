@@ -13,7 +13,6 @@ import type {
 } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { logger } from "@/lib/logger";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 
 type UpdateDesignFn = (updater: (prev: PracticeDesignState) => PracticeDesignState) => void;

@@ -90,7 +90,6 @@ export function usePracticeNavigation(
       if (session.currentStep === "sandbox") {
         const result = session.state.run.lastResult ?? null;
         const hasRun = Boolean(result);
-        const hasPassed = result?.scoreBreakdown?.outcome === "pass";
         const hasDesignScore = session.state.scores?.design !== undefined;
 
         // If simulation hasn't been run or design score is missing, run it automatically

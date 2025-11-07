@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { FeedbackResult } from "@/lib/scoring/types";
 import type { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
+import type { VerificationState } from "./usePracticeScoring";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
@@ -151,7 +152,7 @@ export function useSandboxEvaluation(
   session: PracticeSessionValue,
   currentStep: string,
   setScoringFeedback: (feedback: FeedbackResult | null) => void,
-  setVerification: (state: { isVerifying: boolean; result: any; error: string | null }) => void
+  setVerification: (state: VerificationState) => void
 ) {
   const [waitingForSimulation, setWaitingForSimulation] = useState(false);
 
@@ -203,7 +204,7 @@ export function useSandboxEvaluation(
 
     // Cleanup timeout on unmount or when dependencies change
     return () => clearTimeout(timeoutId);
-  }, [waitingForSimulation, session.state.run.lastResult, session.state.scores?.design, session.state.requirements, currentStep, setScoringFeedback, setVerification]);
+  }, [waitingForSimulation, session, session.state.run.lastResult, session.state.scores?.design, session.state.requirements, currentStep, setScoringFeedback, setVerification]);
 
   return {
     waitingForSimulation,

@@ -2,6 +2,11 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
 import { useWhisperStt } from "@/hooks/useWhisperStt";
 
+type MediaRecorderConstructor = typeof MediaRecorder;
+type MediaRecorderGlobal = typeof globalThis & {
+  MediaRecorder?: MediaRecorderConstructor;
+};
+
 // Mock BlobEvent for jsdom
 class MockBlobEvent extends Event {
   public data: Blob;
@@ -13,7 +18,7 @@ class MockBlobEvent extends Event {
 
 class MockMediaRecorder {
   public static instances: MockMediaRecorder[] = [];
-  public ondataavailable: ((event: any) => void) | null = null;
+  public ondataavailable: ((event: MockBlobEvent) => void) | null = null;
   public onstop: (() => void) | null = null;
   public onerror: ((event: Event) => void) | null = null;
   public state: "inactive" | "recording" | "paused" = "inactive";
@@ -25,7 +30,7 @@ class MockMediaRecorder {
     MockMediaRecorder.instances.push(this);
   }
 
-  start(timeslice?: number) {
+  start(_timeslice?: number) {
     this.state = "recording";
   }
 
@@ -45,7 +50,8 @@ class MockMediaRecorder {
 
 describe("useWhisperStt", () => {
   const originalFetch = globalThis.fetch;
-  const originalMediaRecorder = (globalThis as any).MediaRecorder;
+  const mediaRecorderGlobal = globalThis as MediaRecorderGlobal;
+  const originalMediaRecorder = mediaRecorderGlobal.MediaRecorder;
   const originalMediaDevices = navigator.mediaDevices;
 
   let mockTrackStop: ReturnType<typeof vi.fn>;
@@ -68,7 +74,7 @@ describe("useWhisperStt", () => {
       getUserMedia,
     } as MediaDevices;
 
-    fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
       const url = typeof input === "string" ? input : input.toString();
       if (url === "/api/transcribe") {
         // Simulate successful transcription
@@ -84,14 +90,14 @@ describe("useWhisperStt", () => {
     });
 
     globalThis.fetch = fetchMock as unknown as typeof fetch;
-    (globalThis as any).MediaRecorder =
-      MockMediaRecorder as unknown as typeof MediaRecorder;
+    mediaRecorderGlobal.MediaRecorder =
+      MockMediaRecorder as unknown as MediaRecorderConstructor;
   });
 
   afterEach(() => {
     vi.clearAllMocks();
     globalThis.fetch = originalFetch;
-    (globalThis as any).MediaRecorder = originalMediaRecorder;
+    mediaRecorderGlobal.MediaRecorder = originalMediaRecorder;
     (navigator as unknown as { mediaDevices: MediaDevices }).mediaDevices =
       originalMediaDevices;
     MockMediaRecorder.instances = [];

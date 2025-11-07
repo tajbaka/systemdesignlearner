@@ -3,7 +3,6 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const isCI = Boolean(process.env.CI);
-const isProduction = process.env.NODE_ENV === "production";
 
 const nextConfig: NextConfig = {
   /* config options here */

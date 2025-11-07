@@ -4,7 +4,6 @@ import {
   Head,
   Heading,
   Html,
-  Img,
   Link,
   Preview,
   Section,
@@ -75,7 +74,7 @@ export const FeedbackConfirmationEmail = ({
           </Text>
 
           <Text style={text} className="text">
-            We've received your feedback and we really appreciate you taking the time to share your thoughts with us.
+            We&rsquo;ve received your feedback and we really appreciate you taking the time to share your thoughts with us.
           </Text>
 
           <Section style={feedbackBox} className="feedback-box">
@@ -85,7 +84,7 @@ export const FeedbackConfirmationEmail = ({
 
           <Text style={text} className="text">
             Our team reviews all feedback carefully and uses it to improve System Design Sandbox.
-            If you've opted in to be contacted, we may reach out to you for follow-up questions or clarification.
+            If you&rsquo;ve opted in to be contacted, we may reach out to you for follow-up questions or clarification.
           </Text>
 
           <Section style={buttonContainer}>

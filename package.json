@@ -11,7 +11,7 @@
     "test:watch": "vitest",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "next lint",
+    "lint": "eslint .",
     "generate-icons": "node scripts/generate-icons.js"
   },
   "dependencies": {

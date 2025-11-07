@@ -137,11 +137,14 @@ function PracticeFlowInner() {
 
   // Expose callback to clear waiting state (called by RunStage on error)
   useEffect(() => {
-    (window as any)._clearWaitingForSimulation = () => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+    window._clearWaitingForSimulation = () => {
       setWaitingForSimulation(false);
     };
     return () => {
-      delete (window as any)._clearWaitingForSimulation;
+      delete window._clearWaitingForSimulation;
     };
   }, [setWaitingForSimulation]);
 
