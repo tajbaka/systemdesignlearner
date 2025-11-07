@@ -416,7 +416,7 @@ function ReactFlowBoardInner({
               width: 140,
               height: 105,
               bottom: miniMapBottomOffset,
-              left: 10,
+              left: 80,
             }}
             position="bottom-left"
             className="hidden lg:block" // Hide on mobile, show on desktop

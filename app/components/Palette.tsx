@@ -45,15 +45,12 @@ export default function Palette({
                   e.dataTransfer.setData("text/plain", c.kind);
                   e.dataTransfer.effectAllowed = "copy";
                 }}
-                title={`latency ~${c.baseLatencyMs}ms, cap ~${c.capacityRps} rps`}
+                title={c.label}
               >
-                <div className="flex items-center justify-between min-w-0">
+                <div className="flex items-center min-w-0">
                   <span className="text-zinc-300 flex items-center gap-2 min-w-0 flex-1 text-sm">
                     <Icon className="text-zinc-200 flex-shrink-0" size={14} />
                     <span className="truncate">{c.label}</span>
-                  </span>
-                  <span className="text-[10px] text-zinc-400 flex-shrink-0 ml-2">
-                    {c.baseLatencyMs}ms · {c.capacityRps} rps
                   </span>
                 </div>
               </button>

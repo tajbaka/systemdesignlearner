@@ -2,7 +2,7 @@ import { ComponentSpec } from "./types";
 
 // Component Library – sane-ish defaults (feel free to tune)
 export const COMPONENT_LIBRARY: ComponentSpec[] = [
-  { kind: "Web", label: "Web Client", baseLatencyMs: 10, capacityRps: 20000, failureRate: 0.0001, costPerHour: 0 },
+  { kind: "Web", label: "Client", baseLatencyMs: 10, capacityRps: 20000, failureRate: 0.0001, costPerHour: 0 },
   { kind: "CDN", label: "CDN", baseLatencyMs: 20, capacityRps: 50000, failureRate: 0.0005, costPerHour: 0.5 },
   { kind: "API Gateway", label: "API Gateway", baseLatencyMs: 8, capacityRps: 8000, failureRate: 0.001, costPerHour: 0.15 },
   { kind: "Load Balancer", label: "Load Balancer", baseLatencyMs: 3, capacityRps: 100000, failureRate: 0.0005, costPerHour: 0.08 },

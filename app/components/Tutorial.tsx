@@ -18,9 +18,9 @@ const TUTORIAL_STEPS: TutorialStep[] = [
     action: "complete"
   },
   {
-    id: "drag-components", 
+    id: "drag-components",
     title: "Step 1: Add Components",
-    content: "Drag these components from the palette to the board: Web Client → CDN → API Gateway → Service → Cache (Redis) → DB (Postgres) → Object Store (S3)",
+    content: "Drag these components from the palette to the board: Client → CDN → API Gateway → Service → Cache (Redis) → DB (Postgres) → Object Store (S3)",
     action: "drag"
   },
   {

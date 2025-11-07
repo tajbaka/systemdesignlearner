@@ -214,11 +214,11 @@ const SystemDesignNodeComponent = ({
       />
 
       <div className={`${handleClass} text-zinc-200`}>{data.spec.kind}</div>
-      <div className="p-4">
+      <div className="h-full w-full flex items-center justify-center p-4">
         <div className="flex items-center justify-center gap-3">
           {(() => {
             const Icon = iconFor(data.spec.kind);
-            return <Icon className="text-zinc-200" size={24} />;
+            return <Icon className="text-zinc-200" size={60} />;
           })()}
           {isEditing ? (
             <input
