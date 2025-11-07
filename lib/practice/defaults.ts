@@ -148,8 +148,8 @@ const SEED_NODE_BLUEPRINTS: Array<{ id: string; kind: ComponentKind; x: number; 
   { id: "seed-api", kind: "API Gateway", x: 100, y: 0 },
 ];
 
-const SEED_EDGE_BLUEPRINTS: Array<{ id: string; from: string; to: string; linkLatencyMs: number }> = [
-  { id: "seed-edge-web-api", from: "seed-web", to: "seed-api", linkLatencyMs: 15 },
+const SEED_EDGE_BLUEPRINTS: Array<{ id: string; from: string; to: string; linkLatencyMs: number; sourceHandle?: string; targetHandle?: string }> = [
+  { id: "seed-edge-web-api", from: "seed-web", to: "seed-api", linkLatencyMs: 15, sourceHandle: "right", targetHandle: "left" },
 ];
 
 const buildSeedNodes = (): PlacedNode[] =>
@@ -167,6 +167,8 @@ const buildSeedEdges = (): Edge[] =>
     from: blueprint.from,
     to: blueprint.to,
     linkLatencyMs: blueprint.linkLatencyMs,
+    sourceHandle: blueprint.sourceHandle,
+    targetHandle: blueprint.targetHandle,
   }));
 
 export const makeDefaultDesignState = (): PracticeDesignState => ({
