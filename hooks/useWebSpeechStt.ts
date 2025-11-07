@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { SttHookOptions, SttHookState } from "@/lib/realtime/types";
+import type { SttHookOptions, SttHookState } from "@/lib/stt-types";
 import { logger } from "@/lib/logger";
 
 declare global {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import type { SttHookOptions, SttHookState } from "@/lib/realtime/types";
+import type { SttHookOptions, SttHookState } from "@/lib/stt-types";
 import { logger } from "@/lib/logger";
 
 const AUDIO_CONSTRAINTS: MediaTrackConstraints = {

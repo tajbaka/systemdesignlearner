@@ -4,17 +4,16 @@ This document explains how to use and test the speech-to-text features integrate
 
 ## Overview
 
-We support two OpenAI-powered speech-to-text implementations:
+We support two speech-to-text implementations:
 
-1. **Whisper Direct API** (Default) - Simpler, faster startup, batch-only transcription
-2. **Realtime API** (Legacy) - WebRTC-based streaming with interim transcripts
-3. **Web Speech API** (Optional) - Browser-native fallback (Chrome only)
+1. **Whisper Direct API** (Default) - Fast, simple, and accurate transcription via OpenAI Whisper
+2. **Web Speech API** (Optional) - Browser-native fallback (Chrome only)
 
-The default implementation uses the OpenAI Whisper API directly via REST for simplicity and performance.
+The default implementation uses the OpenAI Whisper API directly via REST for optimal performance.
 
 ## Architecture
 
-### Whisper Direct (Default)
+### Whisper Direct API (Default)
 
 1. **Server Route** (`app/api/transcribe/route.ts`)
    - Proxies audio files to OpenAI Whisper API
@@ -24,34 +23,28 @@ The default implementation uses the OpenAI Whisper API directly via REST for sim
 2. **Hook** (`hooks/useWhisperStt.ts`)
    - Uses MediaRecorder for audio capture
    - Records to blob, uploads on stop
-   - Fast startup (~500ms vs 1500-2800ms)
+   - Fast startup (~175ms)
    - Batch-only (no interim transcripts)
 
-### Realtime API (Legacy)
+### Web Speech API (Optional Fallback)
 
-1. **Server Route** (`app/api/realtime/route.ts`)
-   - Mints ephemeral session tokens from OpenAI
-   - Tokens expire automatically for security
+3. **Hook** (`hooks/useWebSpeechStt.ts`)
+   - Browser-native speech recognition (Chrome only)
+   - No server required
+   - Enabled with `NEXT_PUBLIC_ENABLE_WEB_SPEECH=1`
 
-2. **WebRTC Hook** (`hooks/useRealtimeStt.ts`)
-   - Manages peer connection to OpenAI
-   - Handles audio capture and data channels
-   - Provides interim and final transcript states
-   - Slower startup but supports streaming
+### UI Components
 
-### Shared Components
-
-3. **UI Component** (`components/practice/PushToTalk.tsx`)
+4. **PushToTalk Component** (`components/practice/PushToTalk.tsx`)
    - Push to talk button with hold or toggle modes
-   - Shows live interim transcripts (Realtime API only)
    - Keyboard shortcut: Space to start/stop when focused
    - Cmd/Ctrl+M to switch between hold and toggle modes
-   - Automatically selects implementation based on feature flags
+   - Automatically selects implementation (Web Speech or Whisper)
 
-4. **Bridge Component** (`components/practice/VoiceCaptureBridge.tsx`)
+5. **Bridge Component** (`components/practice/VoiceCaptureBridge.tsx`)
    - Integrates PushToTalk with existing textarea inputs
    - Appends final transcripts to the current value
-   - Already integrated into Functional and Non-Functional Requirements steps
+   - Integrated into practice step forms
 
 ## Environment Setup
 
@@ -63,26 +56,6 @@ Set your OpenAI API key in `.env` or `.env.local`:
 OPENAI_API_KEY=sk-proj-...
 ```
 
-### Optional: Choose Implementation
-
-**Whisper Direct API (Default, Recommended):**
-```bash
-NEXT_PUBLIC_USE_WHISPER_DIRECT=1  # or omit (defaults to 1)
-```
-- Faster startup (~500ms)
-- Simpler implementation
-- No interim transcripts (batch only)
-- Same transcription quality
-
-**Realtime API (Legacy):**
-```bash
-NEXT_PUBLIC_USE_WHISPER_DIRECT=0
-```
-- Slower startup (~1500-2800ms)
-- Supports interim transcripts
-- More complex WebRTC implementation
-- Use if you need streaming transcription
-
 ### Optional: Web Speech API Fallback
 
 To enable the browser's built-in speech recognition (Chrome only):
@@ -91,7 +64,7 @@ To enable the browser's built-in speech recognition (Chrome only):
 NEXT_PUBLIC_ENABLE_WEB_SPEECH=1
 ```
 
-This is disabled by default. Note: Web Speech API takes priority over both Whisper implementations when enabled.
+This is disabled by default. Note: Web Speech API takes priority over Whisper Direct when enabled.
 
 ## Vercel Deployment
 
@@ -117,9 +90,9 @@ pnpm dev
 5. Release the button to stop recording
 
 6. Verify:
-   - Interim text appears within 300-800ms while speaking
-   - Final text is appended to the textarea when you stop
+   - Final text is appended to the textarea when you stop recording
    - Multiple recordings accumulate in the same textarea
+   - Transcription typically completes within 500-2000ms after stopping
 
 ### Testing Modes
 
@@ -155,12 +128,12 @@ pnpm dev
 
 ## Browser Compatibility
 
-**WebRTC Path** (default):
+**Whisper Direct** (default):
 - Chrome/Edge: Full support
 - Firefox: Full support
 - Safari: Full support
 
-**Web Speech API Fallback** (optional):
+**Web Speech API** (optional):
 - Chrome/Edge only
 - Must enable with `NEXT_PUBLIC_ENABLE_WEB_SPEECH=1`
 
@@ -168,25 +141,14 @@ pnpm dev
 
 ### Whisper Direct API (Default)
 
-- **Startup Latency**: ~500ms (mic permission + setup)
-- **Transcription Latency**: 200-1000ms after recording stops
+- **Startup Latency**: ~175ms (mic permission + setup)
+- **Transcription Latency**: 500-2000ms after recording stops (depends on audio length)
 - **Accuracy**: High quality (Whisper-1 model)
 - **Interim Transcripts**: No (batch only)
 - **Cost**: $6.00 per 1000 minutes
-
-### Realtime API (Legacy)
-
-- **Startup Latency**: 1500-2800ms (WebRTC negotiation + token fetch)
-- **Transcription Latency**: 300-800ms from speech to interim text
-- **Accuracy**: High quality (Whisper-1 model)
-- **Interim Transcripts**: Yes (streaming)
-- **Cost**: $6.00 per 1000 minutes + WebRTC overhead
-
-### Both Implementations
-
-- **Connection**: Direct browser to OpenAI, no server proxy for audio
 - **Browser Support**: Chrome, Firefox, Safari (all major browsers)
-- **Cost Optimization**: Push to talk avoids transcribing silence
+- **Connection**: Audio uploaded to server, server calls OpenAI
+- **Max Recording**: 25 MB per file
 
 ## Troubleshooting
 
@@ -209,11 +171,7 @@ pnpm dev
 1. Verify API key is valid
 2. Check network connectivity
 3. Look for CORS errors in console
-4. Verify API route is accessible at `/api/realtime`
-
-### Interim text not showing
-
-This is expected behavior during very short utterances. Speak for at least 1-2 seconds to see interim results.
+4. Verify API route is accessible at `/api/transcribe`
 
 ## Code Integration
 
@@ -247,51 +205,7 @@ function MyComponent() {
 ## Security Notes
 
 - API keys are never exposed to the browser
-- Ephemeral tokens expire automatically (Realtime API)
 - CORS restricted to allowed origins
 - Microphone access requires user permission
-- No audio is stored or processed on your servers
+- Audio files are temporarily processed, not stored
 - Audio files are proxied through API routes to protect keys
-
-## Migration Guide: Realtime API → Whisper Direct
-
-If you're currently using the Realtime API and want to switch to Whisper Direct:
-
-1. **Set the feature flag:**
-   ```bash
-   NEXT_PUBLIC_USE_WHISPER_DIRECT=1
-   ```
-
-2. **Test locally:**
-   - Start dev server: `npm run dev`
-   - Navigate to a practice step
-   - Test recording and transcription
-   - Verify startup is faster (~500ms vs 1500-2800ms)
-
-3. **Deploy to production:**
-   - Set `NEXT_PUBLIC_USE_WHISPER_DIRECT=1` in Vercel environment variables
-   - Deploy and monitor for issues
-
-4. **Key Differences to Communicate:**
-   - Users won't see interim transcripts while speaking
-   - They'll see a processing indicator instead
-   - Final transcript appears after they release the mic button
-   - Overall experience is faster and more reliable
-
-5. **Rollback if needed:**
-   - Set `NEXT_PUBLIC_USE_WHISPER_DIRECT=0`
-   - Redeploy (~2 minutes)
-
-## Performance Comparison
-
-| Feature | Whisper Direct | Realtime API |
-|---------|---------------|--------------|
-| Startup Time | ~500ms | 1500-2800ms |
-| Interim Transcripts | ❌ No | ✅ Yes |
-| Code Complexity | Low (150 lines) | High (680 lines) |
-| Transcription Quality | Same (Whisper-1) | Same (Whisper-1) |
-| Cost | Same | Same |
-| Reliability | Higher | Lower (WebRTC can be finicky) |
-| Browser Support | Excellent | Good |
-
-**Recommendation:** Use Whisper Direct unless you specifically need interim transcripts during speech.
