@@ -11,10 +11,10 @@ export function PracticeSidebar() {
 
   return (
     <>
-      {/* Mobile: Hamburger button below step indicators */}
+      {/* Mobile: Hamburger button in top left corner */}
       <button
         onClick={() => setMobileMenuOpen(true)}
-        className="fixed left-4 top-16 z-40 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900/95 backdrop-blur-sm text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:hidden"
+        className="fixed left-4 top-4 z-40 inline-flex h-10 w-10 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900/95 backdrop-blur-sm text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 lg:hidden"
         aria-label="Open menu"
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

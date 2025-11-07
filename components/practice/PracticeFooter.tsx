@@ -29,7 +29,7 @@ export function PracticeFooter({
   // Score step has special footer
   if (currentStep === "score") {
     return (
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto flex w-full max-w-5xl flex-row items-center justify-between gap-3 px-4 py-4">
         <button
           type="button"
           onClick={onBackToSandbox}
@@ -47,7 +47,7 @@ export function PracticeFooter({
           </svg>
         </button>
         <Link
-          href="/"
+          href="/practice"
           className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-blue-500 text-blue-950 transition hover:bg-blue-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-300"
         >
           <span className="sr-only">Home</span>

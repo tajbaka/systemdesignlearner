@@ -86,7 +86,7 @@ export function PracticeStepper({
     >
       {/* Mobile */}
       {!hideMobileStepper ? (
-        <div className="sm:hidden py-5">
+        <div className="sm:hidden pt-16 pb-5">
           <div
             className="relative mb-2 h-9 px-6"
             style={{ "--dot": "36px" } as React.CSSProperties}
