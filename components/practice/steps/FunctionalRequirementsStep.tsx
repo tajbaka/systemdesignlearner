@@ -16,15 +16,32 @@ export function FunctionalRequirementsStep() {
   const hasError = isEmpty || isTooShort;
   const hasMinContent = trimmedLength >= 15;
 
-  // Auto-focus on load
+  // Auto-resize textarea based on content
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.max(220, textarea.scrollHeight)}px`;
+    }
+  };
+
+  // Auto-focus on load and adjust height for pre-filled content
   useEffect(() => {
-    if (!isReadOnly && textareaRef.current) {
-      const timer = setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 400);
-      return () => clearTimeout(timer);
+    if (textareaRef.current) {
+      adjustTextareaHeight();
+      if (!isReadOnly) {
+        const timer = setTimeout(() => {
+          textareaRef.current?.focus();
+        }, 400);
+        return () => clearTimeout(timer);
+      }
     }
   }, [isReadOnly]);
+
+  // Adjust height when content changes
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [requirements.functionalSummary]);
 
   const handleSummaryChange = (summary: string) => {
     setRequirements({
@@ -106,7 +123,7 @@ export function FunctionalRequirementsStep() {
               value={requirements.functionalSummary}
               onChange={(event) => handleSummaryChange(event.target.value)}
               placeholder="Example: Users submit URLs and receive shorter versions they can share."
-              className={`min-h-[220px] w-full resize-y rounded-2xl border-none bg-transparent px-6 pb-5 pr-14 pt-5 text-base leading-7 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
+              className={`min-h-[220px] w-full resize-none rounded-2xl border-none bg-transparent px-6 pb-5 pr-14 pt-5 text-base leading-7 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
                 hasError && !isReadOnly
                   ? 'focus-visible:ring-0'
                   : 'focus-visible:ring-0'
@@ -139,16 +156,6 @@ export function FunctionalRequirementsStep() {
               }`}>
                 {trimmedLength}/50
               </span>
-            </div>
-          )}
-
-          {hasError && !isReadOnly && (
-            <div className="rounded-lg border border-red-500/30 bg-red-950/20 px-4 py-3">
-              <p className="text-sm text-red-300">
-                {isEmpty
-                  ? "Please describe the functional requirements before continuing."
-                  : `Please provide more detail (at least 50 characters). Current: ${trimmedLength}`}
-              </p>
             </div>
           )}
         </div>

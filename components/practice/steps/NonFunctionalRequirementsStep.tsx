@@ -11,21 +11,36 @@ export function NonFunctionalRequirementsStep() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showHint, setShowHint] = useState(true);
 
-  // Check if user has provided numeric values
-  const hasNumericValues = nf.readRps > 0 && nf.writeRps > 0 && nf.p95RedirectMs > 0;
   const trimmedLength = nf.notes.trim().length;
   const hasNotes = trimmedLength > 0;
   const hasMinContent = trimmedLength >= 15;
 
-  // Auto-focus on load
+  // Auto-resize textarea based on content
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${Math.max(220, textarea.scrollHeight)}px`;
+    }
+  };
+
+  // Auto-focus on load and adjust height for pre-filled content
   useEffect(() => {
-    if (!isReadOnly && textareaRef.current) {
-      const timer = setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 400);
-      return () => clearTimeout(timer);
+    if (textareaRef.current) {
+      adjustTextareaHeight();
+      if (!isReadOnly) {
+        const timer = setTimeout(() => {
+          textareaRef.current?.focus();
+        }, 400);
+        return () => clearTimeout(timer);
+      }
     }
   }, [isReadOnly]);
+
+  // Adjust height when content changes
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [nf.notes]);
 
   const handleSummaryChange = (summary: string) => {
     setRequirements({
@@ -50,11 +65,8 @@ export function NonFunctionalRequirementsStep() {
     if (trimmedLength === 0) {
       return "Need ideas? Think about latency, throughput, and scale.";
     }
-    if (hasNotes && hasNumericValues) {
-      return "Perfect! Specific numbers help design decisions.";
-    }
-    if (hasNotes) {
-      return "Good start. Consider adding specific metrics.";
+    if (trimmedLength >= 50) {
+      return "Looks good. Ready when you are.";
     }
     return "Keep going, you're on the right track.";
   };
@@ -93,7 +105,7 @@ export function NonFunctionalRequirementsStep() {
                     <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="currentColor">
                       <path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0zm.75 4.5a.75.75 0 0 0-1.5 0v3.69L5.03 6.97a.75.75 0 0 0-1.06 1.06l3 3a.75.75 0 0 0 1.06 0l3-3a.75.75 0 0 0-1.06-1.06L8.75 8.19V4.5z"/>
                     </svg>
-                    Tip: Include specific numbers when possible
+                    Tip: Focus on qualities, not numbers
                   </span>
                 </div>
               )}
@@ -113,7 +125,7 @@ export function NonFunctionalRequirementsStep() {
               value={nf.notes}
               onChange={(event) => handleSummaryChange(event.target.value)}
               placeholder="Example: Fast redirects are critical. System should handle traffic spikes and remain available."
-              className={`min-h-[220px] w-full resize-y rounded-2xl border-none bg-transparent px-6 pb-5 pr-14 pt-5 text-base leading-7 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
+              className={`min-h-[220px] w-full resize-none rounded-2xl border-none bg-transparent px-6 pb-5 pr-14 pt-5 text-base leading-7 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
                 !hasNotes && !isReadOnly
                   ? 'focus-visible:ring-0'
                   : 'focus-visible:ring-0'
@@ -135,36 +147,19 @@ export function NonFunctionalRequirementsStep() {
               <p className={`text-sm transition-colors duration-300 ${
                 trimmedLength === 0
                   ? 'text-zinc-500'
-                  : hasNotes && hasNumericValues
+                  : trimmedLength >= 50
                     ? 'text-emerald-400'
                     : 'text-blue-400'
               }`}>
                 {getHelperText()}
               </p>
               <span className={`text-xs font-medium ${
-                hasNotes ? 'text-emerald-400' : 'text-zinc-500'
+                trimmedLength >= 50 ? 'text-emerald-400' : trimmedLength > 0 ? 'text-amber-400' : 'text-zinc-500'
               }`}>
-                {trimmedLength > 0 ? `${trimmedLength} chars` : 'Start typing'}
+                {trimmedLength}/50
               </span>
             </div>
           )}
-
-          {!hasNotes && !isReadOnly && (
-            <div className="rounded-lg border border-red-500/30 bg-red-950/20 px-4 py-3">
-              <p className="text-sm text-red-300">
-                Please describe the performance constraints before continuing.
-              </p>
-            </div>
-          )}
-
-          {hasNotes && !hasNumericValues && !isReadOnly && (
-            <div className="rounded-lg border border-amber-500/30 bg-amber-950/20 px-4 py-3 animate-in fade-in slide-in-from-bottom-1 duration-300">
-              <p className="text-sm text-amber-200">
-                <span className="font-semibold">Pro tip:</span> Adding specific metrics like &apos;100ms latency&apos; or &apos;5000 RPS&apos; makes your design more concrete and easier to validate.
-              </p>
-            </div>
-          )}
-
         </div>
       </section>
     </div>

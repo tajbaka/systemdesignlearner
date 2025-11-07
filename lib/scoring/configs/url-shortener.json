@@ -185,105 +185,88 @@
     },
     "nonFunctional": {
       "maxScore": 20,
-      "questions": [
+      "minTextLength": 50,
+      "evaluationCriteria": {
+        "mentionsPerformance": 5,
+        "mentionsScalability": 5,
+        "mentionsAvailability": 5,
+        "mentionsReliability": 5
+      },
+      "qualitativeAspects": [
         {
-          "id": "read-rps",
-          "prompt": "Expected read requests per second (redirects)",
-          "category": "scale",
-          "optimalRanges": {
-            "min": 1000,
-            "max": 100000,
-            "target": 10000,
-            "unit": "RPS"
-          },
+          "id": "performance",
+          "label": "Performance",
+          "description": "How fast should the system respond? Consider redirect latency and overall responsiveness.",
+          "keywords": [
+            "fast",
+            "quick",
+            "responsive",
+            "low latency",
+            "speed",
+            "instant",
+            "milliseconds"
+          ],
           "weight": 5,
-          "feedbackTemplates": {
-            "tooLow": "Consider realistic production traffic. Most URL shorteners handle 1K+ RPS.",
-            "tooHigh": "Over 100K RPS requires significant infrastructure. Ensure your design scales appropriately.",
-            "optimal": "Good scale target! This is achievable with proper caching and horizontal scaling."
-          }
+          "examplePhrases": [
+            "Redirects should be very fast to provide good user experience",
+            "Low latency is critical for user satisfaction"
+          ]
         },
         {
-          "id": "write-rps",
-          "prompt": "Expected write requests per second (new URLs created)",
-          "category": "scale",
-          "optimalRanges": {
-            "min": 10,
-            "max": 10000,
-            "target": 100,
-            "unit": "RPS"
-          },
-          "weight": 3,
-          "feedbackTemplates": {
-            "tooLow": "Even small services typically see 10+ URL creations per second.",
-            "tooHigh": "Over 10K writes/sec is extremely high. Ensure your database can handle this throughput.",
-            "optimal": "Realistic write volume. Read-heavy workload is typical for URL shorteners."
-          }
-        },
-        {
-          "id": "p95-latency",
-          "prompt": "Target P95 redirect latency",
-          "category": "performance",
-          "optimalRanges": {
-            "min": 5,
-            "max": 200,
-            "target": 50,
-            "unit": "ms"
-          },
+          "id": "scalability",
+          "label": "Scalability",
+          "description": "How much traffic should the system handle? Think about growth and load patterns.",
+          "keywords": [
+            "scale",
+            "traffic",
+            "load",
+            "growth",
+            "volume",
+            "requests",
+            "concurrent",
+            "high traffic"
+          ],
           "weight": 5,
-          "feedbackTemplates": {
-            "tooLow": "Sub-5ms P95 latency requires edge caching and aggressive optimization.",
-            "tooHigh": "Over 200ms redirects create poor user experience. Aim for sub-100ms.",
-            "optimal": "Excellent latency target! Achievable with caching layer and optimized queries."
-          }
+          "examplePhrases": [
+            "System should handle high traffic volumes",
+            "Must scale to accommodate growth"
+          ]
         },
         {
           "id": "availability",
-          "prompt": "Target availability (uptime %)",
-          "category": "availability",
-          "optimalRanges": {
-            "min": 99.0,
-            "max": 99.99,
-            "target": 99.9,
-            "unit": "%"
-          },
-          "weight": 4,
-          "feedbackTemplates": {
-            "tooLow": "Below 99% availability means significant downtime (3.5+ days/year). Aim higher.",
-            "tooHigh": "99.99% requires multi-region deployment, redundancy, and sophisticated monitoring.",
-            "optimal": "Great balance! 99.9% is achievable with load balancing and replica sets."
-          }
+          "label": "Availability",
+          "description": "How reliable and available should the system be?",
+          "keywords": [
+            "available",
+            "uptime",
+            "reliable",
+            "always on",
+            "24/7",
+            "downtime",
+            "fault tolerant"
+          ],
+          "weight": 5,
+          "examplePhrases": [
+            "System should have high availability with minimal downtime",
+            "Reliability is important for user trust"
+          ]
         },
         {
-          "id": "rate-limiting",
-          "prompt": "Rate limiting requirements",
-          "category": "security",
-          "optimalRanges": {
-            "min": 10,
-            "max": 1000,
-            "target": 100,
-            "unit": "req/min"
-          },
-          "weight": 3,
-          "requiredBy": [
-            "rate-limiting"
+          "id": "consistency",
+          "label": "Consistency & Reliability",
+          "description": "How should the system handle data consistency and reliability?",
+          "keywords": [
+            "consistent",
+            "reliable",
+            "accurate",
+            "correct",
+            "durable",
+            "no data loss"
           ],
-          "feedbackTemplates": {
-            "tooLow": "10 req/min is very restrictive. Consider legitimate use cases.",
-            "tooHigh": "Over 1000 req/min per user may not effectively prevent abuse.",
-            "optimal": "Good rate limit! Balances legitimate usage with abuse prevention.",
-            "missing": "Since you selected rate limiting as a requirement, specify the threshold."
-          }
-        }
-      ],
-      "decisionRules": [
-        {
-          "condition": {
-            "functionalRequirementId": "rate-limiting",
-            "required": true
-          },
-          "questions": [
-            "rate-limiting"
+          "weight": 5,
+          "examplePhrases": [
+            "URL mappings must be reliable and not lost",
+            "System should ensure data consistency"
           ]
         }
       ]
