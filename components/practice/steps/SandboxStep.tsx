@@ -5,7 +5,7 @@ import type { ComponentKind } from "@/app/components/types";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import DesignStage from "@/components/practice/stages/DesignStage";
 import RunStage from "@/components/practice/stages/RunStage";
-import type { PracticeDesignState, Requirements } from "@/lib/practice/types";
+import type { PracticeDesignState, Requirements, PracticeApiDefinitionState } from "@/lib/practice/types";
 import { Sidebar } from "@/components/practice/Sidebar";
 import Palette from "@/app/components/Palette";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
@@ -26,10 +26,18 @@ const BASE_COMPONENTS: ComponentKind[] = [
 const analyticsComponents: ComponentKind[] = ["Message Queue (Kafka Topic)", "Worker Pool"];
 const rateLimitComponents: ComponentKind[] = ["Rate Limiter"];
 const adminComponents: ComponentKind[] = ["Auth"];
+const searchComponents: ComponentKind[] = ["Search Index (Elastic)"];
+const scalingComponents: ComponentKind[] = ["Read Replica", "Shard Router"];
+const streamingComponents: ComponentKind[] = ["Stream Processor (Flink)"];
+const idComponents: ComponentKind[] = ["ID Generator (Snowflake)"];
 
-const computeAllowedComponents = (requirements: Requirements): ComponentKind[] => {
+const computeAllowedComponents = (
+  requirements: Requirements,
+  apiDefinition: PracticeApiDefinitionState
+): ComponentKind[] => {
   const set = new Set<ComponentKind>(BASE_COMPONENTS);
 
+  // Based on functional requirements
   if (requirements.functional["basic-analytics"]) {
     analyticsComponents.forEach((kind) => set.add(kind));
   }
@@ -38,6 +46,43 @@ const computeAllowedComponents = (requirements: Requirements): ComponentKind[] =
   }
   if (requirements.functional["admin-delete"]) {
     adminComponents.forEach((kind) => set.add(kind));
+  }
+
+  // Based on API routes - detect search/query endpoints
+  const hasSearchEndpoint = apiDefinition.endpoints.some((ep) =>
+    ep.path.toLowerCase().includes("search") ||
+    ep.path.toLowerCase().includes("query") ||
+    ep.notes.toLowerCase().includes("search")
+  );
+  if (hasSearchEndpoint) {
+    searchComponents.forEach((kind) => set.add(kind));
+  }
+
+  // Based on API routes - detect streaming/realtime endpoints
+  const hasStreamingEndpoint = apiDefinition.endpoints.some((ep) =>
+    ep.path.toLowerCase().includes("stream") ||
+    ep.path.toLowerCase().includes("websocket") ||
+    ep.path.toLowerCase().includes("realtime") ||
+    ep.notes.toLowerCase().includes("stream") ||
+    ep.notes.toLowerCase().includes("realtime")
+  );
+  if (hasStreamingEndpoint) {
+    streamingComponents.forEach((kind) => set.add(kind));
+  }
+
+  // Based on non-functional requirements - high read load suggests replicas
+  const highReadLoad = requirements.nonFunctional.readRps > 5000;
+  if (highReadLoad) {
+    scalingComponents.forEach((kind) => set.add(kind));
+  }
+
+  // Based on non-functional requirements - need for unique IDs at scale
+  const needsUniqueIds =
+    requirements.nonFunctional.writeRps > 1000 ||
+    requirements.functionalSummary.toLowerCase().includes("unique id") ||
+    requirements.functionalSummary.toLowerCase().includes("distributed id");
+  if (needsUniqueIds) {
+    idComponents.forEach((kind) => set.add(kind));
   }
 
   return Array.from(set);
@@ -74,8 +119,8 @@ export function SandboxStep({
   } = usePracticeSession();
 
   const allowedComponents = useMemo(
-    () => computeAllowedComponents(state.requirements),
-    [state.requirements]
+    () => computeAllowedComponents(state.requirements, state.apiDefinition),
+    [state.requirements, state.apiDefinition]
   );
 
   const mobilePaletteItems = useMemo(
