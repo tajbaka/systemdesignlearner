@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRealtimeStt } from "@/hooks/useRealtimeStt";
 import { useWebSpeechStt } from "@/hooks/useWebSpeechStt";
+import { useWhisperStt } from "@/hooks/useWhisperStt";
 import { logger } from "@/lib/logger";
 
 const MicIcon = () => (
@@ -56,6 +57,10 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
     typeof window !== "undefined" &&
     process.env.NEXT_PUBLIC_ENABLE_WEB_SPEECH === "1";
 
+  const useWhisperDirect =
+    typeof window !== "undefined" &&
+    process.env.NEXT_PUBLIC_USE_WHISPER_DIRECT === "1";
+
   const realtimeStt = useRealtimeStt({
     stepId,
     onFinal,
@@ -66,8 +71,20 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
     onFinal,
   });
 
+  const whisperStt = useWhisperStt({
+    stepId,
+    onFinal,
+  });
+
+  // Priority: Web Speech > Whisper Direct > Realtime API
+  const sttHook = useWebSpeech
+    ? webSpeechStt
+    : useWhisperDirect
+      ? whisperStt
+      : realtimeStt;
+
   const { isRecording, isConnecting, isProcessing, interimText, error, start, stop } =
-    useWebSpeech ? webSpeechStt : realtimeStt;
+    sttHook;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (disabled || mode !== "hold") return;
