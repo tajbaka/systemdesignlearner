@@ -31,6 +31,7 @@ const buildSharePayload = (state: ReturnType<typeof usePracticeSession>["state"]
 });
 
 export function ScoreShareStep() {
+  const formatScore = (value: number) => Math.round(value);
   const { state, setStep, isReadOnly: _isReadOnly } = usePracticeSession();
   const lastResult = state.run.lastResult;
   const score = lastResult?.scoreBreakdown;
@@ -181,7 +182,7 @@ export function ScoreShareStep() {
                 {cumulativeScore.grade}
               </div>
               <div className="mt-2 text-2xl font-semibold text-white">
-                {cumulativeScore.total}/100
+                {formatScore(cumulativeScore.total)}/100
               </div>
               <div className="mt-1 text-sm text-zinc-400">
                 {getGradeDescription(cumulativeScore.grade)}
@@ -210,7 +211,7 @@ export function ScoreShareStep() {
                     />
                   </div>
                   <span className="text-sm font-semibold text-white w-16 text-right">
-                    {cumulativeScore.breakdown.functional}/20
+                    {formatScore(cumulativeScore.breakdown.functional)}/20
                   </span>
                 </div>
               </div>
@@ -230,7 +231,7 @@ export function ScoreShareStep() {
                     />
                   </div>
                   <span className="text-sm font-semibold text-white w-16 text-right">
-                    {cumulativeScore.breakdown.nonFunctional}/20
+                    {formatScore(cumulativeScore.breakdown.nonFunctional)}/20
                   </span>
                 </div>
               </div>
@@ -250,7 +251,7 @@ export function ScoreShareStep() {
                     />
                   </div>
                   <span className="text-sm font-semibold text-white w-16 text-right">
-                    {cumulativeScore.breakdown.api}/20
+                    {formatScore(cumulativeScore.breakdown.api)}/20
                   </span>
                 </div>
               </div>
@@ -270,7 +271,7 @@ export function ScoreShareStep() {
                     />
                   </div>
                   <span className="text-sm font-semibold text-white w-16 text-right">
-                    {cumulativeScore.breakdown.design}/30
+                    {formatScore(cumulativeScore.breakdown.design)}/30
                   </span>
                 </div>
               </div>
