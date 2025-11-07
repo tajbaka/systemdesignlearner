@@ -178,6 +178,25 @@ const deriveInitialStep = (state: PracticeState): PracticeStep => {
   return PRACTICE_STEPS[PRACTICE_STEPS.length - 1];
 };
 
+const ensureAuthProgressConsistency = (state: PracticeState): PracticeState => {
+  if (state.auth.isAuthed) {
+    return state;
+  }
+
+  if (!state.completed.sandbox && !state.completed.score) {
+    return state;
+  }
+
+  return {
+    ...state,
+    completed: {
+      ...state.completed,
+      sandbox: false,
+      score: false,
+    },
+  };
+};
+
 type PracticeSessionContextValue = {
   state: PracticeState;
   isReadOnly: boolean;
@@ -221,7 +240,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
     }
 
     const stored = loadPractice(PRACTICE_SLUG);
-    const merged = mergeState(stored);
+    const merged = ensureAuthProgressConsistency(mergeState(stored));
     setState(merged);
     setIsReadOnly(false);
     setCurrentStep(deriveInitialStep(merged));

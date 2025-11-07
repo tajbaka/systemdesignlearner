@@ -19,7 +19,7 @@ import { PracticeFeedbackPanel } from "@/components/practice/PracticeFeedbackPan
 
 function PracticeFlowInner() {
   const session = usePracticeSession();
-  const { hydrated, currentStep, setStep, isReadOnly } = session;
+  const { hydrated, currentStep, setStep, isReadOnly, state, markStep, setAuth } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
@@ -85,10 +85,43 @@ function PracticeFlowInner() {
   }, [currentStep, hydrated, isActive]);
 
   useEffect(() => {
-    if (hydrated && !isReadOnly && currentStep === "score") {
+    if (hydrated && !isReadOnly && currentStep === "score" && (state.auth.isAuthed || isSignedIn)) {
       completeStep(session, "score");
     }
-  }, [hydrated, isReadOnly, currentStep, session]);
+  }, [hydrated, isReadOnly, currentStep, session, state.auth.isAuthed, isSignedIn]);
+
+  useEffect(() => {
+    if (!hydrated || isReadOnly) return;
+    const signedIn = Boolean(isSignedIn);
+
+    if (!signedIn && state.auth.isAuthed) {
+      setAuth((prev) => ({ ...prev, isAuthed: false }));
+    }
+
+    if (!state.auth.isAuthed) {
+      if (state.completed.score) {
+        markStep("score", false);
+      }
+      if (state.completed.sandbox) {
+        markStep("sandbox", false);
+      }
+    }
+
+    if (currentStep === "score" && (!signedIn || !state.auth.isAuthed)) {
+      setStep("sandbox");
+    }
+  }, [
+    currentStep,
+    hydrated,
+    isReadOnly,
+    isSignedIn,
+    markStep,
+    setAuth,
+    setStep,
+    state.auth.isAuthed,
+    state.completed.sandbox,
+    state.completed.score,
+  ]);
 
   useEffect(() => {
     if (currentStep !== "sandbox") {

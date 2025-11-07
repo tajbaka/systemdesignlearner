@@ -29,7 +29,7 @@ export function usePracticeNavigation(
   session: PracticeSessionValue,
   options: NavigationOptions
 ) {
-  const scenario = SCENARIOS.find((item) => item.id === session.slug) ?? SCENARIOS[0];
+  const scenario = SCENARIOS.find((item) => item.id === session.state.slug) ?? SCENARIOS[0];
   const [showAuthModal, setShowAuthModal] = useState(false);
   const {
     verification,
@@ -45,19 +45,22 @@ export function usePracticeNavigation(
 
   const proceedToNext = () => {
     const config = STEP_CONFIGS[session.currentStep];
-    config?.onNext?.(session);
+    const advance = () => {
+      config?.onNext?.(session);
+      session.goNext();
+    };
 
     // After completing sandbox (step 4), check if user needs to authenticate
     if (session.currentStep === "sandbox") {
       // If user has already authenticated, proceed
       if (session.state.auth.isAuthed) {
-        session.goNext();
+        advance();
       }
       // If user is signed in via Clerk but hasn't been marked as authenticated yet
       // This handles the case where they signed in from navbar
       else if (isSignedIn) {
         session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
-        session.goNext();
+        advance();
       }
       // Otherwise, show auth modal (no skip option - must sign in)
       else {
@@ -65,9 +68,10 @@ export function usePracticeNavigation(
         setScoringFeedback(null);
         setShowAuthModal(true);
       }
-    } else {
-      session.goNext();
+      return;
     }
+
+    advance();
   };
 
   const handleNext = async () => {
