@@ -45,7 +45,7 @@ export function ApiDefinitionStep() {
   const validEndpoints = endpoints.filter(ep => ep.path.trim().length > 0);
   const hasNoValidEndpoints = validEndpoints.length === 0;
   const endpointsWithIssues = validEndpoints.filter(ep => !ep.notes.trim() || ep.notes.trim().length < 10);
-  const hasValidationIssues = hasNoEndpoints || hasNoValidEndpoints || endpointsWithIssues.length > 0;
+  const _hasValidationIssues = hasNoEndpoints || hasNoValidEndpoints || endpointsWithIssues.length > 0;
 
   useEffect(() => {
     if (!openId || !endpoints.some((endpoint) => endpoint.id === openId)) {

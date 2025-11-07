@@ -81,7 +81,7 @@ export function FeedbackModal({
         {/* Positive feedback */}
         {positiveMessages.length > 0 && (
           <div className="mb-4">
-            <h3 className="mb-2 text-sm font-semibold text-emerald-300">✓ What's working well:</h3>
+            <h3 className="mb-2 text-sm font-semibold text-emerald-300">✓ What&apos;s working well:</h3>
             <ul className="space-y-1.5">
               {positiveMessages.map((msg, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm text-emerald-200">

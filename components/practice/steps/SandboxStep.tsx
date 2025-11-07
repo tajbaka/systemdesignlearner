@@ -6,7 +6,6 @@ import { usePracticeSession } from "@/components/practice/session/PracticeSessio
 import DesignStage from "@/components/practice/stages/DesignStage";
 import RunStage from "@/components/practice/stages/RunStage";
 import type { PracticeDesignState, Requirements, PracticeApiDefinitionState } from "@/lib/practice/types";
-import { Sidebar } from "@/components/practice/Sidebar";
 import Palette from "@/app/components/Palette";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 
@@ -177,7 +176,7 @@ export function SandboxStep({
               // Get the canvas element and trigger drop on it
               const canvas = document.querySelector('.react-flow');
               if (canvas) {
-                const canvasBounds = canvas.getBoundingClientRect();
+                const _canvasBounds = canvas.getBoundingClientRect();
                 const dropEvent = new DragEvent('drop', {
                   bubbles: true,
                   cancelable: true,

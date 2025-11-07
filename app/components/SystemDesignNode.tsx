@@ -5,7 +5,6 @@ import { Handle, Position, NodeProps, useReactFlow } from '@xyflow/react';
 import { SystemDesignNode as SystemDesignNodeType } from "./types";
 import { handleClass, isoClass } from "./styles";
 import { iconFor } from "./icons";
-import { logger } from "@/lib/logger";
 
 interface SystemDesignNodeProps extends NodeProps<SystemDesignNodeType> {
   isInPath?: boolean;
@@ -32,7 +31,7 @@ const SystemDesignNodeComponent = ({
   const { setNodes } = useReactFlow();
   const onDelete = data.onDelete;
   const onRename = data.onRename;
-  const onUpdateReplicas = data.onUpdateReplicas ?? onUpdateReplicasProp;
+  const _onUpdateReplicas = data.onUpdateReplicas ?? onUpdateReplicasProp;
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
@@ -99,7 +98,7 @@ const SystemDesignNodeComponent = ({
     }
   };
 
-  const updateLocalReplicas = useCallback(
+  const _updateLocalReplicas = useCallback(
     (nextReplicas: number) => {
       setNodes((nodes) =>
         nodes.map((node) =>

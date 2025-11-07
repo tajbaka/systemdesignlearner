@@ -21,13 +21,13 @@ export function PracticeFeedbackPanel({
   verification,
   scoringProgressSteps,
   scoringFeedback,
-  helperText,
+  helperText: _helperText,
   onRevise,
   onContinue,
   onClearVerification,
 }: PracticeFeedbackPanelProps) {
   // Only show helper text if there's no feedback being displayed
-  const hasFeedback =
+  const _hasFeedback =
     verification.error ||
     scoringProgressSteps.length > 0 ||
     scoringFeedback ||
