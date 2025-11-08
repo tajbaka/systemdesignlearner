@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
@@ -164,11 +163,6 @@ export default function RootLayout({
     >
       <html lang="en" className="h-full dark">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark safe-area-inset`}>
-          <Script
-            defer
-            data-domain="system-design-sandbox.vercel.app"
-            src="https://plausible.io/js/script.js"
-          />
           <PostHogProvider>
             <ThemeProvider>
               {children}

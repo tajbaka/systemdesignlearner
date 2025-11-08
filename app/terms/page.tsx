@@ -24,7 +24,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Agreement to Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
-              By accessing or using System Design Sandbox ("the Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you do not have permission to access the Service.
+              By accessing or using System Design Sandbox (&quot;the Service&quot;), you agree to be bound by these Terms of Service (&quot;Terms&quot;). If you disagree with any part of these terms, you do not have permission to access the Service.
             </p>
           </section>
 
@@ -87,7 +87,7 @@ export default function TermsPage() {
 
             <h3 className="text-xl font-semibold mb-3 mt-6">5.2 Your Content</h3>
             <p className="text-muted-foreground leading-relaxed">
-              You retain ownership of any system designs, diagrams, or content you create using the Service ("Your Content"). By using the Service, you grant us a limited license to store, display, and process Your Content solely to provide the Service to you.
+              You retain ownership of any system designs, diagrams, or content you create using the Service (&quot;Your Content&quot;). By using the Service, you grant us a limited license to store, display, and process Your Content solely to provide the Service to you.
             </p>
 
             <h3 className="text-xl font-semibold mb-3 mt-6">5.3 Feedback</h3>
@@ -142,7 +142,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">9. Disclaimer of Warranties</h2>
             <p className="text-muted-foreground leading-relaxed">
-              THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL MEET YOUR REQUIREMENTS OR THAT IT WILL BE SUITABLE FOR ANY PARTICULAR PURPOSE.
+              THE SERVICE IS PROVIDED &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT. WE DO NOT WARRANT THAT THE SERVICE WILL MEET YOUR REQUIREMENTS OR THAT IT WILL BE SUITABLE FOR ANY PARTICULAR PURPOSE.
             </p>
           </section>
 
@@ -176,7 +176,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">13. Changes to Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days' notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion. Your continued use of the Service after changes become effective constitutes acceptance of the revised Terms.
+              We reserve the right to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days&apos; notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion. Your continued use of the Service after changes become effective constitutes acceptance of the revised Terms.
             </p>
           </section>
 

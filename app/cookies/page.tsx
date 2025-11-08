@@ -69,16 +69,6 @@ export default function CookiesPage() {
 
               <div className="bg-card border border-border rounded-lg p-4 space-y-2">
                 <div>
-                  <p className="font-semibold text-foreground">Plausible Analytics</p>
-                  <p className="text-sm text-muted-foreground">Purpose: Privacy-friendly website analytics</p>
-                  <p className="text-sm text-muted-foreground">Duration: None (cookieless)</p>
-                  <p className="text-sm text-muted-foreground">Provider: Plausible Insights OÜ</p>
-                  <p className="text-sm text-muted-foreground">Data Collected: Page views, referrers (anonymized)</p>
-                </div>
-              </div>
-
-              <div className="bg-card border border-border rounded-lg p-4 space-y-2">
-                <div>
                   <p className="font-semibold text-foreground">Vercel Analytics</p>
                   <p className="text-sm text-muted-foreground">Purpose: Performance monitoring and web vitals</p>
                   <p className="text-sm text-muted-foreground">Duration: Session</p>
@@ -121,7 +111,6 @@ export default function CookiesPage() {
               <li><strong className="text-foreground">Clerk:</strong> Authentication services - <a href="https://clerk.com/privacy" className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
               <li><strong className="text-foreground">PostHog:</strong> Analytics platform - <a href="https://posthog.com/privacy" className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
               <li><strong className="text-foreground">Vercel:</strong> Hosting and analytics - <a href="https://vercel.com/legal/privacy-policy" className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
-              <li><strong className="text-foreground">Plausible:</strong> Privacy-friendly analytics - <a href="https://plausible.io/privacy" className="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
             </ul>
           </section>
 

@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Welcome to System Design Sandbox ("we," "our," or "us"). We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, disclose, and safeguard your information when you visit our website systemdesignsandbox.com and use our services.
+              Welcome to System Design Sandbox (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;). We respect your privacy and are committed to protecting your personal data. This privacy policy explains how we collect, use, disclose, and safeguard your information when you visit our website systemdesignsandbox.com and use our services.
             </p>
           </section>
 
@@ -91,7 +91,6 @@ export default function PrivacyPage() {
               <li><strong className="text-foreground">Clerk:</strong> Authentication and user management</li>
               <li><strong className="text-foreground">PostHog:</strong> Product analytics and session recording</li>
               <li><strong className="text-foreground">Vercel:</strong> Hosting and analytics</li>
-              <li><strong className="text-foreground">Plausible:</strong> Privacy-friendly analytics</li>
             </ul>
             <p className="text-muted-foreground leading-relaxed mt-3">
               These services may collect information as governed by their respective privacy policies.
@@ -180,7 +179,7 @@ export default function PrivacyPage() {
               <a href="mailto:privacy@systemdesignsandbox.com" className="text-blue-400 hover:text-blue-300 underline">
                 privacy@systemdesignsandbox.com
               </a>
-              {" "}with the subject line "California Privacy Rights Request." We will verify your identity before processing your request and respond within 45 days.
+              {" "}with the subject line &quot;California Privacy Rights Request.&quot; We will verify your identity before processing your request and respond within 45 days.
             </p>
 
             <h3 className="text-xl font-semibold mb-3 mt-6">9.6 Authorized Agent</h3>
@@ -213,7 +212,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">13. Changes to This Policy</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last Updated" date. You are advised to review this policy periodically.
+              We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the &quot;Last Updated&quot; date. You are advised to review this policy periodically.
             </p>
           </section>
 
