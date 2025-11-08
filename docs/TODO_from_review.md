@@ -15,11 +15,16 @@
   - **Implementation**: Added `touched` state to FunctionalRequirementsStep.tsx
 
 ### Voice Recorder
-- [ ] **Improve voice recorder UX** (Priority: Medium)
+- [x] **Improve voice recorder UX** (Priority: Medium) ✅ COMPLETED
   - Current: Clicking just shows loading state, unclear how to start/stop
   - Solution: Copy ChatGPT's voice recorder interaction pattern
   - Make it clear when recording is active vs inactive
   - Reference: Lines 5-7
+  - **Implementation**:
+    - Changed text to "Dictate"
+    - When recording, mic button replaced by two icon buttons: Stop & Transcribe (pulsing red square) and Delete (gray X)
+    - Added cancel() method to both STT hooks to properly discard audio without transcription
+    - Slower, soothing pulse animation (2s)
 
 ### Navigation & Interactions
 - [ ] **Add Enter key support** (Priority: Medium)

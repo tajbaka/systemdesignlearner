@@ -156,6 +156,28 @@ function PracticeFlowInner() {
   const showNext = config?.showNext ?? true;
   const nextLabel = config?.nextLabel ?? "Next";
 
+  // Add Enter key support for navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only trigger on Enter key
+      if (event.key !== "Enter") return;
+
+      // Don't trigger if user is typing in a textarea or input
+      const target = event.target as HTMLElement;
+      if (target.tagName === "TEXTAREA" || target.tagName === "INPUT") return;
+
+      // Don't trigger if next button is not shown or is disabled
+      if (!showNext || nextDisabled || verification.isVerifying || isReadOnly) return;
+
+      // Trigger the next button
+      event.preventDefault();
+      handleNext();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showNext, nextDisabled, verification.isVerifying, isReadOnly, handleNext]);
+
   if (!hydrated) {
     return (
       <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 text-center text-sm text-zinc-400">

@@ -185,6 +185,16 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
         <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
           <button
             type="button"
+            onClick={handleCancel}
+            aria-label="Delete recording"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors text-zinc-200 border border-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
+          >
+            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
+              <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/>
+            </svg>
+          </button>
+          <button
+            type="button"
             onClick={stop}
             aria-label="Stop and transcribe"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-500 hover:bg-red-600 transition-all text-white shadow-lg shadow-red-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
@@ -194,16 +204,6 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
           >
             <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
               <rect x="4" y="4" width="8" height="8" rx="1" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={handleCancel}
-            aria-label="Delete recording"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors text-zinc-200 border border-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
-          >
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
-              <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/>
             </svg>
           </button>
         </div>
