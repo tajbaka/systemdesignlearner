@@ -6,12 +6,13 @@
 ## 🎨 UI/UX Improvements
 
 ### Form Validation & States
-- [ ] **Fix initial error state display** (Priority: High)
+- [x] **Fix initial error state display** (Priority: High) ✅ COMPLETED
   - Don't show red error borders on initial page visit
   - Keep neutral state (gray) until user attempts to submit
   - Only show red validation errors after submission attempt or validation failure
   - Apply to all text input fields across the app
   - Reference: Screenshot 1 (12.51.58)
+  - **Implementation**: Added `touched` state to FunctionalRequirementsStep.tsx
 
 ### Voice Recorder
 - [ ] **Improve voice recorder UX** (Priority: Medium)

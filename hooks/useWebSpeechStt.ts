@@ -176,6 +176,19 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
     cleanup();
   }, [isRecording, interimText, cleanup, onFinal]);
 
+  const cancel = useCallback(() => {
+    if (!isRecording || !recognitionRef.current) return;
+
+    try {
+      // Use abort() to cancel without triggering final results
+      recognitionRef.current.abort();
+    } catch (err) {
+      logger.error("Error aborting recognition:", err);
+    }
+
+    cleanup();
+  }, [isRecording, cleanup]);
+
   useEffect(() => {
     return () => {
       cleanup();
@@ -189,5 +202,6 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
     error,
     start,
     stop,
+    cancel,
   };
 }

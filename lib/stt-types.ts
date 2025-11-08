@@ -14,4 +14,5 @@ export type SttHookState = {
   error: string | null;
   start: () => Promise<void>;
   stop: () => void;
+  cancel: () => void;
 };

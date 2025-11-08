@@ -25,6 +25,7 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const shouldCancelRef = useRef(false);
 
   const cleanup = useCallback(() => {
     if (mediaStreamRef.current) {
@@ -91,6 +92,14 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
 
       recorder.onstop = async () => {
         setIsRecording(false);
+
+        // Check if this was a cancellation
+        if (shouldCancelRef.current) {
+          shouldCancelRef.current = false;
+          cleanup();
+          return;
+        }
+
         setIsProcessing(true);
 
         try {
@@ -173,6 +182,7 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
       return;
     }
 
+    shouldCancelRef.current = false; // Ensure we transcribe
     try {
       if (mediaRecorderRef.current.state === "recording") {
         mediaRecorderRef.current.stop();
@@ -180,6 +190,22 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
     } catch (err) {
       logger.error("Error stopping recorder:", err);
       setError("Failed to stop recording");
+      cleanup();
+    }
+  }, [isRecording, cleanup]);
+
+  const cancel = useCallback(() => {
+    if (!isRecording || !mediaRecorderRef.current) {
+      return;
+    }
+
+    shouldCancelRef.current = true; // Flag to skip transcription
+    try {
+      if (mediaRecorderRef.current.state === "recording") {
+        mediaRecorderRef.current.stop();
+      }
+    } catch (err) {
+      logger.error("Error canceling recorder:", err);
       cleanup();
     }
   }, [isRecording, cleanup]);
@@ -193,5 +219,6 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
     error,
     start,
     stop,
+    cancel,
   };
 }
