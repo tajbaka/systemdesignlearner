@@ -39,13 +39,17 @@ export function FeedbackModal({
   const actionableSteps = guidingItem?.actionable;
 
   return createPortal(
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4">
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm px-4"
+      onClick={onRevise}
+    >
       <div
         className={`relative w-full max-w-lg animate-scale-in rounded-3xl border p-6 shadow-2xl ${
           passed
             ? "border-emerald-400/40 bg-emerald-950/90"
             : "border-amber-400/40 bg-amber-950/90"
         }`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header with icon */}
         <div className="mb-4 flex items-center gap-3">

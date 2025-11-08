@@ -27,9 +27,10 @@
     - Slower, soothing pulse animation (2s)
 
 ### Navigation & Interactions
-- [ ] **Add Enter key support** (Priority: Medium)
+- [x] **Add Enter key support** (Priority: Medium) ✅ COMPLETED
   - Enable 'Enter' key to submit/continue (act as clicking the arrow button)
   - Reference: Screenshot 5 (13.10.33)
+  - **Implementation**: Added global keyboard listener in PracticeFlow.tsx that triggers handleNext() on Enter key, with smart exclusions for textareas/inputs
 
 - [ ] **Improve modal close behavior** (Priority: Low)
   - Current: Only clicking "Revise" closes the feedback modal
