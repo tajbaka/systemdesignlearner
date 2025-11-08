@@ -89,8 +89,14 @@ export default function FeedbackPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">Feedback</h1>
-          <p className="text-xl text-zinc-300">
+          <p className="text-xl text-zinc-300 mb-3">
             We&apos;d love to hear your thoughts. Tell us what worked, what didn&apos;t, and what you&apos;d like to see next.
+          </p>
+          <p className="text-sm text-zinc-400">
+            Prefer email? Reach us at{" "}
+            <a href="mailto:support@systemdesignsandbox.com" className="text-emerald-400 hover:text-emerald-300 underline">
+              support@systemdesignsandbox.com
+            </a>
           </p>
         </div>
 

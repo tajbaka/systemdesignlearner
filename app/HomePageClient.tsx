@@ -679,6 +679,11 @@ export function HomePageClient() {
                     Feedback
                   </Link>
                 </li>
+                <li>
+                  <a href="mailto:support@systemdesignsandbox.com" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                    Support
+                  </a>
+                </li>
               </ul>
             </div>
 
@@ -699,6 +704,11 @@ export function HomePageClient() {
                 <li>
                   <a href="https://antoniocoppe.com" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors text-sm">
                     Portfolio
+                  </a>
+                </li>
+                <li>
+                  <a href="mailto:hello@systemdesignsandbox.com" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                    Contact
                   </a>
                 </li>
               </ul>
