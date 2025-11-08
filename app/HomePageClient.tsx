@@ -682,28 +682,6 @@ export function HomePageClient() {
               </ul>
             </div>
 
-            {/* Resources Column */}
-            <div className="lg:col-span-2">
-              <h3 className="text-white font-semibold text-sm mb-4">Resources</h3>
-              <ul className="space-y-3">
-                <li>
-                  <Link href="/docs" className="text-zinc-400 hover:text-white transition-colors text-sm">
-                    Guides
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/docs" className="text-zinc-400 hover:text-white transition-colors text-sm">
-                    Examples
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/docs" className="text-zinc-400 hover:text-white transition-colors text-sm">
-                    Tutorials
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
             {/* Company Column */}
             <div className="lg:col-span-2">
               <h3 className="text-white font-semibold text-sm mb-4">Company</h3>
@@ -722,6 +700,28 @@ export function HomePageClient() {
                   <a href="https://antoniocoppe.com" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors text-sm">
                     Portfolio
                   </a>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal Column */}
+            <div className="lg:col-span-2">
+              <h3 className="text-white font-semibold text-sm mb-4">Legal</h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/privacy" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                    Terms of Service
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/cookies" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                    Cookie Policy
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -771,6 +771,17 @@ export function HomePageClient() {
               <p className="text-zinc-500 text-sm">
                 © {new Date().getFullYear()} System Design Sandbox. Built by Antonio Coppe.
               </p>
+              <div className="flex items-center gap-6">
+                <Link href="/privacy" className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
+                  Privacy
+                </Link>
+                <Link href="/terms" className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
+                  Terms
+                </Link>
+                <Link href="/cookies" className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
+                  Cookies
+                </Link>
+              </div>
             </div>
           </div>
         </div>
