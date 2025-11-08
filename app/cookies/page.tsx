@@ -46,7 +46,7 @@ export default function CookiesPage() {
               <div>
                 <p className="font-semibold text-foreground">Authentication Cookies (Clerk)</p>
                 <p className="text-sm text-muted-foreground">Purpose: Manage user sessions and keep you logged in</p>
-                <p className="text-sm text-muted-foreground">Duration: Session or persistent (based on "Remember me")</p>
+                <p className="text-sm text-muted-foreground">Duration: Session or persistent (based on &quot;Remember me&quot;)</p>
                 <p className="text-sm text-muted-foreground">Provider: Clerk.com</p>
               </div>
             </div>
@@ -117,7 +117,7 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">5. Session Recording</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We use PostHog to record user sessions (screen recordings of how you interact with our Service). These recordings help us identify usability issues and improve the user experience. Session recordings never capture sensitive form inputs like passwords or payment information. You can opt out of session recording by enabling "Do Not Track" in your browser settings.
+              We use PostHog to record user sessions (screen recordings of how you interact with our Service). These recordings help us identify usability issues and improve the user experience. Session recordings never capture sensitive form inputs like passwords or payment information. You can opt out of session recording by enabling &quot;Do Not Track&quot; in your browser settings.
             </p>
           </section>
 
@@ -148,7 +148,7 @@ export default function CookiesPage() {
 
             <h3 className="text-xl font-semibold mb-3 mt-6">6.3 Do Not Track</h3>
             <p className="text-muted-foreground leading-relaxed">
-              We respect "Do Not Track" browser settings. When enabled, we will not track your session or record your interactions with PostHog.
+              We respect &quot;Do Not Track&quot; browser settings. When enabled, we will not track your session or record your interactions with PostHog.
             </p>
           </section>
 
@@ -179,7 +179,7 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">9. Changes to This Cookie Policy</h2>
             <p className="text-muted-foreground leading-relaxed">
-              We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any material changes by posting the updated policy on this page with a new "Last Updated" date.
+              We may update this Cookie Policy from time to time to reflect changes in our practices or for other operational, legal, or regulatory reasons. We will notify you of any material changes by posting the updated policy on this page with a new &quot;Last Updated&quot; date.
             </p>
           </section>
 

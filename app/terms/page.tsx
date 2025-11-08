@@ -68,7 +68,7 @@ export default function TermsPage() {
               <li>Violate any laws or regulations</li>
               <li>Infringe on intellectual property rights</li>
               <li>Transmit harmful code, viruses, or malware</li>
-              <li>Attempt to gain unauthorized access to the Service or other users' accounts</li>
+              <li>Attempt to gain unauthorized access to the Service or other users&apos; accounts</li>
               <li>Interfere with or disrupt the Service or servers</li>
               <li>Use automated systems (bots, scrapers) without permission</li>
               <li>Impersonate another person or entity</li>
