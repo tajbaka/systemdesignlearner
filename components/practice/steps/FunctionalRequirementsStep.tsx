@@ -9,12 +9,14 @@ export function FunctionalRequirementsStep() {
   const requirements = state.requirements;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showHint, setShowHint] = useState(true);
+  const [touched, setTouched] = useState(false);
 
   const trimmedLength = requirements.functionalSummary.trim().length;
   const isEmpty = trimmedLength === 0;
   const isTooShort = trimmedLength > 0 && trimmedLength < 50;
   const hasError = isEmpty || isTooShort;
   const hasMinContent = trimmedLength >= 15;
+  const shouldShowError = hasError && touched;
 
   // Auto-resize textarea based on content
   const adjustTextareaHeight = () => {
@@ -48,6 +50,10 @@ export function FunctionalRequirementsStep() {
       ...requirements,
       functionalSummary: summary,
     });
+    // Mark as touched when user starts typing
+    if (!touched) {
+      setTouched(true);
+    }
     // Hide hint when user starts typing
     if (summary.length > 0 && showHint) {
       setShowHint(false);
@@ -114,7 +120,7 @@ export function FunctionalRequirementsStep() {
           </div>
 
           <div className={`relative rounded-2xl border transition-all duration-300 ${
-            hasError && !isReadOnly
+            shouldShowError && !isReadOnly
               ? 'border-red-500/50 bg-red-950/20'
               : 'border-zinc-700/60 bg-zinc-950/40 focus-within:border-blue-400/50 focus-within:bg-zinc-950/60 focus-within:shadow-lg focus-within:shadow-blue-500/10'
           }`}>
@@ -122,12 +128,9 @@ export function FunctionalRequirementsStep() {
               ref={textareaRef}
               value={requirements.functionalSummary}
               onChange={(event) => handleSummaryChange(event.target.value)}
+              onBlur={() => setTouched(true)}
               placeholder="Example: Users submit URLs and receive shorter versions they can share."
-              className={`min-h-[220px] w-full resize-none rounded-2xl border-none bg-transparent px-6 pb-5 pr-14 pt-5 text-base leading-7 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
-                hasError && !isReadOnly
-                  ? 'focus-visible:ring-0'
-                  : 'focus-visible:ring-0'
-              }`}
+              className="min-h-[220px] w-full resize-none rounded-2xl border-none bg-transparent px-6 pb-5 pr-14 pt-5 text-base leading-7 text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus-visible:ring-0"
               disabled={isReadOnly}
             />
             <div className="absolute bottom-4 right-4">
