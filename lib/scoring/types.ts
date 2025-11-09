@@ -126,7 +126,10 @@ export type QualitativeAspect = {
 export type NonFunctionalScoringConfig = {
   maxScore: 20;
   minTextLength?: number;
-  // New qualitative structure
+  // New structure with core and optional requirements
+  coreRequirements?: QualitativeAspect[];
+  optionalRequirements?: QualitativeAspect[];
+  // Legacy qualitative structure
   qualitativeAspects?: QualitativeAspect[];
   evaluationCriteria?: {
     mentionsPerformance?: number;

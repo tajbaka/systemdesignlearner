@@ -111,19 +111,26 @@ export function usePracticeNavigation(
     // Steps that need scoring evaluation (including sandbox for design scoring)
     const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
 
-    let functionalCoverage: IterativeFeedbackResult | null = null;
+    let iterativeCoverage: IterativeFeedbackResult | null = null;
 
     if (stepsNeedingScoring.includes(session.currentStep)) {
-      if (session.currentStep === "functional" && getFocusedFeedback) {
+      if ((session.currentStep === "functional" || session.currentStep === "nonFunctional") && getFocusedFeedback) {
         setVerification({ isVerifying: true, result: null, error: null });
 
         try {
-          functionalCoverage = await getFocusedFeedback("functional", session);
+          logger.info(`[handleNext] Getting iterative feedback for ${session.currentStep}`);
+          iterativeCoverage = await getFocusedFeedback(session.currentStep, session);
+          logger.info(`[handleNext] Iterative coverage result:`, {
+            score: iterativeCoverage?.score.percentage,
+            blocking: iterativeCoverage?.ui.blocking,
+            hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt
+          });
         } catch (error) {
-          logger.error("Error getting functional coverage:", error);
+          logger.error(`Error getting ${session.currentStep} coverage:`, error);
         }
 
-        if (functionalCoverage?.ui.blocking) {
+        if (iterativeCoverage?.ui.blocking) {
+          logger.info(`[handleNext] Iterative feedback blocking, showing modal and returning`);
           setVerification({ isVerifying: false, result: null, error: null });
           return;
         }
@@ -256,14 +263,14 @@ export function usePracticeNavigation(
       const hasBlockingIssues = result.blocking.length > 0;
 
       // Steps that support iterative feedback
-      const stepsWithIterativeFeedback: PracticeStep[] = ["functional"];
+      const stepsWithIterativeFeedback: PracticeStep[] = ["functional", "nonFunctional"];
 
       // For scores 40-99%, get improvement question FIRST, then set feedback once
       // This prevents the iterative feedback modal from showing and ensures everything loads together
       if (scorePercentage >= 40 && scorePercentage < 100 && stepsWithIterativeFeedback.includes(session.currentStep)) {
         try {
           const improvementQuestion =
-            functionalCoverage?.ui.nextPrompt ?? functionalCoverage?.nextQuestion?.question ?? null;
+            iterativeCoverage?.ui.nextPrompt ?? iterativeCoverage?.nextQuestion?.question ?? null;
 
           if (improvementQuestion) {
             const updatedResult = {

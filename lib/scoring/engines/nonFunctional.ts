@@ -50,8 +50,28 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
       };
     }
 
-    // Check for qualitative aspects (new structure)
-    if (config.qualitativeAspects) {
+    // Check for coreRequirements and optionalRequirements (new structure)
+    if (config.coreRequirements || config.optionalRequirements) {
+      const allRequirements = [
+        ...(config.coreRequirements || []),
+        ...(config.optionalRequirements || []),
+      ];
+
+      for (const req of allRequirements) {
+        const result = this.evaluateQualitativeAspect(req, notesLower);
+        score += result.score;
+
+        if (result.feedback) {
+          if (result.feedback.severity === "positive") {
+            positive.push(result.feedback);
+          } else if (result.feedback.severity === "warning") {
+            warnings.push(result.feedback);
+          }
+        }
+      }
+    }
+    // Fallback to qualitativeAspects (legacy structure)
+    else if (config.qualitativeAspects) {
       for (const aspect of config.qualitativeAspects) {
         const result = this.evaluateQualitativeAspect(aspect, notesLower);
         score += result.score;

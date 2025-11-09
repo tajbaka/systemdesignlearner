@@ -477,12 +477,14 @@ function PracticeFlowInner() {
           </Tooltip>
         ) : null}
 
-        {/* Iterative Feedback Modal - Shows in center of screen - Only show if score < 40% and core requirements not met */}
+        {/* Iterative Feedback Modal - Shows in center of screen */}
+        {/* Show if: (1) blocking=true OR (2) score < 40% AND no better score from regular scoring */}
         <IterativeFeedbackModal
           isOpen={
             !!iterativeFeedbackState.result &&
-            iterativeFeedbackState.result.score.percentage < 40 &&
-            (!scoringFeedback || scoringFeedback.percentage < 40)
+            (iterativeFeedbackState.result.ui.blocking ||
+              (iterativeFeedbackState.result.score.percentage < 40 &&
+                (!scoringFeedback || scoringFeedback.percentage < 40)))
           }
           currentStep={currentStep}
           result={iterativeFeedbackState.result!}

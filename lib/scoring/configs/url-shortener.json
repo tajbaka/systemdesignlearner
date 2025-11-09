@@ -186,16 +186,10 @@
     "nonFunctional": {
       "maxScore": 20,
       "minTextLength": 50,
-      "evaluationCriteria": {
-        "mentionsPerformance": 5,
-        "mentionsScalability": 5,
-        "mentionsAvailability": 5,
-        "mentionsReliability": 5
-      },
-      "qualitativeAspects": [
+      "coreRequirements": [
         {
           "id": "performance",
-          "label": "Performance",
+          "label": "Performance & Latency",
           "description": "How fast should the system respond? Consider redirect latency and overall responsiveness.",
           "keywords": [
             "fast",
@@ -204,17 +198,20 @@
             "low latency",
             "speed",
             "instant",
-            "milliseconds"
+            "milliseconds",
+            "p95",
+            "p99"
           ],
           "weight": 5,
+          "required": true,
           "examplePhrases": [
             "Redirects should be very fast to provide good user experience",
-            "Low latency is critical for user satisfaction"
+            "Low latency is critical - target sub-100ms p95 latency"
           ]
         },
         {
           "id": "scalability",
-          "label": "Scalability",
+          "label": "Scalability & Throughput",
           "description": "How much traffic should the system handle? Think about growth and load patterns.",
           "keywords": [
             "scale",
@@ -224,18 +221,22 @@
             "volume",
             "requests",
             "concurrent",
-            "high traffic"
+            "high traffic",
+            "throughput",
+            "rps",
+            "qps"
           ],
           "weight": 5,
+          "required": true,
           "examplePhrases": [
-            "System should handle high traffic volumes",
-            "Must scale to accommodate growth"
+            "System should handle high traffic volumes - millions of requests per day",
+            "Must scale to accommodate growth and traffic spikes"
           ]
         },
         {
           "id": "availability",
-          "label": "Availability",
-          "description": "How reliable and available should the system be?",
+          "label": "Availability & Reliability",
+          "description": "How reliable and available should the system be? What's the uptime requirement?",
           "keywords": [
             "available",
             "uptime",
@@ -243,30 +244,100 @@
             "always on",
             "24/7",
             "downtime",
-            "fault tolerant"
+            "fault tolerant",
+            "99.9",
+            "sla"
           ],
           "weight": 5,
+          "required": true,
           "examplePhrases": [
-            "System should have high availability with minimal downtime",
-            "Reliability is important for user trust"
+            "System should have 99.9% availability with minimal downtime",
+            "High availability is critical - cannot have single points of failure"
+          ]
+        }
+      ],
+      "optionalRequirements": [
+        {
+          "id": "data-durability",
+          "label": "Data Durability & Persistence",
+          "description": "How should the system ensure URL mappings are never lost? Consider backup, replication, and persistence strategies.",
+          "keywords": [
+            "durable",
+            "persist",
+            "backup",
+            "replicate",
+            "no data loss",
+            "recovery",
+            "snapshot",
+            "wal"
+          ],
+          "weight": 2,
+          "required": false,
+          "examplePhrases": [
+            "URL mappings must be durable - use database replication and backups",
+            "Data should be persisted to disk to survive crashes"
           ]
         },
         {
-          "id": "consistency",
-          "label": "Consistency & Reliability",
-          "description": "How should the system handle data consistency and reliability?",
+          "id": "consistency-model",
+          "label": "Consistency Trade-offs",
+          "description": "What consistency model is acceptable? Consider CAP theorem trade-offs between consistency and availability.",
           "keywords": [
-            "consistent",
-            "reliable",
-            "accurate",
-            "correct",
-            "durable",
-            "no data loss"
+            "consistency",
+            "eventual",
+            "strong",
+            "cap theorem",
+            "partition",
+            "trade-off",
+            "stale reads"
           ],
-          "weight": 5,
+          "weight": 2,
+          "required": false,
           "examplePhrases": [
-            "URL mappings must be reliable and not lost",
-            "System should ensure data consistency"
+            "Eventual consistency is acceptable for analytics, but redirects need strong consistency",
+            "Can tolerate slightly stale cache data for performance"
+          ]
+        },
+        {
+          "id": "security",
+          "label": "Security & Abuse Prevention",
+          "description": "How should the system prevent abuse and ensure security? Consider rate limiting, malicious URLs, and DDoS protection.",
+          "keywords": [
+            "security",
+            "abuse",
+            "rate limit",
+            "ddos",
+            "malicious",
+            "spam",
+            "throttle",
+            "blacklist"
+          ],
+          "weight": 1,
+          "required": false,
+          "examplePhrases": [
+            "Need rate limiting to prevent abuse and spam",
+            "Should block malicious URLs and prevent DDoS attacks"
+          ]
+        },
+        {
+          "id": "monitoring",
+          "label": "Observability & Monitoring",
+          "description": "How should the system be monitored? Consider metrics, logs, alerts, and debugging.",
+          "keywords": [
+            "monitor",
+            "observability",
+            "metrics",
+            "logging",
+            "alerts",
+            "dashboard",
+            "trace",
+            "debug"
+          ],
+          "weight": 1,
+          "required": false,
+          "examplePhrases": [
+            "Need comprehensive monitoring with metrics and alerts for latency and errors",
+            "Distributed tracing to debug issues across services"
           ]
         }
       ]

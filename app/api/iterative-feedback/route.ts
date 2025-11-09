@@ -9,7 +9,7 @@ import {
 import { logger } from "@/lib/logger";
 import scoringConfig from "@/lib/scoring/configs/url-shortener.json";
 
-type SupportedIterativeStep = "functional";
+type SupportedIterativeStep = "functional" | "nonFunctional";
 
 const STEP_CONFIG_CACHE: Partial<Record<SupportedIterativeStep, StepConfig>> = {};
 
@@ -39,10 +39,38 @@ function buildFunctionalStepConfig(): StepConfig {
   };
 }
 
+function buildNonFunctionalStepConfig(): StepConfig {
+  const nonFunctional = scoringConfig.steps.nonFunctional;
+  const topics: Topic[] = [
+    ...nonFunctional.coreRequirements.map((req) => ({
+      id: req.id,
+      label: req.label,
+      description: req.description,
+      keywords: req.keywords,
+      required: true,
+    })),
+    ...nonFunctional.optionalRequirements.map((req) => ({
+      id: req.id,
+      label: req.label,
+      description: req.description,
+      keywords: req.keywords,
+      required: false,
+    })),
+  ];
+
+  return {
+    stepId: "nonFunctional",
+    stepName: "Non-Functional Requirements",
+    topics,
+  };
+}
+
 function getStepConfig(stepId: SupportedIterativeStep): StepConfig {
   if (!STEP_CONFIG_CACHE[stepId]) {
     if (stepId === "functional") {
       STEP_CONFIG_CACHE.functional = buildFunctionalStepConfig();
+    } else if (stepId === "nonFunctional") {
+      STEP_CONFIG_CACHE.nonFunctional = buildNonFunctionalStepConfig();
     }
   }
 
