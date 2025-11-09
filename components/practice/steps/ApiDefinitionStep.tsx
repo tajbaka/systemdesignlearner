@@ -20,6 +20,7 @@ export function ApiDefinitionStep() {
   const endpoints = useMemo(() => state.apiDefinition.endpoints, [state.apiDefinition.endpoints]);
   const [openId, setOpenId] = useState<string | null>(() => endpoints[0]?.id ?? null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set([endpoints[0]?.id].filter(Boolean)));
+  const [touchedEndpoints, setTouchedEndpoints] = useState<Set<string>>(new Set());
 
   // Check if there are any validation issues
   const hasNoEndpoints = endpoints.length === 0;
@@ -46,6 +47,10 @@ export function ApiDefinitionStep() {
     });
   };
 
+  const markEndpointTouched = (id: string) => {
+    setTouchedEndpoints((prev) => new Set([...prev, id]));
+  };
+
   const updateEndpoint = (id: string, updater: (endpoint: ApiEndpoint) => ApiEndpoint) => {
     if (isReadOnly) return;
     setApiDefinition((prev) => ({
@@ -54,6 +59,8 @@ export function ApiDefinitionStep() {
         endpoint.id === id ? updater(endpoint) : endpoint
       ),
     }));
+    // Mark as touched when user changes the endpoint
+    markEndpointTouched(id);
     // Clear the score when user changes their answer
     if (state.scores?.api) {
       setStepScore("api", undefined);
@@ -121,13 +128,15 @@ export function ApiDefinitionStep() {
           const isOpen = expandedIds.has(endpoint.id);
           const hasPath = endpoint.path.trim().length > 0;
           const hasValidNotes = endpoint.notes.trim().length >= 10;
+          const isTouched = touchedEndpoints.has(endpoint.id);
           const hasError = hasPath && !hasValidNotes && !isReadOnly;
+          const shouldShowError = hasError && isTouched;
 
           return (
             <article
               key={endpoint.id}
               className={`overflow-hidden rounded-3xl border transition-[max-height,opacity] duration-300 ${
-                hasError
+                shouldShowError
                   ? 'border-red-500/50 bg-red-950/10'
                   : 'border-zinc-800 bg-zinc-900/70'
               } ${
@@ -220,7 +229,7 @@ export function ApiDefinitionStep() {
               {isOpen ? (
                 <div className="px-4 pb-4 sm:px-6">
                   <div className={`relative mt-2 rounded-2xl border ${
-                    hasError
+                    shouldShowError
                       ? 'border-red-500/50 bg-red-950/20'
                       : 'border-zinc-700 bg-zinc-950/60'
                   }`}>
@@ -232,10 +241,11 @@ export function ApiDefinitionStep() {
                           notes: event.target.value,
                         }))
                       }
+                      onBlur={() => markEndpointTouched(endpoint.id)}
                       placeholder="Describe the request/response format, validation, and any special behavior."
                       disabled={isReadOnly}
                       className={`min-h-[180px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
-                        hasError
+                        shouldShowError
                           ? 'focus-visible:ring-2 focus-visible:ring-red-500'
                           : 'focus-visible:ring-2 focus-visible:ring-blue-500'
                       } disabled:cursor-not-allowed disabled:opacity-60`}
@@ -255,7 +265,7 @@ export function ApiDefinitionStep() {
                     </div>
                   </div>
 
-                  {hasError && (
+                  {shouldShowError && (
                     <p className="mt-2 text-xs text-red-400">
                       Please add a meaningful description (at least 10 characters).
                     </p>
