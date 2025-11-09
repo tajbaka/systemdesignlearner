@@ -247,6 +247,83 @@
     },
     "api": {
       "maxScore": 20,
+      "minKeywordsMatch": 1,
+      "coreRequirements": [
+        {
+          "id": "create-url-endpoint",
+          "label": "URL Creation Endpoint",
+          "description": "POST endpoint to create shortened URLs with documented request/response",
+          "keywords": ["POST", "create", "shorten", "body", "request", "url", "api/v1", "fields", "response", "returns"],
+          "weight": 7,
+          "required": true,
+          "examplePhrases": [
+            "POST /api/v1/urls with { url: string, customAlias?: string }",
+            "Returns { shortUrl: string, code: string } on success"
+          ]
+        },
+        {
+          "id": "redirect-endpoint",
+          "label": "Redirect Endpoint",
+          "description": "GET endpoint to redirect short URLs with documented behavior",
+          "keywords": ["GET", "redirect", "302", "301", "slug", "code", "param", "404", "410"],
+          "weight": 7,
+          "required": true,
+          "examplePhrases": [
+            "GET /:code redirects (302) to original URL",
+            "Returns 404 if not found, 410 if expired"
+          ]
+        }
+      ],
+      "optionalRequirements": [
+        {
+          "id": "error-handling",
+          "label": "Error Handling",
+          "description": "Document error codes and scenarios (400, 404, 409, 410, 429)",
+          "keywords": ["error", "400", "404", "409", "410", "429", "invalid", "not found", "expired"],
+          "weight": 3,
+          "required": false,
+          "examplePhrases": [
+            "400 for invalid URL, 409 if alias taken",
+            "404 when code not found, 410 for expired URLs"
+          ]
+        },
+        {
+          "id": "analytics-endpoint",
+          "label": "Analytics Endpoint",
+          "description": "GET endpoint to retrieve click stats and analytics",
+          "keywords": ["stats", "analytics", "clicks", "metrics", "GET", "api/v1"],
+          "weight": 2,
+          "required": false,
+          "examplePhrases": [
+            "GET /api/v1/urls/:code/stats returns click count",
+            "Analytics endpoint returns { clickCount, createdAt, lastAccessedAt }"
+          ]
+        },
+        {
+          "id": "update-endpoint",
+          "label": "Update Endpoint",
+          "description": "PATCH or PUT endpoint to modify URL properties",
+          "keywords": ["PATCH", "PUT", "update", "modify", "edit", "change", "url", "destination"],
+          "weight": 1,
+          "required": false,
+          "examplePhrases": [
+            "PATCH /api/v1/urls/:code to update expiration or destination",
+            "PUT requires authentication to modify URL properties"
+          ]
+        },
+        {
+          "id": "delete-endpoint",
+          "label": "Delete Endpoint",
+          "description": "DELETE endpoint to remove URLs",
+          "keywords": ["DELETE", "remove", "delete"],
+          "weight": 1,
+          "required": false,
+          "examplePhrases": [
+            "DELETE /api/v1/urls/:code requires authentication",
+            "Returns 204 on successful deletion"
+          ]
+        }
+      ],
       "evaluationCriteria": {
         "hasCorrectMethods": 5,
         "pathDesignQuality": 5,

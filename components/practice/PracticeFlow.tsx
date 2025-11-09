@@ -478,11 +478,11 @@ function PracticeFlowInner() {
         ) : null}
 
         {/* Iterative Feedback Modal - Shows in center of screen */}
-        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional steps */}
+        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api steps */}
         <IterativeFeedbackModal
           isOpen={
             !!iterativeFeedbackState.result &&
-            (currentStep === "functional" || currentStep === "nonFunctional")
+            (currentStep === "functional" || currentStep === "nonFunctional" || currentStep === "api")
           }
           currentStep={currentStep}
           result={iterativeFeedbackState.result!}

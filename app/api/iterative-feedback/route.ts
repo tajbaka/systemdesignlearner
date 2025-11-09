@@ -9,7 +9,7 @@ import {
 import { logger } from "@/lib/logger";
 import scoringConfig from "@/lib/scoring/configs/url-shortener.json";
 
-type SupportedIterativeStep = "functional" | "nonFunctional";
+type SupportedIterativeStep = "functional" | "nonFunctional" | "api";
 
 const STEP_CONFIG_CACHE: Partial<Record<SupportedIterativeStep, StepConfig>> = {};
 
@@ -69,12 +69,42 @@ function buildNonFunctionalStepConfig(): StepConfig {
   };
 }
 
+function buildApiStepConfig(): StepConfig {
+  const api = scoringConfig.steps.api;
+  const topics: Topic[] = [
+    ...api.coreRequirements.map((req) => ({
+      id: req.id,
+      label: req.label,
+      description: req.description,
+      keywords: req.keywords,
+      required: true,
+      weight: req.weight,
+    })),
+    ...api.optionalRequirements.map((req) => ({
+      id: req.id,
+      label: req.label,
+      description: req.description,
+      keywords: req.keywords,
+      required: false,
+      weight: req.weight,
+    })),
+  ];
+
+  return {
+    stepId: "api",
+    stepName: "API Design",
+    topics,
+  };
+}
+
 function getStepConfig(stepId: SupportedIterativeStep): StepConfig {
   if (!STEP_CONFIG_CACHE[stepId]) {
     if (stepId === "functional") {
       STEP_CONFIG_CACHE.functional = buildFunctionalStepConfig();
     } else if (stepId === "nonFunctional") {
       STEP_CONFIG_CACHE.nonFunctional = buildNonFunctionalStepConfig();
+    } else if (stepId === "api") {
+      STEP_CONFIG_CACHE.api = buildApiStepConfig();
     }
   }
 

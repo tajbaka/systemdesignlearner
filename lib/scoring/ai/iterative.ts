@@ -109,6 +109,8 @@ export async function assessCoverage(
     required: Boolean(t.required),
   }));
 
+  const isApiStep = step.stepId === "api";
+
   const prompt = `
 You are a senior system design interviewer. Judge which topics the candidate has already covered in their answer.
 
@@ -128,6 +130,8 @@ Rules
 - For storage/persistence topics, the candidate must explicitly mention databases, persistence, or storage - don't infer it.
 - For rate limiting, abuse prevention, or security topics, the candidate must explicitly mention them - don't assume they're implied.
 - For admin/user management topics, the candidate must explicitly describe the feature - don't assume it's covered by authentication.
+${isApiStep ? `- For API endpoint topics: An endpoint is NOT covered unless the documentation includes BOTH request details AND response details. Generic phrases like "request: url, response: short url" are TOO VAGUE and should be marked as missing.
+- Focus questions on the NEXT missing topic in priority order (required topics first). Never ask about topics already marked as covered.` : ''}
 - If uncertain or if coverage is incomplete, treat it as missing.
 - When writing the question, focus on the user's intent/behavior (e.g., "what should happen when...") and never reveal solution details (no HTTP codes, algorithms, numbers, etc.).
 - If a previous question exists and the topic is still missing, sharpen the same question without giving away the answer.

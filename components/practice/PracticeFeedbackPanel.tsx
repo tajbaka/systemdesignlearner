@@ -52,14 +52,15 @@ export function PracticeFeedbackPanel({
         </div>
       )}
 
-      {/* Only show old FeedbackModal for API/Sandbox steps, not for functional/nonFunctional (they use IterativeFeedbackModal) */}
+      {/* Only show old FeedbackModal for Sandbox step, not for functional/nonFunctional/api (they use IterativeFeedbackModal) */}
       <FeedbackModal
         isOpen={
           !!scoringFeedback &&
           scoringFeedback.percentage >= 40 &&
           !hasIterativeFeedback &&
           currentStep !== "functional" &&
-          currentStep !== "nonFunctional"
+          currentStep !== "nonFunctional" &&
+          currentStep !== "api"
         }
         feedbackResult={scoringFeedback!}
         onRevise={onRevise}

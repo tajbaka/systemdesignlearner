@@ -40,7 +40,7 @@ export type Requirements = {
 
 export type ApiEndpoint = {
   id: string;
-  method: "GET" | "POST";
+  method: "GET" | "POST" | "PATCH" | "DELETE";
   path: string;
   notes: string;
   suggested?: boolean;

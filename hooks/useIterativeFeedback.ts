@@ -31,7 +31,7 @@ export function useIterativeFeedback() {
       _additionalContext?: string
     ): Promise<IterativeFeedbackResult | null> => {
       // Only run for steps that currently support the Gemini iterative loop
-      if (currentStep !== "functional" && currentStep !== "nonFunctional") {
+      if (currentStep !== "functional" && currentStep !== "nonFunctional" && currentStep !== "api") {
         return null;
       }
 
@@ -52,14 +52,22 @@ export function useIterativeFeedback() {
           throw new Error("Iterative feedback state not initialized");
         }
 
-        const stepKey = currentStep === "functional" ? "functional" : "nonFunctional";
+        const stepKey = currentStep === "functional" ? "functional"
+          : currentStep === "nonFunctional" ? "nonFunctional"
+          : "api";
         const stepFeedback = currentStep === "functional"
           ? feedback.functional
-          : feedback.nonFunctional;
+          : currentStep === "nonFunctional"
+          ? feedback.nonFunctional
+          : feedback.api;
 
         const userContent = currentStep === "functional"
           ? session.state.requirements.functionalSummary
-          : session.state.requirements.nonFunctional.notes;
+          : currentStep === "nonFunctional"
+          ? session.state.requirements.nonFunctional.notes
+          : session.state.apiDefinition.endpoints.map(ep =>
+              `${ep.method} ${ep.path}: ${ep.notes}`
+            ).join("\n\n");
 
         // Get fresh feedback from API
         const feedbackResponse = await fetch("/api/iterative-feedback", {

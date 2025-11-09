@@ -114,7 +114,7 @@ export function usePracticeNavigation(
     let iterativeCoverage: IterativeFeedbackResult | null = null;
 
     if (stepsNeedingScoring.includes(session.currentStep)) {
-      if ((session.currentStep === "functional" || session.currentStep === "nonFunctional") && getFocusedFeedback) {
+      if ((session.currentStep === "functional" || session.currentStep === "nonFunctional" || session.currentStep === "api") && getFocusedFeedback) {
         setVerification({ isVerifying: true, result: null, error: null });
 
         try {
@@ -263,7 +263,7 @@ export function usePracticeNavigation(
       const hasBlockingIssues = result.blocking.length > 0;
 
       // Steps that support iterative feedback
-      const stepsWithIterativeFeedback: PracticeStep[] = ["functional", "nonFunctional"];
+      const stepsWithIterativeFeedback: PracticeStep[] = ["functional", "nonFunctional", "api"];
 
       // For scores 40-99%, get improvement question FIRST, then set feedback once
       // This prevents the iterative feedback modal from showing and ensures everything loads together
