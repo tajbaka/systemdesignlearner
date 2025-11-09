@@ -1,54 +1,6 @@
 {
   "slug": "url-shortener",
   "title": "URL Shortener",
-  "functional": {
-    "required": [
-      {
-        "id": "url-shortening",
-        "label": "URL shortening",
-        "description": "System must accept long URLs and generate short codes/slugs",
-        "keywords": ["shorten", "generate", "slug", "code", "short url", "create"]
-      },
-      {
-        "id": "redirect",
-        "label": "Redirect by slug",
-        "description": "System must redirect users from short URL to original URL",
-        "keywords": ["redirect", "lookup", "resolve", "navigate", "forward"]
-      },
-      {
-        "id": "persistence",
-        "label": "Persistent storage",
-        "description": "URL mappings must be stored persistently in a database",
-        "keywords": ["store", "save", "database", "persist", "storage"]
-      }
-    ],
-    "optional": [
-      {
-        "id": "custom-aliases",
-        "label": "Custom aliases",
-        "description": "Users can choose their own custom short codes instead of auto-generated ones",
-        "keywords": ["custom", "alias", "vanity", "personalized", "choose slug"]
-      },
-      {
-        "id": "basic-analytics",
-        "label": "Click analytics",
-        "description": "Track click counts, timestamps, and basic metrics for each short URL",
-        "keywords": ["analytics", "track", "count", "clicks", "metrics", "statistics", "monitor"]
-      },
-      {
-        "id": "rate-limiting",
-        "label": "Rate limiting",
-        "description": "Prevent abuse by limiting requests per IP address or user account",
-        "keywords": ["rate limit", "throttle", "abuse", "spam", "quota", "limit"]
-      },
-      {
-        "id": "admin-delete",
-        "label": "Admin deletion",
-        "description": "Administrators can delete malicious, spam, or inappropriate URLs",
-        "keywords": ["admin", "delete", "remove", "moderate", "manage"]
-      }
-    ]
-  },
   "nonFunctional": {
     "categories": [
       {

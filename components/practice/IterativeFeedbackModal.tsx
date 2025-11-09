@@ -39,11 +39,13 @@ export function IterativeFeedbackModal({
             <div className="mb-2 flex items-center gap-3">
               {allTopicsCovered ? (
                 <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-              ) : (
+              ) : blocking ? (
                 <AlertCircle className="h-6 w-6 text-amber-500" />
+              ) : (
+                <CheckCircle2 className="h-6 w-6 text-emerald-500" />
               )}
               <h2 className="text-xl font-semibold text-foreground">
-                {allTopicsCovered ? "All Topics Covered!" : "Let's Improve Your Answer"}
+                {allTopicsCovered ? "Perfect Score!" : blocking ? "Let's Improve Your Answer" : "Great Progress!"}
               </h2>
             </div>
             {!allTopicsCovered && (
@@ -52,8 +54,11 @@ export function IterativeFeedbackModal({
                 {durationMs !== undefined && durationMs !== null ? ` • ${ (durationMs / 1000).toFixed(2) }s` : null}
               </p>
             )}
-            {allTopicsCovered && durationMs !== undefined && durationMs !== null && (
-              <p className="text-xs text-muted-foreground">Response time: {(durationMs / 1000).toFixed(2)}s</p>
+            {allTopicsCovered && (
+              <p className="text-sm text-muted-foreground">
+                Score: {result.score.obtained}/{result.score.max} (100%)
+                {durationMs !== undefined && durationMs !== null ? ` • ${ (durationMs / 1000).toFixed(2) }s` : null}
+              </p>
             )}
           </div>
 
@@ -80,17 +85,18 @@ export function IterativeFeedbackModal({
           )}
 
           {!allTopicsCovered && nextPrompt && (
-            <div className="text-sm text-blue-100">
-              <ul className="list-disc list-inside space-y-1">
-                <li>{nextPrompt}</li>
-              </ul>
+            <div className="rounded-xl border border-blue-400/30 bg-blue-950/40 p-4">
+              <h3 className="mb-2 text-sm font-semibold text-blue-300">
+                {blocking ? "Missing requirement:" : "💡 To reach 100%:"}
+              </h3>
+              <p className="text-sm text-blue-100">{nextPrompt}</p>
             </div>
           )}
 
           {allTopicsCovered && (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5">
               <p className="text-base text-emerald-200">
-                Great work — every topic is covered. You can continue.
+                Excellent! Every topic is covered. You can continue.
               </p>
             </div>
           )}

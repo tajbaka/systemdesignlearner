@@ -12,67 +12,40 @@
         {
           "id": "url-shortening",
           "label": "URL Shortening",
-          "description": "Service must accept long URLs and generate short, compact aliases",
-          "keywords": [
-            "shorten",
-            "create",
-            "generate",
-            "alias",
-            "short url",
-            "short link",
-            "compact",
-            "slug"
-          ],
+          "description": "Accept a long URL and return a short, compact alias.",
+          "keywords": ["shorten", "create", "generate", "alias", "short url", "short link", "compact", "slug"],
           "weight": 5,
           "required": true,
           "category": "core",
           "examplePhrases": [
-            "Users can submit a long URL and receive a shortened version",
-            "System generates unique short links for any URL"
+            "Submit a long URL to receive a short link.",
+            "System generates a compact alias for any valid URL."
           ]
         },
         {
           "id": "redirection",
           "label": "URL Redirection",
-          "description": "When accessing a short URL, users should be redirected to the original long URL",
-          "keywords": [
-            "redirect",
-            "forward",
-            "resolve",
-            "lookup",
-            "301",
-            "302",
-            "navigate",
-            "send to"
-          ],
+          "description": "Resolve a short URL and redirect the client to the original long URL.",
+          "keywords": ["redirect", "forward", "resolve", "lookup", "301", "302", "navigate", "send to"],
           "weight": 5,
           "required": true,
           "category": "core",
           "examplePhrases": [
-            "Accessing the short URL redirects to the original destination",
-            "System performs HTTP 301/302 redirect to long URL"
+            "Opening the short URL takes the user to the destination.",
+            "Service performs an HTTP 301 or 302 to the long URL."
           ]
         },
         {
           "id": "uniqueness",
           "label": "Uniqueness Guarantee",
-          "description": "Each generated short URL must be unique to prevent collisions",
-          "keywords": [
-            "unique",
-            "collision",
-            "duplicate",
-            "hash",
-            "base62",
-            "distinct",
-            "no conflict",
-            "guarantee"
-          ],
+          "description": "Each short URL is unique and maps to exactly one long URL.",
+          "keywords": ["unique", "collision", "duplicate", "hash", "base62", "distinct", "no conflict", "guarantee"],
           "weight": 5,
           "required": true,
           "category": "core",
           "examplePhrases": [
-            "Every short URL is guaranteed to be unique",
-            "Use hashing or sequential IDs to prevent collisions"
+            "Every short link is unique.",
+            "Use hashing, counters, or base62 to avoid collisions."
           ]
         }
       ],
@@ -80,105 +53,66 @@
         {
           "id": "custom-aliases",
           "label": "Custom Aliases",
-          "description": "Users can optionally specify custom short URLs instead of system-generated ones",
-          "keywords": [
-            "custom",
-            "vanity",
-            "personalized",
-            "user-defined",
-            "choose",
-            "specific"
-          ],
+          "description": "Allow users to provide a custom short code instead of a generated one.",
+          "keywords": ["custom", "vanity", "personalized", "user-defined", "choose", "specific"],
           "weight": 1,
           "required": false,
           "category": "optional",
           "examplePhrases": [
-            "Users can request custom aliases like example.com/my-link",
-            "Support vanity URLs chosen by users"
+            "Users can set example.com/my-link.",
+            "Support vanity slugs chosen by users."
           ]
         },
         {
           "id": "link-expiration",
           "label": "Link Expiration",
-          "description": "Short URLs can have optional expiration dates after which they become invalid",
-          "keywords": [
-            "expir",
-            "ttl",
-            "temporary",
-            "time-limited",
-            "timeout",
-            "lifetime"
-          ],
+          "description": "Support optional expiration dates or TTL after which links are invalid.",
+          "keywords": ["expire", "ttl", "temporary", "time-limited", "timeout", "lifetime"],
           "weight": 1,
           "required": false,
           "category": "optional",
           "examplePhrases": [
-            "Links can expire after a specified time period",
-            "Support TTL for temporary URLs"
+            "Links can expire after a set period.",
+            "Provide TTL for temporary URLs."
           ]
         },
         {
           "id": "basic-analytics",
-          "label": "Analytics & Metrics",
-          "description": "Track and provide metrics on link usage such as click counts and geographic data",
-          "keywords": [
-            "analytics",
-            "metrics",
-            "clicks",
-            "count",
-            "stats",
-            "track",
-            "monitor",
-            "views"
-          ],
+          "label": "Analytics and Metrics",
+          "description": "Track usage per short URL such as click counts and referrers.",
+          "keywords": ["analytics", "metrics", "clicks", "count", "stats", "track", "monitor", "views"],
           "weight": 1,
           "required": false,
           "category": "optional",
           "examplePhrases": [
-            "Track number of clicks per short URL",
-            "Collect analytics on geographic location and referrers"
+            "Track number of clicks per short URL.",
+            "Record referrers and basic usage stats."
           ]
         },
         {
           "id": "user-accounts",
           "label": "User Authentication",
-          "description": "Support user accounts for managing personal short URLs",
-          "keywords": [
-            "auth",
-            "login",
-            "account",
-            "user",
-            "register",
-            "sign in",
-            "api key"
-          ],
+          "description": "Support accounts and API keys to manage owned links.",
+          "keywords": ["auth", "login", "account", "user", "register", "sign in", "api key"],
           "weight": 1,
           "required": false,
           "category": "optional",
           "examplePhrases": [
-            "Users can create accounts to manage their URLs",
-            "API key authentication for programmatic access"
+            "Users can sign in to manage their URLs.",
+            "Programmatic access via API key."
           ]
         },
         {
           "id": "admin-delete",
-          "label": "URL Management & Deletion",
-          "description": "Users should be able to view, edit, and delete their created short URLs",
-          "keywords": [
-            "delete",
-            "remove",
-            "manage",
-            "list",
-            "edit",
-            "update",
-            "admin"
-          ],
+          "label": "URL Management and Deletion",
+          "description": "List, edit, and delete created short URLs.",
+          "keywords": ["delete", "remove", "manage", "list", "edit", "update", "admin"],
           "weight": 1,
           "required": false,
           "category": "optional",
           "examplePhrases": [
-            "Users can delete URLs they no longer need",
-            "Dashboard to view and manage all created links"
+            "Users can delete links they no longer need.",
+            "Dashboard to view and manage links."
           ]
         }
       ]
@@ -189,155 +123,124 @@
       "coreRequirements": [
         {
           "id": "performance",
-          "label": "Performance & Latency",
-          "description": "How fast should the system respond? Consider redirect latency and overall responsiveness.",
-          "keywords": [
-            "fast",
-            "quick",
-            "responsive",
-            "low latency",
-            "speed",
-            "instant",
-            "milliseconds",
-            "p95",
-            "p99"
-          ],
+          "label": "Performance and Latency",
+          "description": "Redirects should be fast. Aim for sub 100 ms p95 on the redirect path.",
+          "keywords": ["fast", "quick", "responsive", "low latency", "speed", "instant", "milliseconds", "p95", "p99"],
           "weight": 5,
           "required": true,
           "examplePhrases": [
-            "Redirects should be very fast to provide good user experience",
-            "Low latency is critical - target sub-100ms p95 latency"
+            "Redirects should target p95 under 100 ms.",
+            "Keep overall responsiveness high for good UX."
           ]
         },
         {
           "id": "scalability",
-          "label": "Scalability & Throughput",
-          "description": "How much traffic should the system handle? Think about growth and load patterns.",
-          "keywords": [
-            "scale",
-            "traffic",
-            "load",
-            "growth",
-            "volume",
-            "requests",
-            "concurrent",
-            "high traffic",
-            "throughput",
-            "rps",
-            "qps"
-          ],
+          "label": "Scalability and Throughput",
+          "description": "Handle large read traffic with growth and spikes. Reference targets from the brief.",
+          "keywords": ["scale", "traffic", "load", "growth", "volume", "requests", "concurrent", "high traffic", "throughput", "rps", "qps"],
           "weight": 5,
           "required": true,
           "examplePhrases": [
-            "System should handle high traffic volumes - millions of requests per day",
-            "Must scale to accommodate growth and traffic spikes"
+            "Support about 1B reads per day which is about 10k rps on average.",
+            "Expect 10x to 100x spikes with writes in the millions per day and 1 to 5B lifetime URLs."
           ]
         },
         {
           "id": "availability",
-          "label": "Availability & Reliability",
-          "description": "How reliable and available should the system be? What's the uptime requirement?",
-          "keywords": [
-            "available",
-            "uptime",
-            "reliable",
-            "always on",
-            "24/7",
-            "downtime",
-            "fault tolerant",
-            "99.9",
-            "sla"
-          ],
+          "label": "Availability and Reliability",
+          "description": "Service should be highly available with no single points of failure.",
+          "keywords": ["available", "uptime", "reliable", "always on", "24/7", "downtime", "fault tolerant", "99.9", "sla"],
           "weight": 5,
           "required": true,
           "examplePhrases": [
-            "System should have 99.9% availability with minimal downtime",
-            "High availability is critical - cannot have single points of failure"
+            "Target 99.9 percent availability.",
+            "Avoid single points of failure on hot paths."
           ]
         }
       ],
       "optionalRequirements": [
         {
           "id": "data-durability",
-          "label": "Data Durability & Persistence",
-          "description": "How should the system ensure URL mappings are never lost? Consider backup, replication, and persistence strategies.",
-          "keywords": [
-            "durable",
-            "persist",
-            "backup",
-            "replicate",
-            "no data loss",
-            "recovery",
-            "snapshot",
-            "wal"
-          ],
+          "label": "Data Durability and Persistence",
+          "description": "URL mappings should survive crashes. Use persistence, replication, and backups.",
+          "keywords": ["durable", "persist", "backup", "replicate", "no data loss", "recovery", "snapshot", "wal"],
           "weight": 2,
           "required": false,
           "examplePhrases": [
-            "URL mappings must be durable - use database replication and backups",
-            "Data should be persisted to disk to survive crashes"
+            "Replicate the database and run regular backups.",
+            "Persist mappings to disk to prevent data loss."
           ]
         },
         {
           "id": "consistency-model",
-          "label": "Consistency Trade-offs",
-          "description": "What consistency model is acceptable? Consider CAP theorem trade-offs between consistency and availability.",
-          "keywords": [
-            "consistency",
-            "eventual",
-            "strong",
-            "cap theorem",
-            "partition",
-            "trade-off",
-            "stale reads"
-          ],
+          "label": "Consistency Tradeoffs",
+          "description": "Pick acceptable consistency per path. Redirects need strong mapping. Analytics can be eventual.",
+          "keywords": ["consistency", "eventual", "strong", "cap theorem", "partition", "trade-off", "stale reads"],
           "weight": 2,
           "required": false,
           "examplePhrases": [
-            "Eventual consistency is acceptable for analytics, but redirects need strong consistency",
-            "Can tolerate slightly stale cache data for performance"
+            "Eventual consistency is fine for analytics counters.",
+            "Redirect lookups should return the latest mapping."
           ]
         },
         {
           "id": "security",
-          "label": "Security & Abuse Prevention",
-          "description": "How should the system prevent abuse and ensure security? Consider rate limiting, malicious URLs, and DDoS protection.",
-          "keywords": [
-            "security",
-            "abuse",
-            "rate limit",
-            "ddos",
-            "malicious",
-            "spam",
-            "throttle",
-            "blacklist"
-          ],
+          "label": "Security and Abuse Prevention",
+          "description": "Mitigate abuse and attacks. Validate targets and control traffic.",
+          "keywords": ["security", "abuse", "rate limit", "ddos", "malicious", "spam", "throttle", "blacklist"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
-            "Need rate limiting to prevent abuse and spam",
-            "Should block malicious URLs and prevent DDoS attacks"
+            "Apply rate limits and bot protection.",
+            "Block malicious or unsafe destination URLs."
           ]
         },
         {
           "id": "monitoring",
-          "label": "Observability & Monitoring",
-          "description": "How should the system be monitored? Consider metrics, logs, alerts, and debugging.",
-          "keywords": [
-            "monitor",
-            "observability",
-            "metrics",
-            "logging",
-            "alerts",
-            "dashboard",
-            "trace",
-            "debug"
-          ],
+          "label": "Observability and Monitoring",
+          "description": "Collect metrics, logs, traces, and set alerts for key SLOs.",
+          "keywords": ["monitor", "observability", "metrics", "logging", "alerts", "dashboard", "trace", "debug"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
-            "Need comprehensive monitoring with metrics and alerts for latency and errors",
-            "Distributed tracing to debug issues across services"
+            "Alert on latency, error rate, and cache hit ratio.",
+            "Use tracing to debug cross service requests."
+          ]
+        },
+        {
+          "id": "caching-policy",
+          "label": "Caching Policy",
+          "description": "Choose 302 to count every hit or 301 to favor client caching.",
+          "keywords": ["cache", "301", "302", "analytics accuracy", "browser cache", "redirect policy"],
+          "weight": 1,
+          "required": false,
+          "examplePhrases": [
+            "Use 302 if analytics must count every request.",
+            "Use 301 for better client performance when analytics can be approximate."
+          ]
+        },
+        {
+          "id": "throughput-optimizations",
+          "label": "Throughput and Latency Optimizations",
+          "description": "Use caches for hot keys, DB indexes on short_url, and optional read replicas.",
+          "keywords": ["cache", "redis", "index", "replica", "hot keys", "throughput", "latency"],
+          "weight": 1,
+          "required": false,
+          "examplePhrases": [
+            "Cache frequent short links in Redis.",
+            "Index short_url and add read replicas if needed."
+          ]
+        },
+        {
+          "id": "id-generation-resilience",
+          "label": "ID Generation Resilience",
+          "description": "If using a counter service, avoid a single point of failure and plan for contention.",
+          "keywords": ["id", "counter", "generator", "availability", "contention", "shard", "retry"],
+          "weight": 1,
+          "required": false,
+          "examplePhrases": [
+            "Shard counter ranges to remove a single bottleneck.",
+            "Fallback to random or hash based IDs on counter errors."
           ]
         }
       ]

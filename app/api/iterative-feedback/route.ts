@@ -22,6 +22,7 @@ function buildFunctionalStepConfig(): StepConfig {
       description: req.description,
       keywords: req.keywords,
       required: true,
+      weight: req.weight, // Use weight from config (core=5pts)
     })),
     ...functional.optionalRequirements.map((req) => ({
       id: req.id,
@@ -29,6 +30,7 @@ function buildFunctionalStepConfig(): StepConfig {
       description: req.description,
       keywords: req.keywords,
       required: false,
+      weight: req.weight, // Use weight from config (optional=1pt)
     })),
   ];
 
@@ -48,6 +50,7 @@ function buildNonFunctionalStepConfig(): StepConfig {
       description: req.description,
       keywords: req.keywords,
       required: true,
+      weight: req.weight, // Use weight from config
     })),
     ...nonFunctional.optionalRequirements.map((req) => ({
       id: req.id,
@@ -55,6 +58,7 @@ function buildNonFunctionalStepConfig(): StepConfig {
       description: req.description,
       keywords: req.keywords,
       required: false,
+      weight: req.weight, // Use weight from config
     })),
   ];
 

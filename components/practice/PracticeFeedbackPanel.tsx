@@ -15,9 +15,11 @@ type PracticeFeedbackPanelProps = {
   onRevise: () => void;
   onContinue?: () => void;
   onClearVerification: () => void;
+  hasIterativeFeedback?: boolean;
 };
 
 export function PracticeFeedbackPanel({
+  currentStep,
   verification,
   scoringProgressSteps,
   scoringFeedback,
@@ -25,6 +27,7 @@ export function PracticeFeedbackPanel({
   onRevise,
   onContinue,
   onClearVerification,
+  hasIterativeFeedback = false,
 }: PracticeFeedbackPanelProps) {
   // Only show helper text if there's no feedback being displayed
   const _hasFeedback =
@@ -49,8 +52,15 @@ export function PracticeFeedbackPanel({
         </div>
       )}
 
+      {/* Only show old FeedbackModal for API/Sandbox steps, not for functional/nonFunctional (they use IterativeFeedbackModal) */}
       <FeedbackModal
-        isOpen={!!scoringFeedback && scoringFeedback.percentage >= 40}
+        isOpen={
+          !!scoringFeedback &&
+          scoringFeedback.percentage >= 40 &&
+          !hasIterativeFeedback &&
+          currentStep !== "functional" &&
+          currentStep !== "nonFunctional"
+        }
         feedbackResult={scoringFeedback!}
         onRevise={onRevise}
         onContinue={onContinue}

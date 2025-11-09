@@ -18,6 +18,7 @@ export type Topic = {
   description?: string;
   keywords?: string[];
   required?: boolean;
+  weight?: number; // Points awarded for covering this topic (defaults to 1)
 };
 
 export type IterativeTopicState = Record<string, boolean>;
@@ -121,9 +122,14 @@ Return JSON only with the exact schema:
 
 Rules
 - Read the candidate's text carefully. Use context, not only keywords.
-- Mark a topic "covered" only if the intent is explicit.
-- If uncertain, treat it as missing.
-- When writing the question, focus on the user's intent/behavior (e.g., “what should happen when...”) and never reveal solution details (no HTTP codes, algorithms, numbers, etc.).
+- Mark a topic "covered" ONLY if the candidate explicitly addresses it with sufficient detail.
+- Be STRICT: vague mentions, implied features, or partial coverage do NOT count as "covered".
+- For technical topics like "uniqueness", verify the approach is technically sound (e.g., "hashing first N characters" does NOT guarantee uniqueness).
+- For storage/persistence topics, the candidate must explicitly mention databases, persistence, or storage - don't infer it.
+- For rate limiting, abuse prevention, or security topics, the candidate must explicitly mention them - don't assume they're implied.
+- For admin/user management topics, the candidate must explicitly describe the feature - don't assume it's covered by authentication.
+- If uncertain or if coverage is incomplete, treat it as missing.
+- When writing the question, focus on the user's intent/behavior (e.g., "what should happen when...") and never reveal solution details (no HTTP codes, algorithms, numbers, etc.).
 - If a previous question exists and the topic is still missing, sharpen the same question without giving away the answer.
 
 Step: ${step.stepName}
@@ -225,11 +231,16 @@ ${previousQuestion ? `"${previousQuestion}"` : "null"}
 
 /**
  * 4) Compute score
- *    required each worth 1, optional each worth 1, simple and transparent
+ *    Use weights from topic config (core=5pts, optional=1pt by default)
  */
 function computeScore(step: StepConfig, coveredIds: Set<string>) {
-  const max = step.topics.length;
-  const obtained = step.topics.reduce((acc, t) => acc + (coveredIds.has(t.id) ? 1 : 0), 0);
+  const max = step.topics.reduce((acc, t) => acc + (t.weight ?? 1), 0);
+  const obtained = step.topics.reduce((acc, t) => {
+    if (coveredIds.has(t.id)) {
+      return acc + (t.weight ?? 1);
+    }
+    return acc;
+  }, 0);
   const percentage = max === 0 ? 100 : Math.round((obtained / max) * 100);
   return { obtained, max, percentage };
 }

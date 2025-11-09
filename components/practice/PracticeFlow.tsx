@@ -478,13 +478,11 @@ function PracticeFlowInner() {
         ) : null}
 
         {/* Iterative Feedback Modal - Shows in center of screen */}
-        {/* Show if: (1) blocking=true OR (2) score < 40% AND no better score from regular scoring */}
+        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional steps */}
         <IterativeFeedbackModal
           isOpen={
             !!iterativeFeedbackState.result &&
-            (iterativeFeedbackState.result.ui.blocking ||
-              (iterativeFeedbackState.result.score.percentage < 40 &&
-                (!scoringFeedback || scoringFeedback.percentage < 40)))
+            (currentStep === "functional" || currentStep === "nonFunctional")
           }
           currentStep={currentStep}
           result={iterativeFeedbackState.result!}
@@ -509,6 +507,7 @@ function PracticeFlowInner() {
             }}
             onContinue={proceedToNext}
             onClearVerification={clearVerification}
+            hasIterativeFeedback={!!iterativeFeedbackState.result}
           />
 
           <PracticeFooter
