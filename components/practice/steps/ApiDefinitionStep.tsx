@@ -5,7 +5,7 @@ import { usePracticeSession } from "@/components/practice/session/PracticeSessio
 import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 import type { ApiEndpoint } from "@/lib/practice/types";
 
-const METHOD_OPTIONS: Array<ApiEndpoint["method"]> = ["GET", "POST"];
+const METHOD_OPTIONS: Array<ApiEndpoint["method"]> = ["GET", "POST", "PATCH", "DELETE"];
 
 const createEndpoint = (): ApiEndpoint => ({
   id: `endpoint-${crypto.randomUUID()}`,

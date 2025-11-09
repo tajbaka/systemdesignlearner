@@ -93,19 +93,24 @@
   "apiEndpoints": [
     {
       "method": "POST",
-      "path": "/urls",
+      "path": "/api/v1/urls",
       "purpose": "Create a new shortened URL",
       "required": true,
       "requestBody": {
-        "longUrl": {
+        "url": {
           "type": "string",
           "required": true,
           "description": "The original long URL to shorten"
         },
-        "customSlug": {
+        "customAlias": {
           "type": "string",
           "required": false,
-          "description": "Optional custom slug (if custom-aliases feature is enabled)"
+          "description": "Optional custom alias for the short code"
+        },
+        "expiresAt": {
+          "type": "timestamp",
+          "required": false,
+          "description": "Optional expiration timestamp in ISO 8601"
         }
       },
       "responses": {
@@ -113,27 +118,31 @@
           "description": "URL created successfully",
           "body": {
             "shortUrl": "string",
-            "slug": "string",
-            "longUrl": "string"
+            "code": "string",
+            "longUrl": "string",
+            "createdAt": "timestamp",
+            "expiresAt": "timestamp|null"
           }
         },
-        "400": "Invalid URL or slug already taken",
-        "429": "Rate limit exceeded (if rate-limiting enabled)"
+        "400": "Invalid URL or invalid custom alias",
+        "409": "Custom alias already taken",
+        "429": "Rate limit exceeded"
       }
     },
     {
       "method": "GET",
-      "path": "/:slug",
+      "path": "/:code",
       "purpose": "Redirect to the original URL",
       "required": true,
       "responses": {
         "302": "Redirect to original URL",
-        "404": "Slug not found"
+        "404": "Code not found",
+        "410": "Code expired"
       }
     },
     {
       "method": "GET",
-      "path": "/urls/:slug/stats",
+      "path": "/api/v1/urls/:code/stats",
       "purpose": "Get analytics for a shortened URL",
       "required": false,
       "requiresFeature": "basic-analytics",
@@ -141,25 +150,117 @@
         "200": {
           "description": "Analytics data",
           "body": {
-            "slug": "string",
+            "code": "string",
             "clickCount": "number",
             "createdAt": "timestamp",
-            "lastAccessedAt": "timestamp"
+            "lastAccessedAt": "timestamp|null"
           }
         },
-        "404": "Slug not found"
+        "404": "Code not found"
+      }
+    },
+    {
+      "method": "PATCH",
+      "path": "/api/v1/urls/:code",
+      "purpose": "Update link metadata",
+      "required": false,
+      "requiresFeature": "link-metadata",
+      "requestBody": {
+        "url": {
+          "type": "string",
+          "required": false,
+          "description": "Replace the destination URL"
+        },
+        "expiresAt": {
+          "type": "timestamp",
+          "required": false,
+          "description": "Set or clear expiration"
+        },
+        "active": {
+          "type": "boolean",
+          "required": false,
+          "description": "Soft disable or enable the link"
+        }
+      },
+      "responses": {
+        "200": {
+          "description": "Link updated",
+          "body": {
+            "code": "string",
+            "longUrl": "string",
+            "active": "boolean",
+            "expiresAt": "timestamp|null",
+            "updatedAt": "timestamp"
+          }
+        },
+        "400": "Invalid field values",
+        "401": "Unauthorized",
+        "404": "Code not found"
       }
     },
     {
       "method": "DELETE",
-      "path": "/urls/:slug",
-      "purpose": "Delete a shortened URL (admin only)",
+      "path": "/api/v1/urls/:code",
+      "purpose": "Delete a shortened URL",
       "required": false,
       "requiresFeature": "admin-delete",
       "responses": {
         "204": "URL deleted successfully",
-        "401": "Unauthorized - admin access required",
-        "404": "Slug not found"
+        "401": "Unauthorized",
+        "404": "Code not found"
+      }
+    },
+    {
+      "method": "POST",
+      "path": "/internal/v1/analytics/hit",
+      "purpose": "Record a click for analytics in a decoupled service",
+      "required": false,
+      "requiresFeature": "analytics-pipeline",
+      "requestBody": {
+        "code": {
+          "type": "string",
+          "required": true,
+          "description": "Short code that was accessed"
+        },
+        "ts": {
+          "type": "timestamp",
+          "required": true,
+          "description": "Event timestamp"
+        },
+        "ua": {
+          "type": "string",
+          "required": false,
+          "description": "User agent"
+        },
+        "ipHash": {
+          "type": "string",
+          "required": false,
+          "description": "Hashed IP for privacy safe uniques"
+        }
+      },
+      "responses": {
+        "202": "Accepted for processing",
+        "400": "Malformed payload",
+        "401": "Unauthorized"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "purpose": "Liveness probe",
+      "required": false,
+      "responses": {
+        "200": "Service is up"
+      }
+    },
+    {
+      "method": "GET",
+      "path": "/ready",
+      "purpose": "Readiness probe",
+      "required": false,
+      "responses": {
+        "200": "Service is ready",
+        "503": "Dependencies not ready"
       }
     }
   ],
