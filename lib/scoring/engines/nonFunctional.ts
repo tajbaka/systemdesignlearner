@@ -91,34 +91,6 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
 
     // Overall feedback
     const percentage = (score / maxScore) * 100;
-    if (blocking.length === 0) {
-      if (percentage >= 90) {
-        positive.unshift({
-          category: "performance",
-          severity: "positive",
-          message: "Excellent NFRs! You've covered all the key quality attributes.",
-        });
-      } else if (percentage >= 75) {
-        positive.unshift({
-          category: "performance",
-          severity: "positive",
-          message: "Good NFR coverage! Your requirements touch on important quality attributes.",
-        });
-      } else if (percentage >= 50) {
-        suggestions.push({
-          category: "performance",
-          severity: "info",
-          message: "Consider adding more detail about scalability, availability, or performance characteristics.",
-        });
-      } else {
-        warnings.push({
-          category: "requirement",
-          severity: "warning",
-          message: "Your NFRs could be more comprehensive. Think about performance, scale, availability, and reliability.",
-          actionable: "Add specific qualities like 'fast redirects', 'high availability', or 'handles traffic spikes'.",
-        });
-      }
-    }
 
     return {
       score,

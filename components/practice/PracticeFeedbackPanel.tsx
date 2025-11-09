@@ -50,10 +50,11 @@ export function PracticeFeedbackPanel({
       )}
 
       <FeedbackModal
-        isOpen={!!scoringFeedback}
+        isOpen={!!scoringFeedback && scoringFeedback.percentage >= 40}
         feedbackResult={scoringFeedback!}
         onRevise={onRevise}
         onContinue={onContinue}
+        improvementQuestion={(scoringFeedback as FeedbackResult & { improvementQuestion?: string })?.improvementQuestion}
       />
 
       {verification.result && (verification.result.blocking.length > 0 || verification.result.warnings.length > 0) ? (

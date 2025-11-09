@@ -110,27 +110,6 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
 
     // Overall feedback
     const percentage = (score / maxScore) * 100;
-    if (blocking.length === 0) {
-      if (percentage >= 90) {
-        positive.unshift({
-          category: "requirement",
-          severity: "positive",
-          message: "Excellent functional requirements! You've covered all core aspects and included valuable optional features.",
-        });
-      } else if (percentage >= 75) {
-        positive.unshift({
-          category: "requirement",
-          severity: "positive",
-          message: "Good work! You've covered all core requirements. Consider adding more optional features to achieve a higher score.",
-        });
-      } else {
-        warnings.push({
-          category: "requirement",
-          severity: "warning",
-          message: "You've met the minimum requirements, but there's room for improvement. Consider expanding your description.",
-        });
-      }
-    }
 
     return {
       score,

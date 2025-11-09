@@ -9,6 +9,7 @@ type FeedbackModalProps = {
   feedbackResult: FeedbackResult;
   onRevise: () => void;
   onContinue?: () => void;
+  improvementQuestion?: string; // Question to help reach 100%
 };
 
 export function FeedbackModal({
@@ -16,6 +17,7 @@ export function FeedbackModal({
   feedbackResult,
   onRevise,
   onContinue,
+  improvementQuestion,
 }: FeedbackModalProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -26,17 +28,9 @@ export function FeedbackModal({
   if (!isOpen || !mounted) return null;
 
   const passed = feedbackResult.percentage >= 40;
-  const hasBlocking = feedbackResult.blocking.length > 0;
 
   // Extract positive messages (limit to 3)
   const positiveMessages = feedbackResult.positive.slice(0, 3);
-
-  // Get the most important blocking/guiding question (just one)
-  const guidingItem = hasBlocking
-    ? feedbackResult.blocking[0]
-    : feedbackResult.warnings[0];
-  const guidingQuestion = guidingItem?.message;
-  const actionableSteps = guidingItem?.actionable;
 
   return createPortal(
     <div
@@ -97,24 +91,13 @@ export function FeedbackModal({
           </div>
         )}
 
-        {/* Guiding question - just one */}
-        {guidingQuestion && (
-          <div
-            className={`mb-6 rounded-xl border p-4 ${
-              passed
-                ? "border-blue-400/30 bg-blue-950/40"
-                : "border-amber-400/30 bg-amber-950/40"
-            }`}
-          >
-            <h3 className={`mb-2 text-sm font-semibold ${passed ? "text-blue-300" : "text-amber-300"}`}>
-              💭 {hasBlocking ? "What to fix:" : "Think about this:"}
+        {/* Improvement question for scores between 40-99% */}
+        {passed && improvementQuestion && feedbackResult.percentage < 100 && (
+          <div className="mb-6 rounded-xl border border-blue-400/30 bg-blue-950/40 p-4">
+            <h3 className="mb-2 text-sm font-semibold text-blue-300">
+              💡 To reach 100%:
             </h3>
-            <p className={`text-sm ${passed ? "text-blue-100" : "text-amber-100"}`}>{guidingQuestion}</p>
-            {actionableSteps && (
-              <div className={`mt-3 whitespace-pre-line text-sm ${passed ? "text-blue-100" : "text-amber-100"}`}>
-                {actionableSteps}
-              </div>
-            )}
+            <p className="text-sm text-blue-100">{improvementQuestion}</p>
           </div>
         )}
 

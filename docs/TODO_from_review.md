@@ -32,10 +32,11 @@
   - Reference: Screenshot 5 (13.10.33)
   - **Implementation**: Added global keyboard listener in PracticeFlow.tsx that triggers handleNext() on Enter key, with smart exclusions for textareas/inputs
 
-- [ ] **Improve modal close behavior** (Priority: Low)
+- [x] **Improve modal close behavior** (Priority: Low) ✅ COMPLETED
   - Current: Only clicking "Revise" closes the feedback modal
   - Add: Clicking outside the modal should also close it
   - Reference: Screenshot 4 (13.01.31)
+  - **Implementation**: Added onClick handler to backdrop div in FeedbackModal.tsx with stopPropagation on modal content
 
 ---
 

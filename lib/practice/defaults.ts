@@ -224,5 +224,27 @@ export const makeInitialPracticeState = (): PracticeState => ({
     sandbox: false,
     score: false,
   },
+  iterativeFeedback: {
+    functional: {
+      coveredTopics: {},
+      lastContent: "",
+      currentQuestion: null,
+    },
+    nonFunctional: {
+      coveredTopics: {},
+      lastContent: "",
+      currentQuestion: null,
+    },
+    api: {
+      coveredTopics: {},
+      lastContent: "",
+      currentQuestion: null,
+    },
+    design: {
+      coveredTopics: {},
+      lastContent: "",
+      currentQuestion: null,
+    },
+  },
   updatedAt: Date.now(),
 });

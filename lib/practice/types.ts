@@ -1,6 +1,7 @@
 import type { PlacedNode, Edge } from "@/app/components/types";
 import type { ScoreBreakdown } from "@/lib/scoring";
 import type { FeedbackResult } from "@/lib/scoring/types";
+import type { IterativeTopicState } from "@/lib/scoring/ai/iterative";
 
 export type HighLevelChoice = {
   presetId: "db_only" | "cache_primary" | "global_edge_cache";
@@ -109,6 +110,29 @@ export type PracticeStepScores = {
   simulation?: FeedbackResult;
 };
 
+export type PracticeIterativeFeedback = {
+  functional: {
+    coveredTopics: IterativeTopicState;
+    lastContent: string; // For detecting changes
+    currentQuestion: string | null;
+  };
+  nonFunctional: {
+    coveredTopics: IterativeTopicState;
+    lastContent: string;
+    currentQuestion: string | null;
+  };
+  api: {
+    coveredTopics: IterativeTopicState;
+    lastContent: string;
+    currentQuestion: string | null;
+  };
+  design: {
+    coveredTopics: IterativeTopicState;
+    lastContent: string;
+    currentQuestion: string | null;
+  };
+};
+
 export type PracticeState = {
   slug: "url-shortener";
   requirements: Requirements;
@@ -118,5 +142,6 @@ export type PracticeState = {
   auth: PracticeAuthState;
   completed: PracticeProgress;
   scores?: PracticeStepScores;
+  iterativeFeedback?: PracticeIterativeFeedback;
   updatedAt: number;
 };

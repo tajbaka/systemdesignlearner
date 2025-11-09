@@ -192,21 +192,6 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       });
     }
 
-    if (blocking.length === 0) {
-      if (percentage >= 90) {
-        positive.unshift({
-          category: "architecture",
-          severity: "positive",
-          message: "Excellent API design! All endpoints are well-documented and follow REST best practices.",
-        });
-      } else if (percentage >= 75) {
-        positive.unshift({
-          category: "architecture",
-          severity: "positive",
-          message: "Good API design! Core endpoints are present. Consider improving documentation.",
-        });
-      }
-    }
 
     return {
       score,

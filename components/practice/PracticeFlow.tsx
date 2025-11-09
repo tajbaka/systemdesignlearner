@@ -13,9 +13,11 @@ import { STEP_CONFIGS, getHelperText, completeStep } from "@/lib/practice/step-c
 import { usePracticeScoring } from "@/hooks/usePracticeScoring";
 import { useSandboxEvaluation } from "@/hooks/useSandboxEvaluation";
 import { usePracticeNavigation } from "@/hooks/usePracticeNavigation";
+import { useIterativeFeedback } from "@/hooks/useIterativeFeedback";
 import { PracticeFooter } from "@/components/practice/PracticeFooter";
 import { PracticeStepContent } from "@/components/practice/PracticeStepContent";
 import { PracticeFeedbackPanel } from "@/components/practice/PracticeFeedbackPanel";
+import { IterativeFeedbackModal } from "@/components/practice/IterativeFeedbackModal";
 
 function PracticeFlowInner() {
   const session = usePracticeSession();
@@ -39,6 +41,14 @@ function PracticeFlowInner() {
     clearScoring,
     clearVerification,
   } = usePracticeScoring();
+
+  // Iterative feedback hook
+  const {
+    state: iterativeFeedbackState,
+    getFocusedFeedback,
+    resetFeedback: _resetFeedback,
+    clearState: clearIterativeFeedback,
+  } = useIterativeFeedback();
 
   // Sandbox evaluation hook
   const { waitingForSimulation, setWaitingForSimulation, buildSandboxFeedback } = useSandboxEvaluation(
@@ -66,6 +76,7 @@ function PracticeFlowInner() {
     evaluateCurrentStep,
     buildSandboxFeedback,
     isSignedIn: isSignedIn ?? false,
+    getFocusedFeedback,
   });
 
   // Reset hideTooltipTemp when stage changes
@@ -128,9 +139,10 @@ function PracticeFlowInner() {
       setMobilePaletteOpen(false);
       setRunPanelOpen(false);
     }
-    // Clear verification and scoring state when step changes
+    // Clear verification, scoring, and iterative feedback state when step changes
     clearVerification();
     clearScoring();
+    clearIterativeFeedback();
     setWaitingForSimulation(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
@@ -465,6 +477,20 @@ function PracticeFlowInner() {
           </Tooltip>
         ) : null}
 
+        {/* Iterative Feedback Modal - Shows in center of screen - Only show if score < 40% and core requirements not met */}
+        <IterativeFeedbackModal
+          isOpen={
+            !!iterativeFeedbackState.result &&
+            iterativeFeedbackState.result.score.percentage < 40 &&
+            (!scoringFeedback || scoringFeedback.percentage < 40)
+          }
+          currentStep={currentStep}
+          result={iterativeFeedbackState.result!}
+          onClose={() => clearIterativeFeedback()}
+          onContinue={iterativeFeedbackState.result && !iterativeFeedbackState.result.ui.blocking ? proceedToNext : undefined}
+          durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
+        />
+
         <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">
           <PracticeFeedbackPanel
             currentStep={currentStep}
@@ -474,6 +500,7 @@ function PracticeFlowInner() {
             helperText={helperText}
             onRevise={() => {
               setScoringFeedback(null);
+              clearIterativeFeedback(); // Also clear iterative feedback state
               if (currentStep !== "sandbox") {
                 session.setStepScore(currentStep as "functional" | "nonFunctional" | "api", undefined);
               }

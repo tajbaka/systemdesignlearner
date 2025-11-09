@@ -20,6 +20,7 @@ import {
   type PracticeStep,
   type PracticeStepScores,
   type Requirements,
+  type PracticeIterativeFeedback,
 } from "@/lib/practice/types";
 import type { FeedbackResult } from "@/lib/scoring/types";
 import {
@@ -125,6 +126,29 @@ const migrateLegacyProgress = (locked?: LegacyLocked): PracticeProgress => ({
   score: Boolean(locked?.run),
 });
 
+const ensureIterativeFeedback = (value?: PracticeIterativeFeedback): PracticeIterativeFeedback => ({
+  functional: {
+    coveredTopics: value?.functional?.coveredTopics ?? {},
+    lastContent: value?.functional?.lastContent ?? "",
+    currentQuestion: value?.functional?.currentQuestion ?? null,
+  },
+  nonFunctional: {
+    coveredTopics: value?.nonFunctional?.coveredTopics ?? {},
+    lastContent: value?.nonFunctional?.lastContent ?? "",
+    currentQuestion: value?.nonFunctional?.currentQuestion ?? null,
+  },
+  api: {
+    coveredTopics: value?.api?.coveredTopics ?? {},
+    lastContent: value?.api?.lastContent ?? "",
+    currentQuestion: value?.api?.currentQuestion ?? null,
+  },
+  design: {
+    coveredTopics: value?.design?.coveredTopics ?? {},
+    lastContent: value?.design?.lastContent ?? "",
+    currentQuestion: value?.design?.currentQuestion ?? null,
+  },
+});
+
 const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeState => {
   const defaults = makeInitialPracticeState();
   if (!raw) return defaults;
@@ -148,6 +172,7 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
       },
       auth: ensureAuthState(candidate.auth),
       completed: ensureProgress(candidate.completed),
+      iterativeFeedback: ensureIterativeFeedback(candidate.iterativeFeedback),
       updatedAt: candidate.updatedAt ?? Date.now(),
     };
   }
@@ -165,6 +190,7 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
     },
     auth: ensureAuthState(),
     completed: migrateLegacyProgress(legacy.locked),
+    iterativeFeedback: ensureIterativeFeedback(),
     updatedAt: legacy.updatedAt ?? Date.now(),
   };
 };
@@ -212,6 +238,11 @@ type PracticeSessionContextValue = {
   setAuth: (updater: (prev: PracticeAuthState) => PracticeAuthState) => void;
   markStep: (step: PracticeStep, value: boolean) => void;
   setStepScore: (step: keyof PracticeStepScores, result: FeedbackResult | undefined) => void;
+  updateIterativeFeedback: (
+    step: keyof PracticeIterativeFeedback,
+    updater: (prev: PracticeIterativeFeedback[keyof PracticeIterativeFeedback]) => PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
+  ) => void;
+  resetIterativeFeedback: (step?: keyof PracticeIterativeFeedback) => void;
 };
 
 const PracticeSessionContext = createContext<PracticeSessionContextValue | undefined>(undefined);
@@ -392,6 +423,54 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
     setStep(prevStep);
   }, [currentStep, isReadOnly, setStep]);
 
+  const updateIterativeFeedback = useCallback(
+    (
+      step: keyof PracticeIterativeFeedback,
+      updater: (prev: PracticeIterativeFeedback[keyof PracticeIterativeFeedback]) => PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
+    ) => {
+      setStateWithTimestamp((prev) => {
+        const iterativeFeedback = prev.iterativeFeedback || ensureIterativeFeedback();
+        return {
+          ...prev,
+          iterativeFeedback: {
+            ...iterativeFeedback,
+            [step]: updater(iterativeFeedback[step]),
+          },
+        };
+      });
+    },
+    [setStateWithTimestamp]
+  );
+
+  const resetIterativeFeedback = useCallback(
+    (step?: keyof PracticeIterativeFeedback) => {
+      setStateWithTimestamp((prev) => {
+        if (step) {
+          // Reset specific step
+          const iterativeFeedback = prev.iterativeFeedback || ensureIterativeFeedback();
+          return {
+            ...prev,
+            iterativeFeedback: {
+              ...iterativeFeedback,
+              [step]: {
+                coveredTopics: {},
+                lastContent: "",
+                currentQuestion: null,
+              },
+            },
+          };
+        }
+        // Reset all
+        return {
+          ...prev,
+          iterativeFeedback: ensureIterativeFeedback(),
+        };
+      });
+      track("practice_iterative_feedback_reset", { slug: PRACTICE_SLUG, step: step || "all" });
+    },
+    [setStateWithTimestamp]
+  );
+
   const value = useMemo<PracticeSessionContextValue>(
     () => ({
       state,
@@ -408,6 +487,8 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       setAuth,
       markStep,
       setStepScore,
+      updateIterativeFeedback,
+      resetIterativeFeedback,
     }),
     [
       state,
@@ -424,6 +505,8 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       setAuth,
       markStep,
       setStepScore,
+      updateIterativeFeedback,
+      resetIterativeFeedback,
     ]
   );
 

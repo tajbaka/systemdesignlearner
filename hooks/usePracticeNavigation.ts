@@ -3,12 +3,30 @@ import type { PracticeStep } from "@/lib/practice/types";
 import type { FeedbackResult } from "@/lib/scoring/types";
 import type { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import type { VerificationState } from "./usePracticeScoring";
+import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import { STEP_CONFIGS } from "@/lib/practice/step-configs";
 import { logger } from "@/lib/logger";
 import { validateDesignForScenario } from "@/lib/practice/validation";
 import { SCENARIOS } from "@/lib/scenarios";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
+
+function getStepName(step: PracticeStep): string {
+  switch (step) {
+    case "functional":
+      return "Functional Requirements";
+    case "nonFunctional":
+      return "Non-Functional Requirements";
+    case "api":
+      return "API Definition";
+    case "sandbox":
+      return "System Design";
+    case "score":
+      return "Score & Share";
+    default:
+      return step;
+  }
+}
 
 type NavigationOptions = {
   verification: VerificationState;
@@ -23,6 +41,12 @@ type NavigationOptions = {
   ) => Promise<FeedbackResult | null>;
   buildSandboxFeedback: (session: PracticeSessionValue) => { feedback: FeedbackResult; canProceed: boolean } | null;
   isSignedIn: boolean;
+  // Iterative feedback functions
+  getFocusedFeedback?: (
+    currentStep: PracticeStep,
+    session: PracticeSessionValue,
+    additionalContext?: string
+  ) => Promise<IterativeFeedbackResult | null>;
 };
 
 export function usePracticeNavigation(
@@ -41,6 +65,7 @@ export function usePracticeNavigation(
     evaluateCurrentStep,
     buildSandboxFeedback,
     isSignedIn,
+    getFocusedFeedback,
   } = options;
 
   const proceedToNext = () => {
@@ -86,7 +111,25 @@ export function usePracticeNavigation(
     // Steps that need scoring evaluation (including sandbox for design scoring)
     const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
 
+    let functionalCoverage: IterativeFeedbackResult | null = null;
+
     if (stepsNeedingScoring.includes(session.currentStep)) {
+      if (session.currentStep === "functional" && getFocusedFeedback) {
+        setVerification({ isVerifying: true, result: null, error: null });
+
+        try {
+          functionalCoverage = await getFocusedFeedback("functional", session);
+        } catch (error) {
+          logger.error("Error getting functional coverage:", error);
+        }
+
+        if (functionalCoverage?.ui.blocking) {
+          setVerification({ isVerifying: false, result: null, error: null });
+          return;
+        }
+
+        setVerification({ isVerifying: false, result: null, error: null });
+      }
       if (session.currentStep === "sandbox") {
         const result = session.state.run.lastResult ?? null;
         const hasRun = Boolean(result);
@@ -191,10 +234,10 @@ export function usePracticeNavigation(
         return;
       }
 
-      // Non-sandbox steps: run scoring evaluation immediately
+      // Non-sandbox steps: run evaluation first to check score
       setVerification({ isVerifying: true, result: null, error: null });
 
-      // For other steps, run scoring evaluation
+      // Run scoring evaluation first to determine if we need iterative feedback
       const result = await evaluateCurrentStep(session.currentStep, session);
       setVerification({ isVerifying: false, result: null, error: null });
 
@@ -208,9 +251,43 @@ export function usePracticeNavigation(
         return;
       }
 
-      // Always show feedback (even for perfect scores)
-      // Check if there are blocking issues (score too low)
-      if (result.blocking.length > 0) {
+      // Check if score is below threshold (40%)
+      const scorePercentage = result.percentage ?? 0;
+      const hasBlockingIssues = result.blocking.length > 0;
+
+      // Steps that support iterative feedback
+      const stepsWithIterativeFeedback: PracticeStep[] = ["functional"];
+
+      // For scores 40-99%, get improvement question FIRST, then set feedback once
+      // This prevents the iterative feedback modal from showing and ensures everything loads together
+      if (scorePercentage >= 40 && scorePercentage < 100 && stepsWithIterativeFeedback.includes(session.currentStep)) {
+        try {
+          const improvementQuestion =
+            functionalCoverage?.ui.nextPrompt ?? functionalCoverage?.nextQuestion?.question ?? null;
+
+          if (improvementQuestion) {
+            const updatedResult = {
+              ...result,
+              improvementQuestion,
+            };
+            setScoringFeedback(updatedResult as any);
+            logger.info("Added improvement question:", improvementQuestion);
+          } else {
+            setScoringFeedback(result);
+          }
+        } catch (error) {
+          logger.error("Error getting improvement question:", error);
+          // Set feedback with original result
+          setScoringFeedback(result);
+        }
+      } else {
+        // Not in 40-99% range, set feedback immediately
+        setScoringFeedback(result);
+      }
+
+      // Show final feedback (score >= 40% or no iterative feedback)
+      // Check if there are blocking issues
+      if (hasBlockingIssues) {
         // Show feedback, user must revise
         return;
       }
