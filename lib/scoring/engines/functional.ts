@@ -24,7 +24,6 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
     const positive: FeedbackItem[] = [];
     const suggestions: FeedbackItem[] = [];
 
-    let score = 0;
     const maxScore = config.maxScore;
 
     // Normalize input text for matching
@@ -40,6 +39,10 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
       });
     }
 
+    // Calculate total weights
+    const totalCoreWeight = config.coreRequirements.reduce((sum, req) => sum + req.weight, 0);
+    const totalOptionalWeight = config.optionalRequirements.reduce((sum, req) => sum + req.weight, 0);
+
     // Evaluate core requirements
     const coreResults = this.evaluateRequirements(
       config.coreRequirements,
@@ -48,9 +51,10 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
       config.minKeywordsMatch
     );
 
+    let coreScore = 0;
     for (const result of coreResults) {
       if (result.matched) {
-        score += result.requirement.weight;
+        coreScore += result.requirement.weight;
         positive.push({
           category: "requirement",
           severity: "positive",
@@ -78,6 +82,10 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
       }
     }
 
+    // Scale core score to maxScore (100% = all core requirements)
+    const corePercentage = totalCoreWeight > 0 ? coreScore / totalCoreWeight : 0;
+    const scaledCoreScore = corePercentage * maxScore;
+
     // Evaluate optional requirements
     const optionalResults = this.evaluateRequirements(
       config.optionalRequirements,
@@ -86,19 +94,24 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
       config.minKeywordsMatch
     );
 
+    let optionalScore = 0;
     const matchedOptional: string[] = [];
     for (const result of optionalResults) {
       if (result.matched) {
-        score += result.requirement.weight;
+        optionalScore += result.requirement.weight;
         matchedOptional.push(result.requirement.label);
       }
     }
+
+    // Scale optional score as bonus (percentage of maxScore based on optional weight ratio)
+    const optionalPercentage = totalOptionalWeight > 0 ? optionalScore / totalOptionalWeight : 0;
+    const scaledOptionalScore = optionalPercentage * maxScore;
 
     if (matchedOptional.length > 0) {
       positive.push({
         category: "requirement",
         severity: "positive",
-        message: `Great! You included ${matchedOptional.length} optional feature${matchedOptional.length > 1 ? "s" : ""}: ${matchedOptional.join(", ")}`,
+        message: `Great! You included ${matchedOptional.length} optional feature${matchedOptional.length > 1 ? "s" : ""}: ${matchedOptional.join(", ")} (+${scaledOptionalScore.toFixed(1)} bonus points)`,
       });
     } else {
       suggestions.push({
@@ -108,8 +121,9 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
       });
     }
 
-    // Overall feedback
-    const percentage = (score / maxScore) * 100;
+    // Final score = core score (up to maxScore) + optional score (bonus)
+    const score = scaledCoreScore + scaledOptionalScore;
+    const percentage = (scaledCoreScore / maxScore) * 100;
 
     return {
       score,

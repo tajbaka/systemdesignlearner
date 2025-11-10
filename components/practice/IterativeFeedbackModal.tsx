@@ -96,8 +96,17 @@ export function IterativeFeedbackModal({
           {allTopicsCovered && (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5">
               <p className="text-base text-emerald-200">
-                Excellent! Every topic is covered. You can continue.
+                Excellent! All core requirements covered. You can continue.
               </p>
+            </div>
+          )}
+
+          {allTopicsCovered && nextPrompt && (
+            <div className="mt-4 rounded-xl border border-blue-400/30 bg-blue-950/40 p-4">
+              <h3 className="mb-2 text-sm font-semibold text-blue-300">
+                💡 Bonus feature:
+              </h3>
+              <p className="text-sm text-blue-100">{nextPrompt}</p>
             </div>
           )}
         </div>

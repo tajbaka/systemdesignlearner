@@ -29,14 +29,18 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     const positive: FeedbackItem[] = [];
     const suggestions: FeedbackItem[] = [];
 
-    let score = 0;
     const maxScore = config.maxScore;
 
     // Track which endpoints were matched
     const matchedRequired = new Set<string>();
     const matchedOptional = new Set<string>();
 
-    // Evaluate required endpoints
+    // Calculate total weights
+    const totalRequiredWeight = config.requiredEndpoints.reduce((sum, ep) => sum + ep.weight, 0);
+    const totalOptionalWeight = config.optionalEndpoints.reduce((sum, ep) => sum + ep.weight, 0);
+
+    // Evaluate required endpoints (core)
+    let coreScore = 0;
     for (const requiredConfig of config.requiredEndpoints) {
       const matchResult = this.findMatchingEndpoint(input.endpoints, requiredConfig);
 
@@ -50,7 +54,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
           config.evaluationCriteria
         );
 
-        score += endpointScore.score;
+        coreScore += endpointScore.score;
 
         // Add feedback
         if (endpointScore.perfect) {
@@ -118,7 +122,12 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       }
     }
 
-    // Evaluate optional endpoints
+    // Scale core score to maxScore (100% = all required endpoints)
+    const corePercentage = totalRequiredWeight > 0 ? coreScore / totalRequiredWeight : 0;
+    const scaledCoreScore = corePercentage * maxScore;
+
+    // Evaluate optional endpoints (bonus)
+    let optionalScore = 0;
     for (const optionalConfig of config.optionalEndpoints) {
       // Check if this optional endpoint is required by selected functional requirements
       const requirementsMet = optionalConfig.requiredBy.some(
@@ -136,7 +145,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
           config.evaluationCriteria
         );
 
-        score += endpointScore.score;
+        optionalScore += endpointScore.score;
 
         positive.push({
           category: "architecture",
@@ -156,6 +165,18 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       }
     }
 
+    // Scale optional score as bonus
+    const optionalPercentage = totalOptionalWeight > 0 ? optionalScore / totalOptionalWeight : 0;
+    const scaledOptionalScore = optionalPercentage * maxScore;
+
+    if (matchedOptional.size > 0) {
+      positive.push({
+        category: "architecture",
+        severity: "positive",
+        message: `Bonus: You included ${matchedOptional.size} optional endpoint${matchedOptional.size > 1 ? "s" : ""} (+${scaledOptionalScore.toFixed(1)} points)`,
+      });
+    }
+
     // Check for extra endpoints (not necessarily bad)
     const unmatchedEndpoints = input.endpoints.filter((endpoint) => {
       return ![...config.requiredEndpoints, ...config.optionalEndpoints].some((configEndpoint) => {
@@ -171,8 +192,9 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       });
     }
 
-    // Overall feedback
-    const percentage = (score / maxScore) * 100;
+    // Final score = core score (up to maxScore) + optional score (bonus)
+    const score = scaledCoreScore + scaledOptionalScore;
+    const percentage = (scaledCoreScore / maxScore) * 100;
 
     // Add blocking issue if score is too low (below 40%)
     if (percentage < 40 && blocking.length === 0) {
@@ -191,7 +213,6 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
         actionable: feedback.actionable,
       });
     }
-
 
     return {
       score,

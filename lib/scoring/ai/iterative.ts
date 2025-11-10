@@ -167,7 +167,8 @@ ${previousQuestion ? `"${previousQuestion}"` : "null"}
 
   const requiredList = step.topics.filter(t => t.required);
   const requiredCovered = requiredList.every(t => coveredSet.has(t.id));
-  const allCovered = step.topics.every(t => coveredSet.has(t.id));
+  // For 100% score, only core requirements need to be covered (optional are bonus)
+  const allCovered = requiredCovered;
 
   return {
     coverage: { covered, missing, requiredCovered, allCovered },
@@ -235,17 +236,49 @@ ${previousQuestion ? `"${previousQuestion}"` : "null"}
 
 /**
  * 4) Compute score
- *    Use weights from topic config (core=5pts, optional=1pt by default)
+ *    Core requirements = 100% of score
+ *    Optional requirements = bonus points on top
  */
 function computeScore(step: StepConfig, coveredIds: Set<string>) {
-  const max = step.topics.reduce((acc, t) => acc + (t.weight ?? 1), 0);
-  const obtained = step.topics.reduce((acc, t) => {
+  const coreTopics = step.topics.filter(t => t.required);
+  const optionalTopics = step.topics.filter(t => !t.required);
+
+  // Calculate max score based on core topics only (this represents 100%)
+  const maxCoreWeight = coreTopics.reduce((acc, t) => acc + (t.weight ?? 1), 0);
+  const maxOptionalWeight = optionalTopics.reduce((acc, t) => acc + (t.weight ?? 1), 0);
+
+  // For display, max score is the maxCoreWeight (represents 100%)
+  const max = maxCoreWeight;
+
+  // Calculate actual core score
+  const coreScore = coreTopics.reduce((acc, t) => {
     if (coveredIds.has(t.id)) {
       return acc + (t.weight ?? 1);
     }
     return acc;
   }, 0);
-  const percentage = max === 0 ? 100 : Math.round((obtained / max) * 100);
+
+  // Calculate optional score (bonus)
+  const optionalScore = optionalTopics.reduce((acc, t) => {
+    if (coveredIds.has(t.id)) {
+      return acc + (t.weight ?? 1);
+    }
+    return acc;
+  }, 0);
+
+  // Scale core to max, scale optional as bonus
+  const corePercentage = maxCoreWeight > 0 ? coreScore / maxCoreWeight : 0;
+  const scaledCoreScore = corePercentage * max;
+
+  const optionalPercentage = maxOptionalWeight > 0 ? optionalScore / maxOptionalWeight : 0;
+  const scaledOptionalScore = optionalPercentage * max;
+
+  // Total obtained = core + optional bonus
+  const obtained = scaledCoreScore + scaledOptionalScore;
+
+  // Percentage is based on core only (so 100% = all core covered)
+  const percentage = max === 0 ? 100 : Math.round((scaledCoreScore / max) * 100);
+
   return { obtained, max, percentage };
 }
 
@@ -262,7 +295,10 @@ export async function getIterativeFeedback(
   let nextQuestion: QuestionResult | null = null;
   const topicFromModel = nextTopicId ? step.topics.find(t => t.id === nextTopicId) : null;
 
-  if (!coverage.allCovered) {
+  // Check if there are ANY topics left (core OR optional)
+  const hasAnyMissingTopics = coverage.missing.length > 0;
+
+  if (hasAnyMissingTopics) {
     const topic = topicFromModel ?? pickNextTopic(step, coverage);
 
     if (topic) {
@@ -282,7 +318,25 @@ export async function getIterativeFeedback(
 
   const coveredIds = new Set(coverage.covered.map(c => c.id));
   const score = computeScore(step, coveredIds);
-  const coveredLines = coverage.covered.map(c => `✓ ${c.label}: covered`);
+
+  // Build covered lines with visual distinction for core vs optional
+  const coreTopics = step.topics.filter(t => t.required);
+  const optionalTopics = step.topics.filter(t => !t.required);
+
+  const coveredCoreLines = coverage.covered
+    .filter(c => coreTopics.some(t => t.id === c.id))
+    .map(c => `✓ ${c.label}: covered`);
+
+  const coveredOptionalLines = coverage.covered
+    .filter(c => optionalTopics.some(t => t.id === c.id))
+    .map(c => `✓ ${c.label}: covered`);
+
+  // Combine: core first, then optional (with bonus indicator if any)
+  const coveredLines = [
+    ...coveredCoreLines,
+    ...(coveredOptionalLines.length > 0 ? coveredOptionalLines : [])
+  ];
+
   const blocking = !coverage.requiredCovered;
 
   return {
