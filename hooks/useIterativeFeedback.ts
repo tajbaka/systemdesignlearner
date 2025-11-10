@@ -97,7 +97,7 @@ export function useIterativeFeedback() {
         const result: IterativeFeedbackResult = await feedbackResponse.json();
 
         // Update session with new question and content
-        session.updateIterativeFeedback(stepKey as any, (prev) => ({
+        session.updateIterativeFeedback(stepKey as "functional" | "nonFunctional" | "api", (prev) => ({
           ...prev,
           lastContent: userContent,
           currentQuestion: result.nextQuestion?.question ?? null,
@@ -130,7 +130,7 @@ export function useIterativeFeedback() {
     (session: PracticeSessionValue, step?: PracticeStep) => {
       if (step && ["functional", "nonFunctional", "api", "sandbox"].includes(step)) {
         const stepKey = step === "sandbox" ? "design" : step;
-        session.resetIterativeFeedback(stepKey as any);
+        session.resetIterativeFeedback(stepKey as "functional" | "nonFunctional" | "api" | "design");
       } else {
         session.resetIterativeFeedback();
       }

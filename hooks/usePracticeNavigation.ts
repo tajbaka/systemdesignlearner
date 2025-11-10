@@ -11,23 +11,6 @@ import { SCENARIOS } from "@/lib/scenarios";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
-function getStepName(step: PracticeStep): string {
-  switch (step) {
-    case "functional":
-      return "Functional Requirements";
-    case "nonFunctional":
-      return "Non-Functional Requirements";
-    case "api":
-      return "API Definition";
-    case "sandbox":
-      return "System Design";
-    case "score":
-      return "Score & Share";
-    default:
-      return step;
-  }
-}
-
 type NavigationOptions = {
   verification: VerificationState;
   setVerification: (state: VerificationState) => void;
@@ -273,11 +256,11 @@ export function usePracticeNavigation(
             iterativeCoverage?.ui.nextPrompt ?? iterativeCoverage?.nextQuestion?.question ?? null;
 
           if (improvementQuestion) {
-            const updatedResult = {
+            const updatedResult: FeedbackResult = {
               ...result,
               improvementQuestion,
             };
-            setScoringFeedback(updatedResult as any);
+            setScoringFeedback(updatedResult);
             logger.info("Added improvement question:", improvementQuestion);
           } else {
             setScoringFeedback(result);

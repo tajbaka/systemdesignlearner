@@ -1,6 +1,7 @@
 import type { Requirements } from "./types";
 import type { ApiEndpoint } from "./types";
 import reference from "./reference/url-shortener.json";
+import scoringConfig from "@/lib/scoring/configs/url-shortener.json";
 import { logger } from "@/lib/logger";
 
 export type VerificationResult = {
@@ -13,18 +14,18 @@ export type VerificationResult = {
  * Build prompt for functional requirements verification
  */
 export function buildFunctionalPrompt(summary: string, selectedFeatures: Requirements["functional"]) {
-  const required = reference.functional.required;
-  const optional = reference.functional.optional.filter((opt) => selectedFeatures[opt.id as keyof typeof selectedFeatures]);
+  const required = scoringConfig.steps.functional.coreRequirements;
+  const optional = scoringConfig.steps.functional.optionalRequirements.filter((opt: { id: string }) => selectedFeatures[opt.id as keyof typeof selectedFeatures]);
 
   return `You are verifying functional requirements for a URL Shortener system design practice exercise.
 
 **Reference Requirements:**
 
 REQUIRED Features (user MUST mention these):
-${required.map((r) => `- ${r.label}: ${r.description}`).join("\n")}
+${required.map((r: { label: string; description: string }) => `- ${r.label}: ${r.description}`).join("\n")}
 
 OPTIONAL Features (user selected these, should mention them):
-${optional.length > 0 ? optional.map((o) => `- ${o.label}: ${o.description}`).join("\n") : "None selected"}
+${optional.length > 0 ? optional.map((o: { label: string; description: string }) => `- ${o.label}: ${o.description}`).join("\n") : "None selected"}
 
 **User's Input:**
 ${summary}

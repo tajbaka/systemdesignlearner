@@ -263,7 +263,7 @@ export async function getIterativeFeedback(
   const topicFromModel = nextTopicId ? step.topics.find(t => t.id === nextTopicId) : null;
 
   if (!coverage.allCovered) {
-    let topic = topicFromModel ?? pickNextTopic(step, coverage);
+    const topic = topicFromModel ?? pickNextTopic(step, coverage);
 
     if (topic) {
       if (question && topicFromModel && topicFromModel.id === topic.id) {

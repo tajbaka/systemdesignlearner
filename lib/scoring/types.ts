@@ -31,6 +31,7 @@ export type FeedbackResult = {
   warnings: FeedbackItem[];
   positive: FeedbackItem[];
   suggestions: FeedbackItem[];
+  improvementQuestion?: string; // Optional iterative feedback question
 };
 
 export type CumulativeScore = {
