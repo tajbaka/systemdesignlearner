@@ -172,6 +172,7 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
       },
       auth: ensureAuthState(candidate.auth),
       completed: ensureProgress(candidate.completed),
+      scores: candidate.scores ?? defaults.scores,
       iterativeFeedback: ensureIterativeFeedback(candidate.iterativeFeedback),
       updatedAt: candidate.updatedAt ?? Date.now(),
     };

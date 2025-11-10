@@ -1,7 +1,7 @@
 import type { PlacedNode, Edge } from "@/app/components/types";
 import type { ScoreBreakdown } from "@/lib/scoring";
 import type { FeedbackResult } from "@/lib/scoring/types";
-import type { IterativeTopicState } from "@/lib/scoring/ai/iterative";
+import type { IterativeTopicState, IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 
 export type HighLevelChoice = {
   presetId: "db_only" | "cache_primary" | "global_edge_cache";
@@ -115,21 +115,25 @@ export type PracticeIterativeFeedback = {
     coveredTopics: IterativeTopicState;
     lastContent: string; // For detecting changes
     currentQuestion: string | null;
+    cachedResult?: IterativeFeedbackResult | null; // Cached result for instant display
   };
   nonFunctional: {
     coveredTopics: IterativeTopicState;
     lastContent: string;
     currentQuestion: string | null;
+    cachedResult?: IterativeFeedbackResult | null;
   };
   api: {
     coveredTopics: IterativeTopicState;
     lastContent: string;
     currentQuestion: string | null;
+    cachedResult?: IterativeFeedbackResult | null;
   };
   design: {
     coveredTopics: IterativeTopicState;
     lastContent: string;
     currentQuestion: string | null;
+    cachedResult?: IterativeFeedbackResult | null;
   };
 };
 

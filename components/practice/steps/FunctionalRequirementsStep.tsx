@@ -5,7 +5,7 @@ import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 import { useEffect, useRef, useState } from "react";
 
 export function FunctionalRequirementsStep() {
-  const { state, setRequirements, setStepScore, isReadOnly } = usePracticeSession();
+  const { state, setRequirements, setStepScore, updateIterativeFeedback, isReadOnly } = usePracticeSession();
   const requirements = state.requirements;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showHint, setShowHint] = useState(true);
@@ -61,6 +61,13 @@ export function FunctionalRequirementsStep() {
     // Clear the score when user changes their answer
     if (state.scores?.functional) {
       setStepScore("functional", undefined);
+    }
+    // Clear the cached iterative feedback result
+    if (state.iterativeFeedback?.functional?.cachedResult) {
+      updateIterativeFeedback("functional", (prev) => ({
+        ...prev,
+        cachedResult: null,
+      }));
     }
   };
 

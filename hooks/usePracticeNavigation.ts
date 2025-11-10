@@ -97,7 +97,66 @@ export function usePracticeNavigation(
     let iterativeCoverage: IterativeFeedbackResult | null = null;
 
     if (stepsNeedingScoring.includes(session.currentStep)) {
-      if ((session.currentStep === "functional" || session.currentStep === "nonFunctional" || session.currentStep === "api") && getFocusedFeedback) {
+      // Check if we have a cached score for this step (only for steps that are scored)
+      const cachedScore = session.currentStep === "functional"
+        ? session.state.scores?.functional
+        : session.currentStep === "nonFunctional"
+        ? session.state.scores?.nonFunctional
+        : session.currentStep === "api"
+        ? session.state.scores?.api
+        : null;
+
+      logger.info(`[handleNext] Step: ${session.currentStep}, has cached score: ${!!cachedScore}`);
+
+      // If we have a cached score, use it immediately (skip re-evaluation)
+      if (cachedScore && session.currentStep !== "sandbox") {
+        logger.info(`[handleNext] Using cached score for ${session.currentStep}, skipping evaluation`);
+
+        // Re-trigger the iterative feedback with the cached content
+        if (getFocusedFeedback) {
+          setVerification({ isVerifying: true, result: null, error: null });
+
+          try {
+            logger.info(`[handleNext] Getting iterative feedback for cached ${session.currentStep}`);
+            iterativeCoverage = await getFocusedFeedback(session.currentStep, session);
+            logger.info(`[handleNext] Cached iterative coverage result:`, {
+              score: iterativeCoverage?.score.percentage,
+              blocking: iterativeCoverage?.ui.blocking,
+              hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt
+            });
+          } catch (error) {
+            logger.error(`Error getting ${session.currentStep} cached coverage:`, error);
+          }
+
+          if (iterativeCoverage?.ui.blocking) {
+            logger.info(`[handleNext] Cached iterative feedback blocking, showing modal and returning`);
+            setVerification({ isVerifying: false, result: null, error: null });
+            return;
+          }
+
+          setVerification({ isVerifying: false, result: null, error: null });
+
+          // Always show the modal if we have iterative coverage (let user decide to continue)
+          if (iterativeCoverage) {
+            // Show the modal - user can click Continue to proceed
+            return;
+          }
+        }
+
+        // If no iterative feedback system, check the cached score for what to do
+        if (cachedScore.blocking.length > 0) {
+          // Show cached feedback with blocking issues
+          setScoringFeedback(cachedScore);
+          return;
+        }
+
+        // Show cached feedback and let user continue
+        setScoringFeedback(cachedScore);
+        return;
+      }
+
+      // Only run iterative feedback if we don't have a cached score
+      if ((session.currentStep === "functional" || session.currentStep === "nonFunctional" || session.currentStep === "api") && getFocusedFeedback && !cachedScore) {
         setVerification({ isVerifying: true, result: null, error: null });
 
         try {

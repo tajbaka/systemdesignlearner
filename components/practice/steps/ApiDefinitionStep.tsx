@@ -16,7 +16,7 @@ const createEndpoint = (): ApiEndpoint => ({
 });
 
 export function ApiDefinitionStep() {
-  const { state, setApiDefinition, setStepScore, isReadOnly } = usePracticeSession();
+  const { state, setApiDefinition, setStepScore, updateIterativeFeedback, isReadOnly } = usePracticeSession();
   const endpoints = useMemo(() => state.apiDefinition.endpoints, [state.apiDefinition.endpoints]);
   const [openId, setOpenId] = useState<string | null>(() => endpoints[0]?.id ?? null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set([endpoints[0]?.id].filter(Boolean)));
@@ -65,6 +65,13 @@ export function ApiDefinitionStep() {
     if (state.scores?.api) {
       setStepScore("api", undefined);
     }
+    // Clear the cached iterative feedback result
+    if (state.iterativeFeedback?.api?.cachedResult) {
+      updateIterativeFeedback("api", (prev) => ({
+        ...prev,
+        cachedResult: null,
+      }));
+    }
   };
 
   const addEndpoint = () => {
@@ -80,6 +87,13 @@ export function ApiDefinitionStep() {
     // Clear the score when endpoints change
     if (state.scores?.api) {
       setStepScore("api", undefined);
+    }
+    // Clear the cached iterative feedback result
+    if (state.iterativeFeedback?.api?.cachedResult) {
+      updateIterativeFeedback("api", (prev) => ({
+        ...prev,
+        cachedResult: null,
+      }));
     }
   };
 
@@ -102,6 +116,13 @@ export function ApiDefinitionStep() {
     // Clear the score when endpoints change
     if (state.scores?.api) {
       setStepScore("api", undefined);
+    }
+    // Clear the cached iterative feedback result
+    if (state.iterativeFeedback?.api?.cachedResult) {
+      updateIterativeFeedback("api", (prev) => ({
+        ...prev,
+        cachedResult: null,
+      }));
     }
   };
 

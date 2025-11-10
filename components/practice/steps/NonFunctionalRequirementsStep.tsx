@@ -5,7 +5,7 @@ import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 import { useEffect, useRef, useState } from "react";
 
 export function NonFunctionalRequirementsStep() {
-  const { state, setRequirements, setStepScore, isReadOnly } = usePracticeSession();
+  const { state, setRequirements, setStepScore, updateIterativeFeedback, isReadOnly } = usePracticeSession();
   const requirements = state.requirements;
   const nf = requirements.nonFunctional;
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -57,6 +57,13 @@ export function NonFunctionalRequirementsStep() {
     // Clear the score when user changes their answer
     if (state.scores?.nonFunctional) {
       setStepScore("nonFunctional", undefined);
+    }
+    // Clear the cached iterative feedback result
+    if (state.iterativeFeedback?.nonFunctional?.cachedResult) {
+      updateIterativeFeedback("nonFunctional", (prev) => ({
+        ...prev,
+        cachedResult: null,
+      }));
     }
   };
 

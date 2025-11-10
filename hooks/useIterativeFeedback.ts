@@ -69,6 +69,14 @@ export function useIterativeFeedback() {
               `${ep.method} ${ep.path}: ${ep.notes}`
             ).join("\n\n");
 
+        // Check if we have a cached result for unchanged content
+        if (stepFeedback.lastContent === userContent && stepFeedback.cachedResult) {
+          logger.info("[useIterativeFeedback] Using cached result, content unchanged");
+          const durationMs = getNow() - startedAt;
+          setState({ isLoading: false, result: stepFeedback.cachedResult, error: null, lastDurationMs: durationMs });
+          return stepFeedback.cachedResult;
+        }
+
         // Get fresh feedback from API
         const feedbackResponse = await fetch("/api/iterative-feedback", {
           method: "POST",
@@ -96,11 +104,12 @@ export function useIterativeFeedback() {
 
         const result: IterativeFeedbackResult = await feedbackResponse.json();
 
-        // Update session with new question and content
+        // Update session with new question, content, and cached result
         session.updateIterativeFeedback(stepKey as "functional" | "nonFunctional" | "api", (prev) => ({
           ...prev,
           lastContent: userContent,
           currentQuestion: result.nextQuestion?.question ?? null,
+          cachedResult: result, // Cache the result for instant display next time
         }));
 
         const durationMs = getNow() - startedAt;
