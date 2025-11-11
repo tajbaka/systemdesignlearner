@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { track } from "@/lib/analytics";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Check } from "lucide-react";
 
 const PROBLEMS = [
   {
@@ -19,6 +21,28 @@ const PROBLEMS = [
 ];
 
 export default function PracticePage() {
+  const [completedProblems, setCompletedProblems] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    // Check completion status for each problem
+    const completed = new Set<string>();
+    PROBLEMS.forEach((problem) => {
+      const storageKey = `sds-practice-${problem.slug}`;
+      try {
+        const stored = localStorage.getItem(storageKey);
+        if (stored) {
+          const data = JSON.parse(stored);
+          // Check if the score step is completed
+          if (data.progress?.score === true) {
+            completed.add(problem.slug);
+          }
+        }
+      } catch (e) {
+        // Ignore parsing errors
+      }
+    });
+    setCompletedProblems(completed);
+  }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
       <Navbar />
@@ -64,31 +88,45 @@ export default function PracticePage() {
 
         {/* Problems Grid */}
         <div className="grid gap-4 sm:gap-6">
-          {PROBLEMS.map((problem) => (
-            <Card
-              key={problem.slug}
-              className="bg-zinc-900 border-zinc-700 hover:border-zinc-600 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10"
-            >
-              <CardContent className="p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                  {/* Problem Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <CardTitle className="text-lg sm:text-xl text-white">
-                        {problem.name}
-                      </CardTitle>
-                      <div className="flex items-center gap-2 ml-3 flex-shrink-0">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          problem.difficulty === 'Easy'
-                            ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                            : problem.difficulty === 'Medium'
-                            ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        }`}>
-                          {problem.difficulty}
-                        </span>
+          {PROBLEMS.map((problem) => {
+            const isCompleted = completedProblems.has(problem.slug);
+            return (
+              <Card
+                key={problem.slug}
+                className={`bg-zinc-900 transition-all duration-300 hover:shadow-lg ${
+                  isCompleted
+                    ? 'border-green-500/50 hover:border-green-500/70 hover:shadow-green-500/10'
+                    : 'border-zinc-700 hover:border-zinc-600 hover:shadow-blue-500/10'
+                }`}
+              >
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                    {/* Problem Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-lg sm:text-xl text-white">
+                            {problem.name}
+                          </CardTitle>
+                          {isCompleted && (
+                            <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 border border-green-500/30">
+                              <Check className="h-3 w-3 text-green-400" />
+                              <span className="text-xs font-medium text-green-400">Completed</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 ml-3 flex-shrink-0">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            problem.difficulty === 'Easy'
+                              ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                              : problem.difficulty === 'Medium'
+                              ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                              : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                          }`}>
+                            {problem.difficulty}
+                          </span>
+                        </div>
                       </div>
-                    </div>
 
                     <CardDescription className="text-sm text-zinc-400 mb-3 leading-relaxed">
                       {problem.description}
@@ -115,24 +153,30 @@ export default function PracticePage() {
                     <Button
                       asChild
                       size="lg"
-                      className="h-12 w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all duration-300 min-h-[44px] touch-manipulation sm:w-auto"
+                      className={`h-12 w-full font-semibold transition-all duration-300 min-h-[44px] touch-manipulation sm:w-auto ${
+                        isCompleted
+                          ? 'bg-green-600 hover:bg-green-500 text-white'
+                          : 'bg-blue-600 hover:bg-blue-500 text-white'
+                      }`}
                     >
                       <Link
                         href={`/practice/${problem.slug}`}
                         onClick={() => track("practice_problem_selected", {
                           slug: problem.slug,
                           difficulty: problem.difficulty,
-                          topic: problem.topic
+                          topic: problem.topic,
+                          completed: isCompleted
                         })}
                       >
-                        Start Practice
+                        {isCompleted ? 'View Results' : 'Start Practice'}
                       </Link>
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
+          );
+          })}
         </div>
 
       </main>
