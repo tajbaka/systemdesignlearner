@@ -23,8 +23,7 @@ const PROBLEMS = [
 export default function PracticePage() {
   const [completedProblems, setCompletedProblems] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    // Check completion status for each problem
+  const checkCompletionStatus = () => {
     const completed = new Set<string>();
     PROBLEMS.forEach((problem) => {
       const storageKey = `sds-practice-${problem.slug}`;
@@ -32,8 +31,8 @@ export default function PracticePage() {
         const stored = localStorage.getItem(storageKey);
         if (stored) {
           const data = JSON.parse(stored);
-          // Check if the score step is completed
-          if (data.progress?.score === true) {
+          // Check if the score step is completed (using 'completed' not 'progress')
+          if (data.completed?.score === true) {
             completed.add(problem.slug);
           }
         }
@@ -42,6 +41,20 @@ export default function PracticePage() {
       }
     });
     setCompletedProblems(completed);
+  };
+
+  useEffect(() => {
+    // Initial check
+    checkCompletionStatus();
+
+    // Listen for storage changes and focus events (when returning to the page)
+    window.addEventListener("storage", checkCompletionStatus);
+    window.addEventListener("focus", checkCompletionStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkCompletionStatus);
+      window.removeEventListener("focus", checkCompletionStatus);
+    };
   }, []);
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
@@ -104,7 +117,7 @@ export default function PracticePage() {
                     {/* Problem Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between mb-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <CardTitle className="text-lg sm:text-xl text-white">
                             {problem.name}
                           </CardTitle>
