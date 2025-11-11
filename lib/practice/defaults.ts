@@ -145,12 +145,9 @@ const specFor = (kind: ComponentKind) => {
 
 const SEED_NODE_BLUEPRINTS: Array<{ id: string; kind: ComponentKind; x: number; y: number }> = [
   { id: "seed-web", kind: "Web", x: -200, y: 0 },
-  { id: "seed-api", kind: "API Gateway", x: 100, y: 0 },
 ];
 
-const SEED_EDGE_BLUEPRINTS: Array<{ id: string; from: string; to: string; linkLatencyMs: number; sourceHandle?: string; targetHandle?: string }> = [
-  { id: "seed-edge-web-api", from: "seed-web", to: "seed-api", linkLatencyMs: 15, sourceHandle: "right", targetHandle: "left" },
-];
+const SEED_EDGE_BLUEPRINTS: Array<{ id: string; from: string; to: string; linkLatencyMs: number; sourceHandle?: string; targetHandle?: string }> = [];
 
 const buildSeedNodes = (): PlacedNode[] =>
   SEED_NODE_BLUEPRINTS.map((blueprint) => ({
@@ -229,21 +226,25 @@ export const makeInitialPracticeState = (): PracticeState => ({
       coveredTopics: {},
       lastContent: "",
       currentQuestion: null,
+      cachedResult: null,
     },
     nonFunctional: {
       coveredTopics: {},
       lastContent: "",
       currentQuestion: null,
+      cachedResult: null,
     },
     api: {
       coveredTopics: {},
       lastContent: "",
       currentQuestion: null,
+      cachedResult: null,
     },
     design: {
       coveredTopics: {},
       lastContent: "",
       currentQuestion: null,
+      cachedResult: null,
     },
   },
   updatedAt: Date.now(),

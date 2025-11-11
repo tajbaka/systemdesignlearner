@@ -25,11 +25,13 @@ import {
 import type { FeedbackResult } from "@/lib/scoring/types";
 import {
   makeDefaultApiDefinition,
+  makeDefaultDesignState,
   makeDefaultRequirements,
   makeInitialPracticeState,
 } from "@/lib/practice/defaults";
 import { loadPractice, savePractice } from "@/lib/practice/storage";
 import { track } from "@/lib/analytics";
+import { isLegacyPlaceholderContent } from "@/lib/practice/apiPlaceholders";
 
 const PRACTICE_SLUG: PracticeState["slug"] = "url-shortener";
 
@@ -92,16 +94,47 @@ const ensureApiDefinition = (value?: PracticeApiDefinitionState): PracticeApiDef
     return makeDefaultApiDefinition();
   }
 
-  const endpoints = value.endpoints.map((endpoint, index) => ({
-    id: endpoint.id ?? `endpoint-${index}`,
-    method: endpoint.method ?? "GET",
-    path: endpoint.path ?? "/",
-    notes: endpoint.notes ?? "",
-    suggested: Boolean(endpoint.suggested),
-  }));
+  const endpoints = value.endpoints.map((endpoint, index) => {
+    const method = endpoint.method ?? "GET";
+    const path = endpoint.path ?? "/";
+    const rawNotes = typeof endpoint.notes === "string" ? endpoint.notes : "";
+    const notes = isLegacyPlaceholderContent(rawNotes, method, path) ? "" : rawNotes;
+
+    return {
+      id: endpoint.id ?? `endpoint-${index}`,
+      method,
+      path,
+      notes,
+      suggested: Boolean(endpoint.suggested),
+    };
+  });
 
   return {
     endpoints,
+  };
+};
+
+const sanitizeDesignState = (value?: PracticeDesignState): PracticeDesignState => {
+  const design = value ?? makeDefaultDesignState();
+  const nodeIds = new Set(design.nodes.map((node) => node.id));
+  const edgeIds = new Set(design.edges.map((edge) => edge.id));
+  const hasLegacySeedEdge =
+    design.edges.length === 0 ||
+    (design.edges.length === 1 && edgeIds.has("seed-edge-web-api"));
+  const hasLegacySeedLayout =
+    nodeIds.size === 2 &&
+    nodeIds.has("seed-web") &&
+    nodeIds.has("seed-api") &&
+    hasLegacySeedEdge;
+
+  if (!hasLegacySeedLayout) {
+    return design;
+  }
+
+  return {
+    ...design,
+    nodes: design.nodes.filter((node) => node.id !== "seed-api"),
+    edges: design.edges.filter((edge) => edge.id !== "seed-edge-web-api"),
   };
 };
 
@@ -131,21 +164,25 @@ const ensureIterativeFeedback = (value?: PracticeIterativeFeedback): PracticeIte
     coveredTopics: value?.functional?.coveredTopics ?? {},
     lastContent: value?.functional?.lastContent ?? "",
     currentQuestion: value?.functional?.currentQuestion ?? null,
+    cachedResult: value?.functional?.cachedResult ?? null,
   },
   nonFunctional: {
     coveredTopics: value?.nonFunctional?.coveredTopics ?? {},
     lastContent: value?.nonFunctional?.lastContent ?? "",
     currentQuestion: value?.nonFunctional?.currentQuestion ?? null,
+    cachedResult: value?.nonFunctional?.cachedResult ?? null,
   },
   api: {
     coveredTopics: value?.api?.coveredTopics ?? {},
     lastContent: value?.api?.lastContent ?? "",
     currentQuestion: value?.api?.currentQuestion ?? null,
+    cachedResult: value?.api?.cachedResult ?? null,
   },
   design: {
     coveredTopics: value?.design?.coveredTopics ?? {},
     lastContent: value?.design?.lastContent ?? "",
     currentQuestion: value?.design?.currentQuestion ?? null,
+    cachedResult: value?.design?.cachedResult ?? null,
   },
 });
 
@@ -165,7 +202,7 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
       ...candidate,
       requirements: ensureRequirements(candidate.requirements),
       apiDefinition: ensureApiDefinition(candidate.apiDefinition),
-      design: candidate.design ?? defaults.design,
+      design: sanitizeDesignState(candidate.design ?? defaults.design),
       run: {
         ...defaults.run,
         ...(candidate.run ?? {}),
@@ -184,7 +221,7 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
     slug: "url-shortener",
     requirements: ensureRequirements(legacy.requirements as Requirements),
     apiDefinition: ensureApiDefinition(),
-    design: legacy.design ?? defaults.design,
+    design: sanitizeDesignState(legacy.design ?? defaults.design),
     run: {
       ...defaults.run,
       ...(legacy.run ?? {}),
@@ -457,6 +494,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
                 coveredTopics: {},
                 lastContent: "",
                 currentQuestion: null,
+                cachedResult: null,
               },
             },
           };

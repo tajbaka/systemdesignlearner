@@ -33,6 +33,10 @@ export function FeedbackModal({
   const totalScore = feedbackResult.totalScore ?? (feedbackResult.score + (feedbackResult.bonus?.score ?? 0));
   const totalMaxScore = feedbackResult.totalMaxScore ?? (feedbackResult.maxScore + (feedbackResult.bonus?.maxScore ?? 0));
   const roundedTotal = Math.round(totalScore * 100) / 100;
+  const displayedPercentage =
+    feedbackResult.maxScore > 0
+      ? Math.round((feedbackResult.score / feedbackResult.maxScore) * 100)
+      : Math.round(feedbackResult.percentage);
   const bonusSummary = hasBonus
     ? ` • +${Math.round((feedbackResult.bonus!.score) * 100) / 100} bonus (Total ${roundedTotal}/${totalMaxScore})`
     : "";
@@ -64,7 +68,7 @@ export function FeedbackModal({
               </DialogTitle>
             </div>
             <p className="text-sm text-muted-foreground">
-              Score: {roundedScore}/{feedbackResult.maxScore} ({Math.round(feedbackResult.percentage)}%){bonusSummary}
+              Score: {roundedScore}/{feedbackResult.maxScore} ({displayedPercentage}%){bonusSummary}
             </p>
           </div>
           <button

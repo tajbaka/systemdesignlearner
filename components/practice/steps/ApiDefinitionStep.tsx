@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 import type { ApiEndpoint } from "@/lib/practice/types";
+import { getApiNotesPlaceholder } from "@/lib/practice/apiPlaceholders";
 
 const METHOD_OPTIONS: Array<ApiEndpoint["method"]> = ["GET", "POST", "PATCH", "DELETE"];
 
@@ -263,21 +264,7 @@ export function ApiDefinitionStep() {
                         }))
                       }
                       onBlur={() => markEndpointTouched(endpoint.id)}
-                      placeholder={
-                        endpoint.path === "api/v1/urls" && endpoint.method === "POST"
-                          ? "Request Body: { ... what fields are needed to create a short URL? ... }\n\nResponse (2xx): { ... what data should be returned to the client? ... }\nResponse (4xx): { ... what validation errors could occur? ... }\n\nBehavior: How is the shortened URL created and stored?"
-                          : endpoint.path === "{slug}" && endpoint.method === "GET"
-                          ? "Request: Where does the slug come from? Query params or path?\n\nResponse (3xx): What happens on success?\nResponse (4xx): What if slug doesn't exist?\n\nBehavior: Where do you check for the slug? How do you handle the redirect?"
-                          : endpoint.method === "POST"
-                          ? "Request Body: { ... what fields? ... }\n\nResponse (2xx): { ... what data to return? ... }\nResponse (4xx): { ... error cases? ... }\n\nBehavior: What happens when this endpoint is called?"
-                          : endpoint.method === "GET"
-                          ? "Query Params: What parameters are needed?\n\nResponse (2xx): What should be returned?\nResponse (4xx): What error cases could occur?\n\nBehavior: How should this endpoint behave? Any caching considerations?"
-                          : endpoint.method === "PATCH"
-                          ? "Request Body: { ... what can be updated? ... }\n\nResponse (2xx): { ... what to return? ... }\nResponse (4xx): { ... error cases? ... }\n\nValidation: What rules and authorization?\nBehavior: What gets updated and how?"
-                          : endpoint.method === "DELETE"
-                          ? "Request Body: Typically none for DELETE\n\nResponse (2xx): What indicates success?\nResponse (4xx): What error cases?\n\nValidation: Authorization requirements?\nBehavior: What gets deleted? Any cleanup needed?"
-                          : "Describe the request/response format, validation, and any special behavior."
-                      }
+                      placeholder={getApiNotesPlaceholder(endpoint.method, endpoint.path)}
                       disabled={isReadOnly}
                       className={`min-h-[180px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
                         shouldShowError

@@ -6,6 +6,40 @@ import type { VerificationState } from "./usePracticeScoring";
 import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import { STEP_CONFIGS } from "@/lib/practice/step-configs";
 import { logger } from "@/lib/logger";
+
+const STEPS_WITH_ITERATIVE: PracticeStep[] = ["functional", "nonFunctional", "api"];
+
+const isIterativeStep = (
+  step: PracticeStep
+): step is "functional" | "nonFunctional" | "api" =>
+  step === "functional" || step === "nonFunctional" || step === "api";
+
+const mergeIterativeScore = (
+  base: FeedbackResult,
+  iterative: IterativeFeedbackResult
+): FeedbackResult => {
+  const merged: FeedbackResult = {
+    ...base,
+    score: iterative.score.obtained,
+    maxScore: iterative.score.max,
+    percentage: iterative.score.percentage,
+  };
+
+  if (iterative.coverage.allCovered) {
+    merged.blocking = [];
+    merged.warnings = [];
+  }
+
+  if (iterative.ui.coveredLines.length > 0) {
+    merged.positive = iterative.ui.coveredLines.map((line) => ({
+      category: "bestPractice",
+      severity: "positive",
+      message: line,
+    }));
+  }
+
+  return merged;
+};
 import { validateDesignForScenario } from "@/lib/practice/validation";
 import { SCENARIOS } from "@/lib/scenarios";
 import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
@@ -313,34 +347,52 @@ export function usePracticeNavigation(
         const scorePercentage = result.percentage ?? 0;
         const hasBlockingIssues = result.blocking.length > 0;
 
-        // Steps that support iterative feedback
-        const stepsWithIterativeFeedback: PracticeStep[] = ["functional", "nonFunctional", "api"];
+        let alignedResult = result;
+        const shouldAlignWithIterative =
+          iterativeCoverage &&
+          STEPS_WITH_ITERATIVE.includes(session.currentStep) &&
+          !iterativeCoverage.ui.blocking;
+
+        if (shouldAlignWithIterative) {
+          alignedResult = mergeIterativeScore(result, iterativeCoverage!);
+          if (isIterativeStep(session.currentStep)) {
+            session.setStepScore(session.currentStep, alignedResult);
+          }
+        }
+
+        const persistFeedback = (feedback: FeedbackResult) => {
+          setScoringFeedback(feedback);
+          if (session.currentStep !== "sandbox") {
+            const stepKey = session.currentStep as "functional" | "nonFunctional" | "api";
+            session.setStepScore(stepKey, feedback);
+          }
+        };
 
         // For scores 40-99%, get improvement question FIRST, then set feedback once
         // This prevents the iterative feedback modal from showing and ensures everything loads together
-        if (scorePercentage >= 40 && scorePercentage < 100 && stepsWithIterativeFeedback.includes(session.currentStep)) {
+        if (scorePercentage >= 40 && scorePercentage < 100 && STEPS_WITH_ITERATIVE.includes(session.currentStep)) {
           try {
             const improvementQuestion =
               iterativeCoverage?.ui.nextPrompt ?? iterativeCoverage?.nextQuestion?.question ?? null;
 
             if (improvementQuestion) {
               const updatedResult: FeedbackResult = {
-                ...result,
+                ...alignedResult,
                 improvementQuestion,
               };
-              setScoringFeedback(updatedResult);
+              persistFeedback(updatedResult);
               logger.info("Added improvement question:", improvementQuestion);
             } else {
-              setScoringFeedback(result);
+              persistFeedback(alignedResult);
             }
           } catch (error) {
             logger.error("Error getting improvement question:", error);
             // Set feedback with original result
-            setScoringFeedback(result);
+            persistFeedback(alignedResult);
           }
         } else {
           // Not in 40-99% range, set feedback immediately
-          setScoringFeedback(result);
+          persistFeedback(alignedResult);
         }
 
         // Show final feedback (score >= 40% or no iterative feedback)

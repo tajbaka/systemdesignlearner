@@ -1,14 +1,57 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { encodeDesign as encodeShare } from "@/lib/shareLink";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
 import type { CumulativeScore, FeedbackResult } from "@/lib/scoring/types";
 import { getGradeDescription, getGradeColor, calculateCumulativeScore } from "@/lib/scoring/index";
+import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 
 type ShareStatus = "idle" | "copied" | "error";
+
+const createEmptyResult = (maxScore: number): FeedbackResult => ({
+  score: 0,
+  maxScore,
+  percentage: 0,
+  blocking: [],
+  warnings: [],
+  positive: [],
+  suggestions: [],
+});
+
+const formatScore = (value: number): string =>
+  Number.isInteger(value) ? value.toString() : value.toFixed(1);
+
+const getMaxPoints = (result: FeedbackResult | undefined, fallback: number): number =>
+  result?.maxScore ?? fallback;
+
+const fromIterativeResult = (result: IterativeFeedbackResult): FeedbackResult => {
+  const feedback: FeedbackResult = {
+    score: result.score.obtained,
+    maxScore: result.score.max,
+    percentage: result.score.percentage,
+    blocking: result.ui.blocking
+      ? [
+          {
+            category: "requirement",
+            severity: "blocking",
+            message: result.ui.nextPrompt ?? result.nextQuestion?.question ?? "Address the remaining topic to continue.",
+          },
+        ]
+      : [],
+    warnings: [],
+    positive: result.ui.coveredLines.map((line) => ({
+      category: "bestPractice",
+      severity: "positive",
+      message: line,
+    })),
+    suggestions: [],
+    improvementQuestion: result.ui.nextPrompt ?? result.nextQuestion?.question ?? undefined,
+  };
+  return feedback;
+};
 
 const buildSharePayload = (state: ReturnType<typeof usePracticeSession>["state"]) => ({
   scenarioId: state.slug,
@@ -31,68 +74,104 @@ const buildSharePayload = (state: ReturnType<typeof usePracticeSession>["state"]
 });
 
 export function ScoreShareStep() {
-  const formatScore = (value: number) => Math.round(value);
   const { state, setStep, isReadOnly: _isReadOnly } = usePracticeSession();
   const lastResult = state.run.lastResult;
+  const scores = state.scores;
   const score = lastResult?.scoreBreakdown;
   const outcome = score?.outcome ?? (lastResult?.failedByChaos ? "chaos_fail" : undefined);
   const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
 
   // Calculate cumulative score from all practice steps
-  const cumulativeScore: CumulativeScore | null = useMemo(() => {
-    const scores = state.scores;
+  const simulationScoreResult = useMemo<FeedbackResult>(() => {
+    const base = createEmptyResult(5);
 
-    // Check if we have all required scores
-    const hasAllScores = scores?.functional && scores?.nonFunctional && scores?.api;
-
-    // Get simulation score from run result if available
-    const simulationScore: FeedbackResult = {
-      score: 0,
-      maxScore: 5,
-      percentage: 0,
-      blocking: [],
-      warnings: [],
-      positive: [],
-      suggestions: [],
-    };
-
-    if (lastResult && lastResult.scoreBreakdown?.outcome === "pass") {
-      simulationScore.score = 5;
-      simulationScore.percentage = 100;
-      simulationScore.positive.push({
-        category: "performance",
-        severity: "positive",
-        message: "✓ Simulation passed with meeting requirements",
-      });
-    } else if (lastResult) {
-      // Partial credit for attempting simulation
-      simulationScore.score = 0;
+    if (!lastResult) {
+      return base;
     }
 
-    if (!hasAllScores || !scores.functional || !scores.nonFunctional || !scores.api) {
-      // Don't show score until all steps are completed
+    if (lastResult.scoreBreakdown?.outcome === "pass") {
+      return {
+        ...base,
+        score: base.maxScore,
+        percentage: 100,
+        positive: [
+          {
+            category: "performance",
+            severity: "positive",
+            message: "✓ Simulation passed with meeting requirements",
+          },
+        ],
+      };
+    }
+
+    return base;
+  }, [lastResult]);
+
+  const cumulativeScore: CumulativeScore | null = useMemo(() => {
+    if (!scores?.functional || !scores?.nonFunctional || !scores?.api) {
       return null;
     }
 
-    // Use the real calculation with all scores
-    const designScore: FeedbackResult = scores.design || {
-      score: 0,
-      maxScore: 35,
-      percentage: 0,
-      blocking: [],
-      warnings: [],
-      positive: [],
-      suggestions: [],
-    };
+    const designScore = scores.design ?? createEmptyResult(30);
 
     return calculateCumulativeScore(
       scores.functional,
       scores.nonFunctional,
       scores.api,
       designScore,
-      simulationScore
+      simulationScoreResult
     );
-  }, [state.scores, lastResult]);
+  }, [scores, simulationScoreResult]);
+
+  const getStepResult = useCallback(
+    (key: "functional" | "nonFunctional" | "api" | "design", fallbackMax: number): FeedbackResult => {
+      if (key !== "design") {
+        const iterative = state.iterativeFeedback?.[key]?.cachedResult;
+        if (iterative) {
+          return fromIterativeResult(iterative);
+        }
+      }
+      return scores?.[key] ?? createEmptyResult(fallbackMax);
+    },
+    [scores, state.iterativeFeedback]
+  );
+
+  const stepScoreItems = useMemo(
+    () => [
+      {
+        id: "functional",
+        label: "Functional Requirements",
+        barClass: "bg-emerald-500",
+        result: getStepResult("functional", 20),
+        maxFallback: 20,
+      },
+      {
+        id: "nonFunctional",
+        label: "Non-Functional Requirements",
+        barClass: "bg-blue-500",
+        result: getStepResult("nonFunctional", 20),
+        maxFallback: 20,
+      },
+      {
+        id: "api",
+        label: "API Definition",
+        barClass: "bg-cyan-500",
+        result: getStepResult("api", 20),
+        maxFallback: 20,
+      },
+      {
+        id: "design",
+        label: "High-Level Design",
+        barClass: "bg-purple-500",
+        result: getStepResult("design", 30),
+        maxFallback: 30,
+      },
+    ].map((step) => ({
+      ...step,
+      maxPoints: getMaxPoints(step.result, step.maxFallback),
+    })),
+    [getStepResult]
+  );
 
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
@@ -196,104 +275,37 @@ export function ScoreShareStep() {
               Score by Step
             </h3>
             <div className="space-y-2">
-              <div className="flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/60 p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
-                    1
+              {stepScoreItems.map((step, index) => {
+                const percentage =
+                  step.maxPoints === 0 ? 0 : Math.min(100, (step.result.score / step.maxPoints) * 100);
+                return (
+                  <div
+                    key={step.id}
+                    className="flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/60 p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
+                        {index + 1}
+                      </div>
+                      <span className="text-sm font-medium text-zinc-200">{step.label}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-800">
+                        <div
+                          className={`h-full ${step.barClass}`}
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold text-white w-20 text-right">
+                        {formatScore(step.result.score)}/{formatScore(step.maxPoints)}
+                      </span>
+                    </div>
                   </div>
-                  <span className="text-sm font-medium text-zinc-200">Functional Requirements</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-800">
-                    <div
-                      className="h-full bg-emerald-500"
-                      style={{ width: `${(cumulativeScore.breakdown.functional / 20) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-white w-16 text-right">
-                    {formatScore(cumulativeScore.breakdown.functional)}/20
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/60 p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
-                    2
-                  </div>
-                  <span className="text-sm font-medium text-zinc-200">Non-Functional Requirements</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-800">
-                    <div
-                      className="h-full bg-blue-500"
-                      style={{ width: `${(cumulativeScore.breakdown.nonFunctional / 20) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-white w-16 text-right">
-                    {formatScore(cumulativeScore.breakdown.nonFunctional)}/20
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/60 p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
-                    3
-                  </div>
-                  <span className="text-sm font-medium text-zinc-200">API Definition</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-800">
-                    <div
-                      className="h-full bg-cyan-500"
-                      style={{ width: `${(cumulativeScore.breakdown.api / 20) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-white w-16 text-right">
-                    {formatScore(cumulativeScore.breakdown.api)}/20
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/60 p-3">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
-                    4
-                  </div>
-                  <span className="text-sm font-medium text-zinc-200">High-Level Design</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-800">
-                    <div
-                      className="h-full bg-purple-500"
-                      style={{ width: `${(cumulativeScore.breakdown.design / 30) * 100}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-white w-16 text-right">
-                    {formatScore(cumulativeScore.breakdown.design)}/30
-                  </span>
-                </div>
-              </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Improvement Suggestions */}
-          {cumulativeScore.feedback.improvements.length > 0 && (
-            <div className="rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4">
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-amber-200">
-                Areas for Improvement
-              </h4>
-              <ul className="mt-3 space-y-2">
-                {cumulativeScore.feedback.improvements.slice(0, 5).map((improvement: string, index: number) => (
-                  <li key={index} className="flex items-start gap-2 text-sm text-amber-100">
-                    <span aria-hidden className="mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-amber-300" />
-                    <span>{improvement}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </section>
       )}
 

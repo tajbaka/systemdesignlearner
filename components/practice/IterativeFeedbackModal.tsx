@@ -39,10 +39,15 @@ export function IterativeFeedbackModal({
     return "Great Progress!";
   };
 
+  const displayedPercentage =
+    result.score.max > 0
+      ? Math.round((result.score.obtained / result.score.max) * 100)
+      : result.score.percentage;
+
   // Format score display
   const scoreDisplay = durationMs !== undefined && durationMs !== null
-    ? `Score: ${result.score.obtained}/${result.score.max} (${result.score.percentage}%) • ${(durationMs / 1000).toFixed(2)}s`
-    : `Score: ${result.score.obtained}/${result.score.max} (${result.score.percentage}%)`;
+    ? `Score: ${result.score.obtained}/${result.score.max} (${displayedPercentage}%) • ${(durationMs / 1000).toFixed(2)}s`
+    : `Score: ${result.score.obtained}/${result.score.max} (${displayedPercentage}%)`;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
