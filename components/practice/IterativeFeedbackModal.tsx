@@ -51,33 +51,33 @@ export function IterativeFeedbackModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent hideClose className="mx-4 w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl">
+      <DialogContent hideClose className="max-w-xl rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-2xl">
         <DialogDescription className="sr-only">
           Feedback on your answer with score and suggestions for improvement
         </DialogDescription>
         {/* Header */}
-        <div className="mb-6 flex items-start justify-between">
-          <div className="flex-1">
-            <div className="mb-2 flex items-center gap-3">
+        <div className="mb-4 sm:mb-6 flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="mb-2 flex items-center gap-2 sm:gap-3">
               {allTopicsCovered ? (
-                <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-emerald-500" />
               ) : blocking ? (
-                <AlertCircle className="h-6 w-6 text-amber-500" />
+                <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-amber-500" />
               ) : (
-                <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-emerald-500" />
               )}
-              <DialogTitle className="text-xl font-semibold text-foreground">
+              <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground">
                 {getTitle()}
               </DialogTitle>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               {scoreDisplay}
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex-shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -118,11 +118,11 @@ export function IterativeFeedbackModal({
         </div>
 
         {/* Action buttons */}
-        <div className="mt-8 flex items-center justify-end gap-3">
+        <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg border border-border bg-background px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-lg border border-border bg-background px-4 sm:px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
           >
             Revise Answer
           </button>
@@ -130,7 +130,7 @@ export function IterativeFeedbackModal({
             <button
               type="button"
               onClick={onContinue}
-              className="rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="rounded-lg bg-primary px-4 sm:px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Continue
             </button>

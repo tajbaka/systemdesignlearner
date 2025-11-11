@@ -296,6 +296,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
   const [isReadOnly, setIsReadOnly] = useState(false);
   const [currentStep, setCurrentStep] = useState<PracticeStep>("functional");
   const saveTimeout = useRef<number | null>(null);
+  const latestStateRef = useRef(state);
 
   useEffect(() => {
     if (sharedState) {
@@ -323,6 +324,10 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
   }, [sharedState]);
 
   useEffect(() => {
+    latestStateRef.current = state;
+  }, [state]);
+
+  useEffect(() => {
     if (!hydrated || isReadOnly) return;
     if (typeof window === "undefined") return;
 
@@ -343,15 +348,33 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
     };
   }, [state, hydrated, isReadOnly]);
 
+  useEffect(() => {
+    if (!hydrated || isReadOnly) return;
+    if (typeof window === "undefined") return;
+
+    const persistImmediately = () => {
+      savePractice(latestStateRef.current);
+    };
+
+    window.addEventListener("beforeunload", persistImmediately);
+    window.addEventListener("pagehide", persistImmediately);
+
+    return () => {
+      window.removeEventListener("beforeunload", persistImmediately);
+      window.removeEventListener("pagehide", persistImmediately);
+    };
+  }, [hydrated, isReadOnly]);
+
   const setStateWithTimestamp = useCallback(
     (updater: (prev: PracticeState) => PracticeState) => {
       if (isReadOnly) return;
       setState((prev) => {
-        const next = updater(prev);
-        return {
-          ...next,
+        const next = {
+          ...updater(prev),
           updatedAt: Date.now(),
         };
+        latestStateRef.current = next;
+        return next;
       });
     },
     [isReadOnly]

@@ -104,8 +104,14 @@ function PracticeFlowInner() {
     if (!hydrated || isReadOnly) return;
     const signedIn = Boolean(isSignedIn);
 
+    if (signedIn && !state.auth.isAuthed) {
+      setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
+      return;
+    }
+
     if (!signedIn && state.auth.isAuthed) {
       setAuth((prev) => ({ ...prev, isAuthed: false }));
+      return;
     }
 
     if (!state.auth.isAuthed) {
@@ -115,10 +121,9 @@ function PracticeFlowInner() {
       if (state.completed.sandbox) {
         markStep("sandbox", false);
       }
-    }
-
-    if (currentStep === "score" && (!signedIn || !state.auth.isAuthed)) {
-      setStep("sandbox");
+      if (currentStep === "score") {
+        setStep("sandbox");
+      }
     }
   }, [
     currentStep,

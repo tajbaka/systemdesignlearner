@@ -437,6 +437,8 @@ export function usePracticeNavigation(
   const handleAuthModalAuthenticated = () => {
     session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
     setShowAuthModal(false);
+    const config = STEP_CONFIGS[session.currentStep];
+    config?.onNext?.(session);
     session.goNext();
   };
 

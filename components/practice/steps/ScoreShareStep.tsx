@@ -257,10 +257,10 @@ export function ScoreShareStep() {
         <section className="space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
           <div className="text-center space-y-4">
             <div>
-              <div className={`inline-block text-8xl font-bold text-${getGradeColor(cumulativeScore.grade)}-400`}>
+              <div className={`inline-block text-6xl sm:text-8xl font-bold text-${getGradeColor(cumulativeScore.grade)}-400`}>
                 {cumulativeScore.grade}
               </div>
-              <div className="mt-2 text-2xl font-semibold text-white">
+              <div className="mt-2 text-xl sm:text-2xl font-semibold text-white">
                 {formatScore(cumulativeScore.total)}/100
               </div>
               <div className="mt-1 text-sm text-zinc-400">
@@ -281,22 +281,22 @@ export function ScoreShareStep() {
                 return (
                   <div
                     key={step.id}
-                    className="flex items-center justify-between rounded-xl border border-zinc-700 bg-zinc-900/60 p-3"
+                    className="flex items-center justify-between gap-2 rounded-xl border border-zinc-700 bg-zinc-900/60 p-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
                         {index + 1}
                       </div>
-                      <span className="text-sm font-medium text-zinc-200">{step.label}</span>
+                      <span className="text-sm font-medium text-zinc-200 truncate">{step.label}</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-24 overflow-hidden rounded-full bg-zinc-800">
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="h-2 w-16 sm:w-24 overflow-hidden rounded-full bg-zinc-800">
                         <div
                           className={`h-full ${step.barClass}`}
                           style={{ width: `${percentage}%` }}
                         />
                       </div>
-                      <span className="text-sm font-semibold text-white w-20 text-right">
+                      <span className="text-xs sm:text-sm font-semibold text-white min-w-[3rem] sm:min-w-[5rem] text-right">
                         {formatScore(step.result.score)}/{formatScore(step.maxPoints)}
                       </span>
                     </div>
@@ -310,36 +310,7 @@ export function ScoreShareStep() {
       )}
 
       <section className="space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
-        <div className="space-y-3">
-          <h3 className="text-base font-semibold text-white">
-            Simulation Results
-          </h3>
-          <p className="text-sm text-zinc-300 leading-relaxed">
-            {summaryCopy}
-          </p>
-          {score ? (
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-blue-400/30 bg-blue-500/10 p-4 text-sm text-blue-50">
-                <span className="block text-xs uppercase tracking-wide text-blue-200">SLO score</span>
-                <span className="text-2xl font-semibold text-white">{score.sloScore}</span>
-              </div>
-              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-50">
-                <span className="block text-xs uppercase tracking-wide text-emerald-200">Checklist</span>
-                <span className="text-2xl font-semibold text-white">{score.checklistScore}</span>
-              </div>
-              <div className="rounded-2xl border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-50">
-                <span className="block text-xs uppercase tracking-wide text-amber-200">Efficiency</span>
-                <span className="text-2xl font-semibold text-white">{score.costScore}</span>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-2xl border border-zinc-700 bg-zinc-900/80 p-4 text-sm text-zinc-300">
-              Run the simulation from the sandbox to generate a score.
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center justify-center gap-3">
           <button
             type="button"
             onClick={() => setStep("sandbox")}
@@ -356,7 +327,7 @@ export function ScoreShareStep() {
                 : "border border-blue-400/40 bg-blue-500/15 text-blue-100 hover:bg-blue-500/25"
             }`}
           >
-            {shareStatus === "copied" ? "Link copied" : shareStatus === "error" ? "Copy failed" : "Share badge"}
+            {shareStatus === "copied" ? "Link copied" : shareStatus === "error" ? "Copy failed" : "Share design"}
           </button>
           <a
             href={linkedinHref}
@@ -382,7 +353,7 @@ export function ScoreShareStep() {
           </div>
         ) : null}
 
-        <p className="text-sm text-zinc-400">
+        <p className="text-sm text-center text-zinc-400">
           Continue practice tomorrow for new systems and tougher latency targets.
         </p>
       </section>
