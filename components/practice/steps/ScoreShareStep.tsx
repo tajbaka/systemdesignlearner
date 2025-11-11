@@ -75,6 +75,7 @@ const buildSharePayload = (state: ReturnType<typeof usePracticeSession>["state"]
 
 export function ScoreShareStep() {
   const { state, setStep, isReadOnly: _isReadOnly } = usePracticeSession();
+  console.log("[ScoreShareStep] Component rendered, design score:", state.scores?.design);
   const lastResult = state.run.lastResult;
   const scores = state.scores;
   const score = lastResult?.scoreBreakdown;
@@ -131,9 +132,29 @@ export function ScoreShareStep() {
           return fromIterativeResult(iterative);
         }
       }
+
+      // Special handling for design: combine design + simulation scores
+      if (key === "design") {
+        const designScore = scores?.design ?? createEmptyResult(30);
+        const simScore = simulationScoreResult;
+
+        // Combine the scores
+        const combined: FeedbackResult = {
+          score: designScore.score + simScore.score,
+          maxScore: designScore.maxScore + simScore.maxScore, // 30 + 5 = 35
+          percentage: ((designScore.score + simScore.score) / (designScore.maxScore + simScore.maxScore)) * 100,
+          blocking: [...designScore.blocking, ...simScore.blocking],
+          warnings: [...designScore.warnings, ...simScore.warnings],
+          positive: [...designScore.positive, ...simScore.positive],
+          suggestions: [...designScore.suggestions, ...simScore.suggestions],
+        };
+
+        return combined;
+      }
+
       return scores?.[key] ?? createEmptyResult(fallbackMax);
     },
-    [scores, state.iterativeFeedback]
+    [scores, state.iterativeFeedback, simulationScoreResult]
   );
 
   const stepScoreItems = useMemo(
@@ -163,8 +184,8 @@ export function ScoreShareStep() {
         id: "design",
         label: "High-Level Design",
         barClass: "bg-purple-500",
-        result: getStepResult("design", 30),
-        maxFallback: 30,
+        result: getStepResult("design", 35), // Combined design (30) + simulation (5)
+        maxFallback: 35,
       },
     ].map((step) => ({
       ...step,

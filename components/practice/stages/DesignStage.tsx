@@ -194,6 +194,7 @@ export default function DesignStage({
 }: DesignStageProps) {
   // Access session to clear simulation state when design changes
   const session = usePracticeSession();
+  console.log("[DesignStage] Component rendered, design score:", session.state.scores?.design);
   const editingLocked = locked || readOnly || simulationLocked;
   const lockMessage = readOnly
     ? "Shared view · editing disabled"
@@ -390,7 +391,15 @@ export default function DesignStage({
     (nextNodes: PlacedNode[]) => {
       if (editingLocked) return;
       let prunedEdges: Edge[] = [];
+      let didChange = false;
+
       updateDesign((prev) => {
+        // Check if nodes actually changed
+        if (JSON.stringify(prev.nodes) === JSON.stringify(nextNodes)) {
+          return prev; // No change, don't update
+        }
+
+        didChange = true;
         const edges = pruneEdges(prev.edges, nextNodes);
         prunedEdges = edges;
         return {
@@ -400,16 +409,20 @@ export default function DesignStage({
         };
       });
 
-      // FIX Issue #1: Clear simulation state when design changes
-      session.setRun((prev) => ({
-        ...prev,
-        lastResult: null,
-        isRunning: false,
-      }));
+      // Only clear scores if there was an actual change
+      if (didChange) {
+        console.log("[DesignStage] Nodes changed, clearing scores");
+        // FIX Issue #1: Clear simulation state when design changes
+        session.setRun((prev) => ({
+          ...prev,
+          lastResult: null,
+          isRunning: false,
+        }));
 
-      // FIX Issue #1: Clear design score when design changes
-      session.setStepScore("design", undefined);
-      session.setStepScore("simulation", undefined);
+        // FIX Issue #1: Clear design score when design changes
+        session.setStepScore("design", undefined);
+        session.setStepScore("simulation", undefined);
+      }
 
       setSelectedNodeId((prev) =>
         prev && nextNodes.some((node) => node.id === prev) ? prev : null
@@ -424,21 +437,35 @@ export default function DesignStage({
   const handleEdgesChange = useCallback(
     (nextEdges: Edge[]) => {
       if (editingLocked) return;
-      updateDesign((prev) => ({
-        ...prev,
-        edges: nextEdges,
-      }));
+      let didChange = false;
 
-      // FIX Issue #1: Clear simulation state when design changes
-      session.setRun((prev) => ({
-        ...prev,
-        lastResult: null,
-        isRunning: false,
-      }));
+      updateDesign((prev) => {
+        // Check if edges actually changed
+        if (JSON.stringify(prev.edges) === JSON.stringify(nextEdges)) {
+          return prev; // No change, don't update
+        }
 
-      // FIX Issue #1: Clear design score when design changes
-      session.setStepScore("design", undefined);
-      session.setStepScore("simulation", undefined);
+        didChange = true;
+        return {
+          ...prev,
+          edges: nextEdges,
+        };
+      });
+
+      // Only clear scores if there was an actual change
+      if (didChange) {
+        console.log("[DesignStage] Edges changed, clearing scores");
+        // FIX Issue #1: Clear simulation state when design changes
+        session.setRun((prev) => ({
+          ...prev,
+          lastResult: null,
+          isRunning: false,
+        }));
+
+        // FIX Issue #1: Clear design score when design changes
+        session.setStepScore("design", undefined);
+        session.setStepScore("simulation", undefined);
+      }
 
       setSelectedEdgeId((prev) =>
         prev && nextEdges.some((edge) => edge.id === prev) ? prev : null

@@ -139,6 +139,7 @@ function PracticeFlowInner() {
   ]);
 
   useEffect(() => {
+    console.log("[PracticeFlow] Step changed to:", currentStep, "Design score:", session.state.scores?.design);
     if (currentStep !== "sandbox") {
       setMobilePaletteOpen(false);
       setRunPanelOpen(false);
@@ -148,6 +149,7 @@ function PracticeFlowInner() {
     clearScoring();
     clearIterativeFeedback();
     setWaitingForSimulation(false);
+    console.log("[PracticeFlow] After clearing UI state, design score:", session.state.scores?.design);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
@@ -397,17 +399,49 @@ function PracticeFlowInner() {
           current={currentStep}
           progress={session.state.completed}
           onStepChange={async (step) => {
-            // If navigating forward and current step needs scoring, evaluate it first
+            // Allow free navigation to already-completed steps and unlock steps one at a time
             const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
             const currentIndex = PRACTICE_STEPS.indexOf(currentStep);
             const targetIndex = PRACTICE_STEPS.indexOf(step);
 
+            // Check if target step is already completed
+            const targetStepCompleted = session.state.completed[step];
+
+            // Calculate the furthest unlocked step (same logic as PracticeStepper)
+            let unlockedIndex = -1;
+            PRACTICE_STEPS.forEach((s, index) => {
+              if (session.state.completed[s]) {
+                unlockedIndex = index;
+              }
+            });
+
+            // Check if the target step is accessible (unlocked)
+            const isTargetAccessible = targetIndex <= unlockedIndex + 1;
+
+            // Don't allow navigation to locked steps (beyond unlockedIndex + 1)
+            if (!isReadOnly && !isTargetAccessible) {
+              setVerification({
+                isVerifying: false,
+                result: null,
+                error: "Please complete the previous steps first.",
+              });
+              return;
+            }
+
+            // Check if current step needs scoring and hasn't been scored yet
+            const currentStepNeedsScoring = stepsNeedingScoring.includes(currentStep);
+            const currentStepNotScored = currentStepNeedsScoring &&
+              (currentStep === "sandbox" ? !session.state.scores?.design : !session.state.scores?.[currentStep]);
+
             if (
               !isReadOnly &&
               targetIndex > currentIndex &&
-              stepsNeedingScoring.includes(currentStep)
+              currentStepNeedsScoring &&
+              currentStepNotScored &&
+              currentStep !== "sandbox" // Sandbox step is special - scoring happens during simulation
             ) {
-              // Always evaluate current step before allowing navigation (no bypass)
+              // Evaluate current step before allowing forward navigation (even to completed steps)
+              // This ensures scores are saved when navigating via stepper clicks
               setVerification({ isVerifying: true, result: null, error: null });
               const result = await evaluateCurrentStep(currentStep, session);
               setVerification({ isVerifying: false, result: null, error: null });
@@ -425,8 +459,34 @@ function PracticeFlowInner() {
               }
               // If blocking issues, stay on current step and show feedback
             } else {
-              // No evaluation needed or navigating backward
+              // Allow navigation for: backward movement, already-scored steps, sandbox step, or non-scoring steps
+              // Clear any verification errors when navigating freely
+              clearVerification();
+
+              console.log("[PracticeFlow] Free navigation from", currentStep, "to", step, "Design score before nav:", session.state.scores?.design);
+
+              // Special case: If navigating from sandbox to score for the first time
+              // (score step not yet completed), ensure design score exists
+              if (currentStep === "sandbox" && step === "score" && !session.state.completed.score) {
+                console.log("[PracticeFlow] Navigating from sandbox to score (first time):", {
+                  hasDesignScore: !!session.state.scores?.design,
+                  hasSimulationResult: !!session.state.run.lastResult,
+                  designScore: session.state.scores?.design
+                });
+
+                if (!session.state.scores?.design) {
+                  console.log("[PracticeFlow] No design score found - blocking navigation");
+                  setVerification({
+                    isVerifying: false,
+                    result: null,
+                    error: "Please run the simulation before continuing to see your score.",
+                  });
+                  return;
+                }
+              }
+
               setStep(step);
+              console.log("[PracticeFlow] After setStep, design score:", session.state.scores?.design);
             }
           }}
           readOnly={isReadOnly}
