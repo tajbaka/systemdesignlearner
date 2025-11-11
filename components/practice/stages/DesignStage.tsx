@@ -511,6 +511,21 @@ export default function DesignStage({
     [editingLocked, updateDesign, session]
   );
 
+  const handleRenameNode = useCallback(
+    (nodeId: string, newLabel: string) => {
+      if (editingLocked) return;
+      updateDesign((prev) => ({
+        ...prev,
+        nodes: prev.nodes.map(node =>
+          node.id === nodeId ? { ...node, customLabel: newLabel } : node
+        ),
+      }));
+
+      track("practice_design_node_renamed", { slug: "url-shortener", nodeId, newLabel });
+    },
+    [editingLocked, updateDesign]
+  );
+
   const handleEdgeSelect = useCallback((edgeId: string | null) => {
     setSelectedEdgeId(edgeId);
     if (edgeId) {
@@ -717,6 +732,7 @@ export default function DesignStage({
                   onNodesChange={handleNodesChange}
                   onEdgesChange={handleEdgesChange}
                   onDeleteNode={handleDeleteNode}
+                  onRenameNode={handleRenameNode}
                   onUpdateReplicas={handleUpdateReplicas}
                   onNodeTouchStart={handleNodeTouchStart}
                   onNodeTouchEnd={handleNodeTouchEnd}
@@ -845,6 +861,7 @@ export default function DesignStage({
                   onNodesChange={handleNodesChange}
                   onEdgesChange={handleEdgesChange}
                   onDeleteNode={handleDeleteNode}
+                  onRenameNode={handleRenameNode}
                   onUpdateReplicas={handleUpdateReplicas}
                   onNodeTouchStart={handleNodeTouchStart}
                   onNodeTouchEnd={handleNodeTouchEnd}
