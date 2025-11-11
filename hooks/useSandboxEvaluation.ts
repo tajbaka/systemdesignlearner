@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import type { FeedbackResult } from "@/lib/scoring/types";
 import type { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import type { VerificationState } from "./usePracticeScoring";
+import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
@@ -139,12 +140,32 @@ function buildSandboxFeedback(
       ],
       positive: designScore.positive,
       suggestions: [...simulationFeedback.suggestions, ...designScore.suggestions.slice(0, 2)],
+      bonus: designScore.bonus,
+      totalScore: designScore.totalScore,
+      totalMaxScore: designScore.totalMaxScore,
     };
+
+    const bonusGuidance = evaluateDesignGuidance(session.state.design);
+    if (bonusGuidance && bonusGuidance.level === "bonus") {
+      mergedFeedback.improvementQuestion = bonusGuidance.question;
+      if (!mergedFeedback.warnings.some((warning) => warning.message === bonusGuidance.summary)) {
+        mergedFeedback.warnings.push({
+          category: "architecture",
+          severity: "info",
+          message: bonusGuidance.summary,
+        });
+      }
+    }
 
     return { feedback: mergedFeedback, canProceed: true };
   } else {
-    // Passed - show design feedback
-    return { feedback: designScore, canProceed: true };
+    // Passed - show design feedback and optional nudges
+    const baseFeedback: FeedbackResult = { ...designScore };
+    const bonusGuidance = evaluateDesignGuidance(session.state.design);
+    if (bonusGuidance && bonusGuidance.level === "bonus") {
+      baseFeedback.improvementQuestion = bonusGuidance.question;
+    }
+    return { feedback: baseFeedback, canProceed: true };
   }
 }
 

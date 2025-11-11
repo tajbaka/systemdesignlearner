@@ -69,7 +69,6 @@ function PracticeFlowInner() {
   } = usePracticeNavigation(session, {
     verification,
     setVerification,
-    scoringFeedback,
     setScoringFeedback,
     waitingForSimulation,
     setWaitingForSimulation,
@@ -478,7 +477,7 @@ function PracticeFlowInner() {
         ) : null}
 
         {/* Iterative Feedback Modal - Shows in center of screen */}
-        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api steps */}
+        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api/sandbox steps */}
         <IterativeFeedbackModal
           isOpen={
             !!iterativeFeedbackState.result &&

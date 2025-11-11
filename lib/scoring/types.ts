@@ -23,6 +23,12 @@ export type FeedbackItem = {
   actionable?: string; // What user should do
 };
 
+export type BonusScore = {
+  score: number;
+  maxScore: number;
+  label?: string;
+};
+
 export type FeedbackResult = {
   score: number;
   maxScore: number;
@@ -32,6 +38,9 @@ export type FeedbackResult = {
   positive: FeedbackItem[];
   suggestions: FeedbackItem[];
   improvementQuestion?: string; // Optional iterative feedback question
+  bonus?: BonusScore;
+  totalScore?: number;
+  totalMaxScore?: number;
 };
 
 export type CumulativeScore = {
@@ -213,6 +222,7 @@ export type ArchitecturePattern = {
   };
   weight: number;
   required: boolean;
+  isBonus?: boolean;
   feedbackTemplates: {
     missing: string;
     present: string;
@@ -228,6 +238,7 @@ export type ComponentRequirement = {
   minReplicas?: number;
   maxReplicas?: number;
   weight: number;
+  isBonus?: boolean;
   feedbackTemplates?: {
     missing?: string;
     present?: string;
@@ -248,6 +259,7 @@ export type CriticalPath = {
   minHops?: number;
   weight: number;
   required: boolean;
+  isBonus?: boolean;
   feedbackTemplates: {
     missing: string;
     present: string;

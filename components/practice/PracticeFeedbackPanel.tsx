@@ -56,11 +56,12 @@ export function PracticeFeedbackPanel({
       <FeedbackModal
         isOpen={
           !!scoringFeedback &&
-          scoringFeedback.percentage >= 40 &&
           !hasIterativeFeedback &&
-          currentStep !== "functional" &&
-          currentStep !== "nonFunctional" &&
-          currentStep !== "api"
+          (currentStep === "sandbox" ||
+            (currentStep !== "functional" &&
+              currentStep !== "nonFunctional" &&
+              currentStep !== "api" &&
+              scoringFeedback.percentage >= 40))
         }
         feedbackResult={scoringFeedback!}
         onRevise={onRevise}

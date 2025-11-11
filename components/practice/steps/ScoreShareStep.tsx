@@ -77,7 +77,7 @@ export function ScoreShareStep() {
     // Use the real calculation with all scores
     const designScore: FeedbackResult = scores.design || {
       score: 0,
-      maxScore: 30,
+      maxScore: 35,
       percentage: 0,
       blocking: [],
       warnings: [],

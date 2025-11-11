@@ -1,6 +1,12 @@
 import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import type { PracticeStep } from "@/lib/practice/types";
 import { CheckCircle2, AlertCircle, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 type IterativeFeedbackModalProps = {
   isOpen: boolean;
@@ -19,20 +25,31 @@ export function IterativeFeedbackModal({
   onContinue,
   durationMs,
 }: IterativeFeedbackModalProps) {
-  if (!isOpen) return null;
+  // Early return if no result
+  if (!result) return null;
 
   const allTopicsCovered = result.coverage.allCovered;
   const blocking = result.ui.blocking;
   const nextPrompt = result.ui.nextPrompt;
+
+  // Get title based on score
+  const getTitle = () => {
+    if (allTopicsCovered) return "Perfect Score!";
+    if (blocking) return "Let's Improve Your Answer";
+    return "Great Progress!";
+  };
+
+  // Format score display
+  const scoreDisplay = durationMs !== undefined && durationMs !== null
+    ? `Score: ${result.score.obtained}/${result.score.max} (${result.score.percentage}%) • ${(durationMs / 1000).toFixed(2)}s`
+    : `Score: ${result.score.obtained}/${result.score.max} (${result.score.percentage}%)`;
+
   return (
-    <div
-      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm"
-      onClick={onClose}
-    >
-      <div
-        className="mx-4 w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent hideClose className="mx-4 w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl">
+        <DialogDescription className="sr-only">
+          Feedback on your answer with score and suggestions for improvement
+        </DialogDescription>
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div className="flex-1">
@@ -44,24 +61,14 @@ export function IterativeFeedbackModal({
               ) : (
                 <CheckCircle2 className="h-6 w-6 text-emerald-500" />
               )}
-              <h2 className="text-xl font-semibold text-foreground">
-                {allTopicsCovered ? "Perfect Score!" : blocking ? "Let's Improve Your Answer" : "Great Progress!"}
-              </h2>
+              <DialogTitle className="text-xl font-semibold text-foreground">
+                {getTitle()}
+              </DialogTitle>
             </div>
-            {!allTopicsCovered && (
-              <p className="text-sm text-muted-foreground">
-                Score: {result.score.obtained}/{result.score.max} ({result.score.percentage}%)
-                {durationMs !== undefined && durationMs !== null ? ` • ${ (durationMs / 1000).toFixed(2) }s` : null}
-              </p>
-            )}
-            {allTopicsCovered && (
-              <p className="text-sm text-muted-foreground">
-                Score: {result.score.obtained}/{result.score.max} (100%)
-                {durationMs !== undefined && durationMs !== null ? ` • ${ (durationMs / 1000).toFixed(2) }s` : null}
-              </p>
-            )}
+            <p className="text-sm text-muted-foreground">
+              {scoreDisplay}
+            </p>
           </div>
-
           <button
             type="button"
             onClick={onClose}
@@ -74,9 +81,10 @@ export function IterativeFeedbackModal({
 
         {/* Content */}
         <div className="space-y-6">
+          {/* Positive feedback */}
           {result.ui.coveredLines.length > 0 && (
             <div className="text-sm text-emerald-100">
-              <ul className="list-disc list-inside space-y-1">
+              <ul className="list-inside list-disc space-y-1">
                 {result.ui.coveredLines.map((line) => (
                   <li key={line}>{line}</li>
                 ))}
@@ -84,15 +92,7 @@ export function IterativeFeedbackModal({
             </div>
           )}
 
-          {!allTopicsCovered && nextPrompt && (
-            <div className="rounded-xl border border-blue-400/30 bg-blue-950/40 p-4">
-              <h3 className="mb-2 text-sm font-semibold text-blue-300">
-                {blocking ? "Missing requirement:" : "💡 To reach 100%:"}
-              </h3>
-              <p className="text-sm text-blue-100">{nextPrompt}</p>
-            </div>
-          )}
-
+          {/* Summary message */}
           {allTopicsCovered && (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5">
               <p className="text-base text-emerald-200">
@@ -101,17 +101,18 @@ export function IterativeFeedbackModal({
             </div>
           )}
 
-          {allTopicsCovered && nextPrompt && (
-            <div className="mt-4 rounded-xl border border-blue-400/30 bg-blue-950/40 p-4">
+          {/* Improvement question */}
+          {nextPrompt && (
+            <div className={allTopicsCovered ? "mt-4 rounded-xl border border-blue-400/30 bg-blue-950/40 p-4" : "rounded-xl border border-blue-400/30 bg-blue-950/40 p-4"}>
               <h3 className="mb-2 text-sm font-semibold text-blue-300">
-                💡 Bonus feature:
+                {blocking ? "Missing requirement:" : allTopicsCovered ? "💡 Bonus feature:" : "💡 To reach 100%:"}
               </h3>
               <p className="text-sm text-blue-100">{nextPrompt}</p>
             </div>
           )}
         </div>
 
-        {/* Footer Actions */}
+        {/* Action buttons */}
         <div className="mt-8 flex items-center justify-end gap-3">
           <button
             type="button"
@@ -120,16 +121,7 @@ export function IterativeFeedbackModal({
           >
             Revise Answer
           </button>
-          {allTopicsCovered && onContinue && (
-            <button
-              type="button"
-              onClick={onContinue}
-              className="rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              Continue
-            </button>
-          )}
-          {!allTopicsCovered && !blocking && onContinue && (
+          {(allTopicsCovered || !blocking) && onContinue && (
             <button
               type="button"
               onClick={onContinue}
@@ -139,7 +131,7 @@ export function IterativeFeedbackModal({
             </button>
           )}
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

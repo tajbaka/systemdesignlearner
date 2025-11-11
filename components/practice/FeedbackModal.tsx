@@ -28,6 +28,14 @@ export function FeedbackModal({
 
   const passed = feedbackResult.percentage >= 40;
   const isPerfect = feedbackResult.percentage === 100;
+  const roundedScore = Math.round(feedbackResult.score * 100) / 100;
+  const hasBonus = Boolean(feedbackResult.bonus && feedbackResult.bonus.score > 0 && feedbackResult.bonus.maxScore > 0);
+  const totalScore = feedbackResult.totalScore ?? (feedbackResult.score + (feedbackResult.bonus?.score ?? 0));
+  const totalMaxScore = feedbackResult.totalMaxScore ?? (feedbackResult.maxScore + (feedbackResult.bonus?.maxScore ?? 0));
+  const roundedTotal = Math.round(totalScore * 100) / 100;
+  const bonusSummary = hasBonus
+    ? ` • +${Math.round((feedbackResult.bonus!.score) * 100) / 100} bonus (Total ${roundedTotal}/${totalMaxScore})`
+    : "";
 
   // Extract positive messages (limit to 3)
   const positiveMessages = feedbackResult.positive.slice(0, 3);
@@ -41,7 +49,7 @@ export function FeedbackModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onRevise()}>
-      <DialogContent className="mx-4 w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl">
+      <DialogContent hideClose className="mx-4 w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl">
         {/* Header */}
         <div className="mb-6 flex items-start justify-between">
           <div className="flex-1">
@@ -56,7 +64,7 @@ export function FeedbackModal({
               </DialogTitle>
             </div>
             <p className="text-sm text-muted-foreground">
-              Score: {Math.round(feedbackResult.score * 100) / 100}/{feedbackResult.maxScore} ({Math.round(feedbackResult.percentage)}%)
+              Score: {roundedScore}/{feedbackResult.maxScore} ({Math.round(feedbackResult.percentage)}%){bonusSummary}
             </p>
           </div>
           <button
@@ -94,10 +102,10 @@ export function FeedbackModal({
           )}
 
           {/* Improvement question */}
-          {improvementQuestion && feedbackResult.percentage < 100 && (
+          {improvementQuestion && (
             <div className="rounded-xl border border-blue-400/30 bg-blue-950/40 p-4">
               <h3 className="mb-2 text-sm font-semibold text-blue-300">
-                💡 {passed ? "Bonus feature:" : "To reach 100%:"}
+                💡 {isPerfect ? "Bonus opportunity:" : passed ? "Bonus feature:" : "To reach 100%:"}
               </h3>
               <p className="text-sm text-blue-100">{improvementQuestion}</p>
             </div>

@@ -2,7 +2,7 @@
   "problemId": "url-shortener",
   "title": "URL Shortener",
   "description": "Design a scalable URL shortening service that creates short, unique links and redirects users to original URLs",
-  "totalScore": 100,
+  "totalScore": 103,
   "steps": {
     "functional": {
       "maxScore": 20,
@@ -464,11 +464,43 @@
     "design": {
       "maxScore": 35,
       "scoreBreakdown": {
-        "coreArchitecture": 15,
-        "optionalComponents": 15,
-        "connections": 5
+        "coreArchitecture": 25,
+        "connections": 10
       },
+      "improvementQuestions": [
+        {
+          "id": "service-separation",
+          "triggerAtPercentage": 100,
+          "question": "Your single service handles both writes and reads. Given the 100:1 read-to-write ratio, how could splitting into two services (one for URL creation, one for redirection) allow independent scaling?"
+        },
+        {
+          "id": "cache-layer",
+          "triggerAtPercentage": 100,
+          "prerequisite": "service-separation",
+          "question": "With billions of redirects per day and a sub-100ms latency requirement, what layer between your redirect service and database would dramatically reduce load for popular URLs?"
+        },
+        {
+          "id": "cache-connection",
+          "triggerAtPercentage": 100,
+          "prerequisite": "cache-layer",
+          "question": "To implement cache-aside for your redirect service, how should the service, cache, and database connect? (Hint: Service checks cache first, then database on miss)"
+        }
+      ],
       "componentRequirements": [
+        {
+          "kind": "API Gateway",
+          "required": true,
+          "requiredBy": [
+            "url-shortening",
+            "redirection"
+          ],
+          "weight": 7,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "How will incoming HTTP requests from users reach your backend? What component typically sits at the edge to route traffic?",
+            "present": "Good! Your API Gateway will route incoming requests to the appropriate services."
+          }
+        },
         {
           "kind": "Service",
           "required": true,
@@ -476,112 +508,55 @@
             "url-shortening",
             "redirection"
           ],
-          "weight": 5,
+          "weight": 10,
           "minReplicas": 1,
           "feedbackTemplates": {
-            "missing": "You need a Service component to handle URL creation and redirection logic.",
-            "present": "Good! Service component is present to handle core business logic."
+            "missing": "What component will handle the core business logic (URL shortening and redirection)? Think about what sits between your API Gateway and database.",
+            "present": "Good! Service component is present to handle core business logic.",
+            "insufficientReplicas": "",
+            "excessiveReplicas": "",
+            "bonusForTwo": "Excellent! Having two services allows you to scale reads and writes independently for the 100:1 read-to-write ratio."
           }
         },
         {
           "kind": "Cache (Redis)",
-          "required": true,
-          "requiredBy": [
-            "redirection"
-          ],
+          "required": false,
+          "requiredBy": [],
           "alternativesAccepted": [
             "Object Cache (Memcached)"
           ],
-          "weight": 5,
+          "weight": 0,
           "minReplicas": 1,
           "feedbackTemplates": {
-            "missing": "A cache layer (Redis/Memcached) is essential for fast redirects.",
-            "present": "Excellent! Cache will dramatically improve redirect latency.",
-            "insufficientReplicas": "Consider adding cache replicas for high availability."
+            "missing": "",
+            "present": "Excellent! Cache will dramatically improve redirect latency for popular URLs."
           }
         },
         {
           "kind": "DB (Postgres)",
           "required": true,
           "requiredBy": [
-            "url-shortening"
+            "url-shortening",
+            "redirection"
           ],
           "alternativesAccepted": [
             "DB (MySQL)",
             "DB (MongoDB)"
           ],
-          "weight": 5,
+          "weight": 8,
           "minReplicas": 1,
           "feedbackTemplates": {
-            "missing": "You need a database to persist URL mappings.",
-            "present": "Good choice! Database will reliably store all URL mappings.",
-            "insufficientReplicas": "For high availability, consider adding read replicas."
-          }
-        },
-        {
-          "kind": "Message Queue (Kafka Topic)",
-          "required": false,
-          "requiredBy": [
-            "basic-analytics"
-          ],
-          "alternativesAccepted": [
-            "Message Queue (RabbitMQ)",
-            "Message Queue (SQS)"
-          ],
-          "weight": 3,
-          "feedbackTemplates": {
-            "missing": "Since you selected analytics, add a message queue for async event processing.",
-            "present": "Smart! Async processing with queue won't slow down redirects."
-          }
-        },
-        {
-          "kind": "Worker Pool",
-          "required": false,
-          "requiredBy": [
-            "basic-analytics"
-          ],
-          "weight": 2,
-          "feedbackTemplates": {
-            "missing": "Analytics requires workers to process click events asynchronously.",
-            "present": "Good! Workers will process analytics without blocking redirects."
-          }
-        },
-        {
-          "kind": "Rate Limiter",
-          "required": false,
-          "requiredBy": [
-            "rate-limiting"
-          ],
-          "weight": 2,
-          "feedbackTemplates": {
-            "missing": "Add a Rate Limiter component to enforce request throttling.",
-            "present": "Excellent! Rate limiter will protect against abuse."
-          }
-        },
-        {
-          "kind": "CDN",
-          "required": false,
-          "weight": 2,
-          "feedbackTemplates": {
-            "present": "Great thinking! CDN provides global low-latency access."
-          }
-        },
-        {
-          "kind": "Load Balancer",
-          "required": false,
-          "weight": 2,
-          "feedbackTemplates": {
-            "present": "Good! Load balancer enables horizontal scaling."
+            "missing": "Where will URL mappings be permanently stored so they survive crashes? What provides durable persistence?",
+            "present": "Good choice! Database will reliably store all URL mappings."
           }
         }
       ],
       "criticalPaths": [
         {
-          "id": "redirect-path",
-          "name": "Redirect Path (Read)",
-          "description": "The critical path from user request to URL redirect",
+          "id": "basic-data-path",
+          "name": "Basic Data Flow Path",
+          "description": "The core path from API Gateway through Service to Database for basic functionality",
           "startComponents": [
-            "Web",
             "API Gateway"
           ],
           "endComponents": [
@@ -590,48 +565,152 @@
             "DB (MongoDB)"
           ],
           "mustInclude": [
-            "Service",
-            "Cache (Redis)"
+            "Service"
           ],
-          "mustNotInclude": [],
-          "maxHops": 7,
-          "minHops": 4,
+          "mustNotInclude": [
+            "Web"
+          ],
+          "maxHops": 3,
+          "minHops": 3,
           "weight": 10,
           "required": true,
           "feedbackTemplates": {
-            "missing": "Your redirect path is missing critical components (Service or Cache).",
-            "present": "Perfect! Your redirect path flows through cache for fast lookups.",
-            "suboptimal": "Consider optimizing the redirect path to reduce latency."
-          }
-        },
-        {
-          "id": "analytics-async-path",
-          "name": "Analytics Processing Path",
-          "description": "Async path for processing click analytics",
-          "startComponents": [
-            "Service"
-          ],
-          "endComponents": [
-            "Worker Pool"
-          ],
-          "mustInclude": [
-            "Message Queue (Kafka Topic)"
-          ],
-          "maxHops": 3,
-          "weight": 5,
-          "required": false,
-          "feedbackTemplates": {
-            "missing": "Analytics should use async processing: Service → Queue → Workers.",
-            "present": "Excellent async design! Analytics won't slow redirects.",
-            "suboptimal": "Analytics path looks good but verify it's fully decoupled from main flow."
+            "missing": "How do requests flow from your API Gateway to the database? Connect the components to form a complete data path.",
+            "present": "Perfect! Your basic data flow is complete: API Gateway → Service → Database.",
+            "suboptimal": "Your data path exists but check the flow. The core path should be: API Gateway → Service → Database."
           }
         }
       ],
       "architecturePatterns": [
         {
-          "id": "cache-aside",
-          "name": "Cache-Aside Pattern",
-          "description": "Service checks cache first, falls back to DB on miss, then updates cache",
+          "id": "no-direct-backend-access",
+          "name": "No Direct Backend Access from Client",
+          "description": "Web clients should not connect directly to backend components like Database or Cache",
+          "requiredComponents": [],
+          "requiredConnections": [],
+          "forbiddenConnections": [
+            {
+              "from": "Web",
+              "to": "DB (Postgres)"
+            },
+            {
+              "from": "Web",
+              "to": "DB (MySQL)"
+            },
+            {
+              "from": "Web",
+              "to": "DB (MongoDB)"
+            },
+            {
+              "from": "Web",
+              "to": "Cache (Redis)"
+            },
+            {
+              "from": "Web",
+              "to": "Object Cache (Memcached)"
+            },
+            {
+              "from": "Web",
+              "to": "Service"
+            }
+          ],
+          "triggeredBy": {
+            "functionalReqs": [
+              "url-shortening",
+              "redirection"
+            ]
+          },
+          "weight": 0,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "",
+            "present": "Good! Your clients access backend services through the API Gateway (proper separation of concerns).",
+            "incorrect": "Should Web clients directly access your Database, Cache, or Service? What layer provides security, rate limiting, and proper routing? Consider removing the direct connection and routing through API Gateway."
+          }
+        },
+        {
+          "id": "api-gateway-to-services",
+          "name": "API Gateway Routes to Services",
+          "description": "API Gateway must connect to Service nodes to route requests",
+          "requiredComponents": [
+            "API Gateway",
+            "Service"
+          ],
+          "requiredConnections": [
+            {
+              "from": "API Gateway",
+              "to": "Service"
+            }
+          ],
+          "forbiddenConnections": [
+            {
+              "from": "API Gateway",
+              "to": "DB (Postgres)"
+            },
+            {
+              "from": "API Gateway",
+              "to": "DB (MySQL)"
+            },
+            {
+              "from": "API Gateway",
+              "to": "DB (MongoDB)"
+            },
+            {
+              "from": "API Gateway",
+              "to": "Cache (Redis)"
+            },
+            {
+              "from": "API Gateway",
+              "to": "Object Cache (Memcached)"
+            }
+          ],
+          "triggeredBy": {
+            "functionalReqs": [
+              "url-shortening",
+              "redirection"
+            ]
+          },
+          "weight": 0,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "After your API Gateway receives requests, what handles the business logic? How should the API Gateway route requests to your application layer?",
+            "present": "Good! Your API Gateway correctly routes requests to services.",
+            "incorrect": "Should your API Gateway directly query the Database or Cache? What layer typically handles business logic and data access between the gateway and data stores?"
+          }
+        },
+        {
+          "id": "service-to-database",
+          "name": "Services Access Database",
+          "description": "Service nodes must connect to the database to persist and retrieve URL mappings",
+          "requiredComponents": [
+            "Service",
+            "DB (Postgres)"
+          ],
+          "requiredConnections": [
+            {
+              "from": "Service",
+              "to": "DB (Postgres)"
+            }
+          ],
+          "forbiddenConnections": [],
+          "triggeredBy": {
+            "functionalReqs": [
+              "url-shortening",
+              "redirection"
+            ]
+          },
+          "weight": 0,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "How will your services persist and retrieve URL mappings? What connection is needed between your application logic and data storage?",
+            "present": "Great! Your services can access the database for persistence.",
+            "incorrect": "Check your service to database connections."
+          }
+        },
+        {
+          "id": "cache-layer",
+          "name": "Cache Layer for Performance",
+          "description": "Optional cache layer connected between Service and Database for optimized reads",
           "requiredComponents": [
             "Service",
             "Cache (Redis)",
@@ -643,106 +722,267 @@
               "to": "Cache (Redis)"
             },
             {
-              "from": "Cache (Redis)",
+              "from": "Service",
               "to": "DB (Postgres)"
             }
           ],
           "forbiddenConnections": [],
           "triggeredBy": {
-            "functionalReqs": [
-              "redirection"
-            ]
+            "functionalReqs": []
           },
-          "weight": 10,
-          "required": true,
-          "feedbackTemplates": {
-            "missing": "Implement cache-aside pattern: Service → Cache → DB for fast redirects.",
-            "present": "Excellent! Cache-aside pattern will deliver sub-50ms redirects.",
-            "incorrect": "Cache should sit between Service and DB, not as a parallel path."
-          }
-        },
-        {
-          "id": "async-analytics",
-          "name": "Async Event Processing",
-          "description": "Click events sent to queue for async processing by workers",
-          "requiredComponents": [
-            "Service",
-            "Message Queue (Kafka Topic)",
-            "Worker Pool"
-          ],
-          "requiredConnections": [
-            {
-              "from": "Service",
-              "to": "Message Queue (Kafka Topic)"
-            },
-            {
-              "from": "Message Queue (Kafka Topic)",
-              "to": "Worker Pool"
-            }
-          ],
-          "triggeredBy": {
-            "functionalReqs": [
-              "basic-analytics"
-            ]
-          },
-          "weight": 5,
+          "weight": 1,
           "required": false,
+          "isBonus": true,
           "feedbackTemplates": {
-            "missing": "Use async pattern for analytics: Service → Queue → Workers.",
-            "present": "Perfect async design! Main redirect flow stays fast.",
-            "incorrect": "Workers should consume from queue, not connect directly to Service."
+            "missing": "",
+            "present": "Excellent! Your service can check cache first, then fall back to database on cache miss.",
+            "incorrect": ""
           }
         },
         {
-          "id": "rate-limiting-layer",
-          "name": "Rate Limiting Layer",
-          "description": "Rate limiter sits between API Gateway and Service",
+          "id": "dual-service-scale",
+          "name": "Split Read and Write Services",
+          "description": "Bonus for introducing a second service so reads and writes can scale independently.",
           "requiredComponents": [
-            "Rate Limiter",
-            "Service"
+            "API Gateway",
+            "Service",
+            "Service",
+            "DB (Postgres)"
           ],
           "requiredConnections": [
             {
               "from": "API Gateway",
-              "to": "Rate Limiter"
+              "to": "Service"
             },
             {
-              "from": "Rate Limiter",
-              "to": "Service"
+              "from": "Service",
+              "to": "DB (Postgres)"
+            }
+          ],
+          "forbiddenConnections": [],
+          "triggeredBy": {
+            "functionalReqs": []
+          },
+          "weight": 2,
+          "required": false,
+          "isBonus": true,
+          "feedbackTemplates": {
+            "missing": "",
+            "present": "Great call! Splitting reads and writes across two services lets you scale the 100:1 traffic pattern independently.",
+            "incorrect": ""
+          }
+        },
+        {
+          "id": "complete-data-flow",
+          "name": "Complete Request Flow",
+          "description": "There should be a complete path from API Gateway through services to the database",
+          "requiredComponents": [
+            "API Gateway",
+            "Service",
+            "DB (Postgres)"
+          ],
+          "requiredConnections": [],
+          "forbiddenConnections": [],
+          "triggeredBy": {
+            "functionalReqs": [
+              "url-shortening",
+              "redirection"
+            ]
+          },
+          "weight": 0,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "Ensure there's a complete flow: API Gateway → Services → Database. This allows requests to flow through your system.",
+            "present": "",
+            "incorrect": "Check that your components are properly connected to allow data flow."
+          }
+        },
+        {
+          "id": "no-cache-to-db-direct",
+          "name": "Cache Should Not Connect Directly to Database",
+          "description": "Services should mediate between Cache and Database, not direct connection",
+          "requiredComponents": [],
+          "requiredConnections": [],
+          "forbiddenConnections": [
+            {
+              "from": "Cache (Redis)",
+              "to": "DB (Postgres)"
+            },
+            {
+              "from": "Cache (Redis)",
+              "to": "DB (MySQL)"
+            },
+            {
+              "from": "Cache (Redis)",
+              "to": "DB (MongoDB)"
+            },
+            {
+              "from": "Object Cache (Memcached)",
+              "to": "DB (Postgres)"
+            },
+            {
+              "from": "Object Cache (Memcached)",
+              "to": "DB (MySQL)"
+            },
+            {
+              "from": "Object Cache (Memcached)",
+              "to": "DB (MongoDB)"
             }
           ],
           "triggeredBy": {
             "functionalReqs": [
-              "rate-limiting"
+              "redirection"
             ]
           },
-          "weight": 3,
+          "weight": 0,
           "required": false,
           "feedbackTemplates": {
-            "missing": "Place rate limiter between API Gateway and Service.",
-            "present": "Good! Rate limiter guards your service from abuse.",
-            "incorrect": "Rate limiter should be inline, not a side path."
+            "missing": "",
+            "present": "Good! Your cache is properly connected through services.",
+            "incorrect": "In the cache-aside pattern, which component mediates between Cache and Database? Should Cache directly talk to Database, or should Service orchestrate the lookup?"
           }
         },
         {
-          "id": "horizontal-scaling",
-          "name": "Horizontal Scaling",
-          "description": "Multiple replicas of critical components with load balancer",
-          "requiredComponents": [
-            "Load Balancer"
-          ],
+          "id": "no-db-to-cache",
+          "name": "Database Should Not Connect to Cache",
+          "description": "Database should not initiate connections to Cache",
+          "requiredComponents": [],
           "requiredConnections": [],
-          "triggeredBy": {
-            "nfrThresholds": {
-              "readRps": 10000
+          "forbiddenConnections": [
+            {
+              "from": "DB (Postgres)",
+              "to": "Cache (Redis)"
+            },
+            {
+              "from": "DB (MySQL)",
+              "to": "Cache (Redis)"
+            },
+            {
+              "from": "DB (MongoDB)",
+              "to": "Cache (Redis)"
+            },
+            {
+              "from": "DB (Postgres)",
+              "to": "Object Cache (Memcached)"
+            },
+            {
+              "from": "DB (MySQL)",
+              "to": "Object Cache (Memcached)"
+            },
+            {
+              "from": "DB (MongoDB)",
+              "to": "Object Cache (Memcached)"
             }
+          ],
+          "triggeredBy": {
+            "functionalReqs": [
+              "redirection"
+            ]
           },
-          "weight": 3,
+          "weight": 0,
           "required": false,
           "feedbackTemplates": {
-            "missing": "With 10K+ RPS, you need horizontal scaling (Load Balancer + replicas).",
-            "present": "Excellent! Load balancing enables handling high traffic.",
-            "incorrect": "Verify your Service has multiple replicas to benefit from load balancer."
+            "missing": "",
+            "present": "Good architecture! Database doesn't initiate connections to cache.",
+            "incorrect": "Does your Database actively populate the cache, or does a Service handle caching logic? Think about separation of concerns - databases store data, services implement business logic."
+          }
+        },
+        {
+          "id": "no-db-to-api-gateway",
+          "name": "Database Should Not Connect to API Gateway",
+          "description": "Database is a backend component and should not connect to API Gateway",
+          "requiredComponents": [],
+          "requiredConnections": [],
+          "forbiddenConnections": [
+            {
+              "from": "DB (Postgres)",
+              "to": "API Gateway"
+            },
+            {
+              "from": "DB (MySQL)",
+              "to": "API Gateway"
+            },
+            {
+              "from": "DB (MongoDB)",
+              "to": "API Gateway"
+            },
+            {
+              "from": "DB (Postgres)",
+              "to": "Web"
+            },
+            {
+              "from": "DB (MySQL)",
+              "to": "Web"
+            },
+            {
+              "from": "DB (MongoDB)",
+              "to": "Web"
+            }
+          ],
+          "triggeredBy": {
+            "functionalReqs": [
+              "url-shortening",
+              "redirection"
+            ]
+          },
+          "weight": 0,
+          "required": false,
+          "feedbackTemplates": {
+            "missing": "",
+            "present": "Good! Database is properly isolated in the backend.",
+            "incorrect": "Should your Database push data to clients or to the API Gateway? What's the typical direction of data flow in a web architecture?"
+          }
+        },
+        {
+          "id": "no-service-to-web",
+          "name": "Service Should Not Connect to Web",
+          "description": "Services respond to API Gateway, not directly to Web clients",
+          "requiredComponents": [],
+          "requiredConnections": [],
+          "forbiddenConnections": [
+            {
+              "from": "Service",
+              "to": "Web"
+            }
+          ],
+          "triggeredBy": {
+            "functionalReqs": [
+              "url-shortening",
+              "redirection"
+            ]
+          },
+          "weight": 0,
+          "required": false,
+          "feedbackTemplates": {
+            "missing": "",
+            "present": "Good! Services don't connect directly to clients.",
+            "incorrect": "Should your backend Service directly communicate with Web clients? What layer should handle client-facing concerns like authentication, rate limiting, and routing?"
+          }
+        },
+        {
+          "id": "no-service-to-api-gateway",
+          "name": "Service Should Not Connect Back to API Gateway",
+          "description": "Services receive requests from API Gateway, they don't connect back to it",
+          "requiredComponents": [],
+          "requiredConnections": [],
+          "forbiddenConnections": [
+            {
+              "from": "Service",
+              "to": "API Gateway"
+            }
+          ],
+          "triggeredBy": {
+            "functionalReqs": [
+              "url-shortening",
+              "redirection"
+            ]
+          },
+          "weight": 0,
+          "required": false,
+          "feedbackTemplates": {
+            "missing": "",
+            "present": "Good! Request flow goes in the correct direction.",
+            "incorrect": "Do Services initiate requests to the API Gateway, or do they receive requests from it? Think about the request-response pattern - who calls whom?"
           }
         }
       ]

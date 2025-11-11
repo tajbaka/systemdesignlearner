@@ -25,16 +25,24 @@ import type { PlacedNode, Edge } from "@/app/components/types";
 import { hasConnectionBetweenKinds } from "@/app/components/utils";
 
 export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, DesignScoringConfig> {
+  // Cache for connection checks to avoid repeated BFS traversals
+  private connectionCache: Map<string, boolean> = new Map();
+
   /**
    * Evaluate design architecture
    */
   evaluate(input: DesignScoringInput, config: DesignScoringConfig): FeedbackResult {
+    // Clear cache at start of evaluation
+    this.connectionCache.clear();
+
     const blocking: FeedbackItem[] = [];
     const warnings: FeedbackItem[] = [];
     const positive: FeedbackItem[] = [];
     const suggestions: FeedbackItem[] = [];
 
-    let score = 0;
+    let coreScore = 0;
+    let bonusScore = 0;
+    let bonusMax = 0;
     const maxScore = config.maxScore;
 
     // 1. Evaluate component requirements
@@ -45,7 +53,9 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       input.nfrValues
     );
 
-    score += componentResults.score;
+    coreScore += componentResults.score;
+    bonusScore += componentResults.bonusScore;
+    bonusMax += componentResults.bonusMax;
     blocking.push(...componentResults.blocking);
     warnings.push(...componentResults.warnings);
     positive.push(...componentResults.positive);
@@ -58,7 +68,9 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       input.functionalRequirements
     );
 
-    score += pathResults.score;
+    coreScore += pathResults.score;
+    bonusScore += pathResults.bonusScore;
+    bonusMax += pathResults.bonusMax;
     blocking.push(...pathResults.blocking);
     warnings.push(...pathResults.warnings);
     positive.push(...pathResults.positive);
@@ -72,13 +84,17 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       input.nfrValues
     );
 
-    score += patternResults.score;
+    coreScore += patternResults.score;
+    bonusScore += patternResults.bonusScore;
+    bonusMax += patternResults.bonusMax;
     blocking.push(...patternResults.blocking);
     warnings.push(...patternResults.warnings);
     positive.push(...patternResults.positive);
 
     // Overall feedback
-    const percentage = (score / maxScore) * 100;
+    const clampedCoreScore = Math.min(coreScore, maxScore);
+    const percentage = (clampedCoreScore / maxScore) * 100;
+    const totalScore = Math.min(clampedCoreScore + bonusScore, maxScore + bonusMax);
 
     // Add blocking issue if score is too low (below 30%)
     if (percentage < 30 && blocking.length === 0) {
@@ -113,13 +129,16 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     }
 
     return {
-      score,
+      score: clampedCoreScore,
       maxScore,
       percentage,
       blocking,
       warnings,
       positive,
       suggestions,
+      bonus: bonusMax > 0 ? { score: bonusScore, maxScore: bonusMax } : undefined,
+      totalScore,
+      totalMaxScore: maxScore + bonusMax,
     };
   }
 
@@ -133,6 +152,8 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     nfrValues: DesignScoringInput["nfrValues"]
   ): {
     score: number;
+    bonusScore: number;
+    bonusMax: number;
     blocking: FeedbackItem[];
     warnings: FeedbackItem[];
     positive: FeedbackItem[];
@@ -141,8 +162,13 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     const warnings: FeedbackItem[] = [];
     const positive: FeedbackItem[] = [];
     let score = 0;
+    let bonusScore = 0;
+    let bonusMax = 0;
 
     for (const requirement of requirements) {
+      if (requirement.isBonus) {
+        bonusMax += requirement.weight;
+      }
       const match = this.findComponent(nodes, requirement);
 
       // Check if this component is required by selected functional requirements
@@ -151,7 +177,11 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
         : requirement.required;
 
       if (match.found) {
-        score += requirement.weight;
+        if (requirement.isBonus) {
+          bonusScore += requirement.weight;
+        } else {
+          score += requirement.weight;
+        }
 
         // Check replica count
         const replicaIssue = this.checkReplicaCount(match.found, requirement, nfrValues);
@@ -179,7 +209,7 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       }
     }
 
-    return { score, blocking, warnings, positive };
+    return { score, bonusScore, bonusMax, blocking, warnings, positive };
   }
 
   /**
@@ -264,6 +294,8 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     _functionalReqs: Record<string, boolean>
   ): {
     score: number;
+    bonusScore: number;
+    bonusMax: number;
     blocking: FeedbackItem[];
     warnings: FeedbackItem[];
     positive: FeedbackItem[];
@@ -272,8 +304,13 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     const warnings: FeedbackItem[] = [];
     const positive: FeedbackItem[] = [];
     let score = 0;
+    let bonusScore = 0;
+    let bonusMax = 0;
 
     for (const pathConfig of paths) {
+      if (pathConfig.isBonus) {
+        bonusMax += pathConfig.weight;
+      }
       // Check if path is required
       const isRequired = pathConfig.required;
 
@@ -296,7 +333,12 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       // Evaluate found paths
       const bestPath = this.selectBestPath(foundPaths, pathConfig);
       if (bestPath.valid) {
-        score += pathConfig.weight;
+        if (pathConfig.isBonus) {
+          bonusScore += pathConfig.weight;
+          bonusMax += pathConfig.weight;
+        } else {
+          score += pathConfig.weight;
+        }
         positive.push({
           category: "architecture",
           severity: "positive",
@@ -310,11 +352,14 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
           message: pathConfig.feedbackTemplates.suboptimal || `Path exists but could be optimized: ${pathConfig.name}`,
           relatedTo: pathConfig.id,
         });
-        score += pathConfig.weight * 0.5; // Partial credit
+        const allowPartial = pathConfig.required && !pathConfig.isBonus;
+        if (allowPartial) {
+          score += pathConfig.weight * 0.5; // Partial credit
+        }
       }
     }
 
-    return { score, blocking, warnings, positive };
+    return { score, bonusScore, bonusMax, blocking, warnings, positive };
   }
 
   /**
@@ -465,6 +510,8 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     nfrValues: DesignScoringInput["nfrValues"]
   ): {
     score: number;
+    bonusScore: number;
+    bonusMax: number;
     blocking: FeedbackItem[];
     warnings: FeedbackItem[];
     positive: FeedbackItem[];
@@ -473,8 +520,13 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     const warnings: FeedbackItem[] = [];
     const positive: FeedbackItem[] = [];
     let score = 0;
+    let bonusScore = 0;
+    let bonusMax = 0;
 
     for (const pattern of patterns) {
+      if (pattern.isBonus) {
+        bonusMax += pattern.weight;
+      }
       // Check if pattern is triggered
       const isTriggered = this.isPatternTriggered(pattern, functionalReqs, nfrValues);
       if (!isTriggered && !pattern.required) {
@@ -485,7 +537,12 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       const implemented = this.checkPatternImplementation(nodes, edges, pattern);
 
       if (implemented.success) {
-        score += pattern.weight;
+        if (pattern.isBonus) {
+          bonusScore += pattern.weight;
+          bonusMax += pattern.weight;
+        } else {
+          score += pattern.weight;
+        }
         positive.push({
           category: "architecture",
           severity: "positive",
@@ -508,7 +565,7 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       }
     }
 
-    return { score, blocking, warnings, positive };
+    return { score, bonusScore, bonusMax, blocking, warnings, positive };
   }
 
   /**
@@ -557,10 +614,15 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       return baseTarget === baseNode;
     };
 
-    // Check required components exist
+    // Check required components exist (respecting duplicate requirements)
+    const requiredCounts: Record<string, number> = {};
     for (const requiredKind of pattern.requiredComponents) {
-      const hasComponent = nodes.some((node) => matchesKind(node.spec.kind, requiredKind));
-      if (!hasComponent) {
+      requiredCounts[requiredKind] = (requiredCounts[requiredKind] || 0) + 1;
+    }
+
+    for (const [requiredKind, count] of Object.entries(requiredCounts)) {
+      const matches = nodes.filter((node) => matchesKind(node.spec.kind, requiredKind));
+      if (matches.length < count) {
         return { success: false, incorrect: false };
       }
     }
@@ -590,13 +652,20 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
    * Check if a connection exists between component types
    * Uses shared bidirectional connection logic from utils.ts
    * Now treats ALL connections as bidirectional to match simulation behavior
+   * OPTIMIZED: Uses cache to avoid repeated BFS traversals
    */
   private checkConnection(
     nodes: PlacedNode[],
     edges: Edge[],
     connection: ArchitecturePattern["requiredConnections"][0]
   ): boolean {
-    console.log(`[checkConnection] Checking ${connection.from} -> ${connection.to}`);
+    // Create cache key (bidirectional, so normalize order)
+    const cacheKey = [connection.from, connection.to].sort().join("→");
+
+    // Check cache first
+    if (this.connectionCache.has(cacheKey)) {
+      return this.connectionCache.get(cacheKey)!;
+    }
 
     // Use shared connection checker (always bidirectional)
     const hasConnection = hasConnectionBetweenKinds(
@@ -606,7 +675,9 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       connection.to
     );
 
-    console.log(`[checkConnection] Result: ${hasConnection}`);
+    // Cache result
+    this.connectionCache.set(cacheKey, hasConnection);
+
     return hasConnection;
   }
 }

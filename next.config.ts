@@ -6,9 +6,6 @@ const isCI = Boolean(process.env.CI);
 
 const nextConfig: NextConfig = {
   /* config options here */
-  turbopack: {
-    root: __dirname,
-  },
   webpack(config, { dev }) {
     // Avoid webpack persisting very large serialized strings to disk while keeping repeat builds fast.
     // Use an in-memory cache in dev for responsiveness and fall back to the filesystem cache for production builds.
@@ -34,6 +31,7 @@ const nextConfig: NextConfig = {
     // Use CI for type safety so local builds avoid duplicate work.
     ignoreBuildErrors: !isCI,
   },
+  outputFileTracingRoot: __dirname,
 
   // Add PostHog rewrites to support analytics ingestion endpoints
   async rewrites() {

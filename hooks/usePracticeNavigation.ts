@@ -8,13 +8,13 @@ import { STEP_CONFIGS } from "@/lib/practice/step-configs";
 import { logger } from "@/lib/logger";
 import { validateDesignForScenario } from "@/lib/practice/validation";
 import { SCENARIOS } from "@/lib/scenarios";
+import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
 type NavigationOptions = {
   verification: VerificationState;
   setVerification: (state: VerificationState) => void;
-  scoringFeedback: FeedbackResult | null;
   setScoringFeedback: (feedback: FeedbackResult | null) => void;
   waitingForSimulation: boolean;
   setWaitingForSimulation: (waiting: boolean) => void;
@@ -41,7 +41,6 @@ export function usePracticeNavigation(
   const {
     verification,
     setVerification,
-    scoringFeedback,
     setScoringFeedback,
     waitingForSimulation,
     setWaitingForSimulation,
@@ -83,117 +82,140 @@ export function usePracticeNavigation(
   };
 
   const handleNext = async () => {
-    if (session.isReadOnly) return;
+    try {
+      if (session.isReadOnly) return;
 
-    // Prevent double-clicks while already verifying or waiting for simulation
-    if (verification.isVerifying || waitingForSimulation) {
-      console.log("[handleNext] Already verifying or waiting, ignoring click");
-      return;
-    }
+      // Prevent double-clicks while already verifying or waiting for simulation
+      if (verification.isVerifying || waitingForSimulation) {
+        console.log("[handleNext] Already verifying or waiting, ignoring click");
+        return;
+      }
 
-    // Steps that need scoring evaluation (including sandbox for design scoring)
-    const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
+      // Steps that need scoring evaluation (including sandbox for design scoring)
+      const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
 
-    let iterativeCoverage: IterativeFeedbackResult | null = null;
+      let iterativeCoverage: IterativeFeedbackResult | null = null;
 
-    if (stepsNeedingScoring.includes(session.currentStep)) {
-      // Check if we have a cached score for this step (only for steps that are scored)
-      const cachedScore = session.currentStep === "functional"
-        ? session.state.scores?.functional
-        : session.currentStep === "nonFunctional"
-        ? session.state.scores?.nonFunctional
-        : session.currentStep === "api"
-        ? session.state.scores?.api
-        : null;
+      if (stepsNeedingScoring.includes(session.currentStep)) {
+        // Check if we have a cached score for this step (only for steps that are scored)
+        const cachedScore = session.currentStep === "functional"
+          ? session.state.scores?.functional
+          : session.currentStep === "nonFunctional"
+          ? session.state.scores?.nonFunctional
+          : session.currentStep === "api"
+          ? session.state.scores?.api
+          : null;
 
-      logger.info(`[handleNext] Step: ${session.currentStep}, has cached score: ${!!cachedScore}`);
+        logger.info(`[handleNext] Step: ${session.currentStep}, has cached score: ${!!cachedScore}`);
 
-      // If we have a cached score, use it immediately (skip re-evaluation)
-      if (cachedScore && session.currentStep !== "sandbox") {
-        logger.info(`[handleNext] Using cached score for ${session.currentStep}, skipping evaluation`);
+        // If we have a cached score, use it immediately (skip re-evaluation)
+        if (cachedScore && session.currentStep !== "sandbox") {
+          logger.info(`[handleNext] Using cached score for ${session.currentStep}, skipping evaluation`);
 
-        // Re-trigger the iterative feedback with the cached content
-        if (getFocusedFeedback) {
+          // Re-trigger the iterative feedback with the cached content
+          if (getFocusedFeedback) {
+            setVerification({ isVerifying: true, result: null, error: null });
+
+            try {
+              logger.info(`[handleNext] Getting iterative feedback for cached ${session.currentStep}`);
+              iterativeCoverage = await getFocusedFeedback(session.currentStep, session);
+              logger.info(`[handleNext] Cached iterative coverage result:`, {
+                score: iterativeCoverage?.score.percentage,
+                blocking: iterativeCoverage?.ui.blocking,
+                hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt
+              });
+            } catch (error) {
+              logger.error(`Error getting ${session.currentStep} cached coverage:`, error);
+            }
+
+            if (iterativeCoverage?.ui.blocking) {
+              logger.info(`[handleNext] Cached iterative feedback blocking, showing modal and returning`);
+              setVerification({ isVerifying: false, result: null, error: null });
+              return;
+            }
+
+            setVerification({ isVerifying: false, result: null, error: null });
+
+            // Always show the modal if we have iterative coverage (let user decide to continue)
+            if (iterativeCoverage) {
+              // Show the modal - user can click Continue to proceed
+              return;
+            }
+          }
+
+          // If no iterative feedback system, check the cached score for what to do
+          if (cachedScore.blocking.length > 0) {
+            // Show cached feedback with blocking issues
+            setScoringFeedback(cachedScore);
+            return;
+          }
+
+          // Show cached feedback and let user continue
+          setScoringFeedback(cachedScore);
+          return;
+        }
+
+        // Only run iterative feedback if we don't have a cached score
+        if ((session.currentStep === "functional" || session.currentStep === "nonFunctional" || session.currentStep === "api") && getFocusedFeedback && !cachedScore) {
           setVerification({ isVerifying: true, result: null, error: null });
 
           try {
-            logger.info(`[handleNext] Getting iterative feedback for cached ${session.currentStep}`);
+            logger.info(`[handleNext] Getting iterative feedback for ${session.currentStep}`);
             iterativeCoverage = await getFocusedFeedback(session.currentStep, session);
-            logger.info(`[handleNext] Cached iterative coverage result:`, {
+            logger.info(`[handleNext] Iterative coverage result:`, {
               score: iterativeCoverage?.score.percentage,
               blocking: iterativeCoverage?.ui.blocking,
               hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt
             });
           } catch (error) {
-            logger.error(`Error getting ${session.currentStep} cached coverage:`, error);
+            logger.error(`Error getting ${session.currentStep} coverage:`, error);
           }
 
           if (iterativeCoverage?.ui.blocking) {
-            logger.info(`[handleNext] Cached iterative feedback blocking, showing modal and returning`);
+            logger.info(`[handleNext] Iterative feedback blocking, showing modal and returning`);
             setVerification({ isVerifying: false, result: null, error: null });
             return;
           }
 
           setVerification({ isVerifying: false, result: null, error: null });
-
-          // Always show the modal if we have iterative coverage (let user decide to continue)
-          if (iterativeCoverage) {
-            // Show the modal - user can click Continue to proceed
+        }
+        if (session.currentStep === "sandbox") {
+          const guidance = evaluateDesignGuidance(session.state.design);
+          if (guidance && guidance.level === "core") {
+            setScoringFeedback({
+              score: 0,
+              maxScore: session.state.scores?.design?.maxScore ?? 35,
+              percentage: 0,
+              blocking: [
+                {
+                  category: "architecture",
+                  severity: "blocking",
+                  message: guidance.summary,
+                },
+              ],
+              warnings: [],
+              positive: [],
+              suggestions: [],
+              improvementQuestion: guidance.question,
+            });
+            setVerification({ isVerifying: false, result: null, error: null });
             return;
           }
-        }
 
-        // If no iterative feedback system, check the cached score for what to do
-        if (cachedScore.blocking.length > 0) {
-          // Show cached feedback with blocking issues
-          setScoringFeedback(cachedScore);
-          return;
-        }
+          const result = session.state.run.lastResult ?? null;
+          const hasRun = Boolean(result);
+          const hasDesignScore = session.state.scores?.design !== undefined;
 
-        // Show cached feedback and let user continue
-        setScoringFeedback(cachedScore);
-        return;
-      }
+          // If simulation hasn't been run or design score is missing, run it automatically
+          if (!hasRun || !hasDesignScore) {
+            const validation = validateDesignForScenario(
+              scenario,
+              session.state.design.nodes,
+              session.state.design.edges
+            );
 
-      // Only run iterative feedback if we don't have a cached score
-      if ((session.currentStep === "functional" || session.currentStep === "nonFunctional" || session.currentStep === "api") && getFocusedFeedback && !cachedScore) {
-        setVerification({ isVerifying: true, result: null, error: null });
-
-        try {
-          logger.info(`[handleNext] Getting iterative feedback for ${session.currentStep}`);
-          iterativeCoverage = await getFocusedFeedback(session.currentStep, session);
-          logger.info(`[handleNext] Iterative coverage result:`, {
-            score: iterativeCoverage?.score.percentage,
-            blocking: iterativeCoverage?.ui.blocking,
-            hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt
-          });
-        } catch (error) {
-          logger.error(`Error getting ${session.currentStep} coverage:`, error);
-        }
-
-        if (iterativeCoverage?.ui.blocking) {
-          logger.info(`[handleNext] Iterative feedback blocking, showing modal and returning`);
-          setVerification({ isVerifying: false, result: null, error: null });
-          return;
-        }
-
-        setVerification({ isVerifying: false, result: null, error: null });
-      }
-      if (session.currentStep === "sandbox") {
-        const result = session.state.run.lastResult ?? null;
-        const hasRun = Boolean(result);
-        const hasDesignScore = session.state.scores?.design !== undefined;
-
-        // If simulation hasn't been run or design score is missing, run it automatically
-        if (!hasRun || !hasDesignScore) {
-          const validation = validateDesignForScenario(
-            scenario,
-            session.state.design.nodes,
-            session.state.design.edges
-          );
-
-          if (!validation.ok) {
-            setWaitingForSimulation(false);
+            if (!validation.ok) {
+              setWaitingForSimulation(false);
 
             const validationFeedback: FeedbackResult = {
               score: 0,
@@ -215,144 +237,143 @@ export function usePracticeNavigation(
               suggestions: [],
             };
 
-            setScoringFeedback(validationFeedback);
-            setVerification({ isVerifying: false, result: null, error: null });
-            return;
+              setScoringFeedback(validationFeedback);
+              setVerification({ isVerifying: false, result: null, error: null });
+              return;
+            }
+
+            if (window._runSimulation) {
+              logger.info("Automatically running simulation from Next button");
+              setWaitingForSimulation(true);
+              if (typeof window.requestAnimationFrame === "function") {
+                window.requestAnimationFrame(() => {
+                  window._runSimulation?.();
+                });
+              } else {
+                setTimeout(() => window._runSimulation?.(), 0);
+              }
+              return;
+            } else {
+              // Fallback: Show message if function not available
+              setVerification({
+                isVerifying: false,
+                result: {
+                  canProceed: false,
+                  blocking: ["Unable to run simulation. Please refresh the page and try again."],
+                  warnings: [],
+                },
+                error: null,
+              });
+              return;
+            }
           }
 
-          if (window._runSimulation) {
-            logger.info("Automatically running simulation from Next button");
-            setWaitingForSimulation(true);
-            if (typeof window.requestAnimationFrame === "function") {
-              window.requestAnimationFrame(() => {
-                window._runSimulation?.();
-              });
-            } else {
-              setTimeout(() => window._runSimulation?.(), 0);
-            }
-            return;
-          } else {
-            // Fallback: Show message if function not available
+          setVerification({ isVerifying: true, result: null, error: null });
+
+          // If we reach here, simulation has already been run
+          // Build and show feedback
+          const evaluationResultCheck = buildSandboxFeedback(session);
+          if (!evaluationResultCheck) {
             setVerification({
               isVerifying: false,
               result: {
                 canProceed: false,
-                blocking: ["Unable to run simulation. Please refresh the page and try again."],
+                blocking: ["Design evaluation is missing. Please run the simulation again."],
                 warnings: [],
               },
               error: null,
             });
             return;
           }
-        }
 
-        setVerification({ isVerifying: true, result: null, error: null });
-
-        // If we reach here, simulation has already been run
-        // Check if feedback is already showing
-        if (scoringFeedback) {
-          // Feedback is already shown, check if can proceed
-          if (scoringFeedback.blocking.length === 0) {
-            // Can proceed - clear simulation state first
-            setWaitingForSimulation(false);
-            setVerification({ isVerifying: false, result: null, error: null });
-            proceedToNext();
-          }
-          // Otherwise stay on page with feedback
+          setScoringFeedback(evaluationResultCheck.feedback);
+          setWaitingForSimulation(false);
+          setVerification({ isVerifying: false, result: null, error: null });
           return;
         }
 
-        // Need to show feedback - build it from current state
-        const evaluationResult = buildSandboxFeedback(session);
-        if (!evaluationResult) {
+        // Non-sandbox steps: run evaluation first to check score
+        setVerification({ isVerifying: true, result: null, error: null });
+
+        // Run scoring evaluation first to determine if we need iterative feedback
+        const result = await evaluateCurrentStep(session.currentStep, session);
+        setVerification({ isVerifying: false, result: null, error: null });
+
+        if (!result) {
+          // Evaluation failed - show error
           setVerification({
             isVerifying: false,
-            result: {
-              canProceed: false,
-              blocking: ["Design evaluation is missing. Please run the simulation again."],
-              warnings: [],
-            },
-            error: null,
+            result: null,
+            error: "Evaluation failed. Please try again.",
           });
           return;
         }
 
-        setScoringFeedback(evaluationResult.feedback);
-        setWaitingForSimulation(false);
-        setVerification({ isVerifying: false, result: null, error: null });
-        return;
-      }
+        // Check if score is below threshold (40%)
+        const scorePercentage = result.percentage ?? 0;
+        const hasBlockingIssues = result.blocking.length > 0;
 
-      // Non-sandbox steps: run evaluation first to check score
-      setVerification({ isVerifying: true, result: null, error: null });
+        // Steps that support iterative feedback
+        const stepsWithIterativeFeedback: PracticeStep[] = ["functional", "nonFunctional", "api"];
 
-      // Run scoring evaluation first to determine if we need iterative feedback
-      const result = await evaluateCurrentStep(session.currentStep, session);
-      setVerification({ isVerifying: false, result: null, error: null });
+        // For scores 40-99%, get improvement question FIRST, then set feedback once
+        // This prevents the iterative feedback modal from showing and ensures everything loads together
+        if (scorePercentage >= 40 && scorePercentage < 100 && stepsWithIterativeFeedback.includes(session.currentStep)) {
+          try {
+            const improvementQuestion =
+              iterativeCoverage?.ui.nextPrompt ?? iterativeCoverage?.nextQuestion?.question ?? null;
 
-      if (!result) {
-        // Evaluation failed - show error
-        setVerification({
-          isVerifying: false,
-          result: null,
-          error: "Evaluation failed. Please try again.",
-        });
-        return;
-      }
-
-      // Check if score is below threshold (40%)
-      const scorePercentage = result.percentage ?? 0;
-      const hasBlockingIssues = result.blocking.length > 0;
-
-      // Steps that support iterative feedback
-      const stepsWithIterativeFeedback: PracticeStep[] = ["functional", "nonFunctional", "api"];
-
-      // For scores 40-99%, get improvement question FIRST, then set feedback once
-      // This prevents the iterative feedback modal from showing and ensures everything loads together
-      if (scorePercentage >= 40 && scorePercentage < 100 && stepsWithIterativeFeedback.includes(session.currentStep)) {
-        try {
-          const improvementQuestion =
-            iterativeCoverage?.ui.nextPrompt ?? iterativeCoverage?.nextQuestion?.question ?? null;
-
-          if (improvementQuestion) {
-            const updatedResult: FeedbackResult = {
-              ...result,
-              improvementQuestion,
-            };
-            setScoringFeedback(updatedResult);
-            logger.info("Added improvement question:", improvementQuestion);
-          } else {
+            if (improvementQuestion) {
+              const updatedResult: FeedbackResult = {
+                ...result,
+                improvementQuestion,
+              };
+              setScoringFeedback(updatedResult);
+              logger.info("Added improvement question:", improvementQuestion);
+            } else {
+              setScoringFeedback(result);
+            }
+          } catch (error) {
+            logger.error("Error getting improvement question:", error);
+            // Set feedback with original result
             setScoringFeedback(result);
           }
-        } catch (error) {
-          logger.error("Error getting improvement question:", error);
-          // Set feedback with original result
+        } else {
+          // Not in 40-99% range, set feedback immediately
           setScoringFeedback(result);
         }
+
+        // Show final feedback (score >= 40% or no iterative feedback)
+        // Check if there are blocking issues
+        if (hasBlockingIssues) {
+          // Show feedback, user must revise
+          return;
+        }
+
+        // If warnings, suggestions, or positive feedback, show it and allow continue
+        if (result.warnings.length > 0 || result.suggestions.length > 0 || result.positive.length > 0) {
+          // Feedback is already shown via scoringFeedback state
+          // User can click "Continue" to proceed
+          return;
+        }
+
+        // Edge case: no feedback at all (shouldn't happen), proceed automatically
+        proceedToNext();
       } else {
-        // Not in 40-99% range, set feedback immediately
-        setScoringFeedback(result);
+        // No verification needed
+        proceedToNext();
       }
-
-      // Show final feedback (score >= 40% or no iterative feedback)
-      // Check if there are blocking issues
-      if (hasBlockingIssues) {
-        // Show feedback, user must revise
-        return;
-      }
-
-      // If warnings, suggestions, or positive feedback, show it and allow continue
-      if (result.warnings.length > 0 || result.suggestions.length > 0 || result.positive.length > 0) {
-        // Feedback is already shown via scoringFeedback state
-        // User can click "Continue" to proceed
-        return;
-      }
-
-      // Edge case: no feedback at all (shouldn't happen), proceed automatically
-      proceedToNext();
-    } else {
-      // No verification needed
-      proceedToNext();
+    } catch (error) {
+      logger.error("[handleNext] Unexpected error:", error);
+      setVerification({
+        isVerifying: false,
+        result: {
+          canProceed: false,
+          blocking: [`An error occurred: ${error instanceof Error ? error.message : String(error)}`],
+          warnings: [],
+        },
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   };
 

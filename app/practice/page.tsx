@@ -36,7 +36,7 @@ export default function PracticePage() {
             completed.add(problem.slug);
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // Ignore parsing errors
       }
     });

@@ -155,10 +155,18 @@ export function useIterativeFeedback() {
     setState({ isLoading: false, result: null, error: null, lastDurationMs: null });
   }, []);
 
+  /**
+   * Set iterative feedback state directly (for sandbox design scoring)
+   */
+  const setFeedbackState = useCallback((newState: Partial<IterativeFeedbackState>) => {
+    setState(prev => ({ ...prev, ...newState }));
+  }, []);
+
   return {
     state,
     getFocusedFeedback,
     resetFeedback,
     clearState,
+    setFeedbackState,
   };
 }

@@ -1,13 +1,28 @@
 "use client";
 
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { notFound, useParams, useSearchParams } from "next/navigation";
-import PracticeFlow from "@/components/practice/PracticeFlow";
 import { logger } from "@/lib/logger";
 import { PracticeSessionProvider } from "@/components/practice/session/PracticeSessionProvider";
 import { decodeDesign } from "@/lib/shareLink";
-import { PracticeSidebar } from "@/components/practice/PracticeSidebar";
 import type { PracticeState } from "@/lib/practice/types";
+
+// Dynamically import heavy components to avoid chunk loading issues
+const PracticeFlow = dynamic(() => import("@/components/practice/PracticeFlow"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full items-center justify-center">
+      <div className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-8 text-center text-sm text-zinc-400">
+        Loading practice flow…
+      </div>
+    </div>
+  ),
+});
+
+const PracticeSidebar = dynamic(() => import("@/components/practice/PracticeSidebar").then(mod => ({ default: mod.PracticeSidebar })), {
+  ssr: false,
+});
 
 const VALID_SLUG = "url-shortener";
 

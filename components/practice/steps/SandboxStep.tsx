@@ -12,21 +12,16 @@ import { COMPONENT_LIBRARY } from "@/app/components/data";
 const BASE_COMPONENTS: ComponentKind[] = [
   "Web",
   "API Gateway",
-  "Load Balancer",
   "Service",
   "Cache (Redis)",
   "DB (Postgres)",
-  "CDN",
-  "Edge Function",
-  "Object Store (S3)",
-  "Tracing/Logging",
 ];
 
 const analyticsComponents: ComponentKind[] = ["Message Queue (Kafka Topic)", "Worker Pool"];
 const rateLimitComponents: ComponentKind[] = ["Rate Limiter"];
 const adminComponents: ComponentKind[] = ["Auth"];
 const searchComponents: ComponentKind[] = ["Search Index (Elastic)"];
-const scalingComponents: ComponentKind[] = ["Read Replica", "Shard Router"];
+const scalingComponents: ComponentKind[] = []; // Removed: Read Replica, Shard Router - not needed for max points
 const streamingComponents: ComponentKind[] = ["Stream Processor (Flink)"];
 const idComponents: ComponentKind[] = ["ID Generator (Snowflake)"];
 

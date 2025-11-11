@@ -52,14 +52,6 @@ const RECOMMENDED_COMPONENTS: ComponentKind[] = [
   "Service",
   "Cache (Redis)",
   "DB (Postgres)",
-  "CDN",
-  "Load Balancer",
-  "Message Queue (Kafka Topic)",
-  "Worker Pool",
-  "Rate Limiter",
-  "Tracing/Logging",
-  "Object Store (S3)",
-  "Edge Function",
 ];
 
 const componentSpecFor = (kind: ComponentKind) => {
