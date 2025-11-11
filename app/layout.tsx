@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -163,6 +164,7 @@ export default function RootLayout({
     >
       <html lang="en" className="h-full dark">
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark safe-area-inset`}>
+          <ScrollToTop />
           <PostHogProvider>
             <ThemeProvider>
               {children}
