@@ -28,17 +28,17 @@ export function FeedbackModal({
 
   const passed = feedbackResult.percentage >= 40;
   const isPerfect = feedbackResult.percentage === 100;
-  const roundedScore = Math.round(feedbackResult.score * 100) / 100;
+  const roundedScore = Math.round(feedbackResult.score);
   const hasBonus = Boolean(feedbackResult.bonus && feedbackResult.bonus.score > 0 && feedbackResult.bonus.maxScore > 0);
   const totalScore = feedbackResult.totalScore ?? (feedbackResult.score + (feedbackResult.bonus?.score ?? 0));
   const totalMaxScore = feedbackResult.totalMaxScore ?? (feedbackResult.maxScore + (feedbackResult.bonus?.maxScore ?? 0));
-  const roundedTotal = Math.round(totalScore * 100) / 100;
+  const roundedTotal = Math.round(totalScore);
   const displayedPercentage =
     feedbackResult.maxScore > 0
       ? Math.round((feedbackResult.score / feedbackResult.maxScore) * 100)
       : Math.round(feedbackResult.percentage);
   const bonusSummary = hasBonus
-    ? ` • +${Math.round((feedbackResult.bonus!.score) * 100) / 100} bonus (Total ${roundedTotal}/${totalMaxScore})`
+    ? ` • +${Math.round(feedbackResult.bonus!.score)} bonus (Total ${roundedTotal}/${totalMaxScore})`
     : "";
 
   // Extract positive messages (limit to 3)

@@ -46,8 +46,8 @@ export function IterativeFeedbackModal({
 
   // Format score display
   const scoreDisplay = durationMs !== undefined && durationMs !== null
-    ? `Score: ${result.score.obtained}/${result.score.max} (${displayedPercentage}%) • ${(durationMs / 1000).toFixed(2)}s`
-    : `Score: ${result.score.obtained}/${result.score.max} (${displayedPercentage}%)`;
+    ? `Score: ${Math.round(result.score.obtained)}/${result.score.max} (${displayedPercentage}%) • ${(durationMs / 1000).toFixed(2)}s`
+    : `Score: ${Math.round(result.score.obtained)}/${result.score.max} (${displayedPercentage}%)`;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

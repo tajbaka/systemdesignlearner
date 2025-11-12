@@ -55,7 +55,7 @@ export function VerificationFeedback({
         {showScore && feedbackResult && (
           <div className="mb-3 flex items-center justify-between border-b border-white/10 pb-3">
             <div className="text-sm font-semibold text-white">
-              Score: {Math.round(feedbackResult.score * 100) / 100}/{feedbackResult.maxScore}
+              Score: {Math.round(feedbackResult.score)}/{feedbackResult.maxScore}
             </div>
             <div
               className={`text-2xl font-bold ${
