@@ -75,54 +75,25 @@ const buildSharePayload = (state: ReturnType<typeof usePracticeSession>["state"]
 
 export function ScoreShareStep() {
   const { state, setStep, isReadOnly: _isReadOnly } = usePracticeSession();
-  console.log("[ScoreShareStep] Component rendered, design score:", state.scores?.design);
   const lastResult = state.run.lastResult;
   const scores = state.scores;
   const score = lastResult?.scoreBreakdown;
-  const outcome = score?.outcome ?? (lastResult?.failedByChaos ? "chaos_fail" : undefined);
   const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
-
-  // Calculate cumulative score from all practice steps
-  const simulationScoreResult = useMemo<FeedbackResult>(() => {
-    const base = createEmptyResult(5);
-
-    if (!lastResult) {
-      return base;
-    }
-
-    if (lastResult.scoreBreakdown?.outcome === "pass") {
-      return {
-        ...base,
-        score: base.maxScore,
-        percentage: 100,
-        positive: [
-          {
-            category: "performance",
-            severity: "positive",
-            message: "✓ Simulation passed with meeting requirements",
-          },
-        ],
-      };
-    }
-
-    return base;
-  }, [lastResult]);
 
   const cumulativeScore: CumulativeScore | null = useMemo(() => {
     if (!scores?.functional || !scores?.nonFunctional || !scores?.api) {
       return null;
     }
 
-    const designScore = scores.design ?? createEmptyResult(30);
+    const designScore = scores.design ?? createEmptyResult(35);
 
     return calculateCumulativeScore(
       scores.functional,
       scores.nonFunctional,
       scores.api,
-      designScore,
-      simulationScoreResult
+      designScore
     );
-  }, [scores, simulationScoreResult]);
+  }, [scores]);
 
   const getStepResult = useCallback(
     (key: "functional" | "nonFunctional" | "api" | "design", fallbackMax: number): FeedbackResult => {
@@ -133,28 +104,9 @@ export function ScoreShareStep() {
         }
       }
 
-      // Special handling for design: combine design + simulation scores
-      if (key === "design") {
-        const designScore = scores?.design ?? createEmptyResult(30);
-        const simScore = simulationScoreResult;
-
-        // Combine the scores
-        const combined: FeedbackResult = {
-          score: designScore.score + simScore.score,
-          maxScore: designScore.maxScore + simScore.maxScore, // 30 + 5 = 35
-          percentage: ((designScore.score + simScore.score) / (designScore.maxScore + simScore.maxScore)) * 100,
-          blocking: [...designScore.blocking, ...simScore.blocking],
-          warnings: [...designScore.warnings, ...simScore.warnings],
-          positive: [...designScore.positive, ...simScore.positive],
-          suggestions: [...designScore.suggestions, ...simScore.suggestions],
-        };
-
-        return combined;
-      }
-
       return scores?.[key] ?? createEmptyResult(fallbackMax);
     },
-    [scores, state.iterativeFeedback, simulationScoreResult]
+    [scores, state.iterativeFeedback]
   );
 
   const stepScoreItems = useMemo(
@@ -163,8 +115,8 @@ export function ScoreShareStep() {
         id: "functional",
         label: "Functional Requirements",
         barClass: "bg-emerald-500",
-        result: getStepResult("functional", 20),
-        maxFallback: 20,
+        result: getStepResult("functional", 25),
+        maxFallback: 25,
       },
       {
         id: "nonFunctional",
@@ -184,7 +136,7 @@ export function ScoreShareStep() {
         id: "design",
         label: "High-Level Design",
         barClass: "bg-purple-500",
-        result: getStepResult("design", 35), // Combined design (30) + simulation (5)
+        result: getStepResult("design", 35),
         maxFallback: 35,
       },
     ].map((step) => ({
@@ -237,12 +189,6 @@ export function ScoreShareStep() {
     : "https://www.linkedin.com/shareArticle";
 
   const hints = score?.hints ?? [];
-
-  const summaryCopy = outcome === "pass"
-    ? "Redirect path meets the targets you set — nice work!"
-    : outcome === "partial"
-      ? "Close! Address the notes below, then re-run to bump your score."
-      : "Keep iterating. Use the hints and rerun the simulation.";
 
   return (
     <div className="space-y-6">

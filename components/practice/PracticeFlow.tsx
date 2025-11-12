@@ -104,23 +104,12 @@ function PracticeFlowInner() {
     if (!hydrated || isReadOnly) return;
     const signedIn = Boolean(isSignedIn);
 
-    console.log("[PracticeFlow] Auth effect running:", {
-      signedIn,
-      stateAuthIsAuthed: state.auth.isAuthed,
-      currentStep,
-      showAuthModal,
-      sandboxCompleted: state.completed.sandbox,
-      scoreCompleted: state.completed.score
-    });
-
     if (signedIn && !state.auth.isAuthed) {
-      console.log("[PracticeFlow] ✅ User signed in via Clerk, setting isAuthed=true");
       setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
       return;
     }
 
     if (!signedIn && state.auth.isAuthed) {
-      console.log("[PracticeFlow] User signed out, setting isAuthed=false");
       setAuth((prev) => ({ ...prev, isAuthed: false }));
       return;
     }
@@ -128,30 +117,20 @@ function PracticeFlowInner() {
     // If not authenticated and on score step with auth modal showing, allow it
     // This is the normal flow when user clicks Continue on sandbox
     if (!state.auth.isAuthed && currentStep === "score" && showAuthModal) {
-      console.log("[PracticeFlow] On score step with auth modal, allowing it");
       return;
     }
 
     // If not authenticated (and not signed in via Clerk) and has completed protected steps, clear them
     // Don't clear if user is signed in via Clerk - they're in the process of auth state sync
     if (!state.auth.isAuthed && !signedIn) {
-      console.log("[PracticeFlow] Auth check - not authenticated and not signed in:", {
-        hasScoreCompleted: state.completed.score,
-        hasSandboxCompleted: state.completed.sandbox,
-        currentStep,
-        showAuthModal
-      });
       if (state.completed.score) {
-        console.log("[PracticeFlow] ❌ CLEARING score completion");
         markStep("score", false);
       }
       if (state.completed.sandbox) {
-        console.log("[PracticeFlow] ❌ CLEARING sandbox completion");
         markStep("sandbox", false);
       }
       // Only redirect if not in the auth flow (modal not showing)
       if (currentStep === "score" && !showAuthModal) {
-        console.log("[PracticeFlow] Not authenticated and on score step without modal, redirecting to sandbox");
         setStep("sandbox");
       }
     }
@@ -170,7 +149,6 @@ function PracticeFlowInner() {
   ]);
 
   useEffect(() => {
-    console.log("[PracticeFlow] Step changed to:", currentStep, "Design score:", session.state.scores?.design);
     if (currentStep !== "sandbox") {
       setMobilePaletteOpen(false);
       setRunPanelOpen(false);
@@ -180,7 +158,6 @@ function PracticeFlowInner() {
     clearScoring();
     clearIterativeFeedback();
     setWaitingForSimulation(false);
-    console.log("[PracticeFlow] After clearing UI state, design score:", session.state.scores?.design);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
@@ -435,9 +412,6 @@ function PracticeFlowInner() {
             const currentIndex = PRACTICE_STEPS.indexOf(currentStep);
             const targetIndex = PRACTICE_STEPS.indexOf(step);
 
-            // Check if target step is already completed
-            const targetStepCompleted = session.state.completed[step];
-
             // Calculate the furthest unlocked step (same logic as PracticeStepper)
             let unlockedIndex = -1;
             PRACTICE_STEPS.forEach((s, index) => {
@@ -498,19 +472,10 @@ function PracticeFlowInner() {
               // Clear any verification errors when navigating freely
               clearVerification();
 
-              console.log("[PracticeFlow] Free navigation from", currentStep, "to", step, "Design score before nav:", session.state.scores?.design);
-
               // Special case: If navigating from sandbox to score for the first time
               // (score step not yet completed), ensure design score exists
               if (currentStep === "sandbox" && step === "score" && !session.state.completed.score) {
-                console.log("[PracticeFlow] Navigating from sandbox to score (first time):", {
-                  hasDesignScore: !!session.state.scores?.design,
-                  hasSimulationResult: !!session.state.run.lastResult,
-                  designScore: session.state.scores?.design
-                });
-
                 if (!session.state.scores?.design) {
-                  console.log("[PracticeFlow] No design score found - blocking navigation");
                   setVerification({
                     isVerifying: false,
                     result: null,
@@ -521,7 +486,6 @@ function PracticeFlowInner() {
               }
 
               setStep(step);
-              console.log("[PracticeFlow] After setStep, design score:", session.state.scores?.design);
             }
           }}
           readOnly={isReadOnly}

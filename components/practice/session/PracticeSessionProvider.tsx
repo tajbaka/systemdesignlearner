@@ -236,37 +236,23 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
 };
 
 const deriveInitialStep = (state: PracticeState): PracticeStep => {
-  console.log("[deriveInitialStep] Deriving initial step from state:", {
-    completed: state.completed,
-    auth: state.auth
-  });
   for (const step of PRACTICE_STEPS) {
     if (!state.completed[step]) {
-      console.log(`[deriveInitialStep] First incomplete step: ${step}`);
       return step;
     }
   }
   const lastStep = PRACTICE_STEPS[PRACTICE_STEPS.length - 1];
-  console.log(`[deriveInitialStep] All steps complete, returning: ${lastStep}`);
   return lastStep;
 };
 
 const ensureAuthProgressConsistency = (state: PracticeState): PracticeState => {
-  console.log("[ensureAuthProgressConsistency] Checking auth consistency:", {
-    isAuthed: state.auth.isAuthed,
-    sandboxCompleted: state.completed.sandbox,
-    scoreCompleted: state.completed.score
-  });
-
   // If authenticated, keep all progress as-is
   if (state.auth.isAuthed) {
-    console.log("[ensureAuthProgressConsistency] User authenticated, keeping all progress");
     return state;
   }
 
   // If both sandbox and score are incomplete, no need to modify
   if (!state.completed.sandbox && !state.completed.score) {
-    console.log("[ensureAuthProgressConsistency] No protected steps completed, no changes needed");
     return state;
   }
 
@@ -274,7 +260,6 @@ const ensureAuthProgressConsistency = (state: PracticeState): PracticeState => {
   // Only clear if the session has been abandoned (e.g., cleared auth but kept progress)
   // This prevents clearing progress when user is actively going through the auth flow
   // The PracticeFlow component will handle step gating based on auth state
-  console.log("[ensureAuthProgressConsistency] Not authenticated but has protected progress - preserving for active session");
   return state;
 };
 
@@ -317,7 +302,6 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
 
   useEffect(() => {
     if (sharedState) {
-      console.log("[PracticeSessionProvider] Loading shared state");
       let merged = mergeState(sharedState);
       // Set currentStep to score for shared state
       merged = { ...merged, currentStep: "score" };
@@ -328,24 +312,11 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       return;
     }
 
-    console.log("[PracticeSessionProvider] Loading from localStorage");
     const stored = loadPractice(PRACTICE_SLUG);
-    console.log("[PracticeSessionProvider] Loaded state from localStorage:", {
-      hasStored: !!stored,
-      storedCompleted: stored?.completed,
-      storedAuth: stored?.auth,
-      storedCurrentStep: stored?.currentStep
-    });
     let merged = ensureAuthProgressConsistency(mergeState(stored));
-    console.log("[PracticeSessionProvider] After consistency check:", {
-      completed: merged.completed,
-      auth: merged.auth,
-      currentStep: merged.currentStep
-    });
     // Derive the initial step if currentStep is not set or doesn't make sense
     const derivedStep = deriveInitialStep(merged);
     if (!merged.currentStep || merged.currentStep !== derivedStep) {
-      console.log(`[PracticeSessionProvider] Updating currentStep from ${merged.currentStep} to ${derivedStep}`);
       merged = { ...merged, currentStep: derivedStep };
     }
     setState(merged);
@@ -577,14 +548,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       window.clearTimeout(saveTimeout.current);
       saveTimeout.current = null;
     }
-    console.log("[PracticeSessionProvider] Flushing to localStorage, state being saved:", {
-      sandboxCompleted: latestStateRef.current.completed.sandbox,
-      scoreCompleted: latestStateRef.current.completed.score,
-      currentStep: latestStateRef.current.currentStep,
-      isAuthed: latestStateRef.current.auth.isAuthed
-    });
     savePractice(latestStateRef.current);
-    console.log("[PracticeSessionProvider] Flushed state to localStorage");
   }, [isReadOnly]);
 
   const value = useMemo<PracticeSessionContextValue>(

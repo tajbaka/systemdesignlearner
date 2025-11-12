@@ -49,8 +49,7 @@ export type CumulativeScore = {
     functional: number; // out of 25
     nonFunctional: number; // out of 20
     api: number; // out of 20
-    design: number; // out of 30
-    simulation: number; // out of 5
+    design: number; // out of 35
   };
   feedback: {
     strengths: string[];

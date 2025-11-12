@@ -152,28 +152,26 @@ export function calculateCumulativeScore(
   functionalResult: FeedbackResult,
   nonFunctionalResult: FeedbackResult,
   apiResult: FeedbackResult,
-  designResult: FeedbackResult,
-  simulationResult: FeedbackResult
+  designResult: FeedbackResult
 ): CumulativeScore {
   const breakdown = {
     functional: functionalResult.score,
     nonFunctional: nonFunctionalResult.score,
     api: apiResult.score,
     design: designResult.score,
-    simulation: simulationResult.score,
   };
 
   const total = Object.values(breakdown).reduce((sum, score) => sum + score, 0);
 
   // Collect strengths (positive feedback)
   const strengths: string[] = [];
-  for (const result of [functionalResult, nonFunctionalResult, apiResult, designResult, simulationResult]) {
+  for (const result of [functionalResult, nonFunctionalResult, apiResult, designResult]) {
     strengths.push(...result.positive.slice(0, 2).map((f) => f.message)); // Top 2 from each
   }
 
   // Collect improvements needed (warnings + blocking)
   const improvements: string[] = [];
-  for (const result of [functionalResult, nonFunctionalResult, apiResult, designResult, simulationResult]) {
+  for (const result of [functionalResult, nonFunctionalResult, apiResult, designResult]) {
     improvements.push(...result.blocking.map((f) => f.message));
     improvements.push(...result.warnings.slice(0, 2).map((f) => f.message)); // Top 2 warnings
   }
