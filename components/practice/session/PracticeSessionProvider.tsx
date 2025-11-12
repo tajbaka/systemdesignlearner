@@ -200,6 +200,8 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
     return {
       ...defaults,
       ...candidate,
+      // Ensure currentStep exists, default to functional if not present (for backwards compatibility)
+      currentStep: candidate.currentStep ?? defaults.currentStep,
       requirements: ensureRequirements(candidate.requirements),
       apiDefinition: ensureApiDefinition(candidate.apiDefinition),
       design: sanitizeDesignState(candidate.design ?? defaults.design),
@@ -234,31 +236,46 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
 };
 
 const deriveInitialStep = (state: PracticeState): PracticeStep => {
+  console.log("[deriveInitialStep] Deriving initial step from state:", {
+    completed: state.completed,
+    auth: state.auth
+  });
   for (const step of PRACTICE_STEPS) {
     if (!state.completed[step]) {
+      console.log(`[deriveInitialStep] First incomplete step: ${step}`);
       return step;
     }
   }
-  return PRACTICE_STEPS[PRACTICE_STEPS.length - 1];
+  const lastStep = PRACTICE_STEPS[PRACTICE_STEPS.length - 1];
+  console.log(`[deriveInitialStep] All steps complete, returning: ${lastStep}`);
+  return lastStep;
 };
 
 const ensureAuthProgressConsistency = (state: PracticeState): PracticeState => {
+  console.log("[ensureAuthProgressConsistency] Checking auth consistency:", {
+    isAuthed: state.auth.isAuthed,
+    sandboxCompleted: state.completed.sandbox,
+    scoreCompleted: state.completed.score
+  });
+
+  // If authenticated, keep all progress as-is
   if (state.auth.isAuthed) {
+    console.log("[ensureAuthProgressConsistency] User authenticated, keeping all progress");
     return state;
   }
 
+  // If both sandbox and score are incomplete, no need to modify
   if (!state.completed.sandbox && !state.completed.score) {
+    console.log("[ensureAuthProgressConsistency] No protected steps completed, no changes needed");
     return state;
   }
 
-  return {
-    ...state,
-    completed: {
-      ...state.completed,
-      sandbox: false,
-      score: false,
-    },
-  };
+  // Don't clear progress during active sessions or auth transitions
+  // Only clear if the session has been abandoned (e.g., cleared auth but kept progress)
+  // This prevents clearing progress when user is actively going through the auth flow
+  // The PracticeFlow component will handle step gating based on auth state
+  console.log("[ensureAuthProgressConsistency] Not authenticated but has protected progress - preserving for active session");
+  return state;
 };
 
 type PracticeSessionContextValue = {
@@ -281,6 +298,7 @@ type PracticeSessionContextValue = {
     updater: (prev: PracticeIterativeFeedback[keyof PracticeIterativeFeedback]) => PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
   ) => void;
   resetIterativeFeedback: (step?: keyof PracticeIterativeFeedback) => void;
+  flushToStorage: () => void;
 };
 
 const PracticeSessionContext = createContext<PracticeSessionContextValue | undefined>(undefined);
@@ -294,26 +312,44 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
   const [state, setState] = useState<PracticeState>(() => makeInitialPracticeState());
   const [hydrated, setHydrated] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
-  const [currentStep, setCurrentStep] = useState<PracticeStep>("functional");
   const saveTimeout = useRef<number | null>(null);
   const latestStateRef = useRef(state);
 
   useEffect(() => {
     if (sharedState) {
-      const merged = mergeState(sharedState);
+      console.log("[PracticeSessionProvider] Loading shared state");
+      let merged = mergeState(sharedState);
+      // Set currentStep to score for shared state
+      merged = { ...merged, currentStep: "score" };
       setState(merged);
       setIsReadOnly(true);
-      setCurrentStep("score");
       setHydrated(true);
       track("practice_shared_viewed", { slug: PRACTICE_SLUG });
       return;
     }
 
+    console.log("[PracticeSessionProvider] Loading from localStorage");
     const stored = loadPractice(PRACTICE_SLUG);
-    const merged = ensureAuthProgressConsistency(mergeState(stored));
+    console.log("[PracticeSessionProvider] Loaded state from localStorage:", {
+      hasStored: !!stored,
+      storedCompleted: stored?.completed,
+      storedAuth: stored?.auth,
+      storedCurrentStep: stored?.currentStep
+    });
+    let merged = ensureAuthProgressConsistency(mergeState(stored));
+    console.log("[PracticeSessionProvider] After consistency check:", {
+      completed: merged.completed,
+      auth: merged.auth,
+      currentStep: merged.currentStep
+    });
+    // Derive the initial step if currentStep is not set or doesn't make sense
+    const derivedStep = deriveInitialStep(merged);
+    if (!merged.currentStep || merged.currentStep !== derivedStep) {
+      console.log(`[PracticeSessionProvider] Updating currentStep from ${merged.currentStep} to ${derivedStep}`);
+      merged = { ...merged, currentStep: derivedStep };
+    }
     setState(merged);
     setIsReadOnly(false);
-    setCurrentStep(deriveInitialStep(merged));
     setHydrated(true);
 
     track("practice_start", {
@@ -459,30 +495,31 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
   const setStep = useCallback(
     (step: PracticeStep) => {
       if (isReadOnly) {
-        setCurrentStep(step);
+        // For read-only mode, just update state directly
+        setState((prev) => ({ ...prev, currentStep: step }));
         return;
       }
-      setCurrentStep(step);
+      setStateWithTimestamp((prev) => ({ ...prev, currentStep: step }));
       track("practice_step_viewed", { slug: PRACTICE_SLUG, step });
     },
-    [isReadOnly]
+    [isReadOnly, setStateWithTimestamp]
   );
 
   const goNext = useCallback(() => {
     if (isReadOnly) return;
-    const index = PRACTICE_STEPS.indexOf(currentStep);
+    const index = PRACTICE_STEPS.indexOf(state.currentStep);
     if (index === -1 || index >= PRACTICE_STEPS.length - 1) return;
     const next = PRACTICE_STEPS[index + 1];
     setStep(next);
-  }, [currentStep, isReadOnly, setStep]);
+  }, [state.currentStep, isReadOnly, setStep]);
 
   const goPrev = useCallback(() => {
     if (isReadOnly) return;
-    const index = PRACTICE_STEPS.indexOf(currentStep);
+    const index = PRACTICE_STEPS.indexOf(state.currentStep);
     if (index <= 0) return;
     const prevStep = PRACTICE_STEPS[index - 1];
     setStep(prevStep);
-  }, [currentStep, isReadOnly, setStep]);
+  }, [state.currentStep, isReadOnly, setStep]);
 
   const updateIterativeFeedback = useCallback(
     (
@@ -533,12 +570,29 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
     [setStateWithTimestamp]
   );
 
+  const flushToStorage = useCallback(() => {
+    if (isReadOnly) return;
+    // Clear any pending save timeout and save immediately
+    if (saveTimeout.current) {
+      window.clearTimeout(saveTimeout.current);
+      saveTimeout.current = null;
+    }
+    console.log("[PracticeSessionProvider] Flushing to localStorage, state being saved:", {
+      sandboxCompleted: latestStateRef.current.completed.sandbox,
+      scoreCompleted: latestStateRef.current.completed.score,
+      currentStep: latestStateRef.current.currentStep,
+      isAuthed: latestStateRef.current.auth.isAuthed
+    });
+    savePractice(latestStateRef.current);
+    console.log("[PracticeSessionProvider] Flushed state to localStorage");
+  }, [isReadOnly]);
+
   const value = useMemo<PracticeSessionContextValue>(
     () => ({
       state,
       isReadOnly,
       hydrated,
-      currentStep,
+      currentStep: state.currentStep,
       setStep,
       goNext,
       goPrev,
@@ -551,12 +605,12 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       setStepScore,
       updateIterativeFeedback,
       resetIterativeFeedback,
+      flushToStorage,
     }),
     [
       state,
       isReadOnly,
       hydrated,
-      currentStep,
       setStep,
       goNext,
       goPrev,
@@ -569,6 +623,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       setStepScore,
       updateIterativeFeedback,
       resetIterativeFeedback,
+      flushToStorage,
     ]
   );
 

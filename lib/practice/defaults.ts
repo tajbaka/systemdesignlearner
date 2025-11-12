@@ -206,6 +206,7 @@ export const makeDefaultApiDefinition = (): PracticeApiDefinitionState => ({
 
 export const makeInitialPracticeState = (): PracticeState => ({
   slug: "url-shortener",
+  currentStep: "functional",
   requirements: makeDefaultRequirements(),
   apiDefinition: makeDefaultApiDefinition(),
   design: makeDefaultDesignState(),

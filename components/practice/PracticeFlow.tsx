@@ -8,7 +8,7 @@ import { OnboardingProvider, useOnboarding } from "@/components/practice/Practic
 import { OnboardingTooltip } from "@/components/practice/OnboardingTooltip";
 import { useUser } from "@clerk/nextjs";
 import { AuthModal } from "@/components/practice/AuthModal";
-import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
+import { PRACTICE_STEPS, type PracticeStep, type PracticeStepScores } from "@/lib/practice/types";
 import { STEP_CONFIGS, getHelperText, completeStep } from "@/lib/practice/step-configs";
 import { usePracticeScoring } from "@/hooks/usePracticeScoring";
 import { useSandboxEvaluation } from "@/hooks/useSandboxEvaluation";
@@ -104,24 +104,54 @@ function PracticeFlowInner() {
     if (!hydrated || isReadOnly) return;
     const signedIn = Boolean(isSignedIn);
 
+    console.log("[PracticeFlow] Auth effect running:", {
+      signedIn,
+      stateAuthIsAuthed: state.auth.isAuthed,
+      currentStep,
+      showAuthModal,
+      sandboxCompleted: state.completed.sandbox,
+      scoreCompleted: state.completed.score
+    });
+
     if (signedIn && !state.auth.isAuthed) {
+      console.log("[PracticeFlow] ✅ User signed in via Clerk, setting isAuthed=true");
       setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
       return;
     }
 
     if (!signedIn && state.auth.isAuthed) {
+      console.log("[PracticeFlow] User signed out, setting isAuthed=false");
       setAuth((prev) => ({ ...prev, isAuthed: false }));
       return;
     }
 
-    if (!state.auth.isAuthed) {
+    // If not authenticated and on score step with auth modal showing, allow it
+    // This is the normal flow when user clicks Continue on sandbox
+    if (!state.auth.isAuthed && currentStep === "score" && showAuthModal) {
+      console.log("[PracticeFlow] On score step with auth modal, allowing it");
+      return;
+    }
+
+    // If not authenticated (and not signed in via Clerk) and has completed protected steps, clear them
+    // Don't clear if user is signed in via Clerk - they're in the process of auth state sync
+    if (!state.auth.isAuthed && !signedIn) {
+      console.log("[PracticeFlow] Auth check - not authenticated and not signed in:", {
+        hasScoreCompleted: state.completed.score,
+        hasSandboxCompleted: state.completed.sandbox,
+        currentStep,
+        showAuthModal
+      });
       if (state.completed.score) {
+        console.log("[PracticeFlow] ❌ CLEARING score completion");
         markStep("score", false);
       }
       if (state.completed.sandbox) {
+        console.log("[PracticeFlow] ❌ CLEARING sandbox completion");
         markStep("sandbox", false);
       }
-      if (currentStep === "score") {
+      // Only redirect if not in the auth flow (modal not showing)
+      if (currentStep === "score" && !showAuthModal) {
+        console.log("[PracticeFlow] Not authenticated and on score step without modal, redirecting to sandbox");
         setStep("sandbox");
       }
     }
@@ -136,6 +166,7 @@ function PracticeFlowInner() {
     state.auth.isAuthed,
     state.completed.sandbox,
     state.completed.score,
+    showAuthModal,
   ]);
 
   useEffect(() => {
@@ -431,7 +462,11 @@ function PracticeFlowInner() {
             // Check if current step needs scoring and hasn't been scored yet
             const currentStepNeedsScoring = stepsNeedingScoring.includes(currentStep);
             const currentStepNotScored = currentStepNeedsScoring &&
-              (currentStep === "sandbox" ? !session.state.scores?.design : !session.state.scores?.[currentStep]);
+              (currentStep === "sandbox"
+                ? !session.state.scores?.design
+                : currentStep === "score"
+                  ? false // Score step doesn't need evaluation
+                  : !session.state.scores?.[currentStep as keyof PracticeStepScores]);
 
             if (
               !isReadOnly &&

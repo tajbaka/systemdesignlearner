@@ -17,12 +17,16 @@ export function AuthModal({ isOpen, onClose: _onClose, onAuthenticated, slug }: 
   // Automatically call onAuthenticated when user signs in
   useEffect(() => {
     if (isSignedIn && user && isOpen) {
+      console.log("[AuthModal] User authenticated, calling onAuthenticated");
       track("practice_auth_completed", {
         slug,
         provider: "clerk",
         userId: user.id
       });
-      onAuthenticated();
+      // Small delay to ensure Clerk state is fully settled
+      setTimeout(() => {
+        onAuthenticated();
+      }, 100);
     }
   }, [isSignedIn, user, isOpen, onAuthenticated, slug]);
 

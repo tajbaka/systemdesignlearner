@@ -86,27 +86,56 @@ export function usePracticeNavigation(
 
   const proceedToNext = () => {
     const config = STEP_CONFIGS[session.currentStep];
+    const currentStepBeforeAdvance = session.currentStep;
     const advance = () => {
+      console.log(`[usePracticeNavigation] Advancing from ${currentStepBeforeAdvance}`);
       config?.onNext?.(session);
       session.goNext();
+      // CRITICAL: Flush to storage after React processes the state updates
+      // Use setTimeout to ensure state updates have been batched and ref updated
+      setTimeout(() => {
+        console.log(`[usePracticeNavigation] Flushing after advance from ${currentStepBeforeAdvance} to ${session.currentStep}`);
+        session.flushToStorage();
+      }, 50);
     };
 
     // After completing sandbox (step 4), check if user needs to authenticate
     if (session.currentStep === "sandbox") {
-      // If user has already authenticated, proceed
+      // If user has already authenticated, proceed normally
       if (session.state.auth.isAuthed) {
+        console.log("[usePracticeNavigation] Already authenticated, advancing to score");
         advance();
       }
       // If user is signed in via Clerk but hasn't been marked as authenticated yet
       // This handles the case where they signed in from navbar
       else if (isSignedIn) {
+        console.log("[usePracticeNavigation] Signed in via Clerk, setting auth and advancing");
         session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
         advance();
       }
-      // Otherwise, show auth modal (no skip option - must sign in)
+      // Otherwise, advance to score step first, then show auth modal
+      // This ensures the user lands on the correct step after authentication
       else {
+        console.log("[usePracticeNavigation] Not authenticated, need to mark sandbox complete and advance");
         // Close the feedback modal before showing auth modal
         setScoringFeedback(null);
+
+        // Mark sandbox as complete before advancing
+        session.markStep("sandbox", true);
+        console.log("[usePracticeNavigation] Marked sandbox as complete");
+
+        // Advance to score step
+        const config = STEP_CONFIGS[session.currentStep];
+        config?.onNext?.(session);
+        session.goNext();
+
+        console.log("[usePracticeNavigation] Advanced to score, flushing immediately before showing auth modal");
+        // CRITICAL: Flush synchronously to localStorage BEFORE opening auth modal
+        // This ensures the state is saved before Clerk redirects the page
+        session.flushToStorage();
+        console.log("[usePracticeNavigation] Flushed to localStorage, now showing auth modal");
+
+        // Show auth modal immediately after flush
         setShowAuthModal(true);
       }
       return;
@@ -435,11 +464,22 @@ export function usePracticeNavigation(
   };
 
   const handleAuthModalAuthenticated = () => {
+    console.log("[usePracticeNavigation] handleAuthModalAuthenticated called:", {
+      currentStep: session.currentStep,
+      currentAuthState: session.state.auth.isAuthed,
+      clerkSignedIn: isSignedIn
+    });
+    // Mark as authenticated first
     session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
-    setShowAuthModal(false);
-    const config = STEP_CONFIGS[session.currentStep];
-    config?.onNext?.(session);
-    session.goNext();
+    // Delay closing modal to ensure state update is processed
+    // This prevents race condition where modal closes before auth state propagates
+    setTimeout(() => {
+      setShowAuthModal(false);
+      console.log("[usePracticeNavigation] Auth completed and modal closed:", {
+        currentStep: session.currentStep,
+        newAuthState: session.state.auth.isAuthed
+      });
+    }, 100);
   };
 
   const handleAuthModalClose = () => {
