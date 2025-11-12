@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ClerkProvider } from "@clerk/nextjs";
-import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PostHogProvider } from "@/components/PostHogProvider";
@@ -190,6 +189,7 @@ export default function RootLayout({
                 }}
               />
               <noscript>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   height="1"
                   width="1"
