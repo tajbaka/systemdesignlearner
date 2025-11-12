@@ -71,6 +71,8 @@ function buildNonFunctionalStepConfig(): StepConfig {
 
 function buildApiStepConfig(): StepConfig {
   const api = scoringConfig.steps.api;
+
+  // Build topics from core and optional requirements
   const topics: Topic[] = [
     ...api.coreRequirements.map((req) => ({
       id: req.id,
@@ -90,10 +92,31 @@ function buildApiStepConfig(): StepConfig {
     })),
   ];
 
+  // Add endpoint-specific validation requirements as metadata
+  const endpointRequirements = [
+    ...api.requiredEndpoints.map(ep => ({
+      id: ep.id,
+      method: ep.method,
+      examplePath: ep.examplePath,
+      purpose: ep.purpose,
+      documentationHints: ep.documentationHints,
+      required: true,
+    })),
+    ...api.optionalEndpoints.map(ep => ({
+      id: ep.id,
+      method: ep.method,
+      examplePath: ep.examplePath,
+      purpose: ep.purpose,
+      documentationHints: ep.documentationHints,
+      required: false,
+    })),
+  ];
+
   return {
     stepId: "api",
     stepName: "API Design",
     topics,
+    endpointRequirements, // Add endpoint-specific validation data
   };
 }
 

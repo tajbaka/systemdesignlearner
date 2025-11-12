@@ -77,12 +77,23 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
           }
 
           if (endpointScore.documentationIssue) {
+            const endpoint = matchResult.endpoint!;
+            const isBodyMethod = endpoint.method === "POST" || endpoint.method === "PATCH";
+            const needsBodyStructure = isBodyMethod &&
+                                      requiredConfig.documentationHints.includes("body") &&
+                                      !this.hasRequestBodyStructure(endpoint.notes);
+
+            let actionable = `Add details about: ${requiredConfig.documentationHints.join(", ")}`;
+            if (needsBodyStructure) {
+              actionable = `Specify the request body structure (e.g., body: { "field": "value" }) and include: ${requiredConfig.documentationHints.join(", ")}`;
+            }
+
             warnings.push({
               category: "architecture",
               severity: "warning",
-              message: `Endpoint ${matchResult.endpoint!.path} needs better documentation.`,
+              message: `Endpoint ${endpoint.path} needs better documentation.`,
               relatedTo: requiredConfig.id,
-              actionable: `Add details about: ${requiredConfig.documentationHints.join(", ")}`,
+              actionable,
             });
 
             if (requiredConfig.exampleNotes) {
@@ -261,7 +272,56 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       pathMatch = normalizedPath.toLowerCase().includes(config.pathPattern.toLowerCase());
     }
 
+    // Additional validation: check if path follows the example structure
+    if (pathMatch && config.examplePath) {
+      pathMatch = this.validatePathStructure(normalizedPath, config.examplePath);
+    }
+
     return methodMatch && pathMatch;
+  }
+
+  /**
+   * Validate that the user's path follows the structure pattern from the example
+   * Example: if examplePath is "/api/v1/shorten", user path should be "/api/v1/..."
+   */
+  private validatePathStructure(userPath: string, examplePath: string): boolean {
+    // Extract the base path structure from example (everything before parameters)
+    const exampleParts = examplePath.split('/').filter(p => p.length > 0);
+    const userParts = userPath.split('/').filter(p => p.length > 0);
+
+    // Check if user path has enough parts
+    if (userParts.length < exampleParts.length - 1) {
+      return false;
+    }
+
+    // Validate versioning pattern if present in example
+    const versionPattern = /^v\d+$/;
+    for (let i = 0; i < exampleParts.length; i++) {
+      const examplePart = exampleParts[i];
+      const userPart = userParts[i];
+
+      // Skip parameter placeholders in example
+      if (examplePart.startsWith('{') || examplePart.startsWith(':')) {
+        continue;
+      }
+
+      // If example has version pattern, user should too
+      if (versionPattern.test(examplePart)) {
+        if (!userPart || !versionPattern.test(userPart)) {
+          return false;
+        }
+      }
+
+      // Check if example has "api" prefix, user should match base structure
+      if (examplePart === 'api' && i === 0) {
+        if (userPart !== 'api') {
+          // Allow match if user is using similar base structure
+          return true; // Be lenient on base prefix
+        }
+      }
+    }
+
+    return true;
   }
 
   /**
@@ -330,6 +390,15 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       return 0.3; // Very low quality
     }
 
+    // Special validation for POST/PATCH requests - must specify body structure
+    if ((endpoint.method === "POST" || endpoint.method === "PATCH") &&
+        config.documentationHints.includes("body")) {
+      const hasBodyStructure = this.hasRequestBodyStructure(notes);
+      if (!hasBodyStructure) {
+        return 0.3; // Significantly penalize missing body structure
+      }
+    }
+
     // Check for documentation hints (keywords)
     const matches = this.matchKeywords(config.documentationHints, notes);
     const matchCount = matches.filter((m) => m.found).length;
@@ -341,6 +410,30 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     if (matchRatio >= 0.4) return 0.6;
     if (matchRatio >= 0.2) return 0.4;
     return 0.3;
+  }
+
+  /**
+   * Check if documentation contains proper request body structure
+   * Must mention "body" followed by description of what's in it (not just text explanation)
+   */
+  private hasRequestBodyStructure(notes: string): boolean {
+    const normalizedNotes = notes.toLowerCase();
+
+    // Must contain the word "body"
+    if (!normalizedNotes.includes("body")) {
+      return false;
+    }
+
+    // Check for structural patterns indicating body content definition
+    const bodyStructurePatterns = [
+      /body\s*:\s*\{/i,                    // body: {
+      /body\s+contains\s+\{/i,             // body contains {
+      /body\s*:\s*["']?\{/i,               // body: "{
+      /\{\s*["']?\w+["']?\s*:\s*/,         // { "field": or { field:
+      /body\s*:\s*\[/i,                    // body: [
+    ];
+
+    return bodyStructurePatterns.some(pattern => pattern.test(notes));
   }
 
   /**

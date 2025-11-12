@@ -23,10 +23,20 @@ export type Topic = {
 
 export type IterativeTopicState = Record<string, boolean>;
 
+export type EndpointRequirement = {
+  id: string;
+  method: string;
+  examplePath: string;
+  purpose: string;
+  documentationHints: string[];
+  required: boolean;
+};
+
 export type StepConfig = {
   stepId: string;
   stepName: string;
   topics: Topic[]; // include both required and optional, mark required: true
+  endpointRequirements?: EndpointRequirement[]; // For API step: specific endpoint validation
 };
 
 export type CoverageReport = {
@@ -111,6 +121,36 @@ export async function assessCoverage(
 
   const isApiStep = step.stepId === "api";
 
+  // Build endpoint-specific validation rules for API step
+  let endpointValidationRules = "";
+  if (isApiStep && step.endpointRequirements) {
+    const endpointDetails = step.endpointRequirements.map(ep => ({
+      id: ep.id,
+      method: ep.method,
+      examplePath: ep.examplePath,
+      purpose: ep.purpose,
+      requiredDetails: ep.documentationHints,
+      required: ep.required,
+    }));
+
+    endpointValidationRules = `
+API Endpoint Validation Requirements:
+For each endpoint, verify:
+1. **Path Structure**: Must follow the pattern shown in examplePath (e.g., if example is "/api/v1/shorten", user should use "/api/v1/..." structure)
+2. **Request Body** (for POST/PATCH): Must explicitly mention "body" followed by the actual structure/fields (e.g., "body: { url: string }" not just "body contains the URL")
+3. **Response Details**: Must specify what is returned
+4. **Documentation Completeness**: Must address all required details: ${step.endpointRequirements.flatMap(ep => ep.documentationHints).filter((v, i, a) => a.indexOf(v) === i).join(", ")}
+
+Expected Endpoints:
+${JSON.stringify(endpointDetails, null, 2)}
+
+When asking questions about missing endpoints:
+- If an endpoint exists but lacks proper body structure (POST/PATCH), ask: "What fields should be included in the request body for [endpoint purpose]?"
+- If path structure doesn't match example pattern, ask: "What path structure would you use for [endpoint purpose] following REST API conventions?"
+- If documentation is too vague, ask about the specific missing details (request format, response format, error cases)
+`;
+  }
+
   const prompt = `
 You are a senior system design interviewer. Judge which topics the candidate has already covered in their answer.
 
@@ -135,6 +175,8 @@ ${isApiStep ? `- For API endpoint topics: An endpoint is NOT covered unless the 
 - If uncertain or if coverage is incomplete, treat it as missing.
 - When writing the question, focus on the user's intent/behavior (e.g., "what should happen when...") and never reveal solution details (no HTTP codes, algorithms, numbers, etc.).
 - If a previous question exists and the topic is still missing, sharpen the same question without giving away the answer.
+
+${endpointValidationRules}
 
 Step: ${step.stepName}
 Topics:
