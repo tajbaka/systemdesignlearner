@@ -21,13 +21,22 @@ export async function POST(req: NextRequest) {
 
   try {
     // CORS check
-    const origin = req.headers.get("origin") || "";
-    const allowedOrigins = [
-      "http://localhost:3000",
-      "https://www.systemdesignsandbox.com",
-    ];
+    const origin = req.headers.get("origin");
+    const referer = req.headers.get("referer");
 
-    if (!allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
+    logger.info("Transcribe API request", { origin, referer });
+
+    // Allow requests from same origin (when origin header is not present)
+    // or from localhost in development
+    const isLocalhost =
+      (origin && (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:"))) ||
+      (referer && (referer.startsWith("http://localhost:") || referer.startsWith("http://127.0.0.1:")));
+
+    const allowedOrigins = ["https://www.systemdesignsandbox.com"];
+    const isAllowedOrigin = origin && allowedOrigins.some((allowed) => origin.startsWith(allowed));
+
+    if (!isLocalhost && !isAllowedOrigin) {
+      logger.error("CORS blocked", { origin, referer });
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
