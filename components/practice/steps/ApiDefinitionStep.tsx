@@ -23,6 +23,9 @@ export function ApiDefinitionStep() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set([endpoints[0]?.id].filter(Boolean)));
   const [touchedEndpoints, setTouchedEndpoints] = useState<Set<string>>(new Set());
 
+  // Check if there's a blocking feedback result
+  const hasBlockingFeedback = state.iterativeFeedback?.api?.cachedResult?.ui?.blocking ?? false;
+
   // Check if there are any validation issues
   const hasNoEndpoints = endpoints.length === 0;
   const validEndpoints = endpoints.filter(ep => ep.path.trim().length > 0);
@@ -35,6 +38,22 @@ export function ApiDefinitionStep() {
       setOpenId(endpoints[0]?.id ?? null);
     }
   }, [endpoints, openId]);
+
+  // Auto-expand endpoints with issues when there's blocking feedback
+  useEffect(() => {
+    if (hasBlockingFeedback) {
+      const endpointsWithIssues = endpoints.filter(
+        ep => ep.path.trim().length > 0 && ep.notes.trim().length < 10
+      );
+      if (endpointsWithIssues.length > 0) {
+        setExpandedIds(prev => {
+          const next = new Set(prev);
+          endpointsWithIssues.forEach(ep => next.add(ep.id));
+          return next;
+        });
+      }
+    }
+  }, [hasBlockingFeedback, endpoints]);
 
   const toggleEndpoint = (id: string) => {
     setExpandedIds(prev => {
@@ -154,6 +173,9 @@ export function ApiDefinitionStep() {
           const hasError = hasPath && !hasValidNotes && !isReadOnly;
           const shouldShowError = hasError && isTouched;
 
+          // Highlight endpoint if there's blocking feedback and this endpoint has issues
+          const shouldHighlight = hasBlockingFeedback && hasPath && !hasValidNotes && !isReadOnly;
+
           return (
             <article
               key={endpoint.id}
@@ -250,10 +272,12 @@ export function ApiDefinitionStep() {
 
               {isOpen ? (
                 <div className="px-4 pb-4 sm:px-6">
-                  <div className={`relative mt-2 rounded-2xl border ${
+                  <div className={`relative mt-2 rounded-2xl border transition-colors duration-300 ${
                     shouldShowError
                       ? 'border-red-500/50 bg-red-950/20'
-                      : 'border-zinc-700 bg-zinc-950/60'
+                      : shouldHighlight
+                        ? 'border-amber-400/50 bg-amber-950/20 ring-2 ring-amber-400/30'
+                        : 'border-zinc-700 bg-zinc-950/60'
                   }`}>
                     <textarea
                       value={endpoint.notes}
@@ -269,7 +293,9 @@ export function ApiDefinitionStep() {
                       className={`styled-scrollbar min-h-[280px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
                         shouldShowError
                           ? 'focus-visible:ring-2 focus-visible:ring-red-500'
-                          : 'focus-visible:ring-2 focus-visible:ring-blue-500'
+                          : shouldHighlight
+                            ? 'focus-visible:ring-2 focus-visible:ring-amber-500'
+                            : 'focus-visible:ring-2 focus-visible:ring-blue-500'
                       } disabled:cursor-not-allowed disabled:opacity-60`}
                     />
                     <div className="absolute bottom-3 right-3">
@@ -287,8 +313,8 @@ export function ApiDefinitionStep() {
                     </div>
                   </div>
 
-                  {shouldShowError && (
-                    <p className="mt-2 text-xs text-red-400">
+                  {(shouldShowError || shouldHighlight) && (
+                    <p className={`mt-2 text-xs ${shouldShowError ? 'text-red-400' : 'text-amber-400'}`}>
                       Please add a meaningful description (at least 10 characters).
                     </p>
                   )}
