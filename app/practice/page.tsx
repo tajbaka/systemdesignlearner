@@ -173,7 +173,7 @@ export default function PracticePage() {
                       }`}
                     >
                       <Link
-                        href={`/practice/${problem.slug}`}
+                        href={isCompleted ? `/practice/${problem.slug}` : `/practice/${problem.slug}/intro`}
                         onClick={() => track("practice_problem_selected", {
                           slug: problem.slug,
                           difficulty: problem.difficulty,

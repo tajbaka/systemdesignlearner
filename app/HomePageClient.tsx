@@ -135,7 +135,7 @@ export function HomePageClient() {
                 className="px-10 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
               >
                 <Link
-                  href="/practice/url-shortener"
+                  href="/practice/url-shortener/intro"
                   aria-label="Try URL Shortener Scenario"
                   onClick={() => {
                     track("homepage_try_url_shortener_clicked");

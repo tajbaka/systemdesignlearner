@@ -255,3 +255,22 @@ When implementing, focus on these likely files:
 
 **Last Updated:** 2025-01-06
 **Design Principle:** Mobile-first, accessible, interview-realistic experience
+
+
+
+add page before starting the practice/url-shortner exaplinging what url shortening service is and then there is a start
+that start the practice
+Fixing float score in api step
+
+
+unblock paths for api
+remove scroll bar and expand
+highlight red when mentioning a specific error so the user knows what is talking about one of the 4, path or text area
+missing requirement box should be yellow
+highlight the box should be same color as the missing requirement box
+float should not exist
+add ctrl z and ctrol c ctrl shift z to move in the sandbox
+
+
+mobile:
+full text boxes instead of box in box for the first 2 steps in the practice and for the step 3
