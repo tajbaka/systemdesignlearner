@@ -5,7 +5,7 @@
   "totalScore": 100,
   "steps": {
     "functional": {
-      "maxScore": 25,
+      "maxScore": 20,
       "minKeywordsMatch": 1,
       "minTextLength": 50,
       "coreRequirements": [
@@ -14,7 +14,7 @@
           "label": "URL Shortening",
           "description": "Accept a long URL and return a short, compact alias.",
           "keywords": ["shorten", "create", "generate", "alias", "short url", "short link", "compact", "slug"],
-          "weight": 5,
+          "weight": 20,
           "required": true,
           "category": "core",
           "examplePhrases": [
@@ -27,7 +27,7 @@
           "label": "URL Redirection",
           "description": "Resolve a short URL and redirect the client to the original long URL.",
           "keywords": ["redirect", "forward", "resolve", "lookup", "301", "302", "navigate", "send to"],
-          "weight": 5,
+          "weight": 20,
           "required": true,
           "category": "core",
           "examplePhrases": [
@@ -40,7 +40,7 @@
           "label": "Uniqueness Guarantee",
           "description": "Each short URL is unique and maps to exactly one long URL.",
           "keywords": ["unique", "collision", "duplicate", "hash", "base62", "distinct", "no conflict", "guarantee"],
-          "weight": 5,
+          "weight": 20,
           "required": true,
           "category": "core",
           "examplePhrases": [
@@ -246,7 +246,7 @@
       ]
     },
     "api": {
-      "maxScore": 20,
+      "maxScore": 25,
       "minKeywordsMatch": 1,
       "coreRequirements": [
         {
@@ -254,7 +254,7 @@
           "label": "URL Creation Endpoint",
           "description": "POST endpoint to create shortened URLs with documented request/response",
           "keywords": ["POST", "create", "shorten", "body", "request", "url", "api/v1", "fields", "response", "returns"],
-          "weight": 7,
+          "weight": 25,
           "required": true,
           "examplePhrases": [
             "POST /api/v1/urls with { url: string, customAlias?: string }",
@@ -266,7 +266,7 @@
           "label": "Redirect Endpoint",
           "description": "GET endpoint to redirect short URLs with documented behavior",
           "keywords": ["GET", "redirect", "302", "301", "slug", "code", "param", "404", "410"],
-          "weight": 7,
+          "weight": 25,
           "required": true,
           "examplePhrases": [
             "GET /:code redirects (302) to original URL",
@@ -340,7 +340,7 @@
           "requiredBy": [
             "url-shortening"
           ],
-          "weight": 7,
+          "weight": 25,
           "required": true,
           "documentationHints": [
             "request",
@@ -362,7 +362,7 @@
           "requiredBy": [
             "redirection"
           ],
-          "weight": 7,
+          "weight": 25,
           "required": true,
           "documentationHints": [
             "redirect",

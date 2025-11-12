@@ -121,7 +121,7 @@ export function FeedbackModal({
           <button
             type="button"
             onClick={onRevise}
-            className="rounded-lg border border-border bg-background px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            className="rounded-lg border border-white bg-transparent px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-white/10"
           >
             Revise Answer
           </button>

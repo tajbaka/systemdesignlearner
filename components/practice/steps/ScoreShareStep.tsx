@@ -115,8 +115,8 @@ export function ScoreShareStep() {
         id: "functional",
         label: "Functional Requirements",
         barClass: "bg-emerald-500",
-        result: getStepResult("functional", 25),
-        maxFallback: 25,
+        result: getStepResult("functional", 20),
+        maxFallback: 20,
       },
       {
         id: "nonFunctional",
@@ -129,8 +129,8 @@ export function ScoreShareStep() {
         id: "api",
         label: "API Definition",
         barClass: "bg-cyan-500",
-        result: getStepResult("api", 20),
-        maxFallback: 20,
+        result: getStepResult("api", 25),
+        maxFallback: 25,
       },
       {
         id: "design",
