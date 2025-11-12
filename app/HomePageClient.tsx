@@ -13,27 +13,32 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 
 export function HomePageClient() {
-  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [newsletterMessage, setNewsletterMessage] = useState<string>('');
+  const [newsletterStatus, setNewsletterStatus] = useState<
+    "idle" | "submitting" | "success" | "error"
+  >("idle");
+  const [newsletterMessage, setNewsletterMessage] = useState<string>("");
 
   const handleNewsletterSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setNewsletterStatus('submitting');
+    setNewsletterStatus("submitting");
 
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const email = formData.get('email') as string;
+    const email = formData.get("email") as string;
     const data = {
       email,
     };
 
-    track("email_capture_submitted", { source: "homepage-footer", emailDomain: email.split("@")[1] ?? "unknown" });
+    track("email_capture_submitted", {
+      source: "homepage-footer",
+      emailDomain: email.split("@")[1] ?? "unknown",
+    });
 
     try {
-      const response = await fetch('/api/subscribe', {
-        method: 'POST',
+      const response = await fetch("/api/subscribe", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
       });
@@ -41,25 +46,25 @@ export function HomePageClient() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to subscribe');
+        throw new Error(result.error || "Failed to subscribe");
       }
 
       // Handle already subscribed case
-      if (result.message === 'Already subscribed!') {
-        setNewsletterStatus('success');
-        setNewsletterMessage('Thanks for subscribing, you\'re already on our list!');
+      if (result.message === "Already subscribed!") {
+        setNewsletterStatus("success");
+        setNewsletterMessage("Thanks for subscribing, you're already on our list!");
         track("email_capture_already_subscribed", { source: "homepage-footer" });
         // Reset form after success
         form.reset();
         setTimeout(() => {
-          setNewsletterStatus('idle');
-          setNewsletterMessage('');
+          setNewsletterStatus("idle");
+          setNewsletterMessage("");
         }, 3000);
         return;
       }
 
-      setNewsletterStatus('success');
-      setNewsletterMessage('Successfully subscribed!');
+      setNewsletterStatus("success");
+      setNewsletterMessage("Successfully subscribed!");
       track("email_capture_success", { source: "homepage-footer" });
 
       // Reset form after success
@@ -67,16 +72,16 @@ export function HomePageClient() {
 
       // Reset status after showing success message
       setTimeout(() => {
-        setNewsletterStatus('idle');
-        setNewsletterMessage('');
+        setNewsletterStatus("idle");
+        setNewsletterMessage("");
       }, 3000);
     } catch (error) {
-      logger.error('Newsletter subscription error:', error);
-      setNewsletterStatus('error');
+      logger.error("Newsletter subscription error:", error);
+      setNewsletterStatus("error");
       track("email_capture_error", { source: "homepage-footer" });
 
       // Reset status after showing error message
-      setTimeout(() => setNewsletterStatus('idle'), 3000);
+      setTimeout(() => setNewsletterStatus("idle"), 3000);
     }
   };
 
@@ -86,100 +91,114 @@ export function HomePageClient() {
       <Navbar />
 
       {/* Hero Section */}
-<section className="relative border-b border-zinc-800">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16" style={{ paddingTop: '120px' }}>
-    <motion.div
-      className="text-center"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      <motion.h1
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.1 }}
-        className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
-      >
-        Master System Design Through
-        <span className="block text-emerald-400 mt-2">
-          Visual Practice
-        </span>
-      </motion.h1>
-
-      <motion.p
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3, delay: 0.2 }}
-        className="text-lg sm:text-xl text-zinc-400 mb-10 max-w-3xl mx-auto leading-relaxed"
-      >
-        Drag components, connect flows, and simulate production-scale architectures.
-        Get instant feedback on latency, capacity, and design decisions.
-      </motion.p>
-
-      {/* CTAs */}
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5, delay: 0.3, type: "spring", stiffness: 100 }}
-        className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
-      >
-        <Button
-          asChild
-          size="lg"
-          className="px-10 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
+      <section className="relative border-b border-zinc-800">
+        <div
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16"
+          style={{ paddingTop: "120px" }}
         >
-          <Link
-            href="/practice/url-shortener"
-            aria-label="Try URL Shortener Scenario"
-            onClick={() => track("homepage_try_url_shortener_clicked")}
+          <motion.div
+            className="text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
           >
-            Try URL Shortener Scenario
-          </Link>
-        </Button>
-        <Button
-          asChild
-          variant="outline"
-          size="lg"
-          className="px-10 py-6 border-2 border-zinc-600 hover:border-emerald-500/50 text-zinc-300 hover:text-white font-semibold text-lg transition-all duration-300"
-        >
-          <Link
-            href="/practice"
-            aria-label="Explore All Scenarios"
-            onClick={() => track("homepage_explore_scenarios_clicked")}
-          >
-            Explore All Scenarios
-          </Link>
-        </Button>
-      </motion.div>
+            <motion.h1
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
+              className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
+            >
+              Master System Design Through
+              <span className="block text-emerald-400 mt-2">Visual Practice</span>
+            </motion.h1>
 
-      {/* Interactive Demo */}
-      <motion.div
-        initial={{ y: 30, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.5 }}
-        className="max-w-6xl mx-auto"
-      >
-        <div className="bg-zinc-800/60 border border-zinc-700 rounded-2xl p-6 sm:p-10 shadow-2xl">
-          <DemoBoard />
+            <motion.p
+              initial={{ y: -20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+              className="text-lg sm:text-xl text-zinc-400 mb-10 max-w-3xl mx-auto leading-relaxed"
+            >
+              Drag components, connect flows, and simulate production-scale architectures. Get
+              instant feedback on latency, capacity, and design decisions.
+            </motion.p>
+
+            {/* CTAs */}
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.3, type: "spring", stiffness: 100 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-16"
+            >
+              <Button
+                asChild
+                size="lg"
+                className="px-10 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
+              >
+                <Link
+                  href="/practice/url-shortener"
+                  aria-label="Try URL Shortener Scenario"
+                  onClick={() => {
+                    track("homepage_try_url_shortener_clicked");
+                    // Fire Meta Conversions API event
+                    fetch("/api/meta-analytics", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ event_name: "try_url_shortener" }),
+                    }).catch((err) => logger.error("Meta analytics error:", err));
+                  }}
+                >
+                  Try URL Shortener Scenario
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="px-10 py-6 border-2 border-zinc-600 hover:border-emerald-500/50 text-zinc-300 hover:text-white font-semibold text-lg transition-all duration-300"
+              >
+                <Link
+                  href="/practice"
+                  aria-label="Explore All Scenarios"
+                  onClick={() => track("homepage_explore_scenarios_clicked")}
+                >
+                  Explore All Scenarios
+                </Link>
+              </Button>
+            </motion.div>
+
+            {/* Interactive Demo */}
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.5 }}
+              className="max-w-6xl mx-auto"
+            >
+              <div className="bg-zinc-800/60 border border-zinc-700 rounded-2xl p-6 sm:p-10 shadow-2xl">
+                <DemoBoard />
+              </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </motion.div>
-    </motion.div>
-  </div>
-</section>
-
+      </section>
 
       {/* How It Works Section */}
       <section className="border-b border-zinc-800 relative">
-        <div className="absolute inset-0 opacity-[0.08]" style={{
-          backgroundImage: 'radial-gradient(#10b981 1px, transparent 1px), radial-gradient(#10b981 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-          backgroundPosition: '0 0, 10px 10px'
-        }}></div>
+        <div
+          className="absolute inset-0 opacity-[0.08]"
+          style={{
+            backgroundImage:
+              "radial-gradient(#10b981 1px, transparent 1px), radial-gradient(#10b981 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+            backgroundPosition: "0 0, 10px 10px",
+          }}
+        ></div>
         <div className="max-w-7xl mx-auto relative">
           {/* Section Header */}
           <div className="border-b border-zinc-800 px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
-              <span className="text-sm font-mono text-zinc-500 tracking-wider">[01] HOW IT WORKS</span>
+              <span className="text-sm font-mono text-zinc-500 tracking-wider">
+                [01] HOW IT WORKS
+              </span>
             </div>
           </div>
 
@@ -190,25 +209,56 @@ export function HomePageClient() {
                 <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 01</p>
                 <h3 className="mb-4 text-3xl font-bold tracking-tight">Pick a Scenario</h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
-                  Choose from real-world challenges with clear requirements: target latency, RPS capacity,
-                  and success criteria. Each scenario is designed to teach specific system design patterns.
+                  Choose from real-world challenges with clear requirements: target latency, RPS
+                  capacity, and success criteria. Each scenario is designed to teach specific system
+                  design patterns.
                 </p>
                 <ul className="space-y-3 text-zinc-400">
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     Production-scale requirements (P95 latency, RPS targets)
                   </li>
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     Real-world patterns (CDN, caching, load balancing)
                   </li>
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     Clear success criteria for validation
                   </li>
@@ -219,19 +269,25 @@ export function HomePageClient() {
                   <Card className="bg-zinc-800/80 border-zinc-600 hover:border-emerald-500/50 transition-colors cursor-pointer">
                     <CardHeader>
                       <CardTitle className="text-lg text-white">URL Shortener</CardTitle>
-                      <CardDescription className="text-sm text-zinc-300">P95 Latency: 100ms | Target RPS: 5k</CardDescription>
+                      <CardDescription className="text-sm text-zinc-300">
+                        P95 Latency: 100ms | Target RPS: 5k
+                      </CardDescription>
                     </CardHeader>
                   </Card>
                   <Card className="bg-zinc-800/80 border-zinc-600 hover:border-emerald-500/50 transition-colors cursor-pointer">
                     <CardHeader>
                       <CardTitle className="text-lg text-white">Spotify Play</CardTitle>
-                      <CardDescription className="text-sm text-zinc-300">P95 Latency: 200ms | Target RPS: 2k</CardDescription>
+                      <CardDescription className="text-sm text-zinc-300">
+                        P95 Latency: 200ms | Target RPS: 2k
+                      </CardDescription>
                     </CardHeader>
                   </Card>
                   <Card className="bg-zinc-800/80 border-zinc-600 hover:border-emerald-500/50 transition-colors cursor-pointer">
                     <CardHeader>
                       <CardTitle className="text-lg text-white">CDN Design</CardTitle>
-                      <CardDescription className="text-sm text-zinc-300">P95 Latency: 80ms | Target RPS: 8k</CardDescription>
+                      <CardDescription className="text-sm text-zinc-300">
+                        P95 Latency: 80ms | Target RPS: 8k
+                      </CardDescription>
                     </CardHeader>
                   </Card>
                 </div>
@@ -247,24 +303,56 @@ export function HomePageClient() {
                 <h3 className="mb-4 text-3xl font-bold tracking-tight">Design Your Architecture</h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
                   Drag components onto an infinite canvas and connect them to build your system.
-                  Each component has realistic performance characteristics based on industry standards.
+                  Each component has realistic performance characteristics based on industry
+                  standards.
                 </p>
                 <ul className="space-y-3 text-zinc-400">
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
-                    9 component types: Web, CDN, API Gateway, Service, Redis, Postgres, S3, Kafka, Load Balancer
+                    9 component types: Web, CDN, API Gateway, Service, Redis, Postgres, S3, Kafka,
+                    Load Balancer
                   </li>
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     Directional connections show data flow
                   </li>
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                     Pan and zoom to manage complex designs
                   </li>
@@ -290,27 +378,60 @@ export function HomePageClient() {
             <div className="grid lg:grid-cols-2">
               <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
                 <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 03</p>
-                <h3 className="mb-4 text-3xl font-bold tracking-tight">Run Simulation & Get Feedback</h3>
+                <h3 className="mb-4 text-3xl font-bold tracking-tight">
+                  Run Simulation & Get Feedback
+                </h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
-                  Our simulation engine analyzes your architecture in real-time. Get instant feedback on
-                  performance, capacity, and bottlenecks without writing a single line of code.
+                  Our simulation engine analyzes your architecture in real-time. Get instant
+                  feedback on performance, capacity, and bottlenecks without writing a single line
+                  of code.
                 </p>
                 <ul className="space-y-3 text-zinc-400">
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
                     </svg>
                     P95 latency calculations with component-level breakdown
                   </li>
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
                     </svg>
                     Capacity analysis and bottleneck identification
                   </li>
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
                     </svg>
                     SLO compliance validation
                   </li>
@@ -354,25 +475,55 @@ export function HomePageClient() {
                 <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 04</p>
                 <h3 className="mb-4 text-3xl font-bold tracking-tight">Learn & Iterate</h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
-                  Understand why your design works (or doesn&apos;t). Share your solutions with others
-                  or fork existing designs to learn different approaches to the same problem.
+                  Understand why your design works (or doesn&apos;t). Share your solutions with
+                  others or fork existing designs to learn different approaches to the same problem.
                 </p>
                 <ul className="space-y-3 text-zinc-400">
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                      />
                     </svg>
                     Share via URL with compressed Base64 encoding
                   </li>
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                      />
                     </svg>
                     Fork and modify existing solutions
                   </li>
                   <li className="flex items-start">
-                    <svg className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                      />
                     </svg>
                     Compare different architectural approaches
                   </li>
@@ -404,15 +555,27 @@ export function HomePageClient() {
                   </Card>
 
                   <div className="flex justify-center">
-                    <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                    <svg
+                      className="w-4 h-4 text-emerald-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 14l-7 7m0 0l-7-7m7 7V3"
+                      />
                     </svg>
                   </div>
 
                   <Card className="bg-zinc-900/50 border-emerald-500/50">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm text-white">Version 2: With Caching</CardTitle>
+                        <CardTitle className="text-sm text-white">
+                          Version 2: With Caching
+                        </CardTitle>
                         <span className="text-xs text-emerald-400">Passed</span>
                       </div>
                     </CardHeader>
@@ -434,15 +597,21 @@ export function HomePageClient() {
 
       {/* Key Features Section */}
       <section className="border-b border-zinc-800 relative">
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(#10b981 1px, transparent 1px), linear-gradient(90deg, #10b981 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }}></div>
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "linear-gradient(#10b981 1px, transparent 1px), linear-gradient(90deg, #10b981 1px, transparent 1px)",
+            backgroundSize: "50px 50px",
+          }}
+        ></div>
         <div className="max-w-7xl mx-auto relative">
           {/* Section Header */}
           <div className="border-b border-zinc-800 px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 items-center justify-between">
-              <span className="text-sm font-mono text-zinc-500 tracking-wider">[02] KEY FEATURES</span>
+              <span className="text-sm font-mono text-zinc-500 tracking-wider">
+                [02] KEY FEATURES
+              </span>
             </div>
           </div>
 
@@ -452,15 +621,25 @@ export function HomePageClient() {
             <div className="border-b md:border-r border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                  <svg
+                    className="w-6 h-6 text-emerald-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
+                    />
                   </svg>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold mb-2">Drag-and-Drop Canvas</h3>
                   <p className="text-zinc-400 leading-relaxed">
-                    Build architectures visually on an infinite grid. Place components and connect them
-                    with directional edges. Pan and zoom to manage complex designs.
+                    Build architectures visually on an infinite grid. Place components and connect
+                    them with directional edges. Pan and zoom to manage complex designs.
                   </p>
                 </div>
               </div>
@@ -470,15 +649,25 @@ export function HomePageClient() {
             <div className="border-b border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  <svg
+                    className="w-6 h-6 text-emerald-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 10V3L4 14h7v7l9-11h-7z"
+                    />
                   </svg>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold mb-2">Real-Time Simulation</h3>
                   <p className="text-zinc-400 leading-relaxed">
-                    Get instant feedback on P95 latency, capacity, and bottlenecks. Our simulation engine
-                    analyzes your design without requiring any code.
+                    Get instant feedback on P95 latency, capacity, and bottlenecks. Our simulation
+                    engine analyzes your design without requiring any code.
                   </p>
                 </div>
               </div>
@@ -488,15 +677,25 @@ export function HomePageClient() {
             <div className="border-b md:border-r border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  <svg
+                    className="w-6 h-6 text-emerald-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
                   </svg>
                 </div>
                 <div>
                   <h3 className="text-xl font-bold mb-2">Production-Scale Scenarios</h3>
                   <p className="text-zinc-400 leading-relaxed">
-                    Practice with real-world requirements like Spotify Play (200ms P95, 2k RPS),
-                    URL Shortener (100ms, 5k RPS), and CDN Design (80ms, 8k RPS).
+                    Practice with real-world requirements like Spotify Play (200ms P95, 2k RPS), URL
+                    Shortener (100ms, 5k RPS), and CDN Design (80ms, 8k RPS).
                   </p>
                 </div>
               </div>
@@ -506,8 +705,18 @@ export function HomePageClient() {
             <div className="border-b border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                  <svg
+                    className="w-6 h-6 text-emerald-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -524,8 +733,18 @@ export function HomePageClient() {
             <div className="md:border-r border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                  <svg
+                    className="w-6 h-6 text-emerald-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -542,8 +761,18 @@ export function HomePageClient() {
             <div className="p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  <svg
+                    className="w-6 h-6 text-emerald-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
+                    />
                   </svg>
                 </div>
                 <div>
@@ -561,9 +790,13 @@ export function HomePageClient() {
 
       {/* CTA Section */}
       <section className="border-b border-zinc-800 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          background: 'repeating-linear-gradient(-45deg, #10b981, #10b981 5px, transparent 5px, transparent 25px)'
-        }}></div>
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            background:
+              "repeating-linear-gradient(-45deg, #10b981, #10b981 5px, transparent 5px, transparent 25px)",
+          }}
+        ></div>
         <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 via-transparent to-zinc-900"></div>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28 text-center relative">
           <motion.div
@@ -572,12 +805,10 @@ export function HomePageClient() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6">
-              Ready to Master System Design?
-            </h2>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-6">Ready to Master System Design?</h2>
             <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Start practicing with real-world scenarios. No theory, just hands-on experience
-              with instant feedback on your architectural decisions.
+              Start practicing with real-world scenarios. No theory, just hands-on experience with
+              instant feedback on your architectural decisions.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
@@ -625,7 +856,8 @@ export function HomePageClient() {
                 <span className="text-xl font-bold text-white">System Design Sandbox</span>
               </div>
               <p className="text-zinc-400 text-sm leading-relaxed max-w-md mb-6">
-                Interactive system design playground — drag, connect, and simulate realistic architectures. Master system design through hands-on practice.
+                Interactive system design playground — drag, connect, and simulate realistic
+                architectures. Master system design through hands-on practice.
               </p>
 
               {/* Social Links */}
@@ -649,7 +881,12 @@ export function HomePageClient() {
                   aria-label="Portfolio Website"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9"
+                    />
                   </svg>
                 </a>
               </div>
@@ -660,27 +897,42 @@ export function HomePageClient() {
               <h3 className="text-white font-semibold text-sm mb-4">Product</h3>
               <ul className="space-y-3">
                 <li>
-                  <Link href="/play" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <Link
+                    href="/play"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Playground
                   </Link>
                 </li>
                 <li>
-                  <Link href="/practice" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <Link
+                    href="/practice"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Practice
                   </Link>
                 </li>
                 <li>
-                  <Link href="/docs" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <Link
+                    href="/docs"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Documentation
                   </Link>
                 </li>
                 <li>
-                  <Link href="/feedback" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <Link
+                    href="/feedback"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Feedback
                   </Link>
                 </li>
                 <li>
-                  <a href="mailto:support@systemdesignsandbox.com" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <a
+                    href="mailto:support@systemdesignsandbox.com"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Support
                   </a>
                 </li>
@@ -692,22 +944,40 @@ export function HomePageClient() {
               <h3 className="text-white font-semibold text-sm mb-4">Company</h3>
               <ul className="space-y-3">
                 <li>
-                  <a href="https://github.com/AntonioCoppe" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <a
+                    href="https://github.com/AntonioCoppe"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     GitHub
                   </a>
                 </li>
                 <li>
-                  <a href="https://www.linkedin.com/in/antonio-coppe" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <a
+                    href="https://www.linkedin.com/in/antonio-coppe"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     LinkedIn
                   </a>
                 </li>
                 <li>
-                  <a href="https://antoniocoppe.com" target="_blank" rel="noopener noreferrer" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <a
+                    href="https://antoniocoppe.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Portfolio
                   </a>
                 </li>
                 <li>
-                  <a href="mailto:hello@systemdesignsandbox.com" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <a
+                    href="mailto:hello@systemdesignsandbox.com"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Contact
                   </a>
                 </li>
@@ -719,17 +989,26 @@ export function HomePageClient() {
               <h3 className="text-white font-semibold text-sm mb-4">Legal</h3>
               <ul className="space-y-3">
                 <li>
-                  <Link href="/privacy" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <Link
+                    href="/privacy"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/terms" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <Link
+                    href="/terms"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Terms of Service
                   </Link>
                 </li>
                 <li>
-                  <Link href="/cookies" className="text-zinc-400 hover:text-white transition-colors text-sm">
+                  <Link
+                    href="/cookies"
+                    className="text-zinc-400 hover:text-white transition-colors text-sm"
+                  >
                     Cookie Policy
                   </Link>
                 </li>
@@ -750,25 +1029,44 @@ export function HomePageClient() {
                 />
                 <Button
                   type="submit"
-                  disabled={newsletterStatus === 'submitting'}
+                  disabled={newsletterStatus === "submitting"}
                   className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-700 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all duration-300"
                   aria-label="Subscribe to Newsletter"
                   size="sm"
                 >
-                  {newsletterStatus === 'submitting' && (
-                    <svg className="animate-spin h-3 w-3 mr-2 inline" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  {newsletterStatus === "submitting" && (
+                    <svg
+                      className="animate-spin h-3 w-3 mr-2 inline"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                   )}
-                  {newsletterStatus === 'success' ? 'Subscribed!' :
-                   newsletterStatus === 'error' ? 'Try again' :
-                   'Subscribe'}
+                  {newsletterStatus === "success"
+                    ? "Subscribed!"
+                    : newsletterStatus === "error"
+                      ? "Try again"
+                      : "Subscribe"}
                 </Button>
-                {newsletterStatus === 'error' && (
-                  <p className="text-red-400 text-xs text-center">Subscription failed. Please try again.</p>
+                {newsletterStatus === "error" && (
+                  <p className="text-red-400 text-xs text-center">
+                    Subscription failed. Please try again.
+                  </p>
                 )}
-                {newsletterStatus === 'success' && newsletterMessage && (
+                {newsletterStatus === "success" && newsletterMessage && (
                   <p className="text-green-400 text-xs text-center">{newsletterMessage}</p>
                 )}
               </form>
@@ -782,13 +1080,22 @@ export function HomePageClient() {
                 © {new Date().getFullYear()} System Design Sandbox. Built by Antonio Coppe.
               </p>
               <div className="flex items-center gap-6">
-                <Link href="/privacy" className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
+                <Link
+                  href="/privacy"
+                  className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
+                >
                   Privacy
                 </Link>
-                <Link href="/terms" className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
+                <Link
+                  href="/terms"
+                  className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
+                >
                   Terms
                 </Link>
-                <Link href="/cookies" className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors">
+                <Link
+                  href="/cookies"
+                  className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
+                >
                   Cookies
                 </Link>
               </div>
