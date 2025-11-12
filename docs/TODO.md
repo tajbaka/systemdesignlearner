@@ -258,17 +258,5 @@ When implementing, focus on these likely files:
 
 
 
-add page before starting the practice/url-shortner exaplinging what url shortening service is and then there is a start
-that start the practice
-Fixing float score in api step
-
-
-unblock paths for seeded apis
-remove scroll bar(or style it) and expand text areas
-missing requirement box should be yellow
-
-
-
-
 mobile:
 full text boxes instead of box in box for the first 2 steps in the practice and for the step 3

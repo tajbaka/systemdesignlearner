@@ -33,12 +33,22 @@ export function ApiDefinitionStep() {
 
   // Determine which endpoints should be highlighted based on feedback keywords
   // Memoized to prevent infinite loop in useEffect
+  // Map of endpoint ID to field type ('path' or 'notes')
   const endpointsToHighlight = useMemo(() => {
-    if (!showHighlights || !feedbackMessage) return new Set<string>();
+    if (!showHighlights || !feedbackMessage) return new Map<string, 'path' | 'notes'>();
 
-    const highlightSet = new Set<string>();
+    const highlightMap = new Map<string, 'path' | 'notes'>();
     const redirectKeywords = ['redirect', '301', '302', '3xx', '307', '308'];
     const createKeywords = ['create', 'creation', 'shorten', 'generate', 'creating'];
+    const analyticsKeywords = ['analytics', 'metrics', 'statistics', 'stats', 'tracking'];
+
+    // Keywords that indicate path-specific feedback
+    const pathKeywords = ['path', 'structure', 'url structure', 'endpoint structure', 'identifier', 'slug', 'route'];
+    const isPathFeedback = pathKeywords.some(kw => feedbackMessage.includes(kw));
+
+    // Keywords that indicate we're designing/creating a new endpoint (focus on path)
+    const endpointDesignKeywords = ['design', 'what endpoint', 'which endpoint', 'what api', 'which api', 'add endpoint', 'create endpoint'];
+    const isEndpointDesign = endpointDesignKeywords.some(kw => feedbackMessage.includes(kw));
 
     // First pass: Check for strong method+keyword matches
     let hasStrongMatch = false;
@@ -46,21 +56,45 @@ export function ApiDefinitionStep() {
     endpoints.forEach(endpoint => {
       const method = endpoint.method.toLowerCase();
 
+      // Strong match: GET endpoints with analytics keywords
+      if (method === 'get' && analyticsKeywords.some(kw => feedbackMessage.includes(kw))) {
+        // For endpoint design or path feedback, highlight path; otherwise notes
+        highlightMap.set(endpoint.id, isEndpointDesign || isPathFeedback ? 'path' : 'notes');
+        hasStrongMatch = true;
+      }
       // Strong match: GET endpoints with redirect keywords
-      if (method === 'get' && redirectKeywords.some(kw => feedbackMessage.includes(kw))) {
-        highlightSet.add(endpoint.id);
+      else if (method === 'get' && redirectKeywords.some(kw => feedbackMessage.includes(kw))) {
+        // If path-specific or design feedback, highlight path; otherwise highlight notes
+        highlightMap.set(endpoint.id, isEndpointDesign || isPathFeedback ? 'path' : 'notes');
         hasStrongMatch = true;
       }
       // Strong match: POST endpoints with creation keywords
       else if (method === 'post' && createKeywords.some(kw => feedbackMessage.includes(kw))) {
-        highlightSet.add(endpoint.id);
+        highlightMap.set(endpoint.id, isEndpointDesign || isPathFeedback ? 'path' : 'notes');
         hasStrongMatch = true;
       }
     });
 
-    // If we found strong matches, return them (don't do loose content matching)
+    // If we found strong matches, filter to prefer empty paths when asking about path structure
     if (hasStrongMatch) {
-      return highlightSet;
+      // For path-related or design questions, prefer highlighting empty paths (they need filling)
+      if ((isPathFeedback || isEndpointDesign) && highlightMap.size > 0) {
+        const matchedWithEmptyPaths = Array.from(highlightMap.entries()).filter(([id, field]) => {
+          const endpoint = endpoints.find(ep => ep.id === id);
+          return endpoint && field === 'path' && endpoint.path.trim().length === 0;
+        });
+
+        // If we found matched endpoints with empty paths, only highlight those
+        if (matchedWithEmptyPaths.length > 0) {
+          const newMap = new Map<string, 'path' | 'notes'>();
+          matchedWithEmptyPaths.forEach(([id, field]) => {
+            newMap.set(id, field);
+          });
+          return newMap;
+        }
+      }
+
+      return highlightMap;
     }
 
     // Second pass: Only if no strong matches, check for path or specific content matches
@@ -70,20 +104,21 @@ export function ApiDefinitionStep() {
 
       // Check if feedback specifically mentions this path (path must be meaningful length)
       if (path.length > 3 && feedbackMessage.includes(path)) {
-        highlightSet.add(endpoint.id);
+        highlightMap.set(endpoint.id, isPathFeedback ? 'path' : 'notes');
       }
       // Check if endpoint notes contain very specific keywords from feedback (longer words only)
       else if (notes && feedbackMessage.split(' ').some(word => word.length > 8 && notes.includes(word))) {
-        highlightSet.add(endpoint.id);
+        highlightMap.set(endpoint.id, 'notes');
       }
     });
 
-    // If still no match, highlight all endpoints as fallback
-    if (highlightSet.size === 0) {
-      endpoints.forEach(ep => highlightSet.add(ep.id));
+    // If still no match, highlight all endpoints
+    // For endpoint design questions, highlight paths; otherwise notes
+    if (highlightMap.size === 0) {
+      endpoints.forEach(ep => highlightMap.set(ep.id, isEndpointDesign || isPathFeedback ? 'path' : 'notes'));
     }
 
-    return highlightSet;
+    return highlightMap;
   }, [showHighlights, feedbackMessage, endpoints]);
 
   // Update showHighlights when blocking feedback appears (including re-submissions)
@@ -115,7 +150,7 @@ export function ApiDefinitionStep() {
     if (showHighlights && endpointsToHighlight.size > 0) {
       setExpandedIds(prev => {
         const next = new Set(prev);
-        endpointsToHighlight.forEach(id => next.add(id));
+        endpointsToHighlight.forEach((_, id) => next.add(id));
         return next;
       });
     }
@@ -241,8 +276,10 @@ export function ApiDefinitionStep() {
           const hasError = hasPath && !hasValidNotes && !isReadOnly;
           const shouldShowError = hasError && isTouched;
 
-          // Highlight endpoint if it matches the feedback keywords
-          const shouldHighlight = showHighlights && endpointsToHighlight.has(endpoint.id) && !isReadOnly;
+          // Determine which field to highlight based on feedback
+          const highlightField = endpointsToHighlight.get(endpoint.id);
+          const shouldHighlightPath = showHighlights && highlightField === 'path' && !isReadOnly;
+          const shouldHighlightNotes = showHighlights && highlightField === 'notes' && !isReadOnly;
 
           return (
             <article
@@ -298,7 +335,11 @@ export function ApiDefinitionStep() {
                         setShowHighlights(false);
                       }}
                       disabled={isReadOnly}
-                      className="h-10 w-full rounded-full border border-zinc-700 bg-zinc-900 pl-6 pr-4 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
+                      className={`h-10 w-full rounded-full border pl-6 pr-4 text-sm text-zinc-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${
+                        shouldHighlightPath
+                          ? 'border-amber-400/70 bg-amber-950/30 ring-2 ring-amber-400/40 focus-visible:ring-2 focus-visible:ring-amber-500'
+                          : 'border-zinc-700 bg-zinc-900 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500'
+                      }`}
                     />
                   </div>
                 </div>
@@ -351,7 +392,7 @@ export function ApiDefinitionStep() {
                   <div className={`relative mt-2 rounded-2xl border transition-colors duration-300 ${
                     shouldShowError
                       ? 'border-red-500/50 bg-red-950/20'
-                      : shouldHighlight
+                      : shouldHighlightNotes
                         ? 'border-amber-400/50 bg-amber-950/20 ring-2 ring-amber-400/30'
                         : 'border-zinc-700 bg-zinc-950/60'
                   }`}>
@@ -377,7 +418,7 @@ export function ApiDefinitionStep() {
                       className={`styled-scrollbar min-h-[280px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
                         shouldShowError
                           ? 'focus-visible:ring-2 focus-visible:ring-red-500'
-                          : shouldHighlight
+                          : shouldHighlightNotes
                             ? 'focus-visible:ring-2 focus-visible:ring-amber-500'
                             : 'focus-visible:ring-2 focus-visible:ring-blue-500'
                       } disabled:cursor-not-allowed disabled:opacity-60`}
@@ -397,7 +438,7 @@ export function ApiDefinitionStep() {
                     </div>
                   </div>
 
-                  {(shouldShowError || shouldHighlight) && (
+                  {(shouldShowError || shouldHighlightNotes) && (
                     <p className={`mt-2 text-xs ${shouldShowError ? 'text-red-400' : 'text-amber-400'}`}>
                       Please add a meaningful description (at least 10 characters).
                     </p>
