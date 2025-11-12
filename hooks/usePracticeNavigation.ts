@@ -126,6 +126,14 @@ export function usePracticeNavigation(
         // This ensures the state is saved before Clerk redirects the page
         session.flushToStorage();
 
+        // Set URL flag to indicate auth flow in progress
+        // This survives page reloads and helps detect returning from OAuth
+        if (typeof window !== 'undefined') {
+          const url = new URL(window.location.href);
+          url.searchParams.set('auth_flow', 'true');
+          window.history.replaceState({}, '', url.toString());
+        }
+
         // Show auth modal immediately after flush
         setShowAuthModal(true);
       }

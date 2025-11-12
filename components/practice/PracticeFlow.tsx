@@ -106,6 +106,14 @@ function PracticeFlowInner() {
 
     if (signedIn && !state.auth.isAuthed) {
       setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
+      // Clear auth flow flag from URL after successful auth
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('auth_flow')) {
+          url.searchParams.delete('auth_flow');
+          window.history.replaceState({}, '', url.toString());
+        }
+      }
       return;
     }
 
@@ -120,9 +128,20 @@ function PracticeFlowInner() {
       return;
     }
 
+    // Check if we're in the middle of an auth flow (user clicked sign in, being redirected)
+    const inAuthFlow = typeof window !== 'undefined' &&
+      new URL(window.location.href).searchParams.has('auth_flow');
+
     // If not authenticated (and not signed in via Clerk) and has completed protected steps, clear them
     // Don't clear if user is signed in via Clerk - they're in the process of auth state sync
-    if (!state.auth.isAuthed && !signedIn) {
+    // CRITICAL: Also don't clear if state was recently updated (within 10 seconds)
+    // This prevents clearing progress when page reloads after Clerk auth redirect
+    // and Clerk hasn't finished loading yet (isSignedIn is briefly false)
+    // OAuth flows can take 5-8 seconds (redirect to provider + back + Clerk initialization)
+    const recentlyUpdated = state.updatedAt && (Date.now() - state.updatedAt) < 10000;
+
+    // Don't clear progress if we're in an auth flow (URL flag present)
+    if (!state.auth.isAuthed && !signedIn && !recentlyUpdated && !inAuthFlow) {
       if (state.completed.score) {
         markStep("score", false);
       }
@@ -145,6 +164,7 @@ function PracticeFlowInner() {
     state.auth.isAuthed,
     state.completed.sandbox,
     state.completed.score,
+    state.updatedAt,
     showAuthModal,
   ]);
 
