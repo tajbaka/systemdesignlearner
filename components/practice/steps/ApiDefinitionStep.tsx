@@ -23,8 +23,79 @@ export function ApiDefinitionStep() {
   const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set([endpoints[0]?.id].filter(Boolean)));
   const [touchedEndpoints, setTouchedEndpoints] = useState<Set<string>>(new Set());
 
+  // Track if we should show highlights (persists after modal closes)
+  const [showHighlights, setShowHighlights] = useState(false);
+
   // Check if there's a blocking feedback result
-  const hasBlockingFeedback = state.iterativeFeedback?.api?.cachedResult?.ui?.blocking ?? false;
+  const cachedResult = state.iterativeFeedback?.api?.cachedResult;
+  const hasBlockingFeedback = cachedResult?.ui?.blocking ?? false;
+  const feedbackMessage = cachedResult?.ui?.nextPrompt?.toLowerCase() ?? "";
+
+  // Determine which endpoints should be highlighted based on feedback keywords
+  // Memoized to prevent infinite loop in useEffect
+  const endpointsToHighlight = useMemo(() => {
+    if (!showHighlights || !feedbackMessage) return new Set<string>();
+
+    const highlightSet = new Set<string>();
+    const redirectKeywords = ['redirect', '301', '302', '3xx', '307', '308'];
+    const createKeywords = ['create', 'creation', 'shorten', 'generate', 'creating'];
+
+    // First pass: Check for strong method+keyword matches
+    let hasStrongMatch = false;
+
+    endpoints.forEach(endpoint => {
+      const method = endpoint.method.toLowerCase();
+
+      // Strong match: GET endpoints with redirect keywords
+      if (method === 'get' && redirectKeywords.some(kw => feedbackMessage.includes(kw))) {
+        highlightSet.add(endpoint.id);
+        hasStrongMatch = true;
+      }
+      // Strong match: POST endpoints with creation keywords
+      else if (method === 'post' && createKeywords.some(kw => feedbackMessage.includes(kw))) {
+        highlightSet.add(endpoint.id);
+        hasStrongMatch = true;
+      }
+    });
+
+    // If we found strong matches, return them (don't do loose content matching)
+    if (hasStrongMatch) {
+      return highlightSet;
+    }
+
+    // Second pass: Only if no strong matches, check for path or specific content matches
+    endpoints.forEach(endpoint => {
+      const path = endpoint.path.toLowerCase();
+      const notes = endpoint.notes.toLowerCase();
+
+      // Check if feedback specifically mentions this path (path must be meaningful length)
+      if (path.length > 3 && feedbackMessage.includes(path)) {
+        highlightSet.add(endpoint.id);
+      }
+      // Check if endpoint notes contain very specific keywords from feedback (longer words only)
+      else if (notes && feedbackMessage.split(' ').some(word => word.length > 8 && notes.includes(word))) {
+        highlightSet.add(endpoint.id);
+      }
+    });
+
+    // If still no match, highlight all endpoints as fallback
+    if (highlightSet.size === 0) {
+      endpoints.forEach(ep => highlightSet.add(ep.id));
+    }
+
+    return highlightSet;
+  }, [showHighlights, feedbackMessage, endpoints]);
+
+  // Update showHighlights when blocking feedback appears (including re-submissions)
+  // Tracks cachedResult changes so highlights reappear even if same feedback is shown
+  useEffect(() => {
+    if (hasBlockingFeedback && cachedResult) {
+      setShowHighlights(true);
+    } else if (!cachedResult) {
+      // Clear highlights when feedback is cleared
+      setShowHighlights(false);
+    }
+  }, [hasBlockingFeedback, cachedResult]);
 
   // Check if there are any validation issues
   const hasNoEndpoints = endpoints.length === 0;
@@ -39,21 +110,16 @@ export function ApiDefinitionStep() {
     }
   }, [endpoints, openId]);
 
-  // Auto-expand endpoints with issues when there's blocking feedback
+  // Auto-expand highlighted endpoints when highlights are shown
   useEffect(() => {
-    if (hasBlockingFeedback) {
-      const endpointsWithIssues = endpoints.filter(
-        ep => ep.path.trim().length > 0 && ep.notes.trim().length < 10
-      );
-      if (endpointsWithIssues.length > 0) {
-        setExpandedIds(prev => {
-          const next = new Set(prev);
-          endpointsWithIssues.forEach(ep => next.add(ep.id));
-          return next;
-        });
-      }
+    if (showHighlights && endpointsToHighlight.size > 0) {
+      setExpandedIds(prev => {
+        const next = new Set(prev);
+        endpointsToHighlight.forEach(id => next.add(id));
+        return next;
+      });
     }
-  }, [hasBlockingFeedback, endpoints]);
+  }, [showHighlights, endpointsToHighlight]);
 
   const toggleEndpoint = (id: string) => {
     setExpandedIds(prev => {
@@ -81,6 +147,8 @@ export function ApiDefinitionStep() {
     }));
     // Mark as touched when user changes the endpoint
     markEndpointTouched(id);
+    // Clear highlights when user starts fixing the issue
+    setShowHighlights(false);
     // Clear the score when user changes their answer
     if (state.scores?.api) {
       setStepScore("api", undefined);
@@ -173,8 +241,8 @@ export function ApiDefinitionStep() {
           const hasError = hasPath && !hasValidNotes && !isReadOnly;
           const shouldShowError = hasError && isTouched;
 
-          // Highlight endpoint if there's blocking feedback and this endpoint has issues
-          const shouldHighlight = hasBlockingFeedback && hasPath && !hasValidNotes && !isReadOnly;
+          // Highlight endpoint if it matches the feedback keywords
+          const shouldHighlight = showHighlights && endpointsToHighlight.has(endpoint.id) && !isReadOnly;
 
           return (
             <article
@@ -197,6 +265,10 @@ export function ApiDefinitionStep() {
                         method: event.target.value as ApiEndpoint["method"],
                       }))
                     }
+                    onFocus={() => {
+                      // Clear highlights when clicking inside the select
+                      setShowHighlights(false);
+                    }}
                     disabled={isReadOnly}
                     className="h-10 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs font-semibold uppercase tracking-wide text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                   >
@@ -220,6 +292,10 @@ export function ApiDefinitionStep() {
                           ...current,
                           path: value,
                         }));
+                      }}
+                      onFocus={() => {
+                        // Clear highlights when clicking inside the input
+                        setShowHighlights(false);
                       }}
                       disabled={isReadOnly}
                       className="h-10 w-full rounded-full border border-zinc-700 bg-zinc-900 pl-6 pr-4 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
@@ -287,7 +363,15 @@ export function ApiDefinitionStep() {
                           notes: event.target.value,
                         }))
                       }
-                      onBlur={() => markEndpointTouched(endpoint.id)}
+                      onFocus={() => {
+                        // Clear highlights when clicking inside the textarea
+                        setShowHighlights(false);
+                      }}
+                      onBlur={() => {
+                        markEndpointTouched(endpoint.id);
+                        // Clear highlights when clicking outside
+                        setShowHighlights(false);
+                      }}
                       placeholder={getApiNotesPlaceholder(endpoint.method, endpoint.path)}
                       disabled={isReadOnly}
                       className={`styled-scrollbar min-h-[280px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${

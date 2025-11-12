@@ -268,7 +268,6 @@ remove scroll bar(or style it) and expand text areas
 missing requirement box should be yellow
 
 
-add ctrl z and ctrol c ctrl shift z to move in the sandbox
 
 
 mobile:
