@@ -175,7 +175,7 @@ export function ApiDefinitionStep() {
                         method: event.target.value as ApiEndpoint["method"],
                       }))
                     }
-                    disabled={isReadOnly || endpoint.suggested}
+                    disabled={isReadOnly}
                     className="h-10 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs font-semibold uppercase tracking-wide text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {METHOD_OPTIONS.map((option) => (
@@ -199,7 +199,7 @@ export function ApiDefinitionStep() {
                           path: value,
                         }));
                       }}
-                      disabled={isReadOnly || endpoint.suggested}
+                      disabled={isReadOnly}
                       className="h-10 w-full rounded-full border border-zinc-700 bg-zinc-900 pl-6 pr-4 text-sm text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                     />
                   </div>
@@ -266,7 +266,7 @@ export function ApiDefinitionStep() {
                       onBlur={() => markEndpointTouched(endpoint.id)}
                       placeholder={getApiNotesPlaceholder(endpoint.method, endpoint.path)}
                       disabled={isReadOnly}
-                      className={`min-h-[180px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
+                      className={`styled-scrollbar min-h-[280px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
                         shouldShowError
                           ? 'focus-visible:ring-2 focus-visible:ring-red-500'
                           : 'focus-visible:ring-2 focus-visible:ring-blue-500'

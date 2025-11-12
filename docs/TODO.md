@@ -263,10 +263,11 @@ that start the practice
 Fixing float score in api step
 
 
-unblock paths for api
-remove scroll bar and expand
-highlight red when mentioning a specific error so the user knows what is talking about one of the 4, path or text area
+unblock paths for seeded apis
+remove scroll bar(or style it) and expand text areas
+
 missing requirement box should be yellow
+highlight when mentioning a specific error so the user knows what is talking about one of the path input field or text area and for which endpoint
 highlight the box should be same color as the missing requirement box
 float should not exist
 add ctrl z and ctrol c ctrl shift z to move in the sandbox
