@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
       { text: data.text },
       {
         headers: {
-          "Access-Control-Allow-Origin": origin,
+          "Access-Control-Allow-Origin": origin || "",
           "Access-Control-Allow-Methods": "POST",
           "Access-Control-Allow-Headers": "Content-Type",
         },
