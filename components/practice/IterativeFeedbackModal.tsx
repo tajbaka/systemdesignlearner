@@ -108,11 +108,17 @@ export function IterativeFeedbackModal({
 
           {/* Improvement question */}
           {nextPrompt && (
-            <div className={allTopicsCovered ? "mt-4 rounded-xl border border-blue-400/30 bg-blue-950/40 p-4" : "rounded-xl border border-blue-400/30 bg-blue-950/40 p-4"}>
-              <h3 className="mb-2 text-sm font-semibold text-blue-300">
+            <div className={
+              blocking
+                ? "rounded-xl border border-amber-400/30 bg-amber-950/40 p-4"
+                : allTopicsCovered
+                  ? "mt-4 rounded-xl border border-blue-400/30 bg-blue-950/40 p-4"
+                  : "rounded-xl border border-blue-400/30 bg-blue-950/40 p-4"
+            }>
+              <h3 className={`mb-2 text-sm font-semibold ${blocking ? "text-amber-300" : "text-blue-300"}`}>
                 {blocking ? "Missing requirement:" : allTopicsCovered ? "💡 Bonus feature:" : "💡 To reach 100%:"}
               </h3>
-              <p className="text-sm text-blue-100">{nextPrompt}</p>
+              <p className={`text-sm ${blocking ? "text-amber-100" : "text-blue-100"}`}>{nextPrompt}</p>
             </div>
           )}
         </div>
