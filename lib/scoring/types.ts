@@ -88,7 +88,7 @@ export type FunctionalScoringInput = {
 };
 
 // ============================================================================
-// Step 2: Non-Functional Requirements Scoring
+// Step 2: Non-Functional Requirements Scoring --
 // ============================================================================
 
 export type NFRCategory = "scale" | "performance" | "availability" | "security" | "other";
