@@ -2,10 +2,6 @@
 User-agent: *
 Allow: /
 
-# Block font files and icons from indexing (they're not content)
-Disallow: /_next/static/media/
-Disallow: /favicon.ico
-
 # Host
 Host: https://www.systemdesignsandbox.com
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
 import ReactFlowBoard from "@/app/components/ReactFlowBoard";
@@ -205,6 +205,15 @@ export default function DesignStage({
         : null;
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+
+  // Undo/Redo history
+  const historyRef = useRef<{ nodes: PlacedNode[]; edges: Edge[] }[]>([]);
+  const historyIndexRef = useRef<number>(-1);
+  const isUndoRedoActionRef = useRef<boolean>(false);
+
+  // Clipboard for copy/paste
+  const [clipboard, setClipboard] = useState<{ nodes: PlacedNode[]; edges: Edge[] } | null>(null);
+
   const allowedKinds = useMemo<ComponentKind[]>(
     () => (allowedComponentKinds && allowedComponentKinds.length ? allowedComponentKinds : RECOMMENDED_COMPONENTS),
     [allowedComponentKinds]
@@ -216,6 +225,208 @@ export default function DesignStage({
       ),
     [allowedKinds]
   );
+
+  // Save current state to history
+  const saveToHistory = useCallback((nodes: PlacedNode[], edges: Edge[]) => {
+    if (isUndoRedoActionRef.current) {
+      return; // Don't save history during undo/redo
+    }
+
+    const newState = { nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) };
+
+    // Remove any states after current index (when user makes new change after undo)
+    historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
+
+    // Add new state
+    historyRef.current.push(newState);
+    historyIndexRef.current = historyRef.current.length - 1;
+
+    // Limit history to 50 states
+    if (historyRef.current.length > 50) {
+      historyRef.current.shift();
+      historyIndexRef.current--;
+    }
+  }, []);
+
+  // Initialize history with current state
+  useEffect(() => {
+    if (historyRef.current.length === 0) {
+      saveToHistory(design.nodes, design.edges);
+    }
+  }, [design.nodes, design.edges, saveToHistory]);
+
+  // Undo function
+  const handleUndo = useCallback(() => {
+    if (editingLocked || historyIndexRef.current <= 0) return;
+
+    historyIndexRef.current--;
+    const prevState = historyRef.current[historyIndexRef.current];
+
+    isUndoRedoActionRef.current = true;
+    updateDesign((prev) => ({
+      ...prev,
+      nodes: JSON.parse(JSON.stringify(prevState.nodes)),
+      edges: JSON.parse(JSON.stringify(prevState.edges)),
+    }));
+
+    // Clear simulation state
+    session.setRun((prev) => ({
+      ...prev,
+      lastResult: null,
+      isRunning: false,
+    }));
+    session.setStepScore("design", undefined);
+    session.setStepScore("simulation", undefined);
+
+    setTimeout(() => {
+      isUndoRedoActionRef.current = false;
+    }, 100);
+
+    track("practice_design_undo", { slug: "url-shortener" });
+  }, [editingLocked, updateDesign, session]);
+
+  // Redo function
+  const handleRedo = useCallback(() => {
+    if (editingLocked || historyIndexRef.current >= historyRef.current.length - 1) return;
+
+    historyIndexRef.current++;
+    const nextState = historyRef.current[historyIndexRef.current];
+
+    isUndoRedoActionRef.current = true;
+    updateDesign((prev) => ({
+      ...prev,
+      nodes: JSON.parse(JSON.stringify(nextState.nodes)),
+      edges: JSON.parse(JSON.stringify(nextState.edges)),
+    }));
+
+    // Clear simulation state
+    session.setRun((prev) => ({
+      ...prev,
+      lastResult: null,
+      isRunning: false,
+    }));
+    session.setStepScore("design", undefined);
+    session.setStepScore("simulation", undefined);
+
+    setTimeout(() => {
+      isUndoRedoActionRef.current = false;
+    }, 100);
+
+    track("practice_design_redo", { slug: "url-shortener" });
+  }, [editingLocked, updateDesign, session]);
+
+  // Copy function
+  const handleCopy = useCallback(() => {
+    if (editingLocked) return;
+
+    const nodesToCopy = selectedNodeId
+      ? design.nodes.filter(node => node.id === selectedNodeId)
+      : design.nodes;
+
+    const nodeIds = new Set(nodesToCopy.map(n => n.id));
+    const edgesToCopy = design.edges.filter(edge =>
+      nodeIds.has(edge.from) && nodeIds.has(edge.to)
+    );
+
+    setClipboard({
+      nodes: JSON.parse(JSON.stringify(nodesToCopy)),
+      edges: JSON.parse(JSON.stringify(edgesToCopy)),
+    });
+
+    track("practice_design_copy", { slug: "url-shortener", nodeCount: nodesToCopy.length });
+  }, [editingLocked, selectedNodeId, design.nodes, design.edges]);
+
+  // Paste function
+  const handlePaste = useCallback(() => {
+    if (editingLocked || !clipboard || clipboard.nodes.length === 0) return;
+
+    // Create ID mapping for pasted nodes
+    const idMapping = new Map<string, string>();
+    const pastedNodes: PlacedNode[] = clipboard.nodes.map(node => {
+      const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const newId = `node-${node.spec.kind}-${uniqueId}`;
+      idMapping.set(node.id, newId);
+
+      return {
+        ...node,
+        id: newId,
+        x: node.x + 50, // Offset pasted nodes
+        y: node.y + 50,
+      };
+    });
+
+    // Update edges with new node IDs
+    const pastedEdges: Edge[] = clipboard.edges.map(edge => {
+      const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      return {
+        ...edge,
+        id: `edge-${uniqueId}`,
+        from: idMapping.get(edge.from) || edge.from,
+        to: idMapping.get(edge.to) || edge.to,
+      };
+    });
+
+    updateDesign((prev) => ({
+      ...prev,
+      nodes: [...prev.nodes, ...pastedNodes],
+      edges: [...prev.edges, ...pastedEdges],
+    }));
+
+    // Clear simulation state
+    session.setRun((prev) => ({
+      ...prev,
+      lastResult: null,
+      isRunning: false,
+    }));
+    session.setStepScore("design", undefined);
+    session.setStepScore("simulation", undefined);
+
+    track("practice_design_paste", { slug: "url-shortener", nodeCount: pastedNodes.length });
+  }, [editingLocked, clipboard, updateDesign, session]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check for Ctrl (or Cmd on Mac)
+      const isMod = event.ctrlKey || event.metaKey;
+
+      // Undo: Ctrl+Z (without Shift)
+      if (isMod && event.key === 'z' && !event.shiftKey) {
+        event.preventDefault();
+        handleUndo();
+        return;
+      }
+
+      // Redo: Ctrl+Shift+Z or Ctrl+Y
+      if (isMod && ((event.key === 'z' && event.shiftKey) || event.key === 'y')) {
+        event.preventDefault();
+        handleRedo();
+        return;
+      }
+
+      // Copy: Ctrl+C
+      if (isMod && event.key === 'c') {
+        event.preventDefault();
+        handleCopy();
+        return;
+      }
+
+      // Paste: Ctrl+V
+      if (isMod && event.key === 'v') {
+        event.preventDefault();
+        handlePaste();
+        return;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo, handleCopy, handlePaste]);
 
   const tutorialSteps = useMemo(() => tutorialStepsFor(requirements), [requirements]);
   const stepCount = tutorialSteps.length;
@@ -305,19 +516,25 @@ export default function DesignStage({
       const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
         : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      const newNodes = [
+        ...design.nodes,
+        {
+          id: `node-${kind}-${uniqueId}`,
+          spec,
+          x: nodePosition.x,
+          y: nodePosition.y,
+          replicas: 1,
+        },
+      ];
+
       updateDesign((prev) => ({
         ...prev,
-        nodes: [
-          ...prev.nodes,
-          {
-            id: `node-${kind}-${uniqueId}`,
-            spec,
-            x: nodePosition.x,
-            y: nodePosition.y,
-            replicas: 1,
-          },
-        ],
+        nodes: newNodes,
       }));
+
+      // Save to history
+      saveToHistory(newNodes, design.edges);
 
       // FIX Issue #1: Clear simulation state when design changes
       session.setRun((prev) => ({
@@ -332,13 +549,15 @@ export default function DesignStage({
 
       track("practice_design_node_added", { slug: "url-shortener", kind });
     },
-    [design.nodes, editingLocked, updateDesign, session]
+    [design.nodes, design.edges, editingLocked, updateDesign, session, saveToHistory]
   );
 
   const handleConnect = useCallback(
     (edge: Edge) => {
       if (editingLocked) return;
       let didChange = false;
+      let newEdges: Edge[] = [];
+
       // FIX Issue #15: Use crypto.randomUUID() to prevent ID collisions
       const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
@@ -353,20 +572,24 @@ export default function DesignStage({
           return prev;
         }
         didChange = true;
+        newEdges = [
+          ...prev.edges,
+          {
+            ...edge,
+            id: `edge-${uniqueId}`,
+          },
+        ];
         return {
           ...prev,
-          edges: [
-            ...prev.edges,
-            {
-              ...edge,
-              id: `edge-${uniqueId}`,
-            },
-          ],
+          edges: newEdges,
         };
       });
 
       // FIX Issue #1: Clear simulation state when design changes (only if edge was actually added)
       if (didChange) {
+        // Save to history
+        saveToHistory(design.nodes, newEdges);
+
         session.setRun((prev) => ({
           ...prev,
           lastResult: null,
@@ -377,7 +600,7 @@ export default function DesignStage({
         session.setStepScore("simulation", undefined);
       }
     },
-    [editingLocked, updateDesign, session]
+    [editingLocked, updateDesign, session, design.nodes, saveToHistory]
   );
 
   const handleDrop = useCallback(
@@ -412,6 +635,10 @@ export default function DesignStage({
       // Only clear scores if there was an actual change
       if (didChange) {
         console.log("[DesignStage] Nodes changed, clearing scores");
+
+        // Save to history
+        saveToHistory(nextNodes, prunedEdges);
+
         // FIX Issue #1: Clear simulation state when design changes
         session.setRun((prev) => ({
           ...prev,
@@ -431,7 +658,7 @@ export default function DesignStage({
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [editingLocked, updateDesign, session]
+    [editingLocked, updateDesign, session, saveToHistory]
   );
 
   const handleEdgesChange = useCallback(
@@ -455,6 +682,10 @@ export default function DesignStage({
       // Only clear scores if there was an actual change
       if (didChange) {
         console.log("[DesignStage] Edges changed, clearing scores");
+
+        // Save to history
+        saveToHistory(design.nodes, nextEdges);
+
         // FIX Issue #1: Clear simulation state when design changes
         session.setRun((prev) => ({
           ...prev,
@@ -471,19 +702,25 @@ export default function DesignStage({
         prev && nextEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [editingLocked, updateDesign, session]
+    [editingLocked, updateDesign, session, design.nodes, saveToHistory]
   );
 
   const handleDeleteNode = useCallback(
     (nodeId: string) => {
       if (editingLocked) return;
       let prunedEdges: Edge[] = [];
+      let newNodes: PlacedNode[] = [];
+
       updateDesign((prev) => {
         const nodes = prev.nodes.filter((node) => node.id !== nodeId);
         const edges = pruneEdges(prev.edges, nodes);
         prunedEdges = edges;
+        newNodes = nodes;
         return { ...prev, nodes, edges };
       });
+
+      // Save to history
+      saveToHistory(newNodes, prunedEdges);
 
       // FIX Issue #1: Clear simulation state when design changes
       session.setRun((prev) => ({
@@ -501,18 +738,26 @@ export default function DesignStage({
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [editingLocked, updateDesign, session]
+    [editingLocked, updateDesign, session, saveToHistory]
   );
 
   const handleUpdateReplicas = useCallback(
     (nodeId: string, replicas: number) => {
       if (editingLocked) return;
-      updateDesign((prev) => ({
-        ...prev,
-        nodes: prev.nodes.map(node =>
+      let newNodes: PlacedNode[] = [];
+
+      updateDesign((prev) => {
+        newNodes = prev.nodes.map(node =>
           node.id === nodeId ? { ...node, replicas } : node
-        ),
-      }));
+        );
+        return {
+          ...prev,
+          nodes: newNodes,
+        };
+      });
+
+      // Save to history
+      saveToHistory(newNodes, design.edges);
 
       // FIX Issue #1: Clear simulation state when design changes (replicas affect capacity)
       session.setRun((prev) => ({
@@ -527,7 +772,7 @@ export default function DesignStage({
 
       track("practice_design_node_replicas_changed", { slug: "url-shortener", nodeId, replicas });
     },
-    [editingLocked, updateDesign, session]
+    [editingLocked, updateDesign, session, design.edges, saveToHistory]
   );
 
   const handleRenameNode = useCallback(
@@ -572,10 +817,18 @@ export default function DesignStage({
   const handleDeleteSelection = useCallback(() => {
     if (editingLocked) return;
     if (selectedEdgeId) {
-      updateDesign((prev) => ({
-        ...prev,
-        edges: prev.edges.filter((edge) => edge.id !== selectedEdgeId),
-      }));
+      let newEdges: Edge[] = [];
+
+      updateDesign((prev) => {
+        newEdges = prev.edges.filter((edge) => edge.id !== selectedEdgeId);
+        return {
+          ...prev,
+          edges: newEdges,
+        };
+      });
+
+      // Save to history
+      saveToHistory(design.nodes, newEdges);
 
       // FIX Issue #1: Clear simulation state when design changes
       session.setRun((prev) => ({
@@ -593,12 +846,18 @@ export default function DesignStage({
     }
     if (selectedNodeId) {
       let prunedEdges: Edge[] = [];
+      let newNodes: PlacedNode[] = [];
+
       updateDesign((prev) => {
         const nodes = prev.nodes.filter((node) => node.id !== selectedNodeId);
         const edges = pruneEdges(prev.edges, nodes);
         prunedEdges = edges;
+        newNodes = nodes;
         return { ...prev, nodes, edges };
       });
+
+      // Save to history
+      saveToHistory(newNodes, prunedEdges);
 
       // FIX Issue #1: Clear simulation state when design changes
       session.setRun((prev) => ({
@@ -616,7 +875,7 @@ export default function DesignStage({
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     }
-  }, [editingLocked, selectedEdgeId, selectedNodeId, updateDesign, session]);
+  }, [editingLocked, selectedEdgeId, selectedNodeId, updateDesign, session, design.nodes, saveToHistory]);
 
   const serviceNode = useMemo(
     () => design.nodes.find((node) => node.spec.kind === "Service"),
