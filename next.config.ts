@@ -49,6 +49,24 @@ const nextConfig: NextConfig = {
 
   // Required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
+
+  // Canonical URL redirects for SEO
+  async redirects() {
+    return [
+      // Redirect non-www to www
+      {
+        source: "/:path*",
+        has: [
+          {
+            type: "host",
+            value: "systemdesignsandbox.com",
+          },
+        ],
+        destination: "https://www.systemdesignsandbox.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default withSentryConfig(nextConfig, {
