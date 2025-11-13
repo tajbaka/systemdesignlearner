@@ -27,9 +27,63 @@ export const metadata: Metadata = {
         ? `https://${process.env.VERCEL_URL}`
         : "https://www.systemdesignsandbox.com"
   ),
-  title: "System Design Sandbox - Master System Design Through Play",
+  title: {
+    default: "System Design Sandbox: Interactive Interview Prep",
+    template: "%s | System Design Sandbox"
+  },
   description:
-    "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations of production scenarios.",
+    "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations of production scenarios. Master system design interviews through hands-on practice.",
+  keywords: [
+    "system design",
+    "interview prep",
+    "software architecture",
+    "distributed systems",
+    "scalability",
+    "system design interview",
+    "technical interview",
+    "software engineering",
+    "interactive learning",
+    "architecture simulation"
+  ],
+  authors: [{ name: "System Design Sandbox" }],
+  creator: "System Design Sandbox",
+  publisher: "System Design Sandbox",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://www.systemdesignsandbox.com",
+    siteName: "System Design Sandbox",
+    title: "System Design Sandbox: Interactive Interview Prep",
+    description:
+      "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations of production scenarios.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "System Design Sandbox - Interactive Interview Prep",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "System Design Sandbox: Interactive Interview Prep",
+    description:
+      "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations.",
+    images: ["/og-image.png"],
+    creator: "@systemdesignsb",
+  },
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
@@ -43,6 +97,9 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: false,
+  },
+  alternates: {
+    canonical: "https://www.systemdesignsandbox.com",
   },
 };
 

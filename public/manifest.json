@@ -1,21 +1,26 @@
 {
-  "name": "System Design Sandbox",
+  "name": "System Design Sandbox: Interactive Interview Prep",
   "short_name": "SD Sandbox",
   "description": "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations of production scenarios.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "orientation": "any",
+  "background_color": "#0a0a0a",
   "theme_color": "#34d399",
+  "categories": ["education", "productivity"],
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/android-chrome-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
