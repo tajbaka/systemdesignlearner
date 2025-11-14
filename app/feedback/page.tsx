@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -229,6 +230,8 @@ export default function FeedbackPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Footer />
     </div>
   );
 }

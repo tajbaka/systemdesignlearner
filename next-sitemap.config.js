@@ -22,11 +22,20 @@ module.exports = {
     if (path === '/') {
       priority = 1.0;
       changefreq = 'daily';
-    } else if (path.startsWith('/practice/')) {
+    } else if (path.startsWith('/practice/url-shortener') || path === '/practice') {
       priority = 0.9;
       changefreq = 'daily';
-    } else if (path.startsWith('/scenarios/')) {
+    } else if (path === '/interview-guide' || path === '/examples') {
+      priority = 0.9;
+      changefreq = 'weekly';
+    } else if (path === '/docs') {
       priority = 0.8;
+      changefreq = 'weekly';
+    } else if (path === '/feedback' || path === '/privacy' || path === '/terms' || path === '/cookies') {
+      priority = 0.3;
+      changefreq = 'monthly';
+    } else if (path === '/play') {
+      priority = 0.7;
       changefreq = 'weekly';
     }
 

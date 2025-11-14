@@ -170,6 +170,18 @@ export function Navbar() {
             Practice
           </Link>
           <Link
+            href="/examples"
+            className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
+          >
+            Examples
+          </Link>
+          <Link
+            href="/interview-guide"
+            className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
+          >
+            Interview Guide
+          </Link>
+          <Link
             href="/docs"
             className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
           >
@@ -264,6 +276,20 @@ export function Navbar() {
               onClick={closeMenu}
             >
               Practice
+            </Link>
+            <Link
+              href="/examples"
+              className="block px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors text-base font-medium"
+              onClick={closeMenu}
+            >
+              Examples
+            </Link>
+            <Link
+              href="/interview-guide"
+              className="block px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors text-base font-medium"
+              onClick={closeMenu}
+            >
+              Interview Guide
             </Link>
             <Link
               href="/docs"
