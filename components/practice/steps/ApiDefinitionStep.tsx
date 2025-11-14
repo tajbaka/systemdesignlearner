@@ -258,12 +258,6 @@ export function ApiDefinitionStep() {
     <div className="relative h-full sm:h-auto">
       {/* Desktop layout - unchanged */}
       <div className="hidden sm:block space-y-6">
-        <div className="px-4 text-center sm:px-6">
-          <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-white sm:text-2xl">URL Shortener</h2>
-          </div>
-        </div>
-
         <section className="space-y-4 lg:mx-auto lg:max-w-3xl">
         {(hasNoEndpoints || hasNoValidEndpoints) && !isReadOnly && (
           <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-3">

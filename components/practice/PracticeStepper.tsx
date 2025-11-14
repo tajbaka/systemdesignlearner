@@ -86,16 +86,18 @@ export function PracticeStepper({
       aria-label="Practice steps"
       className="sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
     >
-      {/* Mobile */}
+      {/* Scenario Title - Shows on all screen sizes above the steps */}
+      {scenarioTitle && (
+        <div className="flex items-center justify-center px-6 py-4 lg:pl-20">
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">
+            {scenarioTitle}
+          </h2>
+        </div>
+      )}
+
+      {/* Mobile Stepper */}
       {!hideMobileStepper ? (
         <div className="sm:hidden animate-in fade-in duration-300 delay-200">
-          {scenarioTitle && (
-            <div className="flex items-center justify-center px-6" style={{ paddingTop: '22px', paddingBottom: '22px' }}>
-              <h2 className="text-xl font-semibold text-white">
-                {scenarioTitle}
-              </h2>
-            </div>
-          )}
           <div
             className="relative mb-2 h-6 px-6"
             style={{ "--dot": "24px" } as React.CSSProperties}
@@ -180,7 +182,7 @@ export function PracticeStepper({
       ) : null}
 
       {/* Desktop */}
-      <div className="hidden px-6 py-4 sm:block animate-in fade-in duration-300 delay-200">
+      <div className="hidden px-6 py-4 sm:block lg:pl-20 animate-in fade-in duration-300 delay-200">
         <ol
           className="relative mx-auto flex max-w-5xl list-none items-start justify-between"
           style={{ "--dot": "40px" } as React.CSSProperties}

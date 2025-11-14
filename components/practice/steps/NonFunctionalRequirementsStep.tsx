@@ -85,14 +85,6 @@ export function NonFunctionalRequirementsStep() {
     <div className="relative h-full animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* Desktop layout */}
       <div className="hidden sm:block space-y-8">
-        <div className="px-4 text-center sm:px-6">
-          <div className="space-y-3">
-            <h2 className="text-xl font-semibold text-white sm:text-2xl">
-              URL Shortener
-            </h2>
-          </div>
-        </div>
-
         <section className="rounded-3xl border border-zinc-800/60 bg-zinc-900/50 shadow-xl shadow-black/20 p-6 sm:p-8 lg:mx-auto lg:max-w-3xl">
           <div className="space-y-6">
             <div className="space-y-2">

@@ -192,14 +192,6 @@ export function ScoreShareStep() {
 
   return (
     <div className="space-y-6">
-      <div className="hidden px-4 text-center sm:block sm:px-6">
-        <div className="space-y-3">
-          <h2 className="text-xl font-semibold text-white sm:text-2xl">
-            URL Shortener
-          </h2>
-        </div>
-      </div>
-
       {/* Overall Score Section */}
       {!cumulativeScore ? (
         <section className="space-y-6 rounded-3xl border border-amber-800 bg-amber-900/20 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">

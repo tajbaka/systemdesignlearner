@@ -66,7 +66,7 @@ export function PracticeFooter({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-4">
+    <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 lg:pl-20 py-4">
       {showBack ? (
         <button
           type="button"
