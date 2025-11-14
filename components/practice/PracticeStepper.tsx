@@ -26,12 +26,12 @@ const STEP_META: Record<PracticeStep, StepMeta> = {
   },
   nonFunctional: {
     id: "nonFunctional",
-    label: "Non-Functional",
+    label: "Non-Functional Requirements",
     description: "Latency, throughput, availability",
   },
   api: {
     id: "api",
-    label: "API",
+    label: "API Design",
     description: "Endpoints & payloads",
   },
   sandbox: {
@@ -173,7 +173,7 @@ export function PracticeStepper({
               })}
             </ol>
           </div>
-          <div className="mt-2 px-6 text-center text-[10px] font-medium uppercase tracking-wider text-zinc-400">
+          <div className="mt-2 mb-2 px-6 text-center text-[10px] font-medium uppercase tracking-wider text-zinc-400">
             {STEP_META[current].label}
           </div>
         </div>

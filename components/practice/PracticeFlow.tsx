@@ -524,7 +524,7 @@ function PracticeFlowInner() {
           className={
             isSandboxStep
               ? "flex-1 min-h-0 overflow-hidden"
-              : "flex-1 overflow-y-auto pb-28"
+              : "flex-1 min-h-0 overflow-hidden sm:overflow-y-auto pb-20 sm:pb-28"
           }
         >
           <PracticeStepContent
