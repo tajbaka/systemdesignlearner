@@ -191,7 +191,7 @@ export function ScoreShareStep() {
   const hints = score?.hints ?? [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-40 sm:pb-8">
       {/* Overall Score Section */}
       {!cumulativeScore ? (
         <section className="space-y-6 rounded-3xl border border-amber-800 bg-amber-900/20 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">

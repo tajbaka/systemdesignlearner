@@ -53,28 +53,34 @@ export function FeedbackModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onRevise()}>
-      <DialogContent hideClose className="mx-4 w-full max-w-xl rounded-3xl border border-border bg-card p-6 shadow-2xl">
+      <DialogContent hideClose className="max-w-xl rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-2xl">
         {/* Header */}
-        <div className="mb-6 flex items-start justify-between">
-          <div className="flex-1">
-            <div className="mb-2 flex items-center gap-3">
+        <div className="mb-4 sm:mb-6 flex items-start justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            {/* Score - Hero element when 100% */}
+            <p className={`mb-2 font-bold ${
+              isPerfect
+                ? 'text-3xl sm:text-4xl text-emerald-400'
+                : 'text-2xl sm:text-3xl text-foreground'
+            }`}>
+              Score: {roundedScore}/{feedbackResult.maxScore} ({displayedPercentage}%){bonusSummary}
+            </p>
+            {/* Title with icon - Secondary */}
+            <div className="flex items-center gap-2">
               {passed ? (
-                <CircleCheck className="h-6 w-6 text-emerald-500" />
+                <CircleCheck className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-emerald-500" />
               ) : (
-                <CircleAlert className="h-6 w-6 text-amber-500" />
+                <CircleAlert className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-amber-500" />
               )}
-              <DialogTitle className="text-xl font-semibold text-foreground">
+              <DialogTitle className="text-base sm:text-lg font-medium text-muted-foreground">
                 {getTitle()}
               </DialogTitle>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Score: {roundedScore}/{feedbackResult.maxScore} ({displayedPercentage}%){bonusSummary}
-            </p>
           </div>
           <button
             type="button"
             onClick={onRevise}
-            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className="flex-shrink-0 rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             aria-label="Close"
           >
             <X className="h-5 w-5" />
@@ -94,17 +100,6 @@ export function FeedbackModal({
             </div>
           )}
 
-          {/* Summary message */}
-          {passed && (
-            <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5">
-              <p className="text-base text-emerald-200">
-                {isPerfect
-                  ? "Excellent! All core requirements covered. You can continue."
-                  : "Good work! You've met the minimum requirements. You can continue or revise to improve your score."}
-              </p>
-            </div>
-          )}
-
           {/* Improvement question */}
           {improvementQuestion && (
             <div className="rounded-xl border border-blue-400/30 bg-blue-950/40 p-4">
@@ -117,19 +112,22 @@ export function FeedbackModal({
         </div>
 
         {/* Action buttons */}
-        <div className="mt-8 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onRevise}
-            className="rounded-lg border border-white bg-transparent px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-white/10"
-          >
-            Revise Answer
-          </button>
+        <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
+          {/* Only show Revise button if there's still something to improve */}
+          {(improvementQuestion || !isPerfect) && (
+            <button
+              type="button"
+              onClick={onRevise}
+              className="rounded-lg border border-white bg-transparent px-4 sm:px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-white/10"
+            >
+              Revise Answer
+            </button>
+          )}
           {passed && onContinue && (
             <button
               type="button"
               onClick={onContinue}
-              className="rounded-lg bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              className="rounded-lg bg-primary px-4 sm:px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               Continue
             </button>
