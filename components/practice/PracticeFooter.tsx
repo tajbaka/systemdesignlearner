@@ -16,6 +16,7 @@ type PracticeFooterProps = {
   onBackToSandbox?: () => void;
   voiceCaptureValue?: string;
   voiceCaptureOnChange?: (value: string) => void;
+  apiMobileEditing?: boolean;
 };
 
 export function PracticeFooter({
@@ -31,6 +32,7 @@ export function PracticeFooter({
   onBackToSandbox,
   voiceCaptureValue,
   voiceCaptureOnChange,
+  apiMobileEditing,
 }: PracticeFooterProps) {
   const [isRecording, setIsRecording] = useState(false);
 
@@ -111,8 +113,8 @@ export function PracticeFooter({
           </div>
         )}
 
-        {/* Next Button - Hide on mobile when recording */}
-        {showNext && !isRecording ? (
+        {/* Next Button - Hide on mobile when recording or editing API endpoint */}
+        {showNext && !isRecording && !apiMobileEditing ? (
           <button
             type="button"
             onClick={onNext}

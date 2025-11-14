@@ -625,6 +625,7 @@ function PracticeFlowInner() {
             onBack={handleBack}
             onNext={handleNext}
             onBackToSandbox={() => setStep("sandbox")}
+            apiMobileEditing={apiMobileEditing}
             voiceCaptureValue={
               currentStep === "functional"
                 ? state.requirements.functionalSummary
