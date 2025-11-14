@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { logger } from "@/lib/logger";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import DemoBoard from "./components/DemoBoard";
@@ -70,7 +71,7 @@ export function HomePageClient() {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({ event_name: "try_url_shortener" }),
-                    }).catch((err) => console.error("Meta analytics error:", err));
+                    }).catch((err) => logger.error("Meta analytics error:", err));
                   }}
                 >
                   Try URL Shortener Scenario

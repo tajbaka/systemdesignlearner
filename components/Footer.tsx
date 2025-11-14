@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -18,6 +19,11 @@ export function Footer() {
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email") as string;
 
+    track("email_capture_submitted", {
+      source: "footer",
+      emailDomain: email.split("@")[1] ?? "unknown",
+    });
+
     try {
       const response = await fetch("/api/subscribe", {
         method: "POST",
@@ -29,24 +35,44 @@ export function Footer() {
 
       const data = await response.json();
 
-      if (response.ok) {
-        setNewsletterStatus("success");
-        setNewsletterMessage(data.message || "Successfully subscribed!");
-        e.currentTarget.reset();
-      } else {
-        setNewsletterStatus("error");
-        setNewsletterMessage(data.error || "Failed to subscribe. Please try again.");
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to subscribe");
       }
+
+      // Handle already subscribed case
+      if (data.message === "Already subscribed!") {
+        setNewsletterStatus("success");
+        setNewsletterMessage("Thanks for subscribing, you're already on our list!");
+        track("email_capture_already_subscribed", { source: "footer" });
+        e.currentTarget.reset();
+        setTimeout(() => {
+          setNewsletterStatus("idle");
+          setNewsletterMessage("");
+        }, 3000);
+        return;
+      }
+
+      setNewsletterStatus("success");
+      setNewsletterMessage("Successfully subscribed!");
+      track("email_capture_success", { source: "footer" });
+      e.currentTarget.reset();
+
+      // Reset status after showing success message
+      setTimeout(() => {
+        setNewsletterStatus("idle");
+        setNewsletterMessage("");
+      }, 3000);
     } catch {
       setNewsletterStatus("error");
       setNewsletterMessage("An error occurred. Please try again.");
-    }
+      track("email_capture_error", { source: "footer" });
 
-    // Reset status after 3 seconds
-    setTimeout(() => {
-      setNewsletterStatus("idle");
-      setNewsletterMessage("");
-    }, 3000);
+      // Reset status after showing error message
+      setTimeout(() => {
+        setNewsletterStatus("idle");
+        setNewsletterMessage("");
+      }, 3000);
+    }
   };
 
   return (
