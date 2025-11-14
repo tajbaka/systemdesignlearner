@@ -23,7 +23,7 @@ export function IterativeFeedbackModal({
   result,
   onClose,
   onContinue,
-  durationMs,
+  durationMs: _durationMs,
 }: IterativeFeedbackModalProps) {
   // Early return if no result
   if (!result) return null;

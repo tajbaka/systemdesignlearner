@@ -85,7 +85,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
 
             let actionable = `Add details about: ${requiredConfig.documentationHints.join(", ")}`;
             if (needsBodyStructure) {
-              actionable = `Specify the request body structure (e.g., body: { "field": "value" }) and include: ${requiredConfig.documentationHints.join(", ")}`;
+              actionable = `Describe what fields the request body contains (e.g., "body contains url and shortCode") and include: ${requiredConfig.documentationHints.join(", ")}`;
             }
 
             warnings.push({
@@ -413,27 +413,37 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
   }
 
   /**
-   * Check if documentation contains proper request body structure
-   * Must mention "body" followed by description of what's in it (not just text explanation)
+   * Check if documentation contains proper request body description
+   * Must mention "body" and describe what fields/content it contains (not requiring exact JSON structure)
    */
   private hasRequestBodyStructure(notes: string): boolean {
     const normalizedNotes = notes.toLowerCase();
 
-    // Must contain the word "body"
-    if (!normalizedNotes.includes("body")) {
+    // Must contain the word "body" or "request"
+    if (!normalizedNotes.includes("body") && !normalizedNotes.includes("request")) {
       return false;
     }
 
-    // Check for structural patterns indicating body content definition
-    const bodyStructurePatterns = [
-      /body\s*:\s*\{/i,                    // body: {
-      /body\s+contains\s+\{/i,             // body contains {
-      /body\s*:\s*["']?\{/i,               // body: "{
-      /\{\s*["']?\w+["']?\s*:\s*/,         // { "field": or { field:
-      /body\s*:\s*\[/i,                    // body: [
+    // Check for patterns that indicate the user is describing body content
+    // This is more lenient - we look for field mentions, descriptions, or lists
+    const bodyContentPatterns = [
+      // Explicit structure patterns (original strict patterns)
+      /body\s*:\s*\{/i,                              // body: {
+      /body\s+contains\s+\{/i,                       // body contains {
+      /\{\s*["']?\w+["']?\s*:\s*/,                   // { "field":
+
+      // Natural language patterns (new lenient patterns)
+      /body\s+(?:contains|includes|has|with)\s+\w+/i,  // body contains url, body has shortCode
+      /body\s*:\s*\w+(?:,|\s+and\s+|\s+&\s+)/i,        // body: url, shortCode or body: url and shortCode
+      /(?:includes?|contains?|expects?|requires?)\s+(?:fields?|parameters?|properties?)[\s:]+\w+/i, // includes fields: url
+      /(?:send|provide|pass)\s+(?:the\s+)?(?:url|shortcode|code|link|data|\w+url)/i, // send the url, provide shortCode
+      /(?:url|shortcode|code|link|data|\w+)\s+(?:field|parameter|property|value)/i, // url field, shortCode parameter
+      /body\s+(?:should|must|will)\s+(?:include|contain|have)/i, // body should include
+      /(?:the\s+)?body\s+(?:is|are)\s+\w+/i,         // the body is url
+      /request\s+(?:body|payload|data)\s*:\s*\w+/i,  // request body: url
     ];
 
-    return bodyStructurePatterns.some(pattern => pattern.test(notes));
+    return bodyContentPatterns.some(pattern => pattern.test(notes));
   }
 
   /**

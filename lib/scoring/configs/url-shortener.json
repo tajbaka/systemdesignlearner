@@ -257,8 +257,8 @@
           "weight": 25,
           "required": true,
           "examplePhrases": [
-            "POST /api/v1/urls with { url: string, customAlias?: string }",
-            "Returns { shortUrl: string, code: string } on success"
+            "POST /api/v1/urls with body containing url and optional customAlias",
+            "Returns shortUrl and code on success"
           ]
         },
         {
@@ -296,7 +296,7 @@
           "required": false,
           "examplePhrases": [
             "GET /api/v1/urls/:code/stats returns click count",
-            "Analytics endpoint returns { clickCount, createdAt, lastAccessedAt }"
+            "Analytics endpoint returns clickCount, createdAt, and lastAccessedAt"
           ]
         },
         {
@@ -351,7 +351,7 @@
           ],
           "minDocumentationLength": 40,
           "examplePath": "/api/v1/shorten",
-          "exampleNotes": "POST with { url: string, customAlias?: string, expiresAt?: timestamp }. Returns { shortId: string, shortUrl: string }. Errors: 400 (invalid URL), 409 (alias taken)."
+          "exampleNotes": "POST with body containing url, optional customAlias, and optional expiresAt. Returns shortId and shortUrl. Errors: 400 (invalid URL), 409 (alias taken)."
         },
         {
           "id": "redirect-short-url",
@@ -394,7 +394,7 @@
           ],
           "minDocumentationLength": 30,
           "examplePath": "/api/v1/stats/{shortId}",
-          "exampleNotes": "Returns { clicks: number, lastAccessed: timestamp, referrers: [] }. Requires auth if user-specific."
+          "exampleNotes": "Returns clicks count, lastAccessed timestamp, and referrers list. Requires auth if user-specific."
         }
       ],
       "optionalEndpoints": [
