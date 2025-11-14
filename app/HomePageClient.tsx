@@ -108,8 +108,8 @@ export function HomePageClient() {
               transition={{ duration: 0.3, delay: 0.1 }}
               className="text-5xl sm:text-6xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
             >
-              Master System Design Through
-              <span className="block text-emerald-400 mt-2">Visual Practice</span>
+              Ace Your System Design Interview
+              <span className="block text-emerald-400 mt-2">Interactive Practice & Tutorials</span>
             </motion.h1>
 
             <motion.p
@@ -118,8 +118,8 @@ export function HomePageClient() {
               transition={{ duration: 0.3, delay: 0.2 }}
               className="text-lg sm:text-xl text-zinc-400 mb-10 max-w-3xl mx-auto leading-relaxed"
             >
-              Drag components, connect flows, and simulate production-scale architectures. Get
-              instant feedback on latency, capacity, and design decisions.
+              Learn distributed systems, scalability patterns, and architecture design through hands-on practice.
+              Drag components, simulate production architectures, and get instant feedback on your designs.
             </motion.p>
 
             {/* CTAs */}
@@ -788,6 +788,146 @@ export function HomePageClient() {
         </div>
       </section>
 
+      {/* Popular Scenarios Section - Internal Linking */}
+      <section className="border-b border-zinc-800 relative">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              System Design Interview Practice Scenarios
+            </h2>
+            <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
+              Master real-world system design patterns with our interactive tutorials and examples
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Link href="/practice/url-shortener/intro" onClick={() => track("homepage_scenario_url_shortener_clicked")}>
+              <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle className="text-xl">URL Shortener System</CardTitle>
+                  <CardDescription>Learn distributed systems, caching, and scalability patterns</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-zinc-400">
+                    <p>• Handle millions of requests per second</p>
+                    <p>• Design efficient hashing algorithms</p>
+                    <p>• Implement caching strategies</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/practice" onClick={() => track("homepage_all_scenarios_clicked")}>
+              <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle className="text-xl">More Coming Soon</CardTitle>
+                  <CardDescription>Twitter, Instagram, Netflix & more system design examples</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-zinc-400">
+                    <p>• Social media feed design</p>
+                    <p>• Video streaming architecture</p>
+                    <p>• Real-time messaging systems</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/docs" onClick={() => track("homepage_docs_clicked")}>
+              <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle className="text-xl">System Design Tutorial</CardTitle>
+                  <CardDescription>Complete guide to architecture patterns and best practices</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-zinc-400">
+                    <p>• Architecture fundamentals</p>
+                    <p>• Scalability techniques</p>
+                    <p>• Interview preparation tips</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section with Schema Markup */}
+      <section className="border-b border-zinc-800 relative bg-zinc-900/50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-zinc-400">
+              Everything you need to know about system design interview preparation
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <details className="bg-zinc-800/40 border border-zinc-700 rounded-lg p-6 group">
+              <summary className="cursor-pointer text-xl font-semibold text-white list-none flex items-center justify-between">
+                How do I prepare for a system design interview?
+                <svg className="w-5 h-5 text-emerald-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                Start by practicing with interactive scenarios like our URL shortener tutorial. Focus on understanding distributed systems, scalability patterns, and architecture trade-offs. Practice designing systems end-to-end, from requirements gathering to capacity planning. Our platform provides instant feedback on your designs to accelerate learning.
+              </p>
+            </details>
+
+            <details className="bg-zinc-800/40 border border-zinc-700 rounded-lg p-6 group">
+              <summary className="cursor-pointer text-xl font-semibold text-white list-none flex items-center justify-between">
+                What is system design and why is it important?
+                <svg className="w-5 h-5 text-emerald-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                System design is the process of defining the architecture, components, and data flow of large-scale software systems. It&apos;s crucial for building scalable, reliable applications and is a key evaluation criterion in senior engineering interviews at top tech companies.
+              </p>
+            </details>
+
+            <details className="bg-zinc-800/40 border border-zinc-700 rounded-lg p-6 group">
+              <summary className="cursor-pointer text-xl font-semibold text-white list-none flex items-center justify-between">
+                What are the most common system design interview questions?
+                <svg className="w-5 h-5 text-emerald-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                Common questions include designing URL shorteners, social media feeds (Twitter/Instagram), video streaming platforms (Netflix/YouTube), messaging systems (WhatsApp), ride-sharing apps (Uber), and e-commerce sites (Amazon). Each teaches different scalability and architecture patterns.
+              </p>
+            </details>
+
+            <details className="bg-zinc-800/40 border border-zinc-700 rounded-lg p-6 group">
+              <summary className="cursor-pointer text-xl font-semibold text-white list-none flex items-center justify-between">
+                How long does it take to learn system design?
+                <svg className="w-5 h-5 text-emerald-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                With focused practice, you can learn core system design concepts in 4-8 weeks. Our interactive platform accelerates learning by providing hands-on practice with real-time feedback. Practice 3-4 scenarios per week to build strong fundamentals for your system design interview.
+              </p>
+            </details>
+
+            <details className="bg-zinc-800/40 border border-zinc-700 rounded-lg p-6 group">
+              <summary className="cursor-pointer text-xl font-semibold text-white list-none flex items-center justify-between">
+                Is System Design Sandbox free to use?
+                <svg className="w-5 h-5 text-emerald-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <p className="mt-4 text-zinc-400 leading-relaxed">
+                Yes! System Design Sandbox is completely free. We provide interactive tutorials, practice scenarios, and instant feedback at no cost. Our mission is to make high-quality system design education accessible to everyone preparing for technical interviews.
+              </p>
+            </details>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="border-b border-zinc-800 relative overflow-hidden">
         <div
@@ -805,7 +945,7 @@ export function HomePageClient() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <h2 className="text-4xl sm:text-5xl font-bold mb-6">Ready to Master System Design?</h2>
+            <h2 className="text-4xl sm:text-5xl font-bold mb-6">Ready to Ace Your System Design Interview?</h2>
             <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto leading-relaxed">
               Start practicing with real-world scenarios. No theory, just hands-on experience with
               instant feedback on your architectural decisions.

@@ -28,22 +28,28 @@ export const metadata: Metadata = {
         : "https://www.systemdesignsandbox.com"
   ),
   title: {
-    default: "System Design Sandbox: Interactive Interview Prep",
+    default: "System Design Interview Practice & Tutorial - Interactive Sandbox 2025",
     template: "%s | System Design Sandbox"
   },
   description:
-    "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations of production scenarios. Master system design interviews through hands-on practice.",
+    "Ace your system design interview with hands-on practice! Interactive tutorials for distributed systems, scalability patterns & architecture design. Free practice scenarios with instant feedback. Master system design interviews in 2025.",
   keywords: [
-    "system design",
-    "interview prep",
-    "software architecture",
-    "distributed systems",
-    "scalability",
     "system design interview",
+    "system design practice",
+    "system design tutorial",
+    "distributed systems",
+    "scalability patterns",
+    "system design examples",
+    "architecture patterns",
+    "system design course",
+    "learn system design",
+    "system design interview questions",
+    "system design preparation",
+    "software architecture",
+    "interview prep",
     "technical interview",
     "software engineering",
-    "interactive learning",
-    "architecture simulation"
+    "interactive learning"
   ],
   authors: [{ name: "System Design Sandbox" }],
   creator: "System Design Sandbox",
@@ -64,9 +70,9 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://www.systemdesignsandbox.com",
     siteName: "System Design Sandbox",
-    title: "System Design Sandbox: Interactive Interview Prep",
+    title: "System Design Interview Practice & Tutorial - Interactive Sandbox",
     description:
-      "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations of production scenarios.",
+      "Master system design interviews with hands-on practice. Interactive scenarios for distributed systems, scalability, and architecture patterns. Free tutorials with instant feedback.",
     images: [
       {
         url: "/og-image.png",
@@ -78,9 +84,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "System Design Sandbox: Interactive Interview Prep",
+    title: "System Design Interview Practice & Tutorial - Interactive Sandbox",
     description:
-      "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations.",
+      "Master system design interviews with hands-on practice. Interactive scenarios, instant feedback, real-world examples. Free tutorials for 2025!",
     images: ["/og-image.png"],
     creator: "@systemdesignsb",
   },
