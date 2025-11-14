@@ -36,7 +36,7 @@ export function AuthGateStep() {
             Step 5 · Save progress
           </div>
           <div className="space-y-2">
-            <h2 className="text-xl font-semibold text-white sm:text-2xl">
+            <h2 className="hidden text-xl font-semibold text-white sm:block sm:text-2xl">
               URL Shortener
             </h2>
             <p className="text-sm leading-relaxed text-zinc-300">

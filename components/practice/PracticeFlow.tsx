@@ -18,6 +18,7 @@ import { PracticeFooter } from "@/components/practice/PracticeFooter";
 import { PracticeStepContent } from "@/components/practice/PracticeStepContent";
 import { PracticeFeedbackPanel } from "@/components/practice/PracticeFeedbackPanel";
 import { IterativeFeedbackModal } from "@/components/practice/IterativeFeedbackModal";
+import { SCENARIOS } from "@/lib/scenarios";
 
 function PracticeFlowInner() {
   const session = usePracticeSession();
@@ -29,6 +30,12 @@ function PracticeFlowInner() {
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
   const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
   const { isSignedIn } = useUser();
+
+  // Get scenario title from SCENARIOS
+  const scenarioTitle = useMemo(() => {
+    const scenario = SCENARIOS.find(s => s.id === state.slug);
+    return scenario?.title;
+  }, [state.slug]);
 
   // Scoring hook
   const {
@@ -426,6 +433,7 @@ function PracticeFlowInner() {
         <PracticeStepper
           current={currentStep}
           progress={session.state.completed}
+          scenarioTitle={scenarioTitle}
           onStepChange={async (step) => {
             // Allow free navigation to already-completed steps and unlock steps one at a time
             const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];

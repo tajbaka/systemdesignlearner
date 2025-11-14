@@ -80,7 +80,7 @@ export function NonFunctionalRequirementsStep() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-      <div className="px-4 text-center sm:px-6">
+      <div className="hidden px-4 text-center sm:block sm:px-6">
         <div className="space-y-3">
           <h2 className="text-xl font-semibold text-white sm:text-2xl">
             URL Shortener

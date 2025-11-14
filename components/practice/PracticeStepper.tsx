@@ -9,6 +9,7 @@ type PracticeStepperProps = {
   onStepChange: ((step: PracticeStep) => void) | ((step: PracticeStep) => Promise<void>);
   readOnly?: boolean;
   hideMobileStepper?: boolean;
+  scenarioTitle?: string;
 };
 
 type StepMeta = {
@@ -64,6 +65,7 @@ export function PracticeStepper({
   onStepChange,
   readOnly = false,
   hideMobileStepper = false,
+  scenarioTitle,
 }: PracticeStepperProps) {
   const currentIndex = useMemo(() => PRACTICE_STEPS.indexOf(current), [current]);
   const unlockedIndex = useMemo(() => computeUnlockedIndex(progress), [progress]);
@@ -86,7 +88,14 @@ export function PracticeStepper({
     >
       {/* Mobile */}
       {!hideMobileStepper ? (
-        <div className="sm:hidden pt-16 pb-3 animate-in fade-in duration-300 delay-200">
+        <div className="sm:hidden animate-in fade-in duration-300 delay-200">
+          {scenarioTitle && (
+            <div className="flex items-center justify-center px-6" style={{ paddingTop: '22px', paddingBottom: '22px' }}>
+              <h2 className="text-xl font-semibold text-white">
+                {scenarioTitle}
+              </h2>
+            </div>
+          )}
           <div
             className="relative mb-2 h-6 px-6"
             style={{ "--dot": "24px" } as React.CSSProperties}
