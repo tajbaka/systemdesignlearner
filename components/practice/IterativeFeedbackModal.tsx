@@ -45,9 +45,7 @@ export function IterativeFeedbackModal({
       : result.score.percentage;
 
   // Format score display
-  const scoreDisplay = durationMs !== undefined && durationMs !== null
-    ? `Score: ${Math.round(result.score.obtained)}/${result.score.max} (${displayedPercentage}%) • ${(durationMs / 1000).toFixed(2)}s`
-    : `Score: ${Math.round(result.score.obtained)}/${result.score.max} (${displayedPercentage}%)`;
+  const scoreDisplay = `Score: ${Math.round(result.score.obtained)}/${result.score.max} (${displayedPercentage}%)`;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -58,21 +56,27 @@ export function IterativeFeedbackModal({
         {/* Header */}
         <div className="mb-4 sm:mb-6 flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
-            <div className="mb-2 flex items-center gap-2 sm:gap-3">
+            {/* Score - Hero element when 100% */}
+            <p className={`mb-2 font-bold ${
+              allTopicsCovered
+                ? 'text-3xl sm:text-4xl text-emerald-400'
+                : 'text-2xl sm:text-3xl text-foreground'
+            }`}>
+              {scoreDisplay}
+            </p>
+            {/* Title with icon - Secondary */}
+            <div className="flex items-center gap-2">
               {allTopicsCovered ? (
-                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-emerald-500" />
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-emerald-500" />
               ) : blocking ? (
-                <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-amber-500" />
+                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-amber-500" />
               ) : (
-                <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 flex-shrink-0 text-emerald-500" />
+                <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-emerald-500" />
               )}
-              <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground">
+              <DialogTitle className="text-base sm:text-lg font-medium text-muted-foreground">
                 {getTitle()}
               </DialogTitle>
             </div>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              {scoreDisplay}
-            </p>
           </div>
           <button
             type="button"
@@ -97,15 +101,6 @@ export function IterativeFeedbackModal({
             </div>
           )}
 
-          {/* Summary message */}
-          {allTopicsCovered && (
-            <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-5">
-              <p className="text-base text-emerald-200">
-                Excellent! All core requirements covered. You can continue.
-              </p>
-            </div>
-          )}
-
           {/* Improvement question */}
           {nextPrompt && (
             <div className={
@@ -125,13 +120,16 @@ export function IterativeFeedbackModal({
 
         {/* Action buttons */}
         <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-lg border border-white bg-transparent px-4 sm:px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-white/10"
-          >
-            Revise Answer
-          </button>
+          {/* Only show Revise button if there's still something to improve */}
+          {(nextPrompt || !allTopicsCovered) && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-lg border border-white bg-transparent px-4 sm:px-6 py-2 text-sm font-medium text-foreground transition-colors hover:bg-white/10"
+            >
+              Revise Answer
+            </button>
+          )}
           {(allTopicsCovered || !blocking) && onContinue && (
             <button
               type="button"

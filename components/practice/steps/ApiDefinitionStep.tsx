@@ -499,20 +499,18 @@ export function ApiDefinitionStep() {
                   )}
                 </button>
               ))}
+
+              {!isReadOnly && (
+                <button
+                  type="button"
+                  onClick={addEndpoint}
+                  className="w-full h-12 inline-flex items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                >
+                  + Add endpoint
+                </button>
+              )}
             </div>
           </div>
-
-          {!isReadOnly && (
-            <div className="p-4 border-t border-zinc-800 bg-zinc-950">
-              <button
-                type="button"
-                onClick={addEndpoint}
-                className="w-full h-12 inline-flex items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-              >
-                + Add endpoint
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Mobile Slide-in Editor */}

@@ -175,7 +175,7 @@ export function NonFunctionalRequirementsStep() {
             ref={textareaRef}
             value={nf.notes}
             onChange={(event) => handleSummaryChange(event.target.value)}
-            placeholder="How fast should it respond? How many requests should it handle? How reliable does it need to be?"
+            placeholder={"NON-FUNCTIONAL REQUIREMENTS\nDescribe performance goals like latency, throughput, and availability"}
             className="w-full h-full resize-none border-none bg-transparent px-4 pb-16 pt-4 text-base leading-7 text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-0"
             disabled={isReadOnly}
           />

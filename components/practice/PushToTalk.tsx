@@ -8,16 +8,17 @@ import { logger } from "@/lib/logger";
 const MicIcon = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">
     <path
-      d="M12 3a2 2 0 0 0-2 2v6a2 2 0 1 0 4 0V5a2 2 0 0 0-2-2Z"
+      d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
+      fill="none"
     />
     <path
-      d="M19 11a7 7 0 0 1-14 0M12 21v-3"
+      d="M19 10v1a7 7 0 0 1-14 0v-1M12 19v3"
       stroke="currentColor"
-      strokeWidth="1.8"
+      strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     />

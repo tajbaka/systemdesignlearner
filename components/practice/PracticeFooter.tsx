@@ -80,12 +80,21 @@ export function PracticeFooter({
           type="button"
           onClick={onBack}
           disabled={isReadOnly}
-          className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-4 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          ← Back
+          <span className="sr-only">Back</span>
+          <svg aria-hidden className="h-4 w-4" viewBox="0 0 16 16" fill="none">
+            <path
+              d="M10 12l-4-4 4-4"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       ) : (
-        <span className="h-11" />
+        <span className="h-11 w-11" />
       )}
 
       <div className="flex items-center gap-2">
