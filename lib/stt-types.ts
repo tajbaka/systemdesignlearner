@@ -12,6 +12,7 @@ export type SttHookState = {
   interimText: string;
   finalText: string;
   error: string | null;
+  audioLevel: number; // 0-1 value representing current audio level for waveform
   start: () => Promise<void>;
   stop: () => void;
   cancel: () => void;

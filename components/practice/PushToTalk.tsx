@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useWebSpeechStt } from "@/hooks/useWebSpeechStt";
 import { useWhisperStt } from "@/hooks/useWhisperStt";
 import { logger } from "@/lib/logger";
+import { VoiceWaveform } from "./VoiceWaveform";
 
 const MicIcon = () => (
   <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden fill="none">
@@ -69,7 +70,7 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
   });
 
   // Use Web Speech API if enabled (Chrome only), otherwise use Whisper Direct
-  const { isRecording, isConnecting, isProcessing, interimText, error, start, stop, cancel } =
+  const { isRecording, isConnecting, isProcessing, interimText, error, audioLevel, start, stop, cancel } =
     useWebSpeech ? webSpeechStt : whisperStt;
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -187,31 +188,42 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
           )}
         </div>
       ) : (
-        // Two icon buttons when recording - replace the mic button
-        <div className="flex items-center gap-2 animate-in fade-in zoom-in duration-200">
-          <button
-            type="button"
-            onClick={handleCancel}
-            aria-label="Delete recording"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors text-zinc-200 border border-zinc-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
-          >
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
-              <path d="M3.72 3.72a.75.75 0 0 1 1.06 0L8 6.94l3.22-3.22a.75.75 0 1 1 1.06 1.06L9.06 8l3.22 3.22a.75.75 0 1 1-1.06 1.06L8 9.06l-3.22 3.22a.75.75 0 0 1-1.06-1.06L6.94 8 3.72 4.78a.75.75 0 0 1 0-1.06z"/>
-            </svg>
-          </button>
-          <button
-            type="button"
-            onClick={stop}
-            aria-label="Stop and transcribe"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-red-500 hover:bg-red-600 transition-all text-white shadow-lg shadow-red-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-            style={{
-              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-            }}
-          >
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
-              <rect x="4" y="4" width="8" height="8" rx="1" />
-            </svg>
-          </button>
+        // ChatGPT-style horizontal pill with waveform and action buttons
+        <div className="flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {/* Pill container with waveform */}
+          <div className="flex items-center gap-3 px-4 py-2.5 rounded-full border border-zinc-700 min-w-[300px] max-w-md">
+            {/* Waveform visualization */}
+            <div className="flex-1 h-10">
+              <VoiceWaveform audioLevel={audioLevel} isActive={isRecording} />
+            </div>
+
+            {/* Action buttons on the right */}
+            <div className="flex items-center gap-2">
+              {/* Cancel button (X) */}
+              <button
+                type="button"
+                onClick={handleCancel}
+                aria-label="Cancel recording"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors text-zinc-400 hover:text-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
+              >
+                <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" />
+                </svg>
+              </button>
+
+              {/* Stop/Confirm button (checkmark) */}
+              <button
+                type="button"
+                onClick={stop}
+                aria-label="Stop and transcribe"
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-blue-500 bg-transparent hover:bg-blue-500/10 transition-all text-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
+              >
+                <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M3 8l3 3l7-7" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

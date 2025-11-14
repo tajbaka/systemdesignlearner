@@ -21,13 +21,31 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
   const [interimText, setInterimText] = useState("");
   const [finalText, setFinalText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [audioLevel, setAudioLevel] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const shouldCancelRef = useRef(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const cleanup = useCallback(() => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close();
+      } catch (err) {
+        logger.error("Error closing audio context:", err);
+      }
+      audioContextRef.current = null;
+    }
+
     if (mediaStreamRef.current) {
       try {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -37,8 +55,10 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
       mediaStreamRef.current = null;
     }
 
+    analyserRef.current = null;
     mediaRecorderRef.current = null;
     audioChunksRef.current = [];
+    setAudioLevel(0);
   }, []);
 
   const start = useCallback(async () => {
@@ -163,6 +183,46 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
         cleanup();
       };
 
+      // Set up audio analysis for waveform visualization
+      try {
+        const audioContext = new AudioContext();
+        audioContextRef.current = audioContext;
+
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.8;
+
+        source.connect(analyser);
+        analyserRef.current = analyser;
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        const updateAudioLevel = () => {
+          if (!analyserRef.current) {
+            return;
+          }
+
+          analyser.getByteFrequencyData(dataArray);
+
+          // Calculate average level
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          const average = sum / dataArray.length;
+          const normalizedLevel = average / 255; // Normalize to 0-1
+
+          setAudioLevel(normalizedLevel);
+          animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
+        };
+
+        updateAudioLevel();
+      } catch (err) {
+        logger.error("Failed to set up audio analysis:", err);
+        // Continue without audio analysis - not critical
+      }
+
       // Start recording
       recorder.start(100); // Collect data every 100ms
       setIsConnecting(false);
@@ -217,6 +277,7 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
     interimText, // Always empty for Whisper (batch only)
     finalText,
     error,
+    audioLevel,
     start,
     stop,
     cancel,

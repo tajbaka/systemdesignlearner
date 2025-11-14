@@ -62,15 +62,43 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
   const [interimText, setInterimText] = useState("");
   const [finalText, setFinalText] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [audioLevel, setAudioLevel] = useState(0);
 
   const recognitionRef = useRef<SpeechRecognition | null>(null);
   const currentStepIdRef = useRef(stepId);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   useEffect(() => {
     currentStepIdRef.current = stepId;
   }, [stepId]);
 
   const cleanup = useCallback(() => {
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+
+    if (audioContextRef.current) {
+      try {
+        audioContextRef.current.close();
+      } catch (err) {
+        logger.error("Error closing audio context:", err);
+      }
+      audioContextRef.current = null;
+    }
+
+    if (mediaStreamRef.current) {
+      try {
+        mediaStreamRef.current.getTracks().forEach((track) => track.stop());
+      } catch (err) {
+        logger.error("Error stopping media stream:", err);
+      }
+      mediaStreamRef.current = null;
+    }
+
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -79,8 +107,11 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
       }
       recognitionRef.current = null;
     }
+
+    analyserRef.current = null;
     setIsRecording(false);
     setInterimText("");
+    setAudioLevel(0);
   }, []);
 
   const start = useCallback(async () => {
@@ -151,6 +182,49 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
         }
       };
 
+      // Set up audio analysis for waveform visualization
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaStreamRef.current = stream;
+
+        const audioContext = new AudioContext();
+        audioContextRef.current = audioContext;
+
+        const source = audioContext.createMediaStreamSource(stream);
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 256;
+        analyser.smoothingTimeConstant = 0.8;
+
+        source.connect(analyser);
+        analyserRef.current = analyser;
+
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+        const updateAudioLevel = () => {
+          if (!analyserRef.current) {
+            return;
+          }
+
+          analyser.getByteFrequencyData(dataArray);
+
+          // Calculate average level
+          let sum = 0;
+          for (let i = 0; i < dataArray.length; i++) {
+            sum += dataArray[i];
+          }
+          const average = sum / dataArray.length;
+          const normalizedLevel = average / 255; // Normalize to 0-1
+
+          setAudioLevel(normalizedLevel);
+          animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
+        };
+
+        updateAudioLevel();
+      } catch (err) {
+        logger.error("Failed to set up audio analysis:", err);
+        // Continue without audio analysis - not critical
+      }
+
       recognition.start();
     } catch (err) {
       const message =
@@ -200,6 +274,7 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
     interimText,
     finalText,
     error,
+    audioLevel,
     start,
     stop,
     cancel,
