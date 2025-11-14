@@ -8,6 +8,7 @@ type VoiceCaptureBridgeProps = {
   onChange: (next: string) => void;
   stepId: string;
   disabled?: boolean;
+  onRecordingChange?: (isRecording: boolean) => void;
 };
 
 export function VoiceCaptureBridge({
@@ -15,6 +16,7 @@ export function VoiceCaptureBridge({
   onChange,
   stepId,
   disabled,
+  onRecordingChange,
 }: VoiceCaptureBridgeProps) {
   const handleFinal = useCallback(
     (transcript: string) => {
@@ -35,6 +37,7 @@ export function VoiceCaptureBridge({
       onFinal={handleFinal}
       disabled={disabled}
       stepId={stepId}
+      onRecordingChange={onRecordingChange}
     />
   );
 }

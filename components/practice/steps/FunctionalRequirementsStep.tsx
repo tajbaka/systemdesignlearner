@@ -177,18 +177,10 @@ export function FunctionalRequirementsStep() {
             value={requirements.functionalSummary}
             onChange={(event) => handleSummaryChange(event.target.value)}
             onBlur={() => setTouched(true)}
-            placeholder="What should users be able to do with this system? What are the core actions they need to perform?"
+            placeholder={"FUNCTIONAL REQUIREMENTS\nDescribe the core features and actions users need"}
             className="w-full h-full resize-none border-none bg-transparent px-4 pb-16 pt-4 text-base leading-7 text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-0"
             disabled={isReadOnly}
           />
-          <div className="absolute bottom-4 right-4">
-            <VoiceCaptureBridge
-              value={requirements.functionalSummary}
-              onChange={handleSummaryChange}
-              stepId="functional"
-              disabled={isReadOnly}
-            />
-          </div>
         </div>
       </div>
     </div>

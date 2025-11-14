@@ -46,9 +46,10 @@ type PushToTalkProps = {
   onFinal: (text: string) => void;
   disabled?: boolean;
   stepId: string;
+  onRecordingChange?: (isRecording: boolean) => void;
 };
 
-export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
+export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: PushToTalkProps) {
   const [mode, setMode] = useState<"hold" | "toggle">("toggle");
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -139,6 +140,10 @@ export function PushToTalk({ onFinal, disabled, stepId }: PushToTalkProps) {
       }
     };
   }, [isRecording, stop]);
+
+  useEffect(() => {
+    onRecordingChange?.(isRecording);
+  }, [isRecording, onRecordingChange]);
 
   return (
     <div className="flex flex-col items-end gap-2">

@@ -88,7 +88,7 @@ export function PracticeStepper({
     >
       {/* Scenario Title - Shows on all screen sizes above the steps */}
       {scenarioTitle && (
-        <div className="flex items-center justify-center px-6 py-4 lg:pl-20">
+        <div className="flex items-center justify-center px-6 lg:pl-20" style={{ paddingTop: '22px', paddingBottom: '22px' }}>
           <h2 className="text-xl font-semibold text-white sm:text-2xl">
             {scenarioTitle}
           </h2>
@@ -97,7 +97,7 @@ export function PracticeStepper({
 
       {/* Mobile Stepper */}
       {!hideMobileStepper ? (
-        <div className="sm:hidden animate-in fade-in duration-300 delay-200">
+        <div className="sm:hidden animate-in fade-in duration-300 delay-200" style={{ paddingBottom: '5px' }}>
           <div
             className="relative mb-2 h-6 px-6"
             style={{ "--dot": "24px" } as React.CSSProperties}
@@ -174,9 +174,6 @@ export function PracticeStepper({
                 );
               })}
             </ol>
-          </div>
-          <div className="mt-2 mb-2 px-6 text-center text-[10px] font-medium uppercase tracking-wider text-zinc-400">
-            {STEP_META[current].label}
           </div>
         </div>
       ) : null}

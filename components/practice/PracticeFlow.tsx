@@ -22,7 +22,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 
 function PracticeFlowInner() {
   const session = usePracticeSession();
-  const { hydrated, currentStep, setStep, isReadOnly, state, markStep, setAuth } = session;
+  const { hydrated, currentStep, setStep, isReadOnly, state, markStep, setAuth, setRequirements } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
@@ -582,7 +582,7 @@ function PracticeFlowInner() {
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
 
-        <footer className="fixed bottom-0 left-0 right-0 z-30 border-t border-zinc-800 bg-zinc-950/90 backdrop-blur">
+        <footer className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur">
           <PracticeFeedbackPanel
             currentStep={currentStep}
             verification={verification}
@@ -612,6 +612,33 @@ function PracticeFlowInner() {
             onBack={handleBack}
             onNext={handleNext}
             onBackToSandbox={() => setStep("sandbox")}
+            voiceCaptureValue={
+              currentStep === "functional"
+                ? state.requirements.functionalSummary
+                : currentStep === "nonFunctional"
+                  ? state.requirements.nonFunctional.notes
+                  : undefined
+            }
+            voiceCaptureOnChange={
+              currentStep === "functional"
+                ? (value: string) => {
+                    setRequirements({
+                      ...state.requirements,
+                      functionalSummary: value,
+                    });
+                  }
+                : currentStep === "nonFunctional"
+                  ? (value: string) => {
+                      setRequirements({
+                        ...state.requirements,
+                        nonFunctional: {
+                          ...state.requirements.nonFunctional,
+                          notes: value,
+                        },
+                      });
+                    }
+                  : undefined
+            }
           />
         </footer>
       </div>

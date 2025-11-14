@@ -1,5 +1,7 @@
+import { useState } from "react";
 import Link from "next/link";
 import type { PracticeStep } from "@/lib/practice/types";
+import { VoiceCaptureBridge } from "./VoiceCaptureBridge";
 
 type PracticeFooterProps = {
   currentStep: PracticeStep;
@@ -12,6 +14,8 @@ type PracticeFooterProps = {
   onBack: () => void;
   onNext: () => void;
   onBackToSandbox?: () => void;
+  voiceCaptureValue?: string;
+  voiceCaptureOnChange?: (value: string) => void;
 };
 
 export function PracticeFooter({
@@ -25,7 +29,11 @@ export function PracticeFooter({
   onBack,
   onNext,
   onBackToSandbox,
+  voiceCaptureValue,
+  voiceCaptureOnChange,
 }: PracticeFooterProps) {
+  const [isRecording, setIsRecording] = useState(false);
+
   // Score step has special footer
   if (currentStep === "score") {
     return (
@@ -81,7 +89,21 @@ export function PracticeFooter({
       )}
 
       <div className="flex items-center gap-2">
-        {showNext ? (
+        {/* Voice Dictation Button - Only show on mobile when voiceCaptureValue is provided */}
+        {voiceCaptureValue !== undefined && voiceCaptureOnChange && (
+          <div className="sm:hidden">
+            <VoiceCaptureBridge
+              value={voiceCaptureValue}
+              onChange={voiceCaptureOnChange}
+              stepId={currentStep}
+              disabled={isReadOnly}
+              onRecordingChange={setIsRecording}
+            />
+          </div>
+        )}
+
+        {/* Next Button - Hide on mobile when recording */}
+        {showNext && !isRecording ? (
           <button
             type="button"
             onClick={onNext}
