@@ -30,6 +30,7 @@ export type EndpointRequirement = {
   purpose: string;
   documentationHints: string[];
   required: boolean;
+  exampleNotes?: string;
 };
 
 export type StepConfig = {
@@ -59,11 +60,12 @@ export type IterativeFeedbackResult = {
     max: number;
     percentage: number;
   };
-  // for your UI “Good progress” card
+  // for your UI "Good progress" card
   ui: {
-    coveredLines: string[]; // “✓ URL Shortening: …”
+    coveredLines: string[]; // "✓ URL Shortening: …"
     nextPrompt: string | null; // the one-line question
     blocking: boolean; // true if any required still missing
+    exampleHint?: string | null; // After 3 attempts, show example text that would pass
   };
 };
 
@@ -75,7 +77,7 @@ async function callGeminiJson<T>(prompt: string): Promise<T> {
   const model = genAI.getGenerativeModel({
     model: "gemini-2.5-flash",
     generationConfig: {
-      temperature: 0.3,
+      temperature: 0.0,
       responseMimeType: "application/json",
     },
   });
@@ -137,17 +139,21 @@ export async function assessCoverage(
 API Endpoint Validation Requirements:
 For each endpoint, verify:
 1. **Path Structure**: Must follow the pattern shown in examplePath (e.g., if example is "/api/v1/shorten", user should use "/api/v1/..." structure)
-2. **Request Body** (for POST/PATCH): Must explicitly mention "body" followed by the actual structure/fields (e.g., "body: { url: string }" not just "body contains the URL")
-3. **Response Details**: Must specify what is returned
-4. **Documentation Completeness**: Must address all required details: ${step.endpointRequirements.flatMap(ep => ep.documentationHints).filter((v, i, a) => a.indexOf(v) === i).join(", ")}
+2. **Request Body** (for POST/PATCH): Must explicitly mention the specific field names that are sent in the request, either in JSON format OR in natural language (e.g., "body contains longUrl, customSlug, and expiresAt fields" counts as covered)
+3. **Response Details**: Must explicitly mention what fields or data are returned, either in JSON format OR in natural language (e.g., "returns the shortUrl, slug, and createdAt" counts as covered)
+4. **Error Handling**: Must mention at least one error case (e.g., 400, 404, 409, 410) or describe what happens when something goes wrong
+5. **Documentation Completeness**: Must address the required concepts: ${step.endpointRequirements.flatMap(ep => ep.documentationHints).filter((v, i, a) => a.indexOf(v) === i).join(", ")}
 
 Expected Endpoints:
 ${JSON.stringify(endpointDetails, null, 2)}
 
+IMPORTANT: Accept both structured (JSON) and natural language descriptions as long as they explicitly name the fields/data involved.
+
 When asking questions about missing endpoints:
-- If an endpoint exists but lacks proper body structure (POST/PATCH), ask: "What fields should be included in the request body for [endpoint purpose]?"
+- If an endpoint exists but doesn't mention specific field names for request body (POST/PATCH), ask: "What specific fields or data should be included in the request body for [endpoint purpose]?"
 - If path structure doesn't match example pattern, ask: "What path structure would you use for [endpoint purpose] following REST API conventions?"
-- If documentation is too vague, ask about the specific missing details (request format, response format, error cases)
+- If response details are missing or vague, ask: "What specific data or fields should be returned in the response?"
+- If error handling is missing, ask: "What should happen if something goes wrong with this request?"
 `;
   }
 
@@ -170,7 +176,9 @@ Rules
 - For storage/persistence topics, the candidate must explicitly mention databases, persistence, or storage - don't infer it.
 - For rate limiting, abuse prevention, or security topics, the candidate must explicitly mention them - don't assume they're implied.
 - For admin/user management topics, the candidate must explicitly describe the feature - don't assume it's covered by authentication.
-${isApiStep ? `- For API endpoint topics: An endpoint is NOT covered unless the documentation includes BOTH request details AND response details. Generic phrases like "request: url, response: short url" are TOO VAGUE and should be marked as missing.
+${isApiStep ? `- For API endpoint topics: An endpoint is covered if it includes BOTH request details AND response details with explicit field/data names. Accept both JSON format and natural language.
+- Examples that COUNT as covered: "body contains longUrl, customSlug, and expiresAt" OR "body: { longUrl, customSlug, expiresAt }" OR "request includes the long URL, optional custom slug, and optional expiration date"
+- Examples that are TOO VAGUE: "request: url" OR "body contains the URL" OR "returns the short link" (must specify field names)
 - Focus questions on the NEXT missing topic in priority order (required topics first). Never ask about topics already marked as covered.` : ''}
 - If uncertain or if coverage is incomplete, treat it as missing.
 - When writing the question, focus on the user's intent/behavior (e.g., "what should happen when...") and never reveal solution details (no HTTP codes, algorithms, numbers, etc.).
@@ -330,7 +338,8 @@ function computeScore(step: StepConfig, coveredIds: Set<string>) {
 export async function getIterativeFeedback(
   step: StepConfig,
   userContent: string,
-  previousQuestion?: string | null
+  previousQuestion?: string | null,
+  attemptCount?: number
 ): Promise<IterativeFeedbackResult> {
   const { coverage, nextTopicId, question } = await assessCoverage(step, userContent, previousQuestion);
 
@@ -381,6 +390,31 @@ export async function getIterativeFeedback(
 
   const blocking = !coverage.requiredCovered;
 
+  // After 3 attempts on the same topic, provide an example hint
+  let exampleHint: string | null = null;
+  if (attemptCount && attemptCount >= 3 && nextQuestion && blocking) {
+    const topic = step.topics.find(t => t.id === nextQuestion.topicId);
+
+    // For API step, get example from endpoint requirements
+    if (step.stepId === "api" && step.endpointRequirements) {
+      const endpoint = step.endpointRequirements.find(ep =>
+        nextQuestion.topicId.includes(ep.id) ||
+        ep.purpose.toLowerCase().includes(topic?.label.toLowerCase() || "")
+      );
+      if (endpoint?.exampleNotes) {
+        exampleHint = `Method: ${endpoint.method}\nPath: ${endpoint.examplePath}\n\n${endpoint.exampleNotes}`;
+      }
+    }
+
+    // For other steps, provide generic hint
+    if (!exampleHint && topic) {
+      const examplePhrases = (topic as Topic & { examplePhrases?: string[] }).examplePhrases;
+      if (examplePhrases && examplePhrases.length > 0) {
+        exampleHint = examplePhrases[0];
+      }
+    }
+  }
+
   return {
     coverage,
     nextQuestion,
@@ -389,6 +423,7 @@ export async function getIterativeFeedback(
       coveredLines,
       nextPrompt: nextQuestion ? nextQuestion.question : null,
       blocking,
+      exampleHint,
     },
   };
 }

@@ -116,24 +116,28 @@ export type PracticeIterativeFeedback = {
     lastContent: string; // For detecting changes
     currentQuestion: string | null;
     cachedResult?: IterativeFeedbackResult | null; // Cached result for instant display
+    attemptCount?: number; // Track number of submission attempts on same topic
   };
   nonFunctional: {
     coveredTopics: IterativeTopicState;
     lastContent: string;
     currentQuestion: string | null;
     cachedResult?: IterativeFeedbackResult | null;
+    attemptCount?: number;
   };
   api: {
     coveredTopics: IterativeTopicState;
     lastContent: string;
     currentQuestion: string | null;
     cachedResult?: IterativeFeedbackResult | null;
+    attemptCount?: number;
   };
   design: {
     coveredTopics: IterativeTopicState;
     lastContent: string;
     currentQuestion: string | null;
     cachedResult?: IterativeFeedbackResult | null;
+    attemptCount?: number;
   };
 };
 

@@ -116,6 +116,18 @@ export function IterativeFeedbackModal({
               <p className={`text-sm ${blocking ? "text-amber-100" : "text-blue-100"}`}>{nextPrompt}</p>
             </div>
           )}
+
+          {/* Example hint after 3 attempts */}
+          {result.ui.exampleHint && (
+            <div className="rounded-xl border border-emerald-400/30 bg-emerald-950/40 p-4">
+              <h3 className="mb-2 text-sm font-semibold text-emerald-300">
+                💡 Hint: Here&apos;s an example
+              </h3>
+              <div className="text-sm text-emerald-100 whitespace-pre-line font-mono">
+                {result.ui.exampleHint}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Action buttons */}

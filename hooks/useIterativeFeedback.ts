@@ -77,6 +77,11 @@ export function useIterativeFeedback() {
           return stepFeedback.cachedResult;
         }
 
+        // Track attempt count: increment if content changed but still working on same topic
+        const currentAttemptCount = stepFeedback.attemptCount ?? 0;
+        const isSameTopic = stepFeedback.lastContent && stepFeedback.currentQuestion;
+        const newAttemptCount = isSameTopic ? currentAttemptCount + 1 : 1;
+
         // Get fresh feedback from API
         const feedbackResponse = await fetch("/api/iterative-feedback", {
           method: "POST",
@@ -86,6 +91,7 @@ export function useIterativeFeedback() {
             stepId: stepKey,
             userContent,
             previousQuestion: stepFeedback.currentQuestion,
+            attemptCount: newAttemptCount,
           }),
         });
 
@@ -104,12 +110,14 @@ export function useIterativeFeedback() {
 
         const result: IterativeFeedbackResult = await feedbackResponse.json();
 
-        // Update session with new question, content, and cached result
+        // Update session with new question, content, cached result, and attempt count
+        // Reset attempt count if topic resolved (no blocking issues)
         session.updateIterativeFeedback(stepKey as "functional" | "nonFunctional" | "api", (prev) => ({
           ...prev,
           lastContent: userContent,
           currentQuestion: result.nextQuestion?.question ?? null,
           cachedResult: result, // Cache the result for instant display next time
+          attemptCount: result.ui.blocking ? newAttemptCount : 0, // Reset if not blocking
         }));
 
         const durationMs = getNow() - startedAt;

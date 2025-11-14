@@ -94,21 +94,23 @@ function buildApiStepConfig(): StepConfig {
 
   // Add endpoint-specific validation requirements as metadata
   const endpointRequirements = [
-    ...api.requiredEndpoints.map(ep => ({
+    ...api.requiredEndpoints.map((ep: typeof api.requiredEndpoints[number] & { exampleNotes?: string }) => ({
       id: ep.id,
       method: ep.method,
       examplePath: ep.examplePath,
       purpose: ep.purpose,
       documentationHints: ep.documentationHints,
       required: true,
+      exampleNotes: ep.exampleNotes,
     })),
-    ...api.optionalEndpoints.map(ep => ({
+    ...api.optionalEndpoints.map((ep: typeof api.optionalEndpoints[number] & { exampleNotes?: string }) => ({
       id: ep.id,
       method: ep.method,
       examplePath: ep.examplePath,
       purpose: ep.purpose,
       documentationHints: ep.documentationHints,
       required: false,
+      exampleNotes: ep.exampleNotes,
     })),
   ];
 
@@ -151,6 +153,7 @@ type IterativeFeedbackRequest =
       stepId: SupportedIterativeStep;
       userContent: string;
       previousQuestion?: string | null;
+      attemptCount?: number;
     }
   | {
       action: "evaluate_revision";
@@ -174,7 +177,12 @@ export async function POST(request: NextRequest) {
 
     if (body.action === "get_feedback") {
       const stepConfig = getStepConfig(body.stepId);
-      const result = await getIterativeFeedback(stepConfig, body.userContent, body.previousQuestion);
+      const result = await getIterativeFeedback(
+        stepConfig,
+        body.userContent,
+        body.previousQuestion,
+        body.attemptCount
+      );
       return NextResponse.json(result);
     }
 
