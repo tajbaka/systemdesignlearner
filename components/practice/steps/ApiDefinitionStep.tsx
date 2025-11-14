@@ -254,6 +254,47 @@ export function ApiDefinitionStep() {
 
   const mobileEditingEndpoint = mobileEditingId ? endpoints.find(ep => ep.id === mobileEditingId) : null;
 
+  // Expose close function and voice capture for footer
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    if (mobileEditingId && mobileEditingEndpoint) {
+      window._apiMobileEditorClose = () => {
+        setMobileEditingId(null);
+      };
+
+      // Expose voice capture value and onChange for footer
+      window._apiMobileEditorVoiceValue = mobileEditingEndpoint.notes;
+      window._apiMobileEditorVoiceOnChange = (notes: string) => {
+        updateEndpoint(mobileEditingId, (current) => ({
+          ...current,
+          notes,
+        }));
+      };
+
+      // Dispatch event to notify PracticeFlow
+      window.dispatchEvent(new CustomEvent('apiMobileEditorChange', {
+        detail: { editing: true, value: mobileEditingEndpoint.notes }
+      }));
+    } else {
+      delete window._apiMobileEditorClose;
+      delete window._apiMobileEditorVoiceValue;
+      delete window._apiMobileEditorVoiceOnChange;
+
+      // Dispatch event to notify PracticeFlow
+      window.dispatchEvent(new CustomEvent('apiMobileEditorChange', {
+        detail: { editing: false }
+      }));
+    }
+
+    return () => {
+      delete window._apiMobileEditorClose;
+      delete window._apiMobileEditorVoiceValue;
+      delete window._apiMobileEditorVoiceOnChange;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobileEditingId, mobileEditingEndpoint]);
+
   return (
     <div className="relative h-full sm:h-auto">
       {/* Desktop layout - unchanged */}
@@ -519,16 +560,6 @@ export function ApiDefinitionStep() {
             <div className="h-full flex flex-col">
               {/* Header */}
               <div className="flex items-center gap-3 p-4 border-b border-zinc-800">
-                <button
-                  type="button"
-                  onClick={() => setMobileEditingId(null)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-zinc-700 text-zinc-300 transition hover:border-zinc-600 hover:bg-zinc-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  aria-label="Back to list"
-                >
-                  <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none">
-                    <path d="M10 12l-4-4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                </button>
                 <div className="flex-1 flex items-center gap-2">
                   <select
                     value={mobileEditingEndpoint.method}
@@ -593,19 +624,6 @@ export function ApiDefinitionStep() {
                   disabled={isReadOnly}
                   className="w-full h-full resize-none border-none bg-transparent px-4 pb-16 pt-4 text-base leading-7 text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-0"
                 />
-                <div className="absolute bottom-4 right-4">
-                  <VoiceCaptureBridge
-                    value={mobileEditingEndpoint.notes}
-                    onChange={(notes) =>
-                      updateEndpoint(mobileEditingEndpoint.id, (current) => ({
-                        ...current,
-                        notes,
-                      }))
-                    }
-                    stepId={`api-${mobileEditingEndpoint.id}`}
-                    disabled={isReadOnly}
-                  />
-                </div>
               </div>
             </div>
           </div>

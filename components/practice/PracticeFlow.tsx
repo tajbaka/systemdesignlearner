@@ -26,10 +26,23 @@ function PracticeFlowInner() {
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
+  const [apiMobileEditing, setApiMobileEditing] = useState(false);
 
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
   const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
   const { isSignedIn } = useUser();
+
+  // Listen for API mobile editor state changes
+  useEffect(() => {
+    const handleEditorChange = (event: CustomEvent<{ editing: boolean }>) => {
+      setApiMobileEditing(event.detail.editing);
+    };
+
+    window.addEventListener('apiMobileEditorChange', handleEditorChange as EventListener);
+    return () => {
+      window.removeEventListener('apiMobileEditorChange', handleEditorChange as EventListener);
+    };
+  }, []);
 
   // Get scenario title from SCENARIOS
   const scenarioTitle = useMemo(() => {
@@ -617,7 +630,9 @@ function PracticeFlowInner() {
                 ? state.requirements.functionalSummary
                 : currentStep === "nonFunctional"
                   ? state.requirements.nonFunctional.notes
-                  : undefined
+                  : currentStep === "api" && apiMobileEditing && typeof window !== "undefined" && window._apiMobileEditorVoiceValue !== undefined
+                    ? window._apiMobileEditorVoiceValue
+                    : undefined
             }
             voiceCaptureOnChange={
               currentStep === "functional"
@@ -637,7 +652,9 @@ function PracticeFlowInner() {
                         },
                       });
                     }
-                  : undefined
+                  : currentStep === "api" && apiMobileEditing && typeof window !== "undefined" && window._apiMobileEditorVoiceOnChange
+                    ? window._apiMobileEditorVoiceOnChange
+                    : undefined
             }
           />
         </footer>

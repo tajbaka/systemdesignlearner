@@ -458,6 +458,13 @@ export function usePracticeNavigation(
 
   const handleBack = () => {
     if (session.isReadOnly) return;
+
+    // Check if API step mobile editor is open
+    if (typeof window !== "undefined" && window._apiMobileEditorClose) {
+      window._apiMobileEditorClose();
+      return;
+    }
+
     session.goPrev();
   };
 
