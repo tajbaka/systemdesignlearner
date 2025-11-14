@@ -972,54 +972,52 @@ export default function DesignStage({
     return (
       <TooltipProvider>
         <div className="relative flex-1 min-h-[600px]">
-          <div className="relative flex h-full w-full flex-col overflow-hidden bg-zinc-950 min-h-[600px] sm:rounded-3xl sm:border sm:border-zinc-800 sm:bg-zinc-900/70 lg:rounded-none lg:border-none lg:bg-zinc-950">
-            <div className="flex-1 min-h-[560px] p-2 sm:p-6 lg:p-0">
-              <div className="relative h-full w-full overflow-hidden bg-zinc-950 min-h-[520px] sm:rounded-2xl sm:border sm:border-zinc-800 sm:bg-zinc-950/40 lg:rounded-none lg:border-none lg:bg-zinc-950">
-                {!editingLocked && (selectedNodeId || selectedEdgeId) ? (
-                  <div className="absolute right-4 top-4 z-30 sm:left-4 sm:right-auto">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleDeleteSelection();
-                        if (typeof navigator !== "undefined" && "vibrate" in navigator) {
-                          navigator.vibrate(30);
-                        }
-                      }}
-                      className="flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200 shadow-lg transition hover:bg-rose-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 touch-manipulation"
-                      aria-label="Delete selected"
-                      title="Delete selected"
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                ) : null}
+          <div className="relative flex h-full w-full flex-col overflow-hidden bg-zinc-950">
+            <div className="absolute inset-0 overflow-hidden">
+              {!editingLocked && (selectedNodeId || selectedEdgeId) ? (
+                <div className="absolute right-4 top-4 z-30 sm:left-4 sm:right-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleDeleteSelection();
+                      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+                        navigator.vibrate(30);
+                      }
+                    }}
+                    className="flex h-11 w-11 items-center justify-center rounded-full border border-rose-400/40 bg-rose-500/15 text-rose-200 shadow-lg transition hover:bg-rose-500/25 focus:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 touch-manipulation"
+                    aria-label="Delete selected"
+                    title="Delete selected"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              ) : null}
 
-                {lockMessage ? (
-                  <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/60 backdrop-blur-sm text-sm text-zinc-300">
-                    {lockMessage}
-                  </div>
-                ) : null}
+              {lockMessage ? (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/60 backdrop-blur-sm text-sm text-zinc-300">
+                  {lockMessage}
+                </div>
+              ) : null}
 
-                <ReactFlowBoard
-                  nodes={design.nodes}
-                  edges={design.edges}
-                  onConnect={handleConnect}
-                  onDrop={handleDrop}
-                  onNodesChange={handleNodesChange}
-                  onEdgesChange={handleEdgesChange}
-                  onDeleteNode={handleDeleteNode}
-                  onRenameNode={handleRenameNode}
-                  onUpdateReplicas={handleUpdateReplicas}
-                  onNodeTouchStart={handleNodeTouchStart}
-                  onNodeTouchEnd={handleNodeTouchEnd}
-                  onEdgeSelect={handleEdgeSelect}
-                  onNodeSelect={handleNodeSelect}
-                  miniMapBottomOffset={100}
-                  className={editingLocked ? "pointer-events-none opacity-60" : ""}
-                />
-              </div>
+              <ReactFlowBoard
+                nodes={design.nodes}
+                edges={design.edges}
+                onConnect={handleConnect}
+                onDrop={handleDrop}
+                onNodesChange={handleNodesChange}
+                onEdgesChange={handleEdgesChange}
+                onDeleteNode={handleDeleteNode}
+                onRenameNode={handleRenameNode}
+                onUpdateReplicas={handleUpdateReplicas}
+                onNodeTouchStart={handleNodeTouchStart}
+                onNodeTouchEnd={handleNodeTouchEnd}
+                onEdgeSelect={handleEdgeSelect}
+                onNodeSelect={handleNodeSelect}
+                miniMapBottomOffset={100}
+                className={editingLocked ? "pointer-events-none opacity-60" : ""}
+              />
             </div>
           </div>
         </div>

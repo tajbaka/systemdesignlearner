@@ -22,7 +22,7 @@ const createEmptyResult = (maxScore: number): FeedbackResult => ({
 });
 
 const formatScore = (value: number): string =>
-  Number.isInteger(value) ? value.toString() : value.toFixed(1);
+  Math.round(value).toString();
 
 const getMaxPoints = (result: FeedbackResult | undefined, fallback: number): number =>
   result?.maxScore ?? fallback;
@@ -191,7 +191,7 @@ export function ScoreShareStep() {
   const hints = score?.hints ?? [];
 
   return (
-    <div className="space-y-6 pb-40 sm:pb-8">
+    <div className="space-y-6 pb-40 sm:pb-8 px-4 lg:pl-20 lg:pr-4">
       {/* Overall Score Section */}
       {!cumulativeScore ? (
         <section className="space-y-6 rounded-3xl border border-amber-800 bg-amber-900/20 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">

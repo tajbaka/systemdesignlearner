@@ -556,7 +556,7 @@ function PracticeFlowInner() {
                 type="button"
                 onClick={() => setMobilePaletteOpen(true)}
                 disabled={isReadOnly}
-                className="fixed bottom-32 right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-blue-100 transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-36 sm:right-6 lg:bottom-[120px] lg:right-6"
+                className="fixed bottom-[100px] right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-blue-100 transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-36 sm:right-6 lg:bottom-[120px] lg:right-6"
                 aria-label="Open component palette"
               >
                 <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden>
