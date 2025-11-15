@@ -191,7 +191,7 @@ export function SandboxStep({
             className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl border border-zinc-800 bg-zinc-900 shadow-2xl transition-transform duration-300 ease-out lg:inset-x-auto lg:right-6 lg:w-full lg:max-w-md translate-y-0 pointer-events-auto"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-zinc-800 p-4">
+            <div className="flex items-center justify-between p-4">
               <h2 className="text-lg font-semibold text-white">Components</h2>
               <button
                 type="button"
