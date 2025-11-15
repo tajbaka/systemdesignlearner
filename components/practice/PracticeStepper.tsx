@@ -84,11 +84,11 @@ export function PracticeStepper({
   return (
     <nav
       aria-label="Practice steps"
-      className="sm:sticky sm:top-0 z-20 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
+      className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
     >
       {/* Scenario Title - Shows on all screen sizes above the steps */}
       {scenarioTitle && (
-        <div className="flex items-center justify-center px-6 lg:pl-20" style={{ paddingTop: '22px', paddingBottom: '22px' }}>
+        <div className="flex items-center justify-center pl-16 pr-6 lg:pl-20 lg:pr-6" style={{ paddingTop: '22px', paddingBottom: '22px' }}>
           <h2 className="text-xl font-semibold text-white sm:text-2xl">
             {scenarioTitle}
           </h2>
@@ -99,7 +99,7 @@ export function PracticeStepper({
       {!hideMobileStepper ? (
         <div className="sm:hidden animate-in fade-in duration-300 delay-200" style={{ paddingBottom: '5px' }}>
           <div
-            className="relative mb-2 h-6 px-6"
+            className="relative mb-2 h-6 pl-16 pr-6"
             style={{ "--dot": "24px" } as React.CSSProperties}
           >
             <div
