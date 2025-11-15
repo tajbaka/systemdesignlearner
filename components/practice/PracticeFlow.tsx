@@ -27,6 +27,7 @@ function PracticeFlowInner() {
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
   const [apiMobileEditing, setApiMobileEditing] = useState(false);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
   const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
@@ -41,6 +42,36 @@ function PracticeFlowInner() {
     window.addEventListener('apiMobileEditorChange', handleEditorChange as EventListener);
     return () => {
       window.removeEventListener('apiMobileEditorChange', handleEditorChange as EventListener);
+    };
+  }, []);
+
+  // Track keyboard position using Visual Viewport API
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.visualViewport) return;
+
+    const updateKeyboardOffset = () => {
+      if (!window.visualViewport) return;
+
+      // Calculate the difference between layout viewport and visual viewport
+      const layoutHeight = window.innerHeight;
+      const visualHeight = window.visualViewport.height;
+      const offset = layoutHeight - visualHeight - window.visualViewport.offsetTop;
+
+      // Only set positive offsets (keyboard is open)
+      setKeyboardOffset(Math.max(0, offset));
+    };
+
+    window.visualViewport.addEventListener('resize', updateKeyboardOffset);
+    window.visualViewport.addEventListener('scroll', updateKeyboardOffset);
+
+    // Initial check
+    updateKeyboardOffset();
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateKeyboardOffset);
+        window.visualViewport.removeEventListener('scroll', updateKeyboardOffset);
+      }
     };
   }, []);
 
@@ -530,7 +561,7 @@ function PracticeFlowInner() {
             }
           }}
           readOnly={isReadOnly}
-          hideMobileStepper={isSandboxStep}
+          hideMobileStepper={false}
         />
 
         <div
@@ -572,11 +603,11 @@ function PracticeFlowInner() {
             </TooltipTrigger>
             <TooltipContent
               side="left"
-              className="bg-blue-600 text-white border-blue-500 max-w-xs"
+              className="bg-blue-600 text-white border-blue-500 max-w-[160px] sm:max-w-xs p-2 sm:p-3"
               sideOffset={8}
             >
-              <p className="font-semibold">Add Components</p>
-              <p className="text-xs mt-1">Click here to add services, databases, caches, and more to your architecture</p>
+              <p className="text-xs sm:text-sm font-semibold">Add Components</p>
+              <p className="text-[10px] sm:text-xs mt-0.5 sm:mt-1">Click here to add services, databases, caches, and more to your architecture</p>
             </TooltipContent>
           </Tooltip>
         ) : null}
@@ -595,7 +626,12 @@ function PracticeFlowInner() {
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
 
-        <footer className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur pb-[env(safe-area-inset-bottom)]">
+        <footer
+          className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur transition-transform duration-100"
+          style={{
+            transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : 'none',
+          }}
+        >
           <PracticeFeedbackPanel
             currentStep={currentStep}
             verification={verification}

@@ -266,7 +266,7 @@ export default function RootLayout({
           )}
         </head>
         <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark safe-area-inset`}
+          className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}
         >
           <ScrollToTop />
           <PostHogProvider>

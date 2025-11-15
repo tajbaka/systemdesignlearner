@@ -361,6 +361,12 @@ function ReactFlowBoardInner({
         onPaneClick={handlePaneClick}
         onNodeClick={handleNodeClick}
         fitView
+        fitViewOptions={{
+          padding: 0.3,
+          maxZoom: 0.8,
+        }}
+        minZoom={0.1}
+        maxZoom={2}
         deleteKeyCode={["Delete", "Backspace"]}
         multiSelectionKeyCode="Meta"
         connectionLineStyle={{ strokeWidth: 2, stroke: '#10b981', strokeDasharray: '5,5' }}
