@@ -59,6 +59,12 @@ function PracticeFlowInner() {
 
       // Only set positive offsets (keyboard is open)
       setKeyboardOffset(Math.max(0, offset));
+
+      // Prevent the page from scrolling when keyboard opens
+      // Keep the scroll position at top to prevent header from being pushed out
+      if (window.visualViewport.offsetTop > 0) {
+        window.scrollTo(0, 0);
+      }
     };
 
     window.visualViewport.addEventListener('resize', updateKeyboardOffset);
@@ -567,8 +573,8 @@ function PracticeFlowInner() {
         <div
           className={
             isSandboxStep
-              ? "flex-1 min-h-0 overflow-hidden"
-              : "flex-1 min-h-0 overflow-y-auto pb-20 sm:pb-28"
+              ? "flex-1 min-h-0 overflow-hidden pt-[120px] sm:pt-[140px]"
+              : "flex-1 min-h-0 overflow-y-auto pb-20 sm:pb-28 pt-[120px] sm:pt-[140px]"
           }
         >
           <PracticeStepContent
@@ -627,7 +633,7 @@ function PracticeFlowInner() {
         />
 
         <footer
-          className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur transition-transform duration-100"
+          className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur"
           style={{
             transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : 'none',
           }}

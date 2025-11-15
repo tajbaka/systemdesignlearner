@@ -84,7 +84,7 @@ export function PracticeStepper({
   return (
     <nav
       aria-label="Practice steps"
-      className="sticky top-0 z-30 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
+      className="fixed top-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
     >
       {/* Scenario Title - Shows on all screen sizes above the steps */}
       {scenarioTitle && (
