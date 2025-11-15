@@ -595,7 +595,7 @@ function PracticeFlowInner() {
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
 
-        <footer className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur">
+        <footer className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur pb-[env(safe-area-inset-bottom)]">
           <PracticeFeedbackPanel
             currentStep={currentStep}
             verification={verification}
