@@ -171,11 +171,11 @@ Return JSON only with the exact schema:
 Rules
 - Read the candidate's text carefully. Use context, not only keywords.
 - Mark a topic "covered" ONLY if the candidate explicitly addresses it with sufficient detail.
-- Be STRICT: vague mentions, implied features, or partial coverage do NOT count as "covered".
-- For technical topics like "uniqueness", verify the approach is technically sound (e.g., "hashing first N characters" does NOT guarantee uniqueness).
-- For storage/persistence topics, the candidate must explicitly mention databases, persistence, or storage - don't infer it.
-- For rate limiting, abuse prevention, or security topics, the candidate must explicitly mention them - don't assume they're implied.
-- For admin/user management topics, the candidate must explicitly describe the feature - don't assume it's covered by authentication.
+- For FUNCTIONAL requirements: Focus on WHAT the system should do (user-facing behavior), NOT HOW it's implemented. Accept high-level descriptions without requiring technical implementation details.
+- For functional topics like "uniqueness": Accept that the candidate mentioned the requirement (e.g., "each URL should be unique") without requiring collision handling, concurrency, or algorithm details - those belong in later design steps.
+- For storage/persistence in non-functional requirements: The candidate must explicitly mention databases, persistence, or storage - don't infer it.
+- For rate limiting, abuse prevention, or security topics: The candidate must explicitly mention them - don't assume they're implied.
+- For admin/user management topics: The candidate must explicitly describe the feature - don't assume it's covered by authentication.
 ${isApiStep ? `- For API endpoint topics: An endpoint is covered if it includes BOTH request details AND response details with explicit field/data names. Accept both JSON format and natural language.
 - Examples that COUNT as covered: "body contains longUrl, customSlug, and expiresAt" OR "body: { longUrl, customSlug, expiresAt }" OR "request includes the long URL, optional custom slug, and optional expiration date"
 - Examples that are TOO VAGUE: "request: url" OR "body contains the URL" OR "returns the short link" (must specify field names)
@@ -265,6 +265,7 @@ Constraints:
 - Step: ${step.stepName}
 - Ask about the user's intent/behavior (e.g., "what should happen when...") rather than specific solutions or technical implementations.
 - Do NOT mention concrete solution hints such as HTTP status codes, data structures, algorithms, or numeric values.
+- For FUNCTIONAL requirements: Only ask about user-facing behavior and features. Do NOT ask about implementation details like collision handling, concurrency, algorithms, or data structures - those belong in later steps.
 - If a previous question exists and the candidate still missed it, sharpen the same question by emphasizing the outcome they still haven't described, but still avoid giving the answer.
 - Output JSON with schema: { "question": "..." }
 
