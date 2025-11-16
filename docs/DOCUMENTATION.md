@@ -39,15 +39,18 @@ This is the comprehensive guide for Claude Code and other AI assistants working 
 These guides contain current implementation details and are actively maintained:
 
 #### Scoring System
+
 - **`SCORING_IMPLEMENTATION_GUIDE.md`** - Core scoring algorithm implementation
 - **`AI_SCORING_GUIDE.md`** - AI-powered scoring evaluation system
 - **`scoring-system-plan.md`** - Scoring system architecture and plan
 
 #### Optimization & Analytics
+
 - **`AI_OPTIMIZATION_GUIDE.md`** - AI-driven design optimization suggestions
 - **`CONVERSION_OPTIMIZATION_REPORT.md`** - Full site audit and conversion tweaks (Nov 2, 2025)
 
 #### Features
+
 - **`VERIFICATION_IMPLEMENTATION.md`** - Design verification and validation system
 - **`SPEECH_TO_TEXT.md`** - Voice input implementation (if applicable)
 
@@ -56,9 +59,11 @@ These guides contain current implementation details and are actively maintained:
 ## Setup & Configuration
 
 ### Supabase Integration
+
 **Location:** `docs/SUPABASE_SETUP.md`
 
 Instructions for setting up Supabase backend (optional):
+
 - Database schema
 - Authentication setup
 - Environment variables
@@ -85,14 +90,17 @@ VERCEL_ANALYTICS_ID=...
 ## Product Strategy
 
 ### Current Roadmap
+
 **Location:** `docs/90DaysPlan.md`
 
 90-day development roadmap with milestones and priorities.
 
 ### Conversion Optimization
+
 **Location:** `docs/CONVERSION_OPTIMIZATION_REPORT.md`
 
 Comprehensive site audit with actionable tweaks to improve conversions:
+
 - Site scan summary
 - Page-by-page analysis
 - Prioritized improvements
@@ -207,4 +215,4 @@ Regular documentation maintenance tasks:
 
 ---
 
-*For the most comprehensive guide to this project, always start with `docs/CLAUDE.md`*
+_For the most comprehensive guide to this project, always start with `docs/CLAUDE.md`_

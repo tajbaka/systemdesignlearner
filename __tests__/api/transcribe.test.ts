@@ -16,10 +16,7 @@ describe("/api/transcribe", () => {
     globalThis.fetch = originalFetch;
   });
 
-  const createMockRequest = (
-    formData: FormData,
-    origin = "http://localhost:3000"
-  ) => {
+  const createMockRequest = (formData: FormData, origin = "http://localhost:3000") => {
     return {
       formData: async () => formData,
       headers: {
@@ -35,9 +32,7 @@ describe("/api/transcribe", () => {
     const mockWhisperResponse = { text: "hello world" };
 
     globalThis.fetch = vi.fn(async (url) => {
-      if (
-        url === "https://api.openai.com/v1/audio/transcriptions"
-      ) {
+      if (url === "https://api.openai.com/v1/audio/transcriptions") {
         return {
           ok: true,
           json: async () => mockWhisperResponse,
@@ -149,10 +144,7 @@ describe("/api/transcribe", () => {
   });
 
   it("forwards language parameter to OpenAI", async () => {
-    const fetchMock = vi.fn<
-      [RequestInfo | URL, RequestInit?],
-      Promise<Response>
-    >(async () => ({
+    const fetchMock = vi.fn<[RequestInfo | URL, RequestInit?], Promise<Response>>(async () => ({
       ok: true,
       json: async () => ({ text: "bonjour" }),
     }));
@@ -193,10 +185,7 @@ describe("/api/transcribe", () => {
     });
     formData.append("file", audioFile);
 
-    const request = createMockRequest(
-      formData,
-      "https://www.systemdesignsandbox.com"
-    );
+    const request = createMockRequest(formData, "https://www.systemdesignsandbox.com");
     const response = await POST(request);
 
     expect(response.status).toBe(200);

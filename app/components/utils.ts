@@ -67,8 +67,8 @@ export function hasConnectionBetweenKinds(
     if (nodeKind === targetKind) return true;
 
     // Check if base types match (e.g., "DB (Postgres)" matches "DB (MySQL)")
-    const baseTarget = targetKind.split(' ')[0];
-    const baseNode = nodeKind.split(' ')[0];
+    const baseTarget = targetKind.split(" ")[0];
+    const baseNode = nodeKind.split(" ")[0];
 
     return baseTarget === baseNode;
   };
@@ -191,7 +191,9 @@ export function findScenarioPath(
   return { nodeIds: bestState.path, missingKinds: Array.from(missingKinds) };
 }
 
-function dedupeStates(states: Array<{ current: NodeId | null; path: NodeId[]; visited: Set<NodeId> }>) {
+function dedupeStates(
+  states: Array<{ current: NodeId | null; path: NodeId[]; visited: Set<NodeId> }>
+) {
   const seen = new Set<string>();
   const result: typeof states = [];
   for (const state of states) {

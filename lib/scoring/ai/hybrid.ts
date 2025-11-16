@@ -164,7 +164,9 @@ export async function evaluateApiWithAI(
     useAI?: boolean;
     explainScore?: boolean;
   } = {}
-): Promise<FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean; aiAnalysis?: unknown }> {
+): Promise<
+  FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean; aiAnalysis?: unknown }
+> {
   const useAI = options.useAI !== false && isAIAvailable();
 
   // Step 1: Run rule-based scoring
@@ -246,7 +248,9 @@ export async function evaluateDesignWithAI(
     useAI?: boolean;
     explainScore?: boolean;
   } = {}
-): Promise<FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean; aiAnalysis?: unknown }> {
+): Promise<
+  FeedbackResult & { aiExplanation?: string; aiEnhanced?: boolean; aiAnalysis?: unknown }
+> {
   const useAI = options.useAI !== false && isAIAvailable();
 
   // Step 1: Run rule-based scoring

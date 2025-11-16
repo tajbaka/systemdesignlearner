@@ -1,5 +1,5 @@
 "use client";
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -12,11 +12,18 @@ import {
   useReactFlow,
   addEdge,
   Connection,
-} from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+  NodeChange,
+  EdgeChange,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 
 import { PlacedNode, Edge, SystemDesignNode, SystemDesignEdge } from "./types";
-import { placedNodeToReactFlowNode, edgeToReactFlowEdge, reactFlowEdgeToEdge, reactFlowNodeToPlacedNode } from "./types";
+import {
+  placedNodeToReactFlowNode,
+  edgeToReactFlowEdge,
+  reactFlowEdgeToEdge,
+  reactFlowNodeToPlacedNode,
+} from "./types";
 import SystemDesignNodeComponent from "./SystemDesignNode";
 import BidirectionalEdge from "./BidirectionalEdge";
 
@@ -93,22 +100,24 @@ function ReactFlowBoardInner({
   const reactFlowInstance = useReactFlow();
 
   // Memoize node data to prevent unnecessary re-renders
-  const nodeData = useMemo(() => ({
-    onDelete: onDeleteNode,
-    onNodeTouchStart,
-    onNodeTouchEnd,
-    onRename: onRenameNode,
-    onUpdateReplicas,
-  }), [onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, onUpdateReplicas]);
-
+  const nodeData = useMemo(
+    () => ({
+      onDelete: onDeleteNode,
+      onNodeTouchStart,
+      onNodeTouchEnd,
+      onRename: onRenameNode,
+      onUpdateReplicas,
+    }),
+    [onDeleteNode, onNodeTouchStart, onNodeTouchEnd, onRenameNode, onUpdateReplicas]
+  );
 
   // Update state when props change (but preserve existing positions)
   React.useEffect(() => {
-    setRfNodes(currentNodes => {
-      const currentNodeMap = new Map(currentNodes.map(node => [node.id, node]));
+    setRfNodes((currentNodes) => {
+      const currentNodeMap = new Map(currentNodes.map((node) => [node.id, node]));
 
       // Create new nodes, preserving positions of existing ones
-      const newRfNodes = nodes.map(node => {
+      const newRfNodes = nodes.map((node) => {
         const existingNode = currentNodeMap.get(node.id);
         if (existingNode) {
           return {
@@ -119,7 +128,7 @@ function ReactFlowBoardInner({
               customLabel: node.customLabel,
               spec: node.spec,
               replicas: node.replicas ?? existingNode.data?.replicas ?? 1,
-            }
+            },
           };
         } else {
           // New node, calculate position
@@ -130,7 +139,7 @@ function ReactFlowBoardInner({
               ...rfNode.data,
               ...nodeData,
               replicas: node.replicas ?? rfNode.data?.replicas ?? 1,
-            }
+            },
           };
         }
       });
@@ -138,11 +147,11 @@ function ReactFlowBoardInner({
       return newRfNodes;
     });
 
-    setRfEdges(currentEdges => {
-      const currentEdgeMap = new Map(currentEdges.map(edge => [edge.id, edge]));
+    setRfEdges((currentEdges) => {
+      const currentEdgeMap = new Map(currentEdges.map((edge) => [edge.id, edge]));
 
       // Update edges, preserving selection state
-      return edges.map(edge => {
+      return edges.map((edge) => {
         const existingEdge = currentEdgeMap.get(edge.id);
         const rfEdge = edgeToReactFlowEdge(edge);
 
@@ -154,72 +163,81 @@ function ReactFlowBoardInner({
         return rfEdge;
       });
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodes, edges, onDeleteNode, onRenameNode, nodeData]); // Update when props change
 
   // Handle connections
-  const handleConnect = React.useCallback((connection: Connection) => {
-    if (!connection.source || !connection.target) return;
+  const handleConnect = React.useCallback(
+    (connection: Connection) => {
+      if (!connection.source || !connection.target) return;
 
-    const newEdge: SystemDesignEdge = {
-      id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
-      source: connection.source,
-      target: connection.target,
-      sourceHandle: connection.sourceHandle || undefined,
-      targetHandle: connection.targetHandle || undefined,
-      data: { linkLatencyMs: 10 },
-    };
+      const newEdge: SystemDesignEdge = {
+        id: `edge-${connection.source}-${connection.target}-${Date.now()}`,
+        source: connection.source,
+        target: connection.target,
+        sourceHandle: connection.sourceHandle || undefined,
+        targetHandle: connection.targetHandle || undefined,
+        data: { linkLatencyMs: 10 },
+      };
 
-    setRfEdges((eds) => addEdge(newEdge, eds));
+      setRfEdges((eds) => addEdge(newEdge, eds));
 
-    // Notify parent of the new edge
-    if (onConnect) {
-      const placedEdge: Edge = reactFlowEdgeToEdge(newEdge);
-      onConnect(placedEdge);
-    }
-
-    // Ensure parent state is updated with current React Flow state
-    setTimeout(() => {
-      if (onEdgesChange) {
-        const currentEdges = rfEdgesRef.current.map(reactFlowEdgeToEdge);
-        onEdgesChange(currentEdges);
+      // Notify parent of the new edge
+      if (onConnect) {
+        const placedEdge: Edge = reactFlowEdgeToEdge(newEdge);
+        onConnect(placedEdge);
       }
-    }, 10);
 
-  }, [setRfEdges, onConnect, onEdgesChange]);
+      // Ensure parent state is updated with current React Flow state
+      setTimeout(() => {
+        if (onEdgesChange) {
+          const currentEdges = rfEdgesRef.current.map(reactFlowEdgeToEdge);
+          onEdgesChange(currentEdges);
+        }
+      }, 10);
+    },
+    [setRfEdges, onConnect, onEdgesChange]
+  );
 
   // Handle node changes (position updates, deletions, etc.)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleNodesChange = React.useCallback((changes: any[]) => {
-    onRfNodesChange(changes);
-  }, [onRfNodesChange]);
+  const handleNodesChange = React.useCallback(
+    (changes: NodeChange<SystemDesignNode>[]) => {
+      onRfNodesChange(changes);
+    },
+    [onRfNodesChange]
+  );
 
   // Handle edge changes (deletions, etc.)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEdgesChange = React.useCallback((changes: any[]) => {
-    onRfEdgesChange(changes);
+  const handleEdgesChange = React.useCallback(
+    (changes: EdgeChange<SystemDesignEdge>[]) => {
+      onRfEdgesChange(changes);
 
-    // Notify parent immediately when edges change (for deletions)
-    setTimeout(() => {
-      if (onEdgesChange) {
-        const currentEdges = rfEdgesRef.current.map(reactFlowEdgeToEdge);
-        onEdgesChange(currentEdges);
-      }
-    }, 0);
-  }, [onRfEdgesChange, onEdgesChange]);
+      // Notify parent immediately when edges change (for deletions)
+      setTimeout(() => {
+        if (onEdgesChange) {
+          const currentEdges = rfEdgesRef.current.map(reactFlowEdgeToEdge);
+          onEdgesChange(currentEdges);
+        }
+      }, 0);
+    },
+    [onRfEdgesChange, onEdgesChange]
+  );
 
   // Notify parent when React Flow nodes change (debounced)
   React.useEffect(() => {
     if (onNodesChange) {
       const updatedNodes = rfNodes.map(reactFlowNodeToPlacedNode);
       // Only notify if the nodes have actually changed
-      const hasChanged = updatedNodes.length !== lastNotifiedNodes.current.length ||
+      const hasChanged =
+        updatedNodes.length !== lastNotifiedNodes.current.length ||
         updatedNodes.some((node, index) => {
           const lastNode = lastNotifiedNodes.current[index];
-          return !lastNode ||
-                 lastNode.id !== node.id ||
-                 Math.abs(lastNode.x - node.x) > 1 || // Allow small position differences
-                 Math.abs(lastNode.y - node.y) > 1;
+          return (
+            !lastNode ||
+            lastNode.id !== node.id ||
+            Math.abs(lastNode.x - node.x) > 1 || // Allow small position differences
+            Math.abs(lastNode.y - node.y) > 1
+          );
         });
 
       if (hasChanged) {
@@ -235,13 +253,16 @@ function ReactFlowBoardInner({
     if (onEdgesChange) {
       const updatedEdges = rfEdges.map(reactFlowEdgeToEdge);
       // Only notify if the edges have actually changed
-      const hasChanged = updatedEdges.length !== lastNotifiedEdges.current.length ||
+      const hasChanged =
+        updatedEdges.length !== lastNotifiedEdges.current.length ||
         updatedEdges.some((edge, index) => {
           const lastEdge = lastNotifiedEdges.current[index];
-          return !lastEdge ||
-                 lastEdge.id !== edge.id ||
-                 lastEdge.from !== edge.from ||
-                 lastEdge.to !== edge.to;
+          return (
+            !lastEdge ||
+            lastEdge.id !== edge.id ||
+            lastEdge.from !== edge.from ||
+            lastEdge.to !== edge.to
+          );
         });
 
       if (hasChanged) {
@@ -252,44 +273,48 @@ function ReactFlowBoardInner({
     }
   }, [rfEdges, onEdgesChange]);
 
-  const handleDrop = React.useCallback((event: React.DragEvent) => {
-    event.preventDefault();
+  const handleDrop = React.useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
 
-    if (!onDrop) return;
+      if (!onDrop) return;
 
-    const kind = event.dataTransfer.getData("application/x-sds-kind") ||
-                 event.dataTransfer.getData("text/plain");
+      const kind =
+        event.dataTransfer.getData("application/x-sds-kind") ||
+        event.dataTransfer.getData("text/plain");
 
-    if (!kind) return;
+      if (!kind) return;
 
-    // Get the drop position using viewport transformation
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const clientX = event.clientX - bounds.left;
-    const clientY = event.clientY - bounds.top;
+      // Get the drop position using viewport transformation
+      const bounds = event.currentTarget.getBoundingClientRect();
+      const clientX = event.clientX - bounds.left;
+      const clientY = event.clientY - bounds.top;
 
-    // Get viewport information
-    const { x: viewX, y: viewY, zoom } = reactFlowInstance.getViewport();
+      // Get viewport information
+      const { x: viewX, y: viewY, zoom } = reactFlowInstance.getViewport();
 
-    // Convert container coordinates to flow coordinates
-    const position = {
-      x: (clientX - viewX) / zoom,
-      y: (clientY - viewY) / zoom,
-    };
+      // Convert container coordinates to flow coordinates
+      const position = {
+        x: (clientX - viewX) / zoom,
+        y: (clientY - viewY) / zoom,
+      };
 
-    onDrop(kind, position);
+      onDrop(kind, position);
 
-    // After dropping, ensure the parent state is updated with current React Flow state
-    setTimeout(() => {
-      if (onNodesChange) {
-        const currentNodes = rfNodesRef.current.map(reactFlowNodeToPlacedNode);
-        onNodesChange(currentNodes);
-      }
-      if (onEdgesChange) {
-        const currentEdges = rfEdgesRef.current.map(reactFlowEdgeToEdge);
-        onEdgesChange(currentEdges);
-      }
-    }, 10);
-  }, [onDrop, reactFlowInstance, onNodesChange, onEdgesChange]);
+      // After dropping, ensure the parent state is updated with current React Flow state
+      setTimeout(() => {
+        if (onNodesChange) {
+          const currentNodes = rfNodesRef.current.map(reactFlowNodeToPlacedNode);
+          onNodesChange(currentNodes);
+        }
+        if (onEdgesChange) {
+          const currentEdges = rfEdgesRef.current.map(reactFlowEdgeToEdge);
+          onEdgesChange(currentEdges);
+        }
+      }, 10);
+    },
+    [onDrop, reactFlowInstance, onNodesChange, onEdgesChange]
+  );
 
   const handleDragOver = React.useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -311,34 +336,40 @@ function ReactFlowBoardInner({
     onEdgeSelect?.(null);
   }, [setRfEdges, onEdgeSelect]);
 
-  const handleEdgeClick = React.useCallback((event: React.MouseEvent, edge: SystemDesignEdge) => {
-    event.stopPropagation();
-    setRfEdges((prevEdges) => {
-      let didChange = false;
-      const nextEdges = prevEdges.map((current) => {
-        if (current.id === edge.id) {
-          if (!current.selected) {
+  const handleEdgeClick = React.useCallback(
+    (event: React.MouseEvent, edge: SystemDesignEdge) => {
+      event.stopPropagation();
+      setRfEdges((prevEdges) => {
+        let didChange = false;
+        const nextEdges = prevEdges.map((current) => {
+          if (current.id === edge.id) {
+            if (!current.selected) {
+              didChange = true;
+              return { ...current, selected: true };
+            }
+            return current;
+          }
+          if (current.selected) {
             didChange = true;
-            return { ...current, selected: true };
+            return { ...current, selected: false };
           }
           return current;
-        }
-        if (current.selected) {
-          didChange = true;
-          return { ...current, selected: false };
-        }
-        return current;
+        });
+        return didChange ? nextEdges : prevEdges;
       });
-      return didChange ? nextEdges : prevEdges;
-    });
-    onEdgeSelect?.(edge.id);
-    onNodeSelect?.(null);
-  }, [setRfEdges, onEdgeSelect, onNodeSelect]);
+      onEdgeSelect?.(edge.id);
+      onNodeSelect?.(null);
+    },
+    [setRfEdges, onEdgeSelect, onNodeSelect]
+  );
 
-  const handleNodeClick = React.useCallback((_: React.MouseEvent, node: SystemDesignNode) => {
-    clearEdgeSelection();
-    onNodeSelect?.(node.id);
-  }, [clearEdgeSelection, onNodeSelect]);
+  const handleNodeClick = React.useCallback(
+    (_: React.MouseEvent, node: SystemDesignNode) => {
+      clearEdgeSelection();
+      onNodeSelect?.(node.id);
+    },
+    [clearEdgeSelection, onNodeSelect]
+  );
 
   const handlePaneClick = React.useCallback(() => {
     clearEdgeSelection();
@@ -346,7 +377,7 @@ function ReactFlowBoardInner({
   }, [clearEdgeSelection, onNodeSelect]);
 
   return (
-    <div className={className} style={{ width: '100%', height: '100%', ...style }}>
+    <div className={className} style={{ width: "100%", height: "100%", ...style }}>
       <ReactFlow
         nodes={rfNodes}
         edges={rfEdges}
@@ -369,9 +400,9 @@ function ReactFlowBoardInner({
         maxZoom={2}
         deleteKeyCode={["Delete", "Backspace"]}
         multiSelectionKeyCode="Meta"
-        connectionLineStyle={{ strokeWidth: 2, stroke: '#10b981', strokeDasharray: '5,5' }}
+        connectionLineStyle={{ strokeWidth: 2, stroke: "#10b981", strokeDasharray: "5,5" }}
         defaultEdgeOptions={{
-          type: 'bidirectional',
+          type: "bidirectional",
           animated: false,
           // Optimize smoothstep performance
           data: { borderRadius: 8 },
@@ -393,15 +424,10 @@ function ReactFlowBoardInner({
         // Remove React Flow attribution
         proOptions={{ hideAttribution: true }}
       >
-        <Background
-          variant={BackgroundVariant.Dots}
-          gap={15}
-          size={1.5}
-          color="#cccccc"
-        />
+        <Background variant={BackgroundVariant.Dots} gap={15} size={1.5} color="#cccccc" />
         <Controls
           style={{
-            display: 'none', // Forcefully hide on mobile
+            display: "none", // Forcefully hide on mobile
           }}
           showZoom={true}
           showFitView={true}
@@ -414,8 +440,8 @@ function ReactFlowBoardInner({
             nodeColor="#10b981"
             maskColor="rgba(0, 0, 0, 0.2)"
             style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
               width: 140,
               height: 105,
               bottom: miniMapBottomOffset,
@@ -431,7 +457,15 @@ function ReactFlowBoardInner({
 }
 
 // Main component wrapped with ReactFlowProvider
-function ReactFlowBoard({ className, style, onNodeTouchStart, onNodeTouchEnd, onRenameNode, miniMapBottomOffset, ...props }: ReactFlowBoardProps) {
+function ReactFlowBoard({
+  className,
+  style,
+  onNodeTouchStart,
+  onNodeTouchEnd,
+  onRenameNode,
+  miniMapBottomOffset,
+  ...props
+}: ReactFlowBoardProps) {
   return (
     <ReactFlowProvider>
       <ReactFlowBoardInner

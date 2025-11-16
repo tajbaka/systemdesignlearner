@@ -20,19 +20,15 @@ export default function DesktopSidebar({
     <>
       {/* Palette */}
       {palette}
-      
+
       {/* Controls */}
-      <div className="flex gap-2 flex-wrap flex-shrink-0 items-center">
-        {controls}
-      </div>
-      
+      <div className="flex gap-2 flex-wrap flex-shrink-0 items-center">{controls}</div>
+
       {/* Read-only message */}
       {isReadOnly && readOnlyMessage}
-      
+
       {/* Scenario Panel */}
-      <div className="min-h-0 flex-1 flex flex-col overflow-hidden">
-        {scenarioPanel}
-      </div>
+      <div className="min-h-0 flex-1 flex flex-col overflow-hidden">{scenarioPanel}</div>
     </>
   );
 }

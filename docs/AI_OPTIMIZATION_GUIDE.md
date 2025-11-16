@@ -16,6 +16,7 @@
 ### Problem Statement
 
 The original AI implementation had two issues:
+
 1. **Slow** - Sequential AI calls took 4-6 seconds
 2. **Duplicate feedback** - Same issue repeated multiple times in different wording
 
@@ -24,6 +25,7 @@ The original AI implementation had two issues:
 #### 1. Parallel Execution ⚡
 
 **Before (Sequential - 5s):**
+
 ```
 Rule-based scoring → 50ms
   ↓
@@ -37,6 +39,7 @@ Total: ~5s
 ```
 
 **After (Parallel - 2.5s):**
+
 ```
 Rule-based scoring ──┐
 AI extraction ───────┤→ Merge → Generate explanation
@@ -49,6 +52,7 @@ Total: ~2.5s (50% faster!)
 #### 2. Feedback Deduplication 🎯
 
 **Before:**
+
 ```
 ❌ Required improvements
 • POST /urls: Required endpoint POST /urls is missing...
@@ -58,6 +62,7 @@ Total: ~2.5s (50% faster!)
 ```
 
 **After:**
+
 ```
 ✅ Required improvements
 • POST /shorten: Rename to /urls for RESTful convention. Add HTTP status codes (201, 400).
@@ -67,6 +72,7 @@ Total: ~2.5s (50% faster!)
 #### 3. Progress Indicators 📊
 
 Real-time UI updates showing evaluation progress:
+
 - Rule-based analysis ✓
 - AI understanding... 🔄 75%
 - Generating feedback... 🔄 50%
@@ -123,10 +129,10 @@ function FunctionalRequirementsStep() {
 
 ### Performance Comparison
 
-| Function | Speed | Deduplication | Progress |
-|---|---|---|---|
-| `evaluateFunctionalWithAI` | 4-6s | ❌ | ❌ |
-| `evaluateFunctionalOptimized` | 2-3s | ✅ | ✅ |
+| Function                      | Speed | Deduplication | Progress |
+| ----------------------------- | ----- | ------------- | -------- |
+| `evaluateFunctionalWithAI`    | 4-6s  | ❌            | ❌       |
+| `evaluateFunctionalOptimized` | 2-3s  | ✅            | ✅       |
 
 **Recommendation:** Always use `*Optimized` versions.
 
@@ -135,37 +141,37 @@ function FunctionalRequirementsStep() {
 #### Example 1: API Endpoint Feedback
 
 **Input (from AI + Rules):**
+
 ```typescript
 [
   "POST /urls: Required endpoint POST /urls is missing. The provided endpoint POST /shorten should be renamed to POST /urls to align with the required API.",
   "endpoint: POST /shorten, issue: Endpoint name should be `/urls` instead of `/shorten` for RESTful convention., recommendation: Rename the endpoint to `/urls`.",
-  "endpoint: POST /shorten, issue: Request/Response description is good, but consider explicitly mentioning the HTTP status codes returned (e.g., 201 Created, 400 Bad Request)., recommendation: Add HTTP status codes to the response description."
-]
+  "endpoint: POST /shorten, issue: Request/Response description is good, but consider explicitly mentioning the HTTP status codes returned (e.g., 201 Created, 400 Bad Request)., recommendation: Add HTTP status codes to the response description.",
+];
 ```
 
 **Output (deduplicated & grouped):**
+
 ```typescript
-[
-  "POST /shorten: Rename to /urls for RESTful convention. Add HTTP status codes (201, 400)."
-]
+["POST /shorten: Rename to /urls for RESTful convention. Add HTTP status codes (201, 400)."];
 ```
 
 #### Example 2: Functional Requirements
 
 **Input:**
+
 ```typescript
 [
   "Missing core requirement: URL Shortening",
   "You haven't mentioned URL shortening - this is core functionality",
-  "Add details about URL shortening. The system must accept a long URL and generate a short alias."
-]
+  "Add details about URL shortening. The system must accept a long URL and generate a short alias.",
+];
 ```
 
 **Output:**
+
 ```typescript
-[
-  "Missing core requirement: URL Shortening. Add details about creating short aliases for URLs."
-]
+["Missing core requirement: URL Shortening. Add details about creating short aliases for URLs."];
 ```
 
 ### Deduplication Algorithm
@@ -237,13 +243,13 @@ progress.error(0, "Failed to connect to AI");
 
 ```typescript
 // For functional requirements (4 steps)
-createFunctionalProgress()
+createFunctionalProgress();
 
 // For API definition (4 steps)
-createApiProgress()
+createApiProgress();
 
 // For design (5 steps)
-createDesignProgress()
+createDesignProgress();
 ```
 
 ### UI Component
@@ -258,6 +264,7 @@ import { EvaluationProgress } from "@/components/practice/EvaluationProgress";
 ```
 
 **Features:**
+
 - Overall progress bar with gradient
 - Individual step status (pending/running/complete/error)
 - Spinning loader for active step
@@ -272,7 +279,7 @@ import {
   deduplicateFeedback,
   simplifyMessage,
   groupFeedbackByContext,
-  mergeGroupedFeedback
+  mergeGroupedFeedback,
 } from "@/lib/scoring/ai/deduplication";
 
 // Manual deduplication
@@ -280,9 +287,9 @@ const allFeedback = [...ruleBasedFeedback, ...aiFeedback];
 const deduplicated = deduplicateFeedback(allFeedback);
 
 // Simplify messages
-const simplified = deduplicated.map(f => ({
+const simplified = deduplicated.map((f) => ({
   ...f,
-  message: simplifyMessage(f.message)
+  message: simplifyMessage(f.message),
 }));
 
 // Group by endpoint/component
@@ -300,34 +307,39 @@ const top = merged.slice(0, 3);
 #### ✅ DO
 
 1. **Use optimized functions**
+
    ```typescript
-   evaluateFunctionalOptimized() // ✅ Fast + deduplicated
+   evaluateFunctionalOptimized(); // ✅ Fast + deduplicated
    ```
 
 2. **Show progress indicator**
+
    ```typescript
    <EvaluationProgress steps={progressSteps} />
    ```
 
 3. **Limit feedback items**
+
    ```typescript
-   blocking.slice(0, 3) // Top 3 only
-   warnings.slice(0, 3)
+   blocking.slice(0, 3); // Top 3 only
+   warnings.slice(0, 3);
    ```
 
 4. **Simplify messages**
    ```typescript
-   message: simplifyMessage(feedback.message)
+   message: simplifyMessage(feedback.message);
    ```
 
 #### ❌ DON'T
 
 1. **Don't use old functions**
+
    ```typescript
-   evaluateFunctionalWithAI() // ❌ Slower, duplicates
+   evaluateFunctionalWithAI(); // ❌ Slower, duplicates
    ```
 
 2. **Don't show all feedback**
+
    ```typescript
    // ❌ Overwhelming
    {feedback.map(f => <div>{f.message}</div>)}
@@ -337,6 +349,7 @@ const top = merged.slice(0, 3);
    ```
 
 3. **Don't block UI**
+
    ```typescript
    // ❌ No feedback
    await evaluate();
@@ -349,12 +362,14 @@ const top = merged.slice(0, 3);
 ### Performance Metrics
 
 #### Before Optimization
+
 - **Time**: 4-6 seconds
 - **Feedback items**: 8-12 per step
 - **Duplicate rate**: ~40%
 - **User experience**: 😞 Slow, overwhelming
 
 #### After Optimization
+
 - **Time**: 2-3 seconds (50% faster)
 - **Feedback items**: 3-5 per step (deduplicated)
 - **Duplicate rate**: ~5%
@@ -374,10 +389,7 @@ const result = await evaluateFunctionalWithAI(input, config, {
 });
 
 // New (just add "Optimized" and progress)
-import {
-  evaluateFunctionalOptimized,
-  createFunctionalProgress
-} from "@/lib/scoring";
+import { evaluateFunctionalOptimized, createFunctionalProgress } from "@/lib/scoring";
 
 const progress = createFunctionalProgress();
 progress.onProgress(setProgressSteps);
@@ -397,15 +409,15 @@ import { deduplicateFeedback } from "@/lib/scoring/ai/deduplication";
 const duplicates = [
   {
     message: "Missing URL shortening",
-    severity: "blocking"
+    severity: "blocking",
   },
   {
     message: "You haven't mentioned URL shortening",
-    severity: "blocking"
+    severity: "blocking",
   },
   {
     message: "Add URL shortening requirement",
-    severity: "blocking"
+    severity: "blocking",
   },
 ];
 
@@ -424,6 +436,7 @@ console.log(deduplicated[0].message);
 3. **Progress Indicators** → Better UX (shows what's happening)
 
 **Files Created:**
+
 - `lib/scoring/ai/optimized.ts` - Parallel evaluation
 - `lib/scoring/ai/deduplication.ts` - Feedback deduplication
 - `lib/scoring/ai/progress.ts` - Progress tracking
@@ -451,58 +464,64 @@ The site is a minimal, dev-focused SaaS landing for visual system design practic
 
 **Conversion funnel:** Hero → Features → How It Works → Pricing CTA (/play) → Feedback loop.
 
-| Page | Key Elements | Conversion Score (1-10) | Quick Win Potential |
-|------|-------------|------------------------|-------------------|
+| Page             | Key Elements                                                                                         | Conversion Score (1-10)         | Quick Win Potential         |
+| ---------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------- | --------------------------- |
 | Main Landing (/) | Hero, Features (bullets), How It Works (4 steps), Pricing (Free/Premium), Feedback prompt, Empty FAQ | 7/10 (Strong hooks, weak proof) | High: Add CTA/video in hero |
-| /play | Loading screen + inferred interactive canvas (components, sims) | 5/10 (Dynamic but unguided) | Medium: Onboarding tour |
-| /feedback | Text prompt only (no form) | 2/10 (Intent but no action) | High: Add submission form |
+| /play            | Loading screen + inferred interactive canvas (components, sims)                                      | 5/10 (Dynamic but unguided)     | Medium: Onboarding tour     |
+| /feedback        | Text prompt only (no form)                                                                           | 2/10 (Intent but no action)     | High: Add submission form   |
 
 ### Detailed Tweak Suggestions
 
 Prioritized by impact (High/Med/Low) on conversions (sign-ups, retention, upsell).
 
-| Priority | Page/Section | Current Issue | Suggested Tweak | Expected Impact | Implementation Notes |
-|----------|-------------|---------------|----------------|-----------------|---------------------|
-| **High** | Main: Hero | Concise but no immediate CTA; static text | Add 15-sec looping GIF/video of Spotify sim (drag → metrics pop). Overlay "Build in 2 Mins – Start Free" button (red, links to /play). Blurred testimonial: "Nailed FAANG interview – @devX". | +52% engagement; Hooks B2C devs in <5s. | Embed via YouTube/Vimeo; A/B test CTA color. |
-| **High** | Main: Pricing | Premium vague ("Coming Soon" + external link); Free CTA buried | Define Premium: "$19/mo – Unlimited Sims, Team Forks, Exports". Add progress bar on Free ("Unlock at 80%"). Fix link to internal /premium. Team tier: "$49/mo for 5 seats" for B2B. | Reduces confusion (+60% sign-ups); FOMO for upsell. | Use Stripe pre-pay link for validation. |
-| **High** | /feedback: Entire | No form—just text; dead-end for validation | Add Google Form/Typeform embed: Fields (What worked?/Suggestions/Email opt-in). CTA: "Submit & Get Beta Access". Incentive: "Top ideas win free Premium". | Turns 20% drop-off into leads. | Integrate Zapier to Slack/email; Track submissions. |
-| **High** | Main: Features | Text bullets; scannable but dry | Icon-ify components (e.g., DB icons). Add comparison table: "Sandbox vs. Lucidchart" (Interactive: Yes vs. No; Free Sims: Yes vs. Paid). | Clarity for skimmers; Gap-fill vs. competitors. | Free icons from Heroicons; Mobile: Stack table. |
-| **Med** | Main: FAQ | Header only—empty | Populate 5 Qs: "How accurate are sims?" (Lightweight engine, 90% real-world). "Free vs. Premium?" (Details). Add schema for SEO. | Boosts trust/SEO; +20% time-on-site. | Accordion dropdown; Keyword-optimize answers. |
-| **Med** | Main: Validation Prompt | Redundant phrasing; no action | Merge to one: "Shape the Tool – Suggest Scenarios" with /feedback link. Add "Join 500+ Devs Waitlist" email capture. | Virality via shares. | Use Mailchimp embed; Target #SystemDesign on X. |
-| **Med** | /play: Onboarding | Loader only; no tour post-load | Add 3-step modal tour: "1. Pick Scenario • 2. Drag & Connect • 3. Simulate". Persistent sidebar help (tooltips on components). | Lowers abandonment; +30% completion. | Use Intro.js; A/B: Auto vs. Manual start. |
-| **Med** | /play: Upsell | No Premium teases | Watermark Free sims: "Upgrade for Chaos Mode". Inline CTA after sim: "Unlock Unlimited – $19/mo". | Retention to paid. | JS trigger on bottleneck view. |
-| **Low** | All: Social Proof | "Loved by devs" claim, no quotes | Add 2-3 X/Reddit pulls: Carousel under hero. "Visual gold for interviews – 4.8/5". | Trust builder (+42% completion). | Collect from 10 betas; Update quarterly. |
-| **Low** | All: SEO/Tech | Good keywords; no schema/meta | Add JSON-LD for "SoftwareApplication". Target long-tail: "free visual system design interview prep". Mobile: Ensure grid responsive. | AI search wins. | Google Tag Manager; Test via Lighthouse. |
+| Priority | Page/Section            | Current Issue                                                  | Suggested Tweak                                                                                                                                                                               | Expected Impact                                     | Implementation Notes                                |
+| -------- | ----------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- | --------------------------------------------------- |
+| **High** | Main: Hero              | Concise but no immediate CTA; static text                      | Add 15-sec looping GIF/video of Spotify sim (drag → metrics pop). Overlay "Build in 2 Mins – Start Free" button (red, links to /play). Blurred testimonial: "Nailed FAANG interview – @devX". | +52% engagement; Hooks B2C devs in <5s.             | Embed via YouTube/Vimeo; A/B test CTA color.        |
+| **High** | Main: Pricing           | Premium vague ("Coming Soon" + external link); Free CTA buried | Define Premium: "$19/mo – Unlimited Sims, Team Forks, Exports". Add progress bar on Free ("Unlock at 80%"). Fix link to internal /premium. Team tier: "$49/mo for 5 seats" for B2B.           | Reduces confusion (+60% sign-ups); FOMO for upsell. | Use Stripe pre-pay link for validation.             |
+| **High** | /feedback: Entire       | No form—just text; dead-end for validation                     | Add Google Form/Typeform embed: Fields (What worked?/Suggestions/Email opt-in). CTA: "Submit & Get Beta Access". Incentive: "Top ideas win free Premium".                                     | Turns 20% drop-off into leads.                      | Integrate Zapier to Slack/email; Track submissions. |
+| **High** | Main: Features          | Text bullets; scannable but dry                                | Icon-ify components (e.g., DB icons). Add comparison table: "Sandbox vs. Lucidchart" (Interactive: Yes vs. No; Free Sims: Yes vs. Paid).                                                      | Clarity for skimmers; Gap-fill vs. competitors.     | Free icons from Heroicons; Mobile: Stack table.     |
+| **Med**  | Main: FAQ               | Header only—empty                                              | Populate 5 Qs: "How accurate are sims?" (Lightweight engine, 90% real-world). "Free vs. Premium?" (Details). Add schema for SEO.                                                              | Boosts trust/SEO; +20% time-on-site.                | Accordion dropdown; Keyword-optimize answers.       |
+| **Med**  | Main: Validation Prompt | Redundant phrasing; no action                                  | Merge to one: "Shape the Tool – Suggest Scenarios" with /feedback link. Add "Join 500+ Devs Waitlist" email capture.                                                                          | Virality via shares.                                | Use Mailchimp embed; Target #SystemDesign on X.     |
+| **Med**  | /play: Onboarding       | Loader only; no tour post-load                                 | Add 3-step modal tour: "1. Pick Scenario • 2. Drag & Connect • 3. Simulate". Persistent sidebar help (tooltips on components).                                                                | Lowers abandonment; +30% completion.                | Use Intro.js; A/B: Auto vs. Manual start.           |
+| **Med**  | /play: Upsell           | No Premium teases                                              | Watermark Free sims: "Upgrade for Chaos Mode". Inline CTA after sim: "Unlock Unlimited – $19/mo".                                                                                             | Retention to paid.                                  | JS trigger on bottleneck view.                      |
+| **Low**  | All: Social Proof       | "Loved by devs" claim, no quotes                               | Add 2-3 X/Reddit pulls: Carousel under hero. "Visual gold for interviews – 4.8/5".                                                                                                            | Trust builder (+42% completion).                    | Collect from 10 betas; Update quarterly.            |
+| **Low**  | All: SEO/Tech           | Good keywords; no schema/meta                                  | Add JSON-LD for "SoftwareApplication". Target long-tail: "free visual system design interview prep". Mobile: Ensure grid responsive.                                                          | AI search wins.                                     | Google Tag Manager; Test via Lighthouse.            |
 
 ### Implementation Priorities & Next Steps
 
 #### Week 1 (High-Impact Quick Wins)
+
 - Hero video/CTA
 - Pricing details
 - Feedback form
 - Test with 20 devs (Reddit DMs)
 
 #### Week 2
+
 - Features icons/table
 - /play tour
 - FAQ populate
 
 #### Ongoing
+
 - A/B via Google Optimize
 - Track GA events (CTA clicks, sim completions)
 
 ### Metrics to Watch
+
 - Sign-up rate (>15%)
 - /play retention (>40%)
 - Feedback subs (>10/week)
 
 ### B2C/B2B Tie-In
+
 - **B2C:** Interview prep hooks
 - **B2B:** Add "Team Dashboard" in Premium
 
 ### Example Scoring Scenarios
 
 **Scenario A: Minimal but correct**
+
 - Core functional reqs only: 20/25
 - Basic NFRs: 15/20
 - Core APIs only: 15/20
@@ -511,6 +530,7 @@ Prioritized by impact (High/Med/Low) on conversions (sign-ups, retention, upsell
 - **Total: 75/100 (C - Acceptable)**
 
 **Scenario B: Well-designed production system**
+
 - All functional reqs: 25/25
 - Thoughtful NFRs: 20/20
 - Complete API design: 20/20
@@ -519,6 +539,7 @@ Prioritized by impact (High/Med/Low) on conversions (sign-ups, retention, upsell
 - **Total: 98/100 (A - Excellent)**
 
 **Scenario C: Missing core requirements**
+
 - Missing uniqueness requirement: 15/25 (BLOCKED)
 - Cannot proceed to next step
 - Feedback: "You must address URL uniqueness to ensure no collisions"

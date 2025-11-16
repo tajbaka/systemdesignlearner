@@ -9,9 +9,7 @@ import { logger } from "@/lib/logger";
 
 const STEPS_WITH_ITERATIVE: PracticeStep[] = ["functional", "nonFunctional", "api"];
 
-const isIterativeStep = (
-  step: PracticeStep
-): step is "functional" | "nonFunctional" | "api" =>
+const isIterativeStep = (step: PracticeStep): step is "functional" | "nonFunctional" | "api" =>
   step === "functional" || step === "nonFunctional" || step === "api";
 
 const mergeIterativeScore = (
@@ -56,7 +54,9 @@ type NavigationOptions = {
     currentStep: PracticeStep,
     session: PracticeSessionValue
   ) => Promise<FeedbackResult | null>;
-  buildSandboxFeedback: (session: PracticeSessionValue) => { feedback: FeedbackResult; canProceed: boolean } | null;
+  buildSandboxFeedback: (
+    session: PracticeSessionValue
+  ) => { feedback: FeedbackResult; canProceed: boolean } | null;
   isSignedIn: boolean;
   // Iterative feedback functions
   getFocusedFeedback?: (
@@ -66,10 +66,7 @@ type NavigationOptions = {
   ) => Promise<IterativeFeedbackResult | null>;
 };
 
-export function usePracticeNavigation(
-  session: PracticeSessionValue,
-  options: NavigationOptions
-) {
+export function usePracticeNavigation(session: PracticeSessionValue, options: NavigationOptions) {
   const scenario = SCENARIOS.find((item) => item.id === session.state.slug) ?? SCENARIOS[0];
   const [showAuthModal, setShowAuthModal] = useState(false);
   const {
@@ -128,10 +125,10 @@ export function usePracticeNavigation(
 
         // Set URL flag to indicate auth flow in progress
         // This survives page reloads and helps detect returning from OAuth
-        if (typeof window !== 'undefined') {
+        if (typeof window !== "undefined") {
           const url = new URL(window.location.href);
-          url.searchParams.set('auth_flow', 'true');
-          window.history.replaceState({}, '', url.toString());
+          url.searchParams.set("auth_flow", "true");
+          window.history.replaceState({}, "", url.toString());
         }
 
         // Show auth modal immediately after flush
@@ -159,38 +156,47 @@ export function usePracticeNavigation(
 
       if (stepsNeedingScoring.includes(session.currentStep)) {
         // Check if we have a cached score for this step (only for steps that are scored)
-        const cachedScore = session.currentStep === "functional"
-          ? session.state.scores?.functional
-          : session.currentStep === "nonFunctional"
-          ? session.state.scores?.nonFunctional
-          : session.currentStep === "api"
-          ? session.state.scores?.api
-          : null;
+        const cachedScore =
+          session.currentStep === "functional"
+            ? session.state.scores?.functional
+            : session.currentStep === "nonFunctional"
+              ? session.state.scores?.nonFunctional
+              : session.currentStep === "api"
+                ? session.state.scores?.api
+                : null;
 
-        logger.info(`[handleNext] Step: ${session.currentStep}, has cached score: ${!!cachedScore}`);
+        logger.info(
+          `[handleNext] Step: ${session.currentStep}, has cached score: ${!!cachedScore}`
+        );
 
         // If we have a cached score, use it immediately (skip re-evaluation)
         if (cachedScore && session.currentStep !== "sandbox") {
-          logger.info(`[handleNext] Using cached score for ${session.currentStep}, skipping evaluation`);
+          logger.info(
+            `[handleNext] Using cached score for ${session.currentStep}, skipping evaluation`
+          );
 
           // Re-trigger the iterative feedback with the cached content
           if (getFocusedFeedback) {
             setVerification({ isVerifying: true, result: null, error: null });
 
             try {
-              logger.info(`[handleNext] Getting iterative feedback for cached ${session.currentStep}`);
+              logger.info(
+                `[handleNext] Getting iterative feedback for cached ${session.currentStep}`
+              );
               iterativeCoverage = await getFocusedFeedback(session.currentStep, session);
               logger.info(`[handleNext] Cached iterative coverage result:`, {
                 score: iterativeCoverage?.score.percentage,
                 blocking: iterativeCoverage?.ui.blocking,
-                hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt
+                hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt,
               });
             } catch (error) {
               logger.error(`Error getting ${session.currentStep} cached coverage:`, error);
             }
 
             if (iterativeCoverage?.ui.blocking) {
-              logger.info(`[handleNext] Cached iterative feedback blocking, showing modal and returning`);
+              logger.info(
+                `[handleNext] Cached iterative feedback blocking, showing modal and returning`
+              );
               setVerification({ isVerifying: false, result: null, error: null });
               return;
             }
@@ -217,7 +223,13 @@ export function usePracticeNavigation(
         }
 
         // Only run iterative feedback if we don't have a cached score
-        if ((session.currentStep === "functional" || session.currentStep === "nonFunctional" || session.currentStep === "api") && getFocusedFeedback && !cachedScore) {
+        if (
+          (session.currentStep === "functional" ||
+            session.currentStep === "nonFunctional" ||
+            session.currentStep === "api") &&
+          getFocusedFeedback &&
+          !cachedScore
+        ) {
           setVerification({ isVerifying: true, result: null, error: null });
 
           try {
@@ -226,7 +238,7 @@ export function usePracticeNavigation(
             logger.info(`[handleNext] Iterative coverage result:`, {
               score: iterativeCoverage?.score.percentage,
               blocking: iterativeCoverage?.ui.blocking,
-              hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt
+              hasNextPrompt: !!iterativeCoverage?.ui.nextPrompt,
             });
           } catch (error) {
             logger.error(`Error getting ${session.currentStep} coverage:`, error);
@@ -278,25 +290,25 @@ export function usePracticeNavigation(
             if (!validation.ok) {
               setWaitingForSimulation(false);
 
-            const validationFeedback: FeedbackResult = {
-              score: 0,
-              maxScore: 35,
-              percentage: 0,
-              blocking: [
-                {
-                  category: "architecture",
-                  severity: "blocking",
-                  message: validation.message,
-                  actionable:
-                    validation.missingComponents.length > 0
-                      ? `Add: ${validation.missingComponents.join(", ")}`
-                      : undefined,
-                },
-              ],
-              warnings: [],
-              positive: [],
-              suggestions: [],
-            };
+              const validationFeedback: FeedbackResult = {
+                score: 0,
+                maxScore: 35,
+                percentage: 0,
+                blocking: [
+                  {
+                    category: "architecture",
+                    severity: "blocking",
+                    message: validation.message,
+                    actionable:
+                      validation.missingComponents.length > 0
+                        ? `Add: ${validation.missingComponents.join(", ")}`
+                        : undefined,
+                  },
+                ],
+                warnings: [],
+                positive: [],
+                suggestions: [],
+              };
 
               setScoringFeedback(validationFeedback);
               setVerification({ isVerifying: false, result: null, error: null });
@@ -397,7 +409,11 @@ export function usePracticeNavigation(
 
         // For scores 40-99%, get improvement question FIRST, then set feedback once
         // This prevents the iterative feedback modal from showing and ensures everything loads together
-        if (scorePercentage >= 40 && scorePercentage < 100 && STEPS_WITH_ITERATIVE.includes(session.currentStep)) {
+        if (
+          scorePercentage >= 40 &&
+          scorePercentage < 100 &&
+          STEPS_WITH_ITERATIVE.includes(session.currentStep)
+        ) {
           try {
             const improvementQuestion =
               iterativeCoverage?.ui.nextPrompt ?? iterativeCoverage?.nextQuestion?.question ?? null;
@@ -430,7 +446,11 @@ export function usePracticeNavigation(
         }
 
         // If warnings, suggestions, or positive feedback, show it and allow continue
-        if (result.warnings.length > 0 || result.suggestions.length > 0 || result.positive.length > 0) {
+        if (
+          result.warnings.length > 0 ||
+          result.suggestions.length > 0 ||
+          result.positive.length > 0
+        ) {
           // Feedback is already shown via scoringFeedback state
           // User can click "Continue" to proceed
           return;
@@ -448,7 +468,9 @@ export function usePracticeNavigation(
         isVerifying: false,
         result: {
           canProceed: false,
-          blocking: [`An error occurred: ${error instanceof Error ? error.message : String(error)}`],
+          blocking: [
+            `An error occurred: ${error instanceof Error ? error.message : String(error)}`,
+          ],
           warnings: [],
         },
         error: error instanceof Error ? error.message : String(error),

@@ -25,7 +25,7 @@ CTA: Try URL Shortener
 
 FAQ + Pricing section + OG tags.
 
-## 2) Practice: URL Shortener (MVP) — *Highest priority* --> explore tooltips
+## 2) Practice: URL Shortener (MVP) — _Highest priority_ --> explore tooltips
 
 **Goal:** A 10–15 min guided session (Brief → Design → Run → Review) with rubric checks and shareable result.
 
@@ -59,7 +59,7 @@ Use `localStorage` + `track(event, data)` util (PostHog / Umami).
 
 #### Activation
 
-```js
+````js
 track('practice_pass_first', { scenario });
 Compute % of users who pass within first session.
 
@@ -76,7 +76,7 @@ Track upgrade_modal_view, checkout_click, checkout_success.
 ```js
 if (!localStorage.getItem('anonId'))
   localStorage.setItem('anonId', crypto.randomUUID());
-```
+````
 
 Attach anonId to every event; send to PostHog Cloud Free or Umami endpoint.
 
@@ -112,7 +112,7 @@ MVP: webhook or mailto fallback.
 
 - Compute scores from rubric & simulation (0–100 scale).
 - Render 3 bars with explanations like  
-  *“Cache hit ratio is low → add Redis on GET path.”*
+  _“Cache hit ratio is low → add Redis on GET path.”_
 
 ---
 
@@ -148,7 +148,7 @@ MVP: webhook or mailto fallback.
 
 - Compute scores from rubric & simulation (0–100 scale).
 - Render 3 bars with explanations like
-  *"Cache hit ratio is low → add Redis on GET path."*
+  _"Cache hit ratio is low → add Redis on GET path."_
 
 ## 8) Coach Hints (guided help)
 
@@ -168,11 +168,11 @@ MVP: webhook or mailto fallback.
 
 ### Tiers
 
-| Tier | Price | Features |
-|------|--------|-----------|
-| **Free** | $0 | 3 scenarios, progress tracking, daily challenge |
-| **Pro (Lifetime)** | $29 | All scenarios, Coach Hints, Profile, Share images, Skill metrics |
-| **Plus** | $9 / mo | Interview vault PDFs, AI grader (phase 2) |
+| Tier               | Price   | Features                                                         |
+| ------------------ | ------- | ---------------------------------------------------------------- |
+| **Free**           | $0      | 3 scenarios, progress tracking, daily challenge                  |
+| **Pro (Lifetime)** | $29     | All scenarios, Coach Hints, Profile, Share images, Skill metrics |
+| **Plus**           | $9 / mo | Interview vault PDFs, AI grader (phase 2)                        |
 
 ### Deliverables
 
@@ -283,24 +283,24 @@ Team leaderboard (later via Supabase).
 🧱 Engineering Plan — Files & Estimates
 (Maker-days; parallelize UI / Platform work)
 
-| Stage | Feature | Days | Key Files |
-|-------|---------|------|-----------|
-| A | Landing & SEO | 1 | /page.tsx, seo.config.ts |
-| B | Practice: URL Shortener | 3-4 | PracticeFlow, lib/practice/scoring.ts |
-| C | No-Auth Analytics | 1 | lib/track.ts, PostHog SDK |
-| D | Email Capture | 0.5 | components/EmailCapture.tsx |
-| E | Learning Path Ladder | 1-2 | /practice/index.tsx, useProgress.ts |
-| F | Daily Challenge | 1-2 | /daily/page.tsx |
-| G | Skill Metrics | 1 | lib/scoring.ts, components/ScoreBars.tsx |
-| H | Coach Hints | 1-2 | lib/hints.ts, components/HintPanel.tsx |
-| I | Monetization (Stripe) | 2-3 | stripe.ts, usePlan.ts |
-| J | Social Share + Profile | 2-3 | app/api/og/route.ts, /u/local.tsx |
-| K | Auth / User State | 2 | AuthContext.tsx, supabase.ts |
-| L | Leaderboard | 1 | useLeaderboard.ts, LeaderboardCard.tsx |
-| M | Docs Primer | 1-2 | /docs/*.mdx |
-| N | Sandbox UX Polish | 1 | Simulator.tsx, ResultPanel.tsx |
-| O | PWA & Offline | 1-2 | manifest.json, sw.js |
-| P | Teams / Enterprise | 2-3 | components/TeamShare.tsx, supabase.ts |
+| Stage | Feature                 | Days | Key Files                                |
+| ----- | ----------------------- | ---- | ---------------------------------------- |
+| A     | Landing & SEO           | 1    | /page.tsx, seo.config.ts                 |
+| B     | Practice: URL Shortener | 3-4  | PracticeFlow, lib/practice/scoring.ts    |
+| C     | No-Auth Analytics       | 1    | lib/track.ts, PostHog SDK                |
+| D     | Email Capture           | 0.5  | components/EmailCapture.tsx              |
+| E     | Learning Path Ladder    | 1-2  | /practice/index.tsx, useProgress.ts      |
+| F     | Daily Challenge         | 1-2  | /daily/page.tsx                          |
+| G     | Skill Metrics           | 1    | lib/scoring.ts, components/ScoreBars.tsx |
+| H     | Coach Hints             | 1-2  | lib/hints.ts, components/HintPanel.tsx   |
+| I     | Monetization (Stripe)   | 2-3  | stripe.ts, usePlan.ts                    |
+| J     | Social Share + Profile  | 2-3  | app/api/og/route.ts, /u/local.tsx        |
+| K     | Auth / User State       | 2    | AuthContext.tsx, supabase.ts             |
+| L     | Leaderboard             | 1    | useLeaderboard.ts, LeaderboardCard.tsx   |
+| M     | Docs Primer             | 1-2  | /docs/\*.mdx                             |
+| N     | Sandbox UX Polish       | 1    | Simulator.tsx, ResultPanel.tsx           |
+| O     | PWA & Offline           | 1-2  | manifest.json, sw.js                     |
+| P     | Teams / Enterprise      | 2-3  | components/TeamShare.tsx, supabase.ts    |
 
 📊 Success Metrics (v1)
 Activation: % of users passing URL Shortener in first session.
@@ -315,12 +315,12 @@ Conversion: Upgrade modal views → checkouts.
 
 🚨 Risks & Mitigation
 
-| Risk | Mitigation |
-|------|------------|
-| Scope creep | Ship 5 scenarios max for v1 |
-| Backend delays | Store everything locally now |
+| Risk              | Mitigation                        |
+| ----------------- | --------------------------------- |
+| Scope creep       | Ship 5 scenarios max for v1       |
+| Backend delays    | Store everything locally now      |
 | Stripe complexity | Use Checkout links + webhook stub |
-| Analytics privacy | Anonymous UUID + opt-out toggle |
+| Analytics privacy | Anonymous UUID + opt-out toggle   |
 
 🧠 Appendix — UI Copy Examples
 Practice card: “Finish URL Shortener in <15 minutes. Real rubric. Share your pass.”

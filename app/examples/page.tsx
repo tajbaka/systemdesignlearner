@@ -7,7 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export const metadata: Metadata = {
   title: "System Design Examples - Real-World Architecture Patterns 2025",
-  description: "Learn from 10+ real-world system design examples: URL shortener, Twitter feed, Instagram, Netflix streaming, Uber matching, Amazon catalog. Complete architecture diagrams and explanations.",
+  description:
+    "Learn from 10+ real-world system design examples: URL shortener, Twitter feed, Instagram, Netflix streaming, Uber matching, Amazon catalog. Complete architecture diagrams and explanations.",
   keywords: [
     "system design examples",
     "system design case studies",
@@ -22,7 +23,8 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "Real-World System Design Examples - Complete Architecture Guide",
-    description: "Master system design with 10+ real-world examples. Learn from Twitter, Instagram, Netflix, and more.",
+    description:
+      "Master system design with 10+ real-world examples. Learn from Twitter, Instagram, Netflix, and more.",
     type: "website",
   },
 };
@@ -125,7 +127,8 @@ export default function ExamplesPage() {
             System Design Examples
           </h1>
           <p className="text-base sm:text-lg lg:text-xl text-zinc-300 max-w-3xl mx-auto">
-            Learn from real-world architecture patterns used by top tech companies. Each example covers key concepts, trade-offs, and scalability considerations.
+            Learn from real-world architecture patterns used by top tech companies. Each example
+            covers key concepts, trade-offs, and scalability considerations.
           </p>
         </div>
 
@@ -139,19 +142,19 @@ export default function ExamplesPage() {
               <CardHeader>
                 <div className="flex items-start justify-between mb-2">
                   <CardTitle className="text-xl text-white">{example.title}</CardTitle>
-                  <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                    example.difficulty === 'Beginner'
-                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                      : example.difficulty === 'Intermediate'
-                      ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
-                      : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                  }`}>
+                  <span
+                    className={`text-xs px-2 py-1 rounded-full font-medium ${
+                      example.difficulty === "Beginner"
+                        ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                        : example.difficulty === "Intermediate"
+                          ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30"
+                          : "bg-red-500/20 text-red-400 border border-red-500/30"
+                    }`}
+                  >
                     {example.difficulty}
                   </span>
                 </div>
-                <CardDescription className="text-zinc-400">
-                  {example.description}
-                </CardDescription>
+                <CardDescription className="text-zinc-400">{example.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -170,7 +173,9 @@ export default function ExamplesPage() {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-semibold text-zinc-300 mb-2">What You&apos;ll Learn:</h4>
+                    <h4 className="text-sm font-semibold text-zinc-300 mb-2">
+                      What You&apos;ll Learn:
+                    </h4>
                     <p className="text-xs text-zinc-400">{example.learnings}</p>
                   </div>
 
@@ -183,9 +188,7 @@ export default function ExamplesPage() {
                       asChild
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white"
                     >
-                      <Link href={example.href}>
-                        Start Practice
-                      </Link>
+                      <Link href={example.href}>Start Practice</Link>
                     </Button>
                   )}
                 </div>
@@ -196,11 +199,10 @@ export default function ExamplesPage() {
 
         {/* CTA Section */}
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-8 sm:p-12 text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-            Ready to Practice?
-          </h2>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">Ready to Practice?</h2>
           <p className="text-lg text-zinc-300 mb-8 max-w-2xl mx-auto">
-            Start with our interactive URL Shortener tutorial and work your way through real-world system design challenges.
+            Start with our interactive URL Shortener tutorial and work your way through real-world
+            system design challenges.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -208,9 +210,7 @@ export default function ExamplesPage() {
               size="lg"
               className="px-8 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg"
             >
-              <Link href="/practice/url-shortener/intro">
-                Start with URL Shortener
-              </Link>
+              <Link href="/practice/url-shortener/intro">Start with URL Shortener</Link>
             </Button>
             <Button
               asChild
@@ -218,9 +218,7 @@ export default function ExamplesPage() {
               variant="outline"
               className="px-8 py-6 border-2 border-zinc-600 hover:border-emerald-500/50 text-zinc-300 hover:text-white font-semibold text-lg"
             >
-              <Link href="/practice">
-                View All Practice Problems
-              </Link>
+              <Link href="/practice">View All Practice Problems</Link>
             </Button>
           </div>
         </div>

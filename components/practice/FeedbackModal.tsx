@@ -1,11 +1,7 @@
 "use client";
 
 import type { FeedbackResult } from "@/lib/scoring/types";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { CircleCheck, CircleAlert, X } from "lucide-react";
 
 type FeedbackModalProps = {
@@ -29,9 +25,13 @@ export function FeedbackModal({
   const passed = feedbackResult.percentage >= 40;
   const isPerfect = feedbackResult.percentage === 100;
   const roundedScore = Math.round(feedbackResult.score);
-  const hasBonus = Boolean(feedbackResult.bonus && feedbackResult.bonus.score > 0 && feedbackResult.bonus.maxScore > 0);
-  const totalScore = feedbackResult.totalScore ?? (feedbackResult.score + (feedbackResult.bonus?.score ?? 0));
-  const totalMaxScore = feedbackResult.totalMaxScore ?? (feedbackResult.maxScore + (feedbackResult.bonus?.maxScore ?? 0));
+  const hasBonus = Boolean(
+    feedbackResult.bonus && feedbackResult.bonus.score > 0 && feedbackResult.bonus.maxScore > 0
+  );
+  const totalScore =
+    feedbackResult.totalScore ?? feedbackResult.score + (feedbackResult.bonus?.score ?? 0);
+  const totalMaxScore =
+    feedbackResult.totalMaxScore ?? feedbackResult.maxScore + (feedbackResult.bonus?.maxScore ?? 0);
   const roundedTotal = Math.round(totalScore);
   const displayedPercentage =
     feedbackResult.maxScore > 0
@@ -53,16 +53,21 @@ export function FeedbackModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onRevise()}>
-      <DialogContent hideClose className="max-w-xl rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-2xl">
+      <DialogContent
+        hideClose
+        className="max-w-xl rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-2xl"
+      >
         {/* Header */}
         <div className="mb-4 sm:mb-6 flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {/* Score - Hero element when 100% */}
-            <p className={`mb-2 font-bold ${
-              isPerfect
-                ? 'text-3xl sm:text-4xl text-emerald-400'
-                : 'text-2xl sm:text-3xl text-foreground'
-            }`}>
+            <p
+              className={`mb-2 font-bold ${
+                isPerfect
+                  ? "text-3xl sm:text-4xl text-emerald-400"
+                  : "text-2xl sm:text-3xl text-foreground"
+              }`}
+            >
               Score: {roundedScore}/{feedbackResult.maxScore} ({displayedPercentage}%){bonusSummary}
             </p>
             {/* Title with icon - Secondary */}

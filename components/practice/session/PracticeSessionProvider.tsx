@@ -43,31 +43,37 @@ type LegacyLocked = {
 
 type LegacyPracticeState = Partial<{
   slug: string;
-  requirements: Requirements | {
-    functional: Record<string, boolean>;
-    nonFunctional: Partial<Requirements["nonFunctional"]>;
-  };
+  requirements:
+    | Requirements
+    | {
+        functional: Record<string, boolean>;
+        nonFunctional: Partial<Requirements["nonFunctional"]>;
+      };
   design: PracticeDesignState;
   run: PracticeRunState;
   locked: LegacyLocked;
   updatedAt: number;
 }>;
 
-const ensureRequirements = (value?: Requirements | LegacyPracticeState["requirements"]): Requirements => {
+const ensureRequirements = (
+  value?: Requirements | LegacyPracticeState["requirements"]
+): Requirements => {
   const defaults = makeDefaultRequirements();
   if (!value) return defaults;
 
   const candidate = value as Requirements;
-  const functionalSummary = typeof (candidate as Requirements).functionalSummary === "string"
-    ? candidate.functionalSummary
-    : "";
+  const functionalSummary =
+    typeof (candidate as Requirements).functionalSummary === "string"
+      ? candidate.functionalSummary
+      : "";
 
   const functional = {
     ...defaults.functional,
     ...(candidate?.functional ?? {}),
   };
 
-  const nonFunctionalLegacy = (value as { nonFunctional?: Partial<Requirements["nonFunctional"]> }).nonFunctional;
+  const nonFunctionalLegacy = (value as { nonFunctional?: Partial<Requirements["nonFunctional"]> })
+    .nonFunctional;
   const nonFunctional = {
     ...defaults.nonFunctional,
     ...(candidate?.nonFunctional ?? {}),
@@ -119,13 +125,9 @@ const sanitizeDesignState = (value?: PracticeDesignState): PracticeDesignState =
   const nodeIds = new Set(design.nodes.map((node) => node.id));
   const edgeIds = new Set(design.edges.map((edge) => edge.id));
   const hasLegacySeedEdge =
-    design.edges.length === 0 ||
-    (design.edges.length === 1 && edgeIds.has("seed-edge-web-api"));
+    design.edges.length === 0 || (design.edges.length === 1 && edgeIds.has("seed-edge-web-api"));
   const hasLegacySeedLayout =
-    nodeIds.size === 2 &&
-    nodeIds.has("seed-web") &&
-    nodeIds.has("seed-api") &&
-    hasLegacySeedEdge;
+    nodeIds.size === 2 && nodeIds.has("seed-web") && nodeIds.has("seed-api") && hasLegacySeedEdge;
 
   if (!hasLegacySeedLayout) {
     return design;
@@ -272,7 +274,9 @@ type PracticeSessionContextValue = {
   goNext: () => void;
   goPrev: () => void;
   setRequirements: (value: Requirements) => void;
-  setApiDefinition: (updater: (prev: PracticeApiDefinitionState) => PracticeApiDefinitionState) => void;
+  setApiDefinition: (
+    updater: (prev: PracticeApiDefinitionState) => PracticeApiDefinitionState
+  ) => void;
   setDesign: (updater: (prev: PracticeDesignState) => PracticeDesignState) => void;
   setRun: (updater: (prev: PracticeRunState) => PracticeRunState) => void;
   setAuth: (updater: (prev: PracticeAuthState) => PracticeAuthState) => void;
@@ -280,7 +284,9 @@ type PracticeSessionContextValue = {
   setStepScore: (step: keyof PracticeStepScores, result: FeedbackResult | undefined) => void;
   updateIterativeFeedback: (
     step: keyof PracticeIterativeFeedback,
-    updater: (prev: PracticeIterativeFeedback[keyof PracticeIterativeFeedback]) => PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
+    updater: (
+      prev: PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
+    ) => PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
   ) => void;
   resetIterativeFeedback: (step?: keyof PracticeIterativeFeedback) => void;
   flushToStorage: () => void;
@@ -495,7 +501,9 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
   const updateIterativeFeedback = useCallback(
     (
       step: keyof PracticeIterativeFeedback,
-      updater: (prev: PracticeIterativeFeedback[keyof PracticeIterativeFeedback]) => PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
+      updater: (
+        prev: PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
+      ) => PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
     ) => {
       setStateWithTimestamp((prev) => {
         const iterativeFeedback = prev.iterativeFeedback || ensureIterativeFeedback();

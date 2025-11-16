@@ -24,7 +24,9 @@ import type {
 import type { PlacedNode, Edge } from "@/app/components/types";
 import { hasConnectionBetweenKinds } from "@/app/components/utils";
 
-export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, DesignScoringConfig> {
+export class DesignScoringEngine
+  implements IScoringEngine<DesignScoringInput, DesignScoringConfig>
+{
   // Cache for connection checks to avoid repeated BFS traversals
   private connectionCache: Map<string, boolean> = new Map();
 
@@ -102,7 +104,8 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
         category: "architecture",
         severity: "blocking",
         message: `Your architecture design score is too low (${percentage.toFixed(0)}%). You need at least 30% to proceed.`,
-        actionable: "Add critical components to your design: Web servers, API layer, Service layer, and Database. Connect them to form a complete data flow path.",
+        actionable:
+          "Add critical components to your design: Web servers, API layer, Service layer, and Database. Connect them to form a complete data flow path.",
       });
     }
 
@@ -111,19 +114,22 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
         positive.unshift({
           category: "architecture",
           severity: "positive",
-          message: "Outstanding architecture! Your design demonstrates production-ready patterns and best practices.",
+          message:
+            "Outstanding architecture! Your design demonstrates production-ready patterns and best practices.",
         });
       } else if (percentage >= 75) {
         positive.unshift({
           category: "architecture",
           severity: "positive",
-          message: "Solid architecture! Core patterns are in place. Consider the suggestions to optimize further.",
+          message:
+            "Solid architecture! Core patterns are in place. Consider the suggestions to optimize further.",
         });
       } else if (warnings.length > 0) {
         suggestions.push({
           category: "architecture",
           severity: "info",
-          message: "Your architecture has the basics, but review the warnings to improve scalability and performance.",
+          message:
+            "Your architecture has the basics, but review the warnings to improve scalability and performance.",
         });
       }
     }
@@ -198,7 +204,9 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
           }
         }
       } else if (isRequiredByFunctional) {
-        const message = requirement.feedbackTemplates?.missing || `Missing required component: ${requirement.kind}`;
+        const message =
+          requirement.feedbackTemplates?.missing ||
+          `Missing required component: ${requirement.kind}`;
         blocking.push({
           category: "requirement",
           severity: "blocking",
@@ -349,7 +357,9 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
         warnings.push({
           category: "architecture",
           severity: "warning",
-          message: pathConfig.feedbackTemplates.suboptimal || `Path exists but could be optimized: ${pathConfig.name}`,
+          message:
+            pathConfig.feedbackTemplates.suboptimal ||
+            `Path exists but could be optimized: ${pathConfig.name}`,
           relatedTo: pathConfig.id,
         });
         const allowPartial = pathConfig.required && !pathConfig.isBonus;
@@ -578,7 +588,9 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
   ): boolean {
     // Check functional requirements
     if (pattern.triggeredBy.functionalReqs) {
-      const hasFunctionalReq = pattern.triggeredBy.functionalReqs.some((reqId) => functionalReqs[reqId] === true);
+      const hasFunctionalReq = pattern.triggeredBy.functionalReqs.some(
+        (reqId) => functionalReqs[reqId] === true
+      );
       if (hasFunctionalReq) return true;
     }
 
@@ -608,8 +620,8 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
       if (nodeKind === targetKind) return true;
 
       // Check if base types match (e.g., "DB (Postgres)" matches "DB (MySQL)")
-      const baseTarget = targetKind.split(' ')[0];
-      const baseNode = nodeKind.split(' ')[0];
+      const baseTarget = targetKind.split(" ")[0];
+      const baseNode = nodeKind.split(" ")[0];
 
       return baseTarget === baseNode;
     };
@@ -668,12 +680,7 @@ export class DesignScoringEngine implements IScoringEngine<DesignScoringInput, D
     }
 
     // Use shared connection checker (always bidirectional)
-    const hasConnection = hasConnectionBetweenKinds(
-      nodes,
-      edges,
-      connection.from,
-      connection.to
-    );
+    const hasConnection = hasConnectionBetweenKinds(nodes, edges, connection.from, connection.to);
 
     // Cache result
     this.connectionCache.set(cacheKey, hasConnection);

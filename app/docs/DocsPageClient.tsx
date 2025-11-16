@@ -12,7 +12,9 @@ export function DocsPageClient() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16">
         {/* Header */}
         <div className="text-center mb-12 sm:mb-16">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">Documentation</h1>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 sm:mb-6">
+            Documentation
+          </h1>
           <p className="text-base sm:text-lg lg:text-xl text-zinc-300 px-4">
             Learn how to interpret results and master system design principles
           </p>
@@ -20,11 +22,15 @@ export function DocsPageClient() {
 
         {/* Understanding Results */}
         <section className="mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-emerald-400">Understanding Your Results</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-emerald-400">
+            Understanding Your Results
+          </h2>
 
           <div className="space-y-6 sm:space-y-8">
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-emerald-300">Capacity (RPS)</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-emerald-300">
+                Capacity (RPS)
+              </h3>
               <p className="text-zinc-300 mb-3 sm:mb-4 text-sm sm:text-base leading-relaxed">
                 The maximum requests per second your system can handle before becoming a bottleneck.
                 This is determined by the slowest component in your architecture.
@@ -39,7 +45,9 @@ export function DocsPageClient() {
             </div>
 
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-emerald-300">Latency (P95)</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-emerald-300">
+                Latency (P95)
+              </h3>
               <p className="text-zinc-300 mb-3 sm:mb-4 text-sm sm:text-base leading-relaxed">
                 The 95th percentile response time. This means 95% of requests are faster than this
                 value. P95 is more meaningful than averages for understanding user experience.
@@ -53,7 +61,9 @@ export function DocsPageClient() {
             </div>
 
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-emerald-300">Outcome States</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-emerald-300">
+                Outcome States
+              </h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-3 sm:mb-4">
                 <div className="text-center p-2 sm:p-3 rounded-lg bg-zinc-900/50">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-2">
@@ -87,7 +97,9 @@ export function DocsPageClient() {
             </div>
 
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-emerald-300">Hints System</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-emerald-300">
+                Hints System
+              </h3>
               <p className="text-zinc-300 mb-3 sm:mb-4 text-sm sm:text-base leading-relaxed">
                 After failing a scenario, you&apos;ll get progressive hints to guide your solution.
                 The more you struggle with a scenario, the more specific the guidance becomes.
@@ -104,11 +116,15 @@ export function DocsPageClient() {
 
         {/* System Design Resources */}
         <section className="mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-emerald-400">Essential Reading</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-emerald-400">
+            Essential Reading
+          </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-3 text-white">📚 Fundamentals</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-3 text-white">
+                📚 Fundamentals
+              </h3>
               <ul className="space-y-2 text-xs sm:text-sm text-zinc-300">
                 <li>
                   <a
@@ -144,7 +160,9 @@ export function DocsPageClient() {
             </div>
 
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-3 text-white">🏗️ Architecture Patterns</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-3 text-white">
+                🏗️ Architecture Patterns
+              </h3>
               <ul className="space-y-2 text-xs sm:text-sm text-zinc-300">
                 <li>
                   <a
@@ -180,7 +198,9 @@ export function DocsPageClient() {
             </div>
 
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-3 text-white">⚡ Performance & Scaling</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-3 text-white">
+                ⚡ Performance & Scaling
+              </h3>
               <ul className="space-y-2 text-xs sm:text-sm text-zinc-300">
                 <li>
                   <a
@@ -216,7 +236,9 @@ export function DocsPageClient() {
             </div>
 
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-base sm:text-lg font-semibold mb-3 text-white">🔧 Tools & Technologies</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-3 text-white">
+                🔧 Tools & Technologies
+              </h3>
               <ul className="space-y-2 text-xs sm:text-sm text-zinc-300">
                 <li>
                   <a
@@ -255,11 +277,15 @@ export function DocsPageClient() {
 
         {/* Common Patterns */}
         <section className="mb-12 sm:mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-emerald-400">Common Design Patterns</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8 text-emerald-400">
+            Common Design Patterns
+          </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 text-white">Cache-Aside Pattern</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-3 text-white">
+                Cache-Aside Pattern
+              </h3>
               <p className="text-zinc-300 mb-3 text-sm sm:text-base leading-relaxed">
                 Application checks cache first, then database if miss. Updates cache on writes.
               </p>
@@ -282,7 +308,9 @@ export function DocsPageClient() {
             </div>
 
             <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 sm:p-6">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 text-white">Database Sharding</h3>
+              <h3 className="text-lg sm:text-xl font-semibold mb-3 text-white">
+                Database Sharding
+              </h3>
               <p className="text-zinc-300 mb-3 text-sm sm:text-base leading-relaxed">
                 Split database across multiple servers using consistent hashing or range-based
                 partitioning.
@@ -313,9 +341,7 @@ export function DocsPageClient() {
             size="lg"
             className="px-6 sm:px-8 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base sm:text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
           >
-            <Link href="/play">
-              Start Practicing Now
-            </Link>
+            <Link href="/play">Start Practicing Now</Link>
           </Button>
         </div>
       </div>

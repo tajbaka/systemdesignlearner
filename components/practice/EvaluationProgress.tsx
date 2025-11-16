@@ -8,9 +8,10 @@ type EvaluationProgressProps = {
 };
 
 export function EvaluationProgress({ steps, className = "" }: EvaluationProgressProps) {
-  const overallProgress = steps.length > 0
-    ? Math.round(steps.reduce((sum, step) => sum + step.progress, 0) / steps.length)
-    : 0;
+  const overallProgress =
+    steps.length > 0
+      ? Math.round(steps.reduce((sum, step) => sum + step.progress, 0) / steps.length)
+      : 0;
 
   return (
     <div className={`space-y-3 ${className}`}>

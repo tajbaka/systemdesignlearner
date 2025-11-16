@@ -19,45 +19,45 @@ export default function FeedbackPage() {
     contact_ok: false,
     marketing_ok: false,
   });
-  const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
-  const [message, setMessage] = useState('');
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    const checked = type === 'checkbox' ? (e.target as HTMLInputElement).checked : undefined;
+    const checked = type === "checkbox" ? (e.target as HTMLInputElement).checked : undefined;
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStatus('submitting');
+    setStatus("submitting");
 
     try {
-      const response = await fetch('/api/feedback', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.email,
-          name: `${formData.firstName} ${formData.lastName || ''}`.trim(),
+          name: `${formData.firstName} ${formData.lastName || ""}`.trim(),
           feedback: formData.question,
           contact_ok: formData.contact_ok,
           marketing_ok: formData.marketing_ok,
-          source: 'feedback-page'
+          source: "feedback-page",
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to submit feedback');
+        throw new Error(result.error || "Failed to submit feedback");
       }
 
-      setStatus('success');
-      setMessage('Thank you for your feedback!');
+      setStatus("success");
+      setMessage("Thank you for your feedback!");
       setFormData({
         firstName: "",
         lastName: "",
@@ -68,17 +68,17 @@ export default function FeedbackPage() {
       });
 
       setTimeout(() => {
-        setStatus('idle');
-        setMessage('');
+        setStatus("idle");
+        setMessage("");
       }, 3000);
     } catch (error) {
-      logger.error('Feedback submission error:', error);
-      setStatus('error');
-      setMessage('Failed to submit feedback. Please try again.');
+      logger.error("Feedback submission error:", error);
+      setStatus("error");
+      setMessage("Failed to submit feedback. Please try again.");
 
       setTimeout(() => {
-        setStatus('idle');
-        setMessage('');
+        setStatus("idle");
+        setMessage("");
       }, 3000);
     }
   };
@@ -91,11 +91,15 @@ export default function FeedbackPage() {
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-white mb-4">Feedback</h1>
           <p className="text-xl text-zinc-300 mb-3">
-            We&apos;d love to hear your thoughts. Tell us what worked, what didn&apos;t, and what you&apos;d like to see next.
+            We&apos;d love to hear your thoughts. Tell us what worked, what didn&apos;t, and what
+            you&apos;d like to see next.
           </p>
           <p className="text-sm text-zinc-400">
             Prefer email? Reach us at{" "}
-            <a href="mailto:support@systemdesignsandbox.com" className="text-emerald-400 hover:text-emerald-300 underline">
+            <a
+              href="mailto:support@systemdesignsandbox.com"
+              className="text-emerald-400 hover:text-emerald-300 underline"
+            >
               support@systemdesignsandbox.com
             </a>
           </p>
@@ -113,7 +117,9 @@ export default function FeedbackPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-zinc-300">First name</Label>
+                  <Label htmlFor="firstName" className="text-zinc-300">
+                    First name
+                  </Label>
                   <Input
                     type="text"
                     id="firstName"
@@ -126,7 +132,9 @@ export default function FeedbackPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-zinc-300">Last name (optional)</Label>
+                  <Label htmlFor="lastName" className="text-zinc-300">
+                    Last name (optional)
+                  </Label>
                   <Input
                     type="text"
                     id="lastName"
@@ -140,7 +148,9 @@ export default function FeedbackPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-zinc-300">Email</Label>
+                <Label htmlFor="email" className="text-zinc-300">
+                  Email
+                </Label>
                 <Input
                   type="email"
                   id="email"
@@ -154,7 +164,9 @@ export default function FeedbackPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="question" className="text-zinc-300">Your feedback or question</Label>
+                <Label htmlFor="question" className="text-zinc-300">
+                  Your feedback or question
+                </Label>
                 <Textarea
                   id="question"
                   name="question"
@@ -174,12 +186,16 @@ export default function FeedbackPage() {
                     id="contact_ok"
                     checked={formData.contact_ok}
                     onCheckedChange={(checked) => {
-                      setFormData(prev => ({ ...prev, contact_ok: checked as boolean }));
+                      setFormData((prev) => ({ ...prev, contact_ok: checked as boolean }));
                     }}
                     className="mt-1 border-zinc-600 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                   />
-                  <Label htmlFor="contact_ok" className="text-sm text-zinc-300 font-normal cursor-pointer">
-                    <strong>It&apos;s okay to contact me</strong> about this feedback for clarification or follow-up questions.
+                  <Label
+                    htmlFor="contact_ok"
+                    className="text-sm text-zinc-300 font-normal cursor-pointer"
+                  >
+                    <strong>It&apos;s okay to contact me</strong> about this feedback for
+                    clarification or follow-up questions.
                   </Label>
                 </div>
 
@@ -188,42 +204,63 @@ export default function FeedbackPage() {
                     id="marketing_ok"
                     checked={formData.marketing_ok}
                     onCheckedChange={(checked) => {
-                      setFormData(prev => ({ ...prev, marketing_ok: checked as boolean }));
+                      setFormData((prev) => ({ ...prev, marketing_ok: checked as boolean }));
                     }}
                     className="mt-1 border-zinc-600 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
                   />
-                  <Label htmlFor="marketing_ok" className="text-sm text-zinc-300 font-normal cursor-pointer">
-                    <strong>Subscribe me to updates</strong> about new features, product announcements, and system design content.
+                  <Label
+                    htmlFor="marketing_ok"
+                    className="text-sm text-zinc-300 font-normal cursor-pointer"
+                  >
+                    <strong>Subscribe me to updates</strong> about new features, product
+                    announcements, and system design content.
                   </Label>
                 </div>
               </div>
 
               {/* Status Messages */}
               {message && (
-                <div className={`p-3 rounded-md text-sm ${
-                  status === 'success'
-                    ? 'bg-green-900/50 border border-green-700 text-green-300'
-                    : 'bg-red-900/50 border border-red-700 text-red-300'
-                }`}>
+                <div
+                  className={`p-3 rounded-md text-sm ${
+                    status === "success"
+                      ? "bg-green-900/50 border border-green-700 text-green-300"
+                      : "bg-red-900/50 border border-red-700 text-red-300"
+                  }`}
+                >
                   {message}
                 </div>
               )}
 
               <Button
                 type="submit"
-                disabled={status === 'submitting'}
+                disabled={status === "submitting"}
                 className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-800 disabled:cursor-not-allowed text-white font-medium transition-colors"
               >
-                {status === 'submitting' ? (
+                {status === "submitting" ? (
                   <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 inline" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin -ml-1 mr-2 h-4 w-4 inline"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                     Submitting...
                   </>
                 ) : (
-                  'Submit Feedback →'
+                  "Submit Feedback →"
                 )}
               </Button>
             </form>

@@ -53,7 +53,10 @@ export function EmailCapture({
 
     setStatus("submitting");
     setMessage("");
-    track("email_capture_submitted", { source: "practice-review", emailDomain: email.split("@")[1] ?? "unknown" });
+    track("email_capture_submitted", {
+      source: "practice-review",
+      emailDomain: email.split("@")[1] ?? "unknown",
+    });
 
     try {
       const response = await fetch("/api/subscribe", {
@@ -98,7 +101,9 @@ export function EmailCapture({
       aria-live={status === "success" || status === "error" ? "polite" : "off"}
     >
       <div className="space-y-1.5">
-        <h3 className="text-base font-semibold uppercase tracking-wide text-emerald-100">{title}</h3>
+        <h3 className="text-base font-semibold uppercase tracking-wide text-emerald-100">
+          {title}
+        </h3>
         <p className="text-sm leading-relaxed text-emerald-50/80">{description}</p>
       </div>
 
@@ -120,8 +125,19 @@ export function EmailCapture({
             className="inline-flex h-12 items-center justify-center rounded-full bg-white px-6 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:cursor-not-allowed disabled:bg-white/80"
           >
             {status === "submitting" ? (
-              <svg className="h-4 w-4 animate-spin text-emerald-900" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <svg
+                className="h-4 w-4 animate-spin text-emerald-900"
+                viewBox="0 0 24 24"
+                fill="none"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -136,11 +152,7 @@ export function EmailCapture({
       </form>
 
       {message ? (
-        <p
-          className={`text-xs ${
-            status === "error" ? "text-rose-200" : "text-emerald-100"
-          }`}
-        >
+        <p className={`text-xs ${status === "error" ? "text-rose-200" : "text-emerald-100"}`}>
           {message}
         </p>
       ) : null}

@@ -12,7 +12,7 @@ export default function MobileSimulationPanel({
   onToggle,
   children,
   collapsedHeader,
-  onRunSimulation
+  onRunSimulation,
 }: MobileSimulationPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragHeight, setDragHeight] = useState<number | null>(null);
@@ -88,12 +88,14 @@ export default function MobileSimulationPanel({
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     // Don't start dragging if the touch is on an interactive element
     const target = e.target as HTMLElement;
-    if (target.tagName === 'BUTTON' ||
-        target.closest('button') ||
-        target.closest('[role="button"]') ||
-        target.closest('input') ||
-        target.closest('select') ||
-        target.closest('textarea')) {
+    if (
+      target.tagName === "BUTTON" ||
+      target.closest("button") ||
+      target.closest('[role="button"]') ||
+      target.closest("input") ||
+      target.closest("select") ||
+      target.closest("textarea")
+    ) {
       return; // Let the interactive element handle the touch
     }
     if (!containerRef.current) return;
@@ -112,27 +114,31 @@ export default function MobileSimulationPanel({
       document.body.classList.add("mobile-panel-interacting");
     }
   }, []);
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!isDragging || e.touches.length > 1) return;
-    const touch = e.touches[0];
-    const deltaY = startY - touch.clientY;
-    let newHeight = startHeight + deltaY;
-    if (newHeight >= effectiveExpandedHeight - MAGNETIC_THRESHOLD) {
-      wasMagneticallySnappedRef.current = true;
-    } else if (wasMagneticallySnappedRef.current) {
-      wasMagneticallySnappedRef.current = false;
-    }
-    const maxHeight = Math.max(effectiveExpandedHeight, startHeight);
-    newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxHeight, newHeight));
-    lastDragHeightRef.current = newHeight;
-    setDragHeight(newHeight);
-  }, [isDragging, startY, startHeight, effectiveExpandedHeight, MAGNETIC_THRESHOLD, COLLAPSED_HEIGHT]);
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (!isDragging || e.touches.length > 1) return;
+      const touch = e.touches[0];
+      const deltaY = startY - touch.clientY;
+      let newHeight = startHeight + deltaY;
+      if (newHeight >= effectiveExpandedHeight - MAGNETIC_THRESHOLD) {
+        wasMagneticallySnappedRef.current = true;
+      } else if (wasMagneticallySnappedRef.current) {
+        wasMagneticallySnappedRef.current = false;
+      }
+      const maxHeight = Math.max(effectiveExpandedHeight, startHeight);
+      newHeight = Math.max(COLLAPSED_HEIGHT, Math.min(maxHeight, newHeight));
+      lastDragHeightRef.current = newHeight;
+      setDragHeight(newHeight);
+    },
+    [isDragging, startY, startHeight, effectiveExpandedHeight, MAGNETIC_THRESHOLD, COLLAPSED_HEIGHT]
+  );
   const handleTouchEnd = useCallback(() => {
     if (!isDragging) return;
     setIsDragging(false);
     const finalHeight = lastDragHeightRef.current;
     if (finalHeight !== null) {
-      const magneticallySnapped = wasMagneticallySnappedRef.current || finalHeight >= effectiveExpandedHeight - 1;
+      const magneticallySnapped =
+        wasMagneticallySnappedRef.current || finalHeight >= effectiveExpandedHeight - 1;
       const halfwayPoint = (COLLAPSED_HEIGHT + effectiveExpandedHeight) / 2;
       const shouldExpand = magneticallySnapped || finalHeight > halfwayPoint;
       setDragHeight(null);
@@ -152,13 +158,14 @@ export default function MobileSimulationPanel({
       document.body.classList.remove("mobile-panel-interacting");
     }
   }, [isDragging, COLLAPSED_HEIGHT, effectiveExpandedHeight, isCollapsed, onToggle]);
-  const currentHeightValue = dragHeight !== null
-    ? dragHeight
-    : (isCollapsed
-      ? 108
-      : isFullScreen
-        ? effectiveExpandedHeight
-        : Math.min(effectiveExpandedHeight * 0.75, window.innerHeight * 0.7));
+  const currentHeightValue =
+    dragHeight !== null
+      ? dragHeight
+      : isCollapsed
+        ? 108
+        : isFullScreen
+          ? effectiveExpandedHeight
+          : Math.min(effectiveExpandedHeight * 0.75, window.innerHeight * 0.7);
   const currentHeight = `${currentHeightValue}px`;
   const sheetStyle: React.CSSProperties = {
     // Safe area padding for expanded/fullscreen states
@@ -180,27 +187,43 @@ export default function MobileSimulationPanel({
   return (
     <div
       ref={containerRef}
-      className={`mobile-simulation-panel flex-shrink-0 border-t border-white/10 bg-zinc-900/95 backdrop-blur-sm shadow-2xl flex flex-col lg:hidden overflow-hidden ${isCollapsed ? 'mobile-panel-collapsed' : ''}`}
+      className={`mobile-simulation-panel flex-shrink-0 border-t border-white/10 bg-zinc-900/95 backdrop-blur-sm shadow-2xl flex flex-col lg:hidden overflow-hidden ${isCollapsed ? "mobile-panel-collapsed" : ""}`}
       style={{
         ...sheetStyle,
         // Safari-specific fixes
-        WebkitTransform: 'translateZ(0)', // Force hardware acceleration
-        transform: 'translateZ(0)',
+        WebkitTransform: "translateZ(0)", // Force hardware acceleration
+        transform: "translateZ(0)",
         // Ensure panel doesn't cause page scroll
-        maxHeight: '100vh',
+        maxHeight: "100vh",
         // Better touch handling for Safari
-        WebkitTouchCallout: 'none',
-        WebkitUserSelect: 'none',
-        userSelect: 'none',
+        WebkitTouchCallout: "none",
+        WebkitUserSelect: "none",
+        userSelect: "none",
       }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
       {isCollapsed && collapsedHeader && (
-        <div className="w-full px-4 pb-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg" style={{ marginBottom: "max(env(safe-area-inset-bottom), 0px)" }}>
+        <div
+          className="w-full px-4 pb-4 bg-zinc-800/80 border-b-2 border-white/20 rounded-t-lg"
+          style={{ marginBottom: "max(env(safe-area-inset-bottom), 0px)" }}
+        >
           {/* Drag handle at the top */}
-          <div className="cursor-grab active:cursor-grabbing touch-manipulation" style={{ height: '20px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, margin: 0, boxSizing: 'border-box', lineHeight: 1 }}>
+          <div
+            className="cursor-grab active:cursor-grabbing touch-manipulation"
+            style={{
+              height: "20px",
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 0,
+              margin: 0,
+              boxSizing: "border-box",
+              lineHeight: 1,
+            }}
+          >
             <div className="w-12 h-1 rounded-full bg-white/20" />
           </div>
           <div className="flex items-center justify-between">
@@ -216,14 +239,14 @@ export default function MobileSimulationPanel({
                 onClick={(e) => {
                   e.stopPropagation();
                   onRunSimulation();
-                  if ('vibrate' in navigator) navigator.vibrate(50);
+                  if ("vibrate" in navigator) navigator.vibrate(50);
                 }}
                 className="ml-3 w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center hover:bg-emerald-500/30 transition-colors touch-manipulation"
                 aria-label="Run simulation"
                 title="Run simulation"
               >
                 <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z"/>
+                  <path d="M8 5v14l11-7z" />
                 </svg>
               </button>
             )}

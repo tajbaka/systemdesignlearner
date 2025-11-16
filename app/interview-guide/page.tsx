@@ -8,7 +8,8 @@ import { CheckCircle2, AlertCircle, Clock, Target } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "System Design Interview Guide - Complete Preparation Roadmap 2025",
-  description: "Master system design interviews with our complete guide. Learn the framework, common questions, mistakes to avoid, and 8-week preparation timeline. Free resources and practice problems included.",
+  description:
+    "Master system design interviews with our complete guide. Learn the framework, common questions, mistakes to avoid, and 8-week preparation timeline. Free resources and practice problems included.",
   keywords: [
     "system design interview guide",
     "system design interview preparation",
@@ -20,7 +21,8 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "System Design Interview Guide - Complete Preparation Roadmap",
-    description: "Everything you need to ace system design interviews: framework, timeline, common questions, and practice resources.",
+    description:
+      "Everything you need to ace system design interviews: framework, timeline, common questions, and practice resources.",
     type: "website",
   },
 };
@@ -46,18 +48,41 @@ export default function InterviewGuidePage() {
 
         {/* The Framework */}
         <section className="mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-emerald-400">The 5-Step Framework</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-emerald-400">
+            The 5-Step Framework
+          </h2>
           <p className="text-zinc-300 mb-8">
-            Follow this proven framework to structure your system design interview answers. This is the same approach used in our interactive practice scenarios:
+            Follow this proven framework to structure your system design interview answers. This is
+            the same approach used in our interactive practice scenarios:
           </p>
 
           <div className="space-y-4">
             {[
-              { step: "1", title: "Functional Requirements", desc: "Clarify what the system should do. List core features, user actions, and use cases. Ask about scope and priorities." },
-              { step: "2", title: "Non-Functional Requirements", desc: "Define scale, performance, and reliability constraints. Calculate traffic (RPS), storage, latency (P95), and availability targets." },
-              { step: "3", title: "API Design", desc: "Design clean REST/GraphQL APIs for core features. Define request/response formats, endpoints, and data contracts." },
-              { step: "4", title: "High-Level Design", desc: "Draw the overall architecture: clients, load balancers, services, databases, caches, and message queues. Show data flow and component interactions." },
-              { step: "5", title: "Low-Level Design", desc: "Deep dive into critical components: database schema, caching strategies, algorithms, and data structures. Discuss trade-offs, bottlenecks, and optimizations." },
+              {
+                step: "1",
+                title: "Functional Requirements",
+                desc: "Clarify what the system should do. List core features, user actions, and use cases. Ask about scope and priorities.",
+              },
+              {
+                step: "2",
+                title: "Non-Functional Requirements",
+                desc: "Define scale, performance, and reliability constraints. Calculate traffic (RPS), storage, latency (P95), and availability targets.",
+              },
+              {
+                step: "3",
+                title: "API Design",
+                desc: "Design clean REST/GraphQL APIs for core features. Define request/response formats, endpoints, and data contracts.",
+              },
+              {
+                step: "4",
+                title: "High-Level Design",
+                desc: "Draw the overall architecture: clients, load balancers, services, databases, caches, and message queues. Show data flow and component interactions.",
+              },
+              {
+                step: "5",
+                title: "Low-Level Design",
+                desc: "Deep dive into critical components: database schema, caching strategies, algorithms, and data structures. Discuss trade-offs, bottlenecks, and optimizations.",
+              },
             ].map((item, index) => (
               <Card key={index} className="bg-zinc-900/70 border-zinc-700">
                 <CardHeader>
@@ -85,10 +110,46 @@ export default function InterviewGuidePage() {
 
           <div className="space-y-4">
             {[
-              { weeks: "Weeks 1-2", title: "Fundamentals", tasks: ["Learn basic architecture patterns", "Study CAP theorem, consistency models", "Understand load balancers, caches, databases", "Practice 2-3 simple designs (URL shortener, pastebin)"] },
-              { weeks: "Weeks 3-4", title: "Intermediate Concepts", tasks: ["Deep dive into distributed systems", "Study sharding, replication, partitioning", "Learn about message queues and pub-sub", "Practice 3-4 medium problems (Twitter, Instagram)"] },
-              { weeks: "Weeks 5-6", title: "Advanced Topics", tasks: ["Master rate limiting, API gateways", "Study CDNs, microservices, event sourcing", "Learn monitoring and observability", "Practice 4-5 complex designs (Netflix, Uber)"] },
-              { weeks: "Weeks 7-8", title: "Mock Interviews", tasks: ["Do 5-7 mock interviews with peers", "Review real interview questions from Glassdoor", "Practice whiteboarding and communication", "Fine-tune your presentation skills"] },
+              {
+                weeks: "Weeks 1-2",
+                title: "Fundamentals",
+                tasks: [
+                  "Learn basic architecture patterns",
+                  "Study CAP theorem, consistency models",
+                  "Understand load balancers, caches, databases",
+                  "Practice 2-3 simple designs (URL shortener, pastebin)",
+                ],
+              },
+              {
+                weeks: "Weeks 3-4",
+                title: "Intermediate Concepts",
+                tasks: [
+                  "Deep dive into distributed systems",
+                  "Study sharding, replication, partitioning",
+                  "Learn about message queues and pub-sub",
+                  "Practice 3-4 medium problems (Twitter, Instagram)",
+                ],
+              },
+              {
+                weeks: "Weeks 5-6",
+                title: "Advanced Topics",
+                tasks: [
+                  "Master rate limiting, API gateways",
+                  "Study CDNs, microservices, event sourcing",
+                  "Learn monitoring and observability",
+                  "Practice 4-5 complex designs (Netflix, Uber)",
+                ],
+              },
+              {
+                weeks: "Weeks 7-8",
+                title: "Mock Interviews",
+                tasks: [
+                  "Do 5-7 mock interviews with peers",
+                  "Review real interview questions from Glassdoor",
+                  "Practice whiteboarding and communication",
+                  "Fine-tune your presentation skills",
+                ],
+              },
             ].map((phase, index) => (
               <Card key={index} className="bg-zinc-900/70 border-zinc-700">
                 <CardHeader>
@@ -114,7 +175,9 @@ export default function InterviewGuidePage() {
 
         {/* Common Questions */}
         <section className="mb-16">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-emerald-400">Most Common Interview Questions</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-emerald-400">
+            Most Common Interview Questions
+          </h2>
 
           <div className="grid sm:grid-cols-2 gap-4">
             {[
@@ -174,12 +237,30 @@ export default function InterviewGuidePage() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             {[
-              { title: "Think Out Loud", tip: "Verbalize your thought process. Interviewers want to see how you think, not just the final answer." },
-              { title: "Ask Questions", tip: "Clarify ambiguities early. It shows you understand real-world constraints and requirements." },
-              { title: "Start Simple", tip: "Begin with a basic design, then iterate. Don't try to solve everything at once." },
-              { title: "Use Numbers", tip: "Back your decisions with calculations. Show math for capacity, latency, and storage." },
-              { title: "Draw Diagrams", tip: "Visual representations are crucial. Practice drawing clean architecture diagrams." },
-              { title: "Discuss Trade-offs", tip: "Every design choice has pros and cons. Explain why you chose one approach over another." },
+              {
+                title: "Think Out Loud",
+                tip: "Verbalize your thought process. Interviewers want to see how you think, not just the final answer.",
+              },
+              {
+                title: "Ask Questions",
+                tip: "Clarify ambiguities early. It shows you understand real-world constraints and requirements.",
+              },
+              {
+                title: "Start Simple",
+                tip: "Begin with a basic design, then iterate. Don't try to solve everything at once.",
+              },
+              {
+                title: "Use Numbers",
+                tip: "Back your decisions with calculations. Show math for capacity, latency, and storage.",
+              },
+              {
+                title: "Draw Diagrams",
+                tip: "Visual representations are crucial. Practice drawing clean architecture diagrams.",
+              },
+              {
+                title: "Discuss Trade-offs",
+                tip: "Every design choice has pros and cons. Explain why you chose one approach over another.",
+              },
             ].map((item, index) => (
               <Card key={index} className="bg-zinc-900/70 border-zinc-700">
                 <CardHeader>
@@ -199,7 +280,8 @@ export default function InterviewGuidePage() {
             Ready to Start Practicing?
           </h2>
           <p className="text-lg text-zinc-300 mb-8 max-w-2xl mx-auto">
-            Apply this framework with our interactive practice scenarios. Get instant feedback and learn by doing.
+            Apply this framework with our interactive practice scenarios. Get instant feedback and
+            learn by doing.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -207,9 +289,7 @@ export default function InterviewGuidePage() {
               size="lg"
               className="px-8 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg"
             >
-              <Link href="/practice">
-                Start Practice Problems
-              </Link>
+              <Link href="/practice">Start Practice Problems</Link>
             </Button>
             <Button
               asChild
@@ -217,9 +297,7 @@ export default function InterviewGuidePage() {
               variant="outline"
               className="px-8 py-6 border-2 border-zinc-600 hover:border-blue-500/50 text-zinc-300 hover:text-white font-semibold text-lg"
             >
-              <Link href="/examples">
-                View Example Solutions
-              </Link>
+              <Link href="/examples">View Example Solutions</Link>
             </Button>
           </div>
         </div>

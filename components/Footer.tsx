@@ -305,11 +305,7 @@ export function Footer() {
                 size="sm"
               >
                 {newsletterStatus === "submitting" && (
-                  <svg
-                    className="animate-spin h-3 w-3 mr-2 inline"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg className="animate-spin h-3 w-3 mr-2 inline" fill="none" viewBox="0 0 24 24">
                     <circle
                       className="opacity-25"
                       cx="12"

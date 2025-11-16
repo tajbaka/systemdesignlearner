@@ -11,7 +11,7 @@ export function URLShortenerIntroClient() {
 
   const handleStartPractice = () => {
     track("practice_intro_start", {
-      slug: "url-shortener"
+      slug: "url-shortener",
     });
     router.push("/practice/url-shortener");
   };
@@ -35,27 +35,25 @@ export function URLShortenerIntroClient() {
             {/* Problem */}
             <div className="space-y-3">
               <p className="text-sm font-medium text-zinc-500 uppercase tracking-wide">Problem</p>
-              <h1 className="text-4xl font-bold text-white sm:text-5xl">
-                URL Shortener
-              </h1>
+              <h1 className="text-4xl font-bold text-white sm:text-5xl">URL Shortener</h1>
             </div>
 
             {/* Description */}
             <div className="space-y-3">
-              <p className="text-sm font-medium text-zinc-500 uppercase tracking-wide">Description</p>
+              <p className="text-sm font-medium text-zinc-500 uppercase tracking-wide">
+                Description
+              </p>
               <p className="text-lg text-zinc-300 leading-relaxed sm:text-xl">
-                Design a system that converts long URLs into short, shareable links.
-                Your system should handle link creation, redirection, and basic analytics.
-                Think about storage, uniqueness, and performance at scale.
+                Design a system that converts long URLs into short, shareable links. Your system
+                should handle link creation, redirection, and basic analytics. Think about storage,
+                uniqueness, and performance at scale.
               </p>
             </div>
           </div>
 
           {/* Start Practice Button - Right aligned */}
           <div className="flex justify-end items-center gap-4 pt-4">
-            <p className="text-sm text-zinc-500">
-              15-20 minutes
-            </p>
+            <p className="text-sm text-zinc-500">15-20 minutes</p>
             <Button
               size="lg"
               onClick={handleStartPractice}

@@ -96,11 +96,5 @@ export function VoiceWaveform({ audioLevel, isActive }: VoiceWaveformProps) {
     };
   }, []); // Empty dependency array - only run once
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full"
-      style={{ display: "block" }}
-    />
-  );
+  return <canvas ref={canvasRef} className="w-full h-full" style={{ display: "block" }} />;
 }

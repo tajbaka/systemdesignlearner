@@ -1,5 +1,5 @@
 // React Flow imports
-import type { Node, Edge as ReactFlowEdge } from '@xyflow/react';
+import type { Node, Edge as ReactFlowEdge } from "@xyflow/react";
 
 // Types
 export type NodeId = string;
@@ -57,7 +57,7 @@ export interface Edge {
 
 // React Flow compatible types
 export interface SystemDesignNode extends Node {
-  type: 'systemDesignNode';
+  type: "systemDesignNode";
   data: {
     spec: ComponentSpec;
     replicas?: number;
@@ -82,7 +82,7 @@ export interface SystemDesignEdge extends ReactFlowEdge {
 export function placedNodeToReactFlowNode(node: PlacedNode): SystemDesignNode {
   return {
     id: node.id,
-    type: 'systemDesignNode',
+    type: "systemDesignNode",
     position: { x: node.x - 95, y: node.y - 45 }, // Convert center position to top-left
     data: {
       spec: node.spec,

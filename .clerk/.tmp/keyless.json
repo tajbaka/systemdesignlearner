@@ -1,1 +1,6 @@
-{"publishableKey":"pk_test_dmlhYmxlLW1hc3RvZG9uLTQyLmNsZXJrLmFjY291bnRzLmRldiQ","secretKey":"sk_test_TJgYrIgVDB6y6I48H5ndBrtWADX4iKYdd7OHGPKKdp","claimUrl":"https://dashboard.clerk.com/apps/claim?token=cqxlexc7336tirkajxslvxukqizoozgtu7d4h71j","apiKeysUrl":"https://dashboard.clerk.com/apps/app_35M09ZkAm783YEp10gSDB9XkqxH/instances/ins_35M09dzALS5Z21T3axakxof0IER/api-keys"}
+{
+  "publishableKey": "pk_test_dmlhYmxlLW1hc3RvZG9uLTQyLmNsZXJrLmFjY291bnRzLmRldiQ",
+  "secretKey": "sk_test_TJgYrIgVDB6y6I48H5ndBrtWADX4iKYdd7OHGPKKdp",
+  "claimUrl": "https://dashboard.clerk.com/apps/claim?token=cqxlexc7336tirkajxslvxukqizoozgtu7d4h71j",
+  "apiKeysUrl": "https://dashboard.clerk.com/apps/app_35M09ZkAm783YEp10gSDB9XkqxH/instances/ins_35M09dzALS5Z21T3axakxof0IER/api-keys"
+}

@@ -20,9 +20,15 @@ const PracticeFlow = dynamic(() => import("@/components/practice/PracticeFlow"),
   ),
 });
 
-const PracticeSidebar = dynamic(() => import("@/components/practice/PracticeSidebar").then(mod => ({ default: mod.PracticeSidebar })), {
-  ssr: false,
-});
+const PracticeSidebar = dynamic(
+  () =>
+    import("@/components/practice/PracticeSidebar").then((mod) => ({
+      default: mod.PracticeSidebar,
+    })),
+  {
+    ssr: false,
+  }
+);
 
 const VALID_SLUG = "url-shortener";
 
@@ -45,7 +51,7 @@ export default function PracticeSlugPage() {
   }
 
   let sharedState: PracticeState | null = null;
-  const shareParam = searchParams?.get('s');
+  const shareParam = searchParams?.get("s");
   if (shareParam) {
     try {
       sharedState = decodeDesign<PracticeState>(shareParam);

@@ -94,24 +94,28 @@ function buildApiStepConfig(): StepConfig {
 
   // Add endpoint-specific validation requirements as metadata
   const endpointRequirements = [
-    ...api.requiredEndpoints.map((ep: typeof api.requiredEndpoints[number] & { exampleNotes?: string }) => ({
-      id: ep.id,
-      method: ep.method,
-      examplePath: ep.examplePath,
-      purpose: ep.purpose,
-      documentationHints: ep.documentationHints,
-      required: true,
-      exampleNotes: ep.exampleNotes,
-    })),
-    ...api.optionalEndpoints.map((ep: typeof api.optionalEndpoints[number] & { exampleNotes?: string }) => ({
-      id: ep.id,
-      method: ep.method,
-      examplePath: ep.examplePath,
-      purpose: ep.purpose,
-      documentationHints: ep.documentationHints,
-      required: false,
-      exampleNotes: ep.exampleNotes,
-    })),
+    ...api.requiredEndpoints.map(
+      (ep: (typeof api.requiredEndpoints)[number] & { exampleNotes?: string }) => ({
+        id: ep.id,
+        method: ep.method,
+        examplePath: ep.examplePath,
+        purpose: ep.purpose,
+        documentationHints: ep.documentationHints,
+        required: true,
+        exampleNotes: ep.exampleNotes,
+      })
+    ),
+    ...api.optionalEndpoints.map(
+      (ep: (typeof api.optionalEndpoints)[number] & { exampleNotes?: string }) => ({
+        id: ep.id,
+        method: ep.method,
+        examplePath: ep.examplePath,
+        purpose: ep.purpose,
+        documentationHints: ep.documentationHints,
+        required: false,
+        exampleNotes: ep.exampleNotes,
+      })
+    ),
   ];
 
   return {
@@ -219,10 +223,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(question);
     }
 
-    return NextResponse.json(
-      { error: "Invalid action" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to process iterative feedback";
     const isRateLimited = message.toLowerCase().includes("quota") || message.includes("429");

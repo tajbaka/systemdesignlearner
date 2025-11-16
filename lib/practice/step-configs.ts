@@ -52,10 +52,10 @@ export const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
       if (endpoints.length === 0) return true;
       // Only validate endpoints that have a path defined
       // This allows users to have empty placeholder endpoints
-      const validEndpoints = endpoints.filter(ep => ep.path.trim().length > 0);
+      const validEndpoints = endpoints.filter((ep) => ep.path.trim().length > 0);
       if (validEndpoints.length === 0) return true;
       // Require at least some meaningful content in notes for each valid endpoint
-      return validEndpoints.some(ep => !ep.notes.trim() || ep.notes.trim().length < 10);
+      return validEndpoints.some((ep) => !ep.notes.trim() || ep.notes.trim().length < 10);
     },
     onNext: (session) => completeStep(session, "api"),
   },

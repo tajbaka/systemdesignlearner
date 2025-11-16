@@ -13,7 +13,10 @@ type ReviewPanelProps = {
   onGoBack?: () => void;
 };
 
-const FUNCTIONAL_ITEMS: Array<{ id: keyof PracticeState["requirements"]["functional"]; label: string }> = [
+const FUNCTIONAL_ITEMS: Array<{
+  id: keyof PracticeState["requirements"]["functional"];
+  label: string;
+}> = [
   { id: "create-short-url", label: "Create short URLs" },
   { id: "redirect-by-slug", label: "Redirect by slug" },
   { id: "custom-alias", label: "Custom aliases" },
@@ -101,15 +104,10 @@ const buildSandboxSharePayload = (state: PracticeState): SandboxSharePayload => 
   })),
 });
 
-export const ReviewPanel = ({
-  state,
-  readOnly = false,
-  onGoBack,
-}: ReviewPanelProps) => {
+export const ReviewPanel = ({ state, readOnly = false, onGoBack }: ReviewPanelProps) => {
   const lastResult = state.run.lastResult;
   const score = lastResult?.scoreBreakdown;
-  const outcome =
-    score?.outcome ?? (lastResult?.failedByChaos ? "chaos_fail" : undefined);
+  const outcome = score?.outcome ?? (lastResult?.failedByChaos ? "chaos_fail" : undefined);
   const isPass = outcome === "pass";
   const hints = useMemo(() => buildHints(state), [state]);
   const sandboxShare = useMemo(() => buildSandboxSharePayload(state), [state]);
@@ -174,7 +172,8 @@ export const ReviewPanel = ({
           <div>
             <h2 className="text-xl font-semibold text-white">Review</h2>
             <p className="text-sm text-zinc-400">
-              Final metrics and notes from your latest passing run. Share a sandbox link or review the highlights below.
+              Final metrics and notes from your latest passing run. Share a sandbox link or review
+              the highlights below.
             </p>
           </div>
           {score ? (
@@ -183,8 +182,8 @@ export const ReviewPanel = ({
                 outcome === "pass"
                   ? "border border-emerald-400/40 bg-emerald-500/15 text-emerald-100"
                   : outcome === "partial"
-                  ? "border border-amber-400/40 bg-amber-500/15 text-amber-100"
-                  : "border border-rose-400/40 bg-rose-500/20 text-rose-100"
+                    ? "border border-amber-400/40 bg-amber-500/15 text-amber-100"
+                    : "border border-rose-400/40 bg-rose-500/20 text-rose-100"
               }`}
             >
               {outcome ? outcome : "pending"} · {score.totalScore}/100
@@ -207,9 +206,7 @@ export const ReviewPanel = ({
                   <span
                     aria-hidden
                     className={`h-2 w-2 rounded-full ${
-                      state.requirements.functional[item.id]
-                        ? "bg-emerald-400"
-                        : "bg-zinc-600"
+                      state.requirements.functional[item.id] ? "bg-emerald-400" : "bg-zinc-600"
                     }`}
                   />
                   <span className="flex-1">{item.label}</span>
@@ -240,9 +237,7 @@ export const ReviewPanel = ({
               </div>
               <div>
                 <dt className="uppercase tracking-wide">Availability</dt>
-                <dd className="text-zinc-100">
-                  {state.requirements.nonFunctional.availability}%
-                </dd>
+                <dd className="text-zinc-100">{state.requirements.nonFunctional.availability}%</dd>
               </div>
               <div>
                 <dt className="uppercase tracking-wide">Redirect code</dt>
@@ -320,7 +315,8 @@ export const ReviewPanel = ({
               Share your sandbox
             </h3>
             <p className="text-xs text-zinc-500">
-              Copy a link that recreates this scenario, layout, connections, and replicas directly in the sandbox.
+              Copy a link that recreates this scenario, layout, connections, and replicas directly
+              in the sandbox.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -347,7 +343,8 @@ export const ReviewPanel = ({
             <dd className="text-zinc-100">{sandboxShare.nodes.length}</dd>
           </div>
           <div className="sm:col-span-2 text-zinc-400">
-            The copied link opens in the sandbox so others can inspect the board exactly as you arranged it.
+            The copied link opens in the sandbox so others can inspect the board exactly as you
+            arranged it.
           </div>
         </dl>
       </section>

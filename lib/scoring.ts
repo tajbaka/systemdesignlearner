@@ -27,7 +27,7 @@ export function calculateScore(
       checklistScore: 0,
       costScore: 0,
       totalScore: 0,
-      outcome: "chaos_fail"
+      outcome: "chaos_fail",
     };
   }
 
@@ -44,9 +44,9 @@ export function calculateScore(
   // Cost Efficiency Score (10 points max)
   const totalCost = nodes.reduce((sum, node) => {
     const replicas = node.replicas || 1;
-    return sum + (node.spec.costPerHour * replicas);
+    return sum + node.spec.costPerHour * replicas;
   }, 0);
-  
+
   // Define cost efficiency thresholds based on scenario complexity
   const costCap = getCostCap(scenario);
   const costEfficiencyRatio = Math.min(1, costCap / Math.max(totalCost, 0.01));
@@ -59,7 +59,7 @@ export function calculateScore(
   let outcome: ScoreBreakdown["outcome"];
   const meetsAllSLOs = simulationResult.meetsLatency && simulationResult.meetsRps;
   const meetsAnySLO = simulationResult.meetsLatency || simulationResult.meetsRps;
-  
+
   if (meetsAllSLOs && totalScore >= 80) {
     outcome = "pass";
   } else if (meetsAnySLO || totalScore >= 40) {
@@ -73,14 +73,14 @@ export function calculateScore(
     checklistScore: Math.round(checklistScore),
     costScore: Math.round(costScore),
     totalScore,
-    outcome
+    outcome,
   };
 }
 
 function getCostCap(scenario: Scenario): number {
   // Rough cost caps based on scenario complexity and RPS requirements
   const baseMultiplier = scenario.requiredRps / 1000; // Base on throughput
-  
+
   switch (scenario.difficulty) {
     case "easy":
       return Math.max(1.0, baseMultiplier * 0.5);

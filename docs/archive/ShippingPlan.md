@@ -10,7 +10,7 @@ Includes schema changes, components to add, tutorial, API track, scoring, author
 1. [Prerequisites](#prerequisites)
 
 <!-- Additional sections to be added as implementation progresses -->
-<!-- 
+<!--
 2. [Architecture Snapshot](#architecture-snapshot)
 3. [Workstream A — Content & Taxonomy](#workstream-a--content--taxonomy)
 4. [Workstream B — Onboarding & Tutorial](#workstream-b--onboarding--tutorial)
@@ -747,3 +747,4 @@ Good luck — ship it!
 makefile
 Copia codice
 ::contentReference[oaicite:0]{index=0}
+```

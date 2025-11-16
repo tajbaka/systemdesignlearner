@@ -79,9 +79,10 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
           if (endpointScore.documentationIssue) {
             const endpoint = matchResult.endpoint!;
             const isBodyMethod = endpoint.method === "POST" || endpoint.method === "PATCH";
-            const needsBodyStructure = isBodyMethod &&
-                                      requiredConfig.documentationHints.includes("body") &&
-                                      !this.hasRequestBodyStructure(endpoint.notes);
+            const needsBodyStructure =
+              isBodyMethod &&
+              requiredConfig.documentationHints.includes("body") &&
+              !this.hasRequestBodyStructure(endpoint.notes);
 
             let actionable = `Add details about: ${requiredConfig.documentationHints.join(", ")}`;
             if (needsBodyStructure) {
@@ -210,12 +211,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     // Add blocking issue if score is too low (below 40%)
     if (percentage < 40 && blocking.length === 0) {
       // Generate specific actionable feedback based on what's missing
-      const feedback = this.generateLowScoreFeedback(
-        input,
-        config,
-        matchedRequired,
-        percentage
-      );
+      const feedback = this.generateLowScoreFeedback(input, config, matchedRequired, percentage);
 
       blocking.push({
         category: "requirement",
@@ -255,7 +251,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     const methodMatch = endpoint.method === config.method;
 
     // Normalize path - ensure it starts with /
-    const normalizedPath = endpoint.path.startsWith('/') ? endpoint.path : `/${endpoint.path}`;
+    const normalizedPath = endpoint.path.startsWith("/") ? endpoint.path : `/${endpoint.path}`;
 
     // Check path match (regex or exact)
     let pathMatch = false;
@@ -286,8 +282,8 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
    */
   private validatePathStructure(userPath: string, examplePath: string): boolean {
     // Extract the base path structure from example (everything before parameters)
-    const exampleParts = examplePath.split('/').filter(p => p.length > 0);
-    const userParts = userPath.split('/').filter(p => p.length > 0);
+    const exampleParts = examplePath.split("/").filter((p) => p.length > 0);
+    const userParts = userPath.split("/").filter((p) => p.length > 0);
 
     // Check if user path has enough parts
     if (userParts.length < exampleParts.length - 1) {
@@ -301,7 +297,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       const userPart = userParts[i];
 
       // Skip parameter placeholders in example
-      if (examplePart.startsWith('{') || examplePart.startsWith(':')) {
+      if (examplePart.startsWith("{") || examplePart.startsWith(":")) {
         continue;
       }
 
@@ -313,8 +309,8 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       }
 
       // Check if example has "api" prefix, user should match base structure
-      if (examplePart === 'api' && i === 0) {
-        if (userPart !== 'api') {
+      if (examplePart === "api" && i === 0) {
+        if (userPart !== "api") {
           // Allow match if user is using similar base structure
           return true; // Be lenient on base prefix
         }
@@ -391,8 +387,10 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     }
 
     // Special validation for POST/PATCH requests - must specify body structure
-    if ((endpoint.method === "POST" || endpoint.method === "PATCH") &&
-        config.documentationHints.includes("body")) {
+    if (
+      (endpoint.method === "POST" || endpoint.method === "PATCH") &&
+      config.documentationHints.includes("body")
+    ) {
       const hasBodyStructure = this.hasRequestBodyStructure(notes);
       if (!hasBodyStructure) {
         return 0.3; // Significantly penalize missing body structure
@@ -428,22 +426,22 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     // This is more lenient - we look for field mentions, descriptions, or lists
     const bodyContentPatterns = [
       // Explicit structure patterns (original strict patterns)
-      /body\s*:\s*\{/i,                              // body: {
-      /body\s+contains\s+\{/i,                       // body contains {
-      /\{\s*["']?\w+["']?\s*:\s*/,                   // { "field":
+      /body\s*:\s*\{/i, // body: {
+      /body\s+contains\s+\{/i, // body contains {
+      /\{\s*["']?\w+["']?\s*:\s*/, // { "field":
 
       // Natural language patterns (new lenient patterns)
-      /body\s+(?:contains|includes|has|with)\s+\w+/i,  // body contains url, body has shortCode
-      /body\s*:\s*\w+(?:,|\s+and\s+|\s+&\s+)/i,        // body: url, shortCode or body: url and shortCode
+      /body\s+(?:contains|includes|has|with)\s+\w+/i, // body contains url, body has shortCode
+      /body\s*:\s*\w+(?:,|\s+and\s+|\s+&\s+)/i, // body: url, shortCode or body: url and shortCode
       /(?:includes?|contains?|expects?|requires?)\s+(?:fields?|parameters?|properties?)[\s:]+\w+/i, // includes fields: url
       /(?:send|provide|pass)\s+(?:the\s+)?(?:url|shortcode|code|link|data|\w+url)/i, // send the url, provide shortCode
       /(?:url|shortcode|code|link|data|\w+)\s+(?:field|parameter|property|value)/i, // url field, shortCode parameter
       /body\s+(?:should|must|will)\s+(?:include|contain|have)/i, // body should include
-      /(?:the\s+)?body\s+(?:is|are)\s+\w+/i,         // the body is url
-      /request\s+(?:body|payload|data)\s*:\s*\w+/i,  // request body: url
+      /(?:the\s+)?body\s+(?:is|are)\s+\w+/i, // the body is url
+      /request\s+(?:body|payload|data)\s*:\s*\w+/i, // request body: url
     ];
 
-    return bodyContentPatterns.some(pattern => pattern.test(notes));
+    return bodyContentPatterns.some((pattern) => pattern.test(notes));
   }
 
   /**
@@ -467,9 +465,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     percentage: number
   ): { message: string; actionable: string } {
     // Find missing required endpoints
-    const missingRequired = config.requiredEndpoints.filter(
-      (req) => !matchedRequired.has(req.id)
-    );
+    const missingRequired = config.requiredEndpoints.filter((req) => !matchedRequired.has(req.id));
 
     // Find endpoints with poor documentation
     const poorlyDocumented = input.endpoints.filter((endpoint) => {
@@ -485,7 +481,9 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     const actions: string[] = [];
 
     if (missingRequired.length > 0) {
-      issues.push(`missing ${missingRequired.length} required endpoint${missingRequired.length > 1 ? "s" : ""}`);
+      issues.push(
+        `missing ${missingRequired.length} required endpoint${missingRequired.length > 1 ? "s" : ""}`
+      );
 
       missingRequired.forEach((config) => {
         actions.push(
@@ -495,7 +493,9 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     }
 
     if (poorlyDocumented.length > 0) {
-      issues.push(`${poorlyDocumented.length} endpoint${poorlyDocumented.length > 1 ? "s need" : " needs"} better documentation`);
+      issues.push(
+        `${poorlyDocumented.length} endpoint${poorlyDocumented.length > 1 ? "s need" : " needs"} better documentation`
+      );
 
       poorlyDocumented.forEach((endpoint) => {
         const matchingConfig = config.requiredEndpoints.find((config) =>
@@ -511,9 +511,7 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
 
     // If we still don't have specific issues, check for empty notes
     if (actions.length === 0) {
-      const emptyNotes = input.endpoints.filter(
-        (e) => !e.notes || e.notes.trim().length < 20
-      );
+      const emptyNotes = input.endpoints.filter((e) => !e.notes || e.notes.trim().length < 20);
       if (emptyNotes.length > 0) {
         emptyNotes.forEach((endpoint) => {
           actions.push(
@@ -523,13 +521,15 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
       }
     }
 
-    const message = issues.length > 0
-      ? `Your API design needs work: ${issues.join(", ")}. Score: ${percentage.toFixed(0)}% (need 40%+)`
-      : `Your API design score is ${percentage.toFixed(0)}% (need 40%+). Improve endpoint documentation.`;
+    const message =
+      issues.length > 0
+        ? `Your API design needs work: ${issues.join(", ")}. Score: ${percentage.toFixed(0)}% (need 40%+)`
+        : `Your API design score is ${percentage.toFixed(0)}% (need 40%+). Improve endpoint documentation.`;
 
-    const actionable = actions.length > 0
-      ? `\n${actions.join("\n")}`
-      : "Add request/response details, status codes, and error handling to your endpoint descriptions.";
+    const actionable =
+      actions.length > 0
+        ? `\n${actions.join("\n")}`
+        : "Add request/response details, status codes, and error handling to your endpoint descriptions.";
 
     return { message, actionable };
   }

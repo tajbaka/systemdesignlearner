@@ -64,17 +64,21 @@ export const SCENARIOS: Scenario[] = [
       { kind: "Service" },
       { kind: "Cache (Redis)", optional: true },
       { kind: "DB (Postgres)" },
-      { kind: "Object Store (S3)", optional: true }
+      { kind: "Object Store (S3)", optional: true },
     ],
     hints: ["Add CDN for static media.", "Warm cache to avoid DB on read path."],
     acceptance: [
       { id: "cdn-before-s3", text: "CDN sits before Object Store on media path", required: true },
-      { id: "db-not-media-hotpath", text: "DB not required for each streaming request", required: true }
+      {
+        id: "db-not-media-hotpath",
+        text: "DB not required for each streaming request",
+        required: true,
+      },
     ],
     api: [{ method: "GET", path: "/stream/:song_id" }],
     suggestedComponents: ["CDN", "Object Store (S3)", "Cache (Redis)"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
   {
     id: "spotify-search",
@@ -89,16 +93,16 @@ export const SCENARIOS: Scenario[] = [
       { kind: "API Gateway" },
       { kind: "Service" },
       { kind: "Cache (Redis)", optional: true },
-      { kind: "DB (Postgres)" }
+      { kind: "DB (Postgres)" },
     ],
     hints: ["Add Redis in front of DB.", "Consider read replicas or indexes."],
     acceptance: [
-      { id: "cache-on-read", text: "Cache in front of DB for hot queries", required: true }
+      { id: "cache-on-read", text: "Cache in front of DB for hot queries", required: true },
     ],
     api: [{ method: "GET", path: "/search", query: ["q", "limit", "offset"] }],
     suggestedComponents: ["Cache (Redis)", "DB (Postgres)"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
   {
     id: "url-shortener",
@@ -114,21 +118,26 @@ export const SCENARIOS: Scenario[] = [
       { kind: "API Gateway" },
       { kind: "Service" },
       { kind: "Cache (Redis)", optional: true },
-      { kind: "DB (Postgres)" }
+      { kind: "DB (Postgres)" },
     ],
     hints: ["Cache hot slugs.", "Use read‑through cache to reduce DB hits."],
     acceptance: [
       { id: "cache-present", text: "Cache present on hot slug path", required: true },
       { id: "lb-service", text: "Service behind LB/API GW", required: true },
-      { id: "analytics", text: "Analytics queue for async event processing", required: false }
+      { id: "analytics", text: "Analytics queue for async event processing", required: false },
     ],
     api: [
-      { method: "POST", path: "/urls", bodyShape: "{ long_url: string }", responseShape: "{ short: string }" },
-      { method: "GET", path: "/:slug", notes: "302 to long URL" }
+      {
+        method: "POST",
+        path: "/urls",
+        bodyShape: "{ long_url: string }",
+        responseShape: "{ short: string }",
+      },
+      { method: "GET", path: "/:slug", notes: "302 to long URL" },
     ],
     suggestedComponents: ["CDN", "Cache (Redis)", "DB (Postgres)"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
   {
     id: "rate-limiter",
@@ -142,16 +151,20 @@ export const SCENARIOS: Scenario[] = [
       { kind: "Web" },
       { kind: "API Gateway" },
       { kind: "Service" },
-      { kind: "Cache (Redis)" }
+      { kind: "Cache (Redis)" },
     ],
     hints: ["Token bucket in Redis.", "Avoid DB writes on hot path."],
     acceptance: [
-      { id: "limiter-on-path", text: "Rate limiter on request path before service", required: true }
+      {
+        id: "limiter-on-path",
+        text: "Rate limiter on request path before service",
+        required: true,
+      },
     ],
     api: [{ method: "GET", path: "/resource" }],
     suggestedComponents: ["Rate Limiter"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
   {
     id: "cdn-design",
@@ -161,20 +174,16 @@ export const SCENARIOS: Scenario[] = [
     difficulty: "easy",
     requiredRps: 8000,
     latencyBudgetMsP95: 80,
-    flow: [
-      { kind: "Web" },
-      { kind: "CDN" },
-      { kind: "Object Store (S3)" }
-    ],
+    flow: [{ kind: "Web" }, { kind: "CDN" }, { kind: "Object Store (S3)" }],
     hints: ["Put CDN in front of object storage.", "Tune TTLs and cache keys."],
     acceptance: [
       { id: "cdn-before-origin", text: "CDN sits in front of object store", required: true },
-      { id: "origin-shield", text: "Origin shield/proxy layer added", required: false }
+      { id: "origin-shield", text: "Origin shield/proxy layer added", required: false },
     ],
     api: [],
     suggestedComponents: ["CDN", "Origin Shield (CDN Proxy)"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
   {
     id: "webhook-delivery",
@@ -189,18 +198,19 @@ export const SCENARIOS: Scenario[] = [
       { kind: "API Gateway" },
       { kind: "Service" },
       { kind: "Message Queue (Kafka Topic)" },
-      { kind: "Worker Pool" }
+      { kind: "Worker Pool" },
     ],
-    hints: ["Add dead-letter queue for failed deliveries.", "Use message queue for async processing."],
+    hints: [
+      "Add dead-letter queue for failed deliveries.",
+      "Use message queue for async processing.",
+    ],
     acceptance: [
-      { id: "dlq", text: "Dead-letter path exists for failed deliveries", required: true }
+      { id: "dlq", text: "Dead-letter path exists for failed deliveries", required: true },
     ],
-    api: [
-      { method: "POST", path: "/events", bodyShape: "{ type, payload }" }
-    ],
+    api: [{ method: "POST", path: "/events", bodyShape: "{ type, payload }" }],
     suggestedComponents: ["Worker Pool", "Message Queue (Kafka Topic)"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
   {
     id: "typeahead",
@@ -214,18 +224,14 @@ export const SCENARIOS: Scenario[] = [
       { kind: "Web" },
       { kind: "API Gateway" },
       { kind: "Service" },
-      { kind: "Search Index (Elastic)" }
+      { kind: "Search Index (Elastic)" },
     ],
     hints: ["Use dedicated search index.", "Cache popular queries."],
-    acceptance: [
-      { id: "search-index", text: "Dedicated search index in path", required: true }
-    ],
-    api: [
-      { method: "GET", path: "/search", query: ["q", "limit", "offset"] }
-    ],
+    acceptance: [{ id: "search-index", text: "Dedicated search index in path", required: true }],
+    api: [{ method: "GET", path: "/search", query: ["q", "limit", "offset"] }],
     suggestedComponents: ["Search Index (Elastic)"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
   {
     id: "leaderboard",
@@ -240,19 +246,19 @@ export const SCENARIOS: Scenario[] = [
       { kind: "API Gateway" },
       { kind: "Service" },
       { kind: "Cache (Redis)" },
-      { kind: "DB (Postgres)" }
+      { kind: "DB (Postgres)" },
     ],
     hints: ["Use Redis sorted sets for top-N queries.", "Cache leaderboard in memory."],
     acceptance: [
-      { id: "redis-zset", text: "In-memory store used for top-N (e.g., Redis)", required: true }
+      { id: "redis-zset", text: "In-memory store used for top-N (e.g., Redis)", required: true },
     ],
     api: [
       { method: "GET", path: "/leaderboard", query: ["limit", "offset"] },
-      { method: "POST", path: "/score", bodyShape: "{ user_id, delta }" }
+      { method: "POST", path: "/score", bodyShape: "{ user_id, delta }" },
     ],
     suggestedComponents: ["Cache (Redis)"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
   {
     id: "pastebin",
@@ -267,20 +273,23 @@ export const SCENARIOS: Scenario[] = [
       { kind: "API Gateway" },
       { kind: "Service" },
       { kind: "Object Store (S3)" },
-      { kind: "CDN", optional: true }
+      { kind: "CDN", optional: true },
     ],
     hints: ["Add CDN for static content.", "Store pastes in object storage."],
     acceptance: [
-      { id: "cdn-on-static", text: "CDN in front of static paste content", required: true }
+      { id: "cdn-on-static", text: "CDN in front of static paste content", required: true },
     ],
     api: [
-      { method: "POST", path: "/pastes", bodyShape: "{ text: string }", responseShape: "{ id: string }" },
-      { method: "GET", path: "/pastes/:id" }
+      {
+        method: "POST",
+        path: "/pastes",
+        bodyShape: "{ text: string }",
+        responseShape: "{ id: string }",
+      },
+      { method: "GET", path: "/pastes/:id" },
     ],
     suggestedComponents: ["CDN", "Object Store (S3)"],
     version: "1.0",
-    updatedAt: "2025-09-10"
+    updatedAt: "2025-09-10",
   },
 ];
-
-

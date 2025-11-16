@@ -25,7 +25,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add("dark");
       body.classList.add("dark");
       localStorage.setItem("theme", initialTheme);
-      logger.log('Applied dark class to html and body');
+      logger.log("Applied dark class to html and body");
     }
 
     setTheme(initialTheme);
@@ -45,7 +45,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [theme, mounted]);
 
   const toggleTheme = () => {
-    setTheme(prevTheme => {
+    setTheme((prevTheme) => {
       const newTheme = prevTheme === "light" ? "dark" : "light";
 
       // Apply the new theme immediately
@@ -63,11 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {

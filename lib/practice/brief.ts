@@ -102,10 +102,7 @@ const formatDesign = (state: PracticeState): string[] => {
   }
 
   if (path.missingKinds.length > 0) {
-    lines.push(
-      "",
-      `Missing required components for rubric: ${path.missingKinds.join(", ")}`
-    );
+    lines.push("", `Missing required components for rubric: ${path.missingKinds.join(", ")}`);
   }
 
   return lines;
@@ -208,10 +205,7 @@ export const toMarkdown = (state: PracticeState): string => {
   lines.push("", "## Simulation Outcome");
   lines.push(...formatSimulation(state));
 
-  lines.push(
-    "",
-    `Share snapshot generated at ${new Date(state.updatedAt).toISOString()}`
-  );
+  lines.push("", `Share snapshot generated at ${new Date(state.updatedAt).toISOString()}`);
 
   return lines.join("\n");
 };

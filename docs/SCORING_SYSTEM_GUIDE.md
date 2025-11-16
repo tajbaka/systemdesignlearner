@@ -52,6 +52,7 @@ The system automatically falls back to rule-based if AI is unavailable.
 ### Core Infrastructure
 
 #### Type System (`lib/scoring/types.ts`)
+
 - Complete TypeScript type definitions for all scoring components
 - Types for each step's input/output
 - Feedback types (blocking, warning, positive, suggestions)
@@ -83,6 +84,7 @@ The system automatically falls back to rule-based if AI is unavailable.
    - Replica count checking
 
 #### Main Orchestrator (`lib/scoring/index.ts`)
+
 - Configuration loader
 - Step-by-step evaluation functions
 - Cumulative score calculator
@@ -90,6 +92,7 @@ The system automatically falls back to rule-based if AI is unavailable.
 - Utility functions
 
 #### React Hook (`lib/scoring/useScoring.ts`)
+
 - `useScoring()` - Full scoring system access
 - `useStepScoring()` - Individual step evaluation
 - Auto-evaluation support
@@ -100,11 +103,13 @@ The system automatically falls back to rule-based if AI is unavailable.
 **What AI Solves:**
 
 ❌ Problems with Rule-Based Only:
+
 1. Not "smart" - Can't understand synonyms
 2. Keyword-based - User must use exact words
 3. No context - Can't understand complex reasoning
 
 ✅ AI Enhancement Adds:
+
 1. **Semantic understanding** - "reduce URL length" = "shorten URL"
 2. **Creative solutions** - Recognizes alternative but valid approaches
 3. **Natural language explanations** - Personalized feedback
@@ -112,6 +117,7 @@ The system automatically falls back to rule-based if AI is unavailable.
 5. **Best practice analysis** - Compares to industry standards
 
 **Architecture Flow:**
+
 ```
 User Input
     ↓
@@ -131,6 +137,7 @@ Combined Result with AI Insights
 #### Step 1: Functional Requirements (25 pts)
 
 **Core Requirements (20 points)**
+
 - Must be mentioned/included for step completion
 - Each missing core requirement blocks progression
 - Examples for URL Shortener:
@@ -140,6 +147,7 @@ Combined Result with AI Insights
   - API endpoints (5 pts)
 
 **Optional Requirements (5 points)**
+
 - Bonus points for including these
 - Does not block progression
 - Examples:
@@ -150,6 +158,7 @@ Combined Result with AI Insights
   - URL management (1 pt)
 
 **Feedback Generation:**
+
 - **Negative (Blocking):** Missing core requirements
 - **Positive:** All core requirements met
 
@@ -160,12 +169,14 @@ Combined Result with AI Insights
 The NFR questions are contextual based on what was selected in Step 1.
 
 **Scoring Categories:**
+
 1. **Scale expectations** (5 pts): Read/write RPS estimates
 2. **Performance targets** (5 pts): Latency requirements (P95/P99)
 3. **Availability** (5 pts): Uptime SLA (99%, 99.9%, 99.99%)
 4. **Security/Other** (5 pts): Rate limiting, abuse prevention
 
 **Example for URL Shortener:**
+
 - Read RPS (5 pts): 1K-100K optimal
 - Write RPS (3 pts): 10-10K optimal
 - P95 Latency (5 pts): 5-200ms optimal
@@ -175,6 +186,7 @@ The NFR questions are contextual based on what was selected in Step 1.
 #### Step 3: API Definition (20 pts)
 
 **Core Endpoints (15 pts):**
+
 1. **POST /api/v1/shorten** (5 pts)
    - Required for: "URL Shortening" functional req
    - Must document: request body, response format, error codes
@@ -188,11 +200,13 @@ The NFR questions are contextual based on what was selected in Step 1.
    - Must document: metrics returned
 
 **Optional Endpoints (5 pts):**
+
 - DELETE /api/v1/{shortId} (2 pts)
 - PUT /api/v1/{shortId} (2 pts)
 - GET /api/v1/urls (1 pt)
 
 **Evaluation Criteria:**
+
 - Has correct HTTP methods: 5 pts
 - Path design quality: 5 pts
 - Documentation quality: 5 pts
@@ -203,6 +217,7 @@ The NFR questions are contextual based on what was selected in Step 1.
 **Complex Decision Tree Based on All Previous Steps:**
 
 **Score Breakdown:**
+
 - Core architecture: 15 pts
 - Optional components: 10 pts
 - Connections: 5 pts
@@ -222,6 +237,7 @@ The NFR questions are contextual based on what was selected in Step 1.
    - Must include: API Gateway → Rate Limiter → Service
 
 **NFR-Driven Components:**
+
 - Read RPS > 10K → Requires cache (Redis)
 - Read RPS > 100K → Requires CDN/edge caching
 - Availability 99.9%+ → Requires Load Balancer + replicas
@@ -242,6 +258,7 @@ The NFR questions are contextual based on what was selected in Step 1.
 #### 1. Environment Variable
 
 Add to your `.env` file:
+
 ```bash
 GEMINI_API_KEY=your_key_here
 ```
@@ -284,6 +301,7 @@ console.log(result.aiEnhanced); // true
 **Rule-based result:** 0/25 (no keyword matches)
 
 **AI-enhanced result:** 15/25
+
 - ✓ Detected "URL shortening" via "compresses links" (AI reasoning)
 - ✓ Detected "redirection" via "bounces visitors back" (AI reasoning)
 - Missing: uniqueness guarantee, API mention
@@ -382,16 +400,19 @@ AI Analysis:
 ### Performance & Cost
 
 #### Rule-Based (Default)
+
 - **Speed**: 10-50ms
 - **Cost**: $0
 - **Accuracy**: 80-85% (with good keywords)
 
 #### AI-Enhanced
+
 - **Speed**: 1-3 seconds
 - **Cost**: ~$0.001 per evaluation (Gemini 1.5 Flash pricing)
 - **Accuracy**: 90-95% (handles synonyms, creative solutions)
 
 #### Recommendation
+
 - Use **rule-based** for real-time feedback as user types
 - Use **AI-enhanced** when user clicks "Check My Answer"
 - Show loading state during AI evaluation
@@ -399,15 +420,18 @@ AI Analysis:
 ### Cost Estimation
 
 Gemini 1.5 Flash pricing (as of 2025):
+
 - Input: $0.075 per 1M tokens
 - Output: $0.30 per 1M tokens
 
 Typical evaluation:
+
 - Input: ~500 tokens
 - Output: ~200 tokens
 - Cost: ~$0.001 per evaluation
 
 For 1000 users practicing:
+
 - 1000 users × 5 steps × 2 checks = 10,000 evaluations
 - Total cost: ~$10
 
@@ -422,12 +446,14 @@ Complete 500-line configuration defining all scoring rules, keywords, patterns, 
 ### Customization
 
 To adjust scoring for URL shortener:
+
 1. Edit `/lib/scoring/configs/url-shortener.json`
 2. Adjust weights, keywords, or ranges
 3. Add/remove requirements
 4. Modify feedback templates
 
 To add a new problem:
+
 1. Create `/lib/scoring/configs/new-problem.json`
 2. Follow the schema in `url-shortener.json`
 3. Call `loadScoringConfig("new-problem")`
@@ -617,8 +643,8 @@ const result = evaluateFunctionalRequirements(
     functionalSummary: "The system should shorten URLs and redirect users...",
     selectedRequirements: {
       "url-shortening": true,
-      "redirection": true,
-      "uniqueness": true,
+      redirection: true,
+      uniqueness: true,
       "api-endpoints": true,
     },
   },
@@ -650,23 +676,26 @@ track("scoring_evaluated", {
 Ideas for extending AI capabilities:
 
 1. **Compare to Reference Solutions**
+
    ```typescript
-   compareToReference(userDesign, expertSolutions)
+   compareToReference(userDesign, expertSolutions);
    ```
 
 2. **Generate Learning Paths**
+
    ```typescript
-   suggestLearningResources(weakAreas)
+   suggestLearningResources(weakAreas);
    ```
 
 3. **Real-time Coaching**
+
    ```typescript
-   provideHintsAsUserTypes(currentInput)
+   provideHintsAsUserTypes(currentInput);
    ```
 
 4. **Solution Variations**
    ```typescript
-   generateAlternativeDesigns(requirements)
+   generateAlternativeDesigns(requirements);
    ```
 
 ---
@@ -674,20 +703,24 @@ Ideas for extending AI capabilities:
 ## Troubleshooting
 
 **Issue**: Scoring returns 0 points
+
 - Check that input format matches expected types
 - Verify config is loaded correctly
 - Ensure keywords match text (case-insensitive)
 
 **Issue**: Blocking feedback not showing
+
 - Check that `feedbackResult.blocking` has items
 - Verify `VerificationFeedback` is receiving prop correctly
 
 **Issue**: Graph traversal not finding paths
+
 - Verify nodes have correct `spec.kind` values
 - Check edges have valid `from` and `to` IDs
 - Ensure edge direction matters for your use case
 
 **Issue**: AI evaluation fails
+
 - Verify `GEMINI_API_KEY` is set
 - Check network connectivity
 - Review API quota/limits

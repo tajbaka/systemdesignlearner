@@ -11,6 +11,7 @@
 **Overall Progress: ~65% Complete (9/14 core items)**
 
 ### ✅ Fully Implemented (9 items)
+
 1. Pre-submission validation for requirements (functional reqs) - `FunctionalRequirementsStep.tsx:55-86`
 2. Next button behavior (single arrow, disabled states) - `PracticeFooter.tsx:85-112`
 3. Step progression control (locking, visual states) - `PracticeStepper.tsx:73-78, 126-207`
@@ -22,11 +23,13 @@
 9. Step locking with clear visual indicators - `PracticeStepper.tsx`
 
 ### ⚠️ Partially Done (3 items)
+
 1. **NFR validation** - Shows info box but doesn't parse text for numbers - `NonFunctionalRequirementsStep.tsx:81-87`
 2. **API validation** - Works but uses error box instead of tooltip - `ApiDefinitionStep.tsx:155-167`
 3. **Performance metrics removal** - `SystemDesignNode.tsx` clean, but `NodeCard.tsx:118` still has metrics
 
 ### ❌ Not Started (2 major items)
+
 1. **Tooltip-based error messages** - Tooltip component exists but not integrated
 2. **Interview-style hints system** - Full Socratic method guidance not implemented
 
@@ -179,6 +182,7 @@
     - ✅ Just the inner Clerk component (the actual sign-in form) ✅
     - ✅ Simple congratulations message if needed (currently shows "Congrats! 🎉")
   - **Simplified structure**:
+
     ```
     Before:
     [Outer container with "Save progress" badge → "Sign in to see results! 🎉" → description → [Clerk SignIn component]]
@@ -186,6 +190,7 @@
     After:
     [Clerk SignIn component] + optional simple "Congrats!" text ✅
     ```
+
   - **Goal**: Reduce visual clutter, make auth feel lighter and faster
   - **File**: `AuthGateStep.tsx:26-42`
   - **Status**: Modal is clean, could optionally remove "Congrats! 🎉" for even simpler look
@@ -193,17 +198,20 @@
 ## 📊 Testing Requirements
 
 ### Functional Testing
+
 - [ ] Test all validation changes with:
   - Empty inputs (should block progression)
   - Partially complete inputs (should show specific errors)
   - Complete valid inputs (should allow progression)
 
 ### UX Testing
+
 - [ ] User test the interview-style hint system for effectiveness
   - Do users feel guided vs. given answers?
   - Is one hint at a time better than showing multiple?
 
 ### Responsive Testing (Mobile-First Priority)
+
 - [ ] Test hamburger menu + sidebar on:
   - Mobile (320px - 768px) ← **Primary focus**
   - Tablet (768px - 1024px)
@@ -212,6 +220,7 @@
 - [ ] Ensure all interactions work with touch (not just hover)
 
 ### A/B Testing Candidates
+
 - [ ] Hamburger menu position (left vs. right)
 - [ ] Top step display (full stepper vs. current step only vs. hidden)
 - [ ] Hint presentation (modal vs. inline vs. sidebar)
@@ -232,19 +241,23 @@
 ## 📝 Implementation Notes
 
 ### Priority Levels
+
 1. **P0 (Critical)**: Validation, navigation fixes
 2. **P1 (High)**: Mobile-first hamburger menu, tooltip errors
 3. **P2 (Medium)**: Interview-style hints, content cleanup
 4. **P3 (Low)**: Auth simplification, visual polish
 
 ### Technical Considerations
+
 - **Mobile-first**: Start with mobile layout, enhance for desktop
 - **Performance**: Lazy load sidebar content, use CSS transforms for animations
 - **Accessibility**: WCAG 2.1 AA compliance (keyboard nav, focus management, ARIA labels)
 - **Browser support**: Last 2 versions of Chrome, Safari, Firefox, Edge
 
 ### File References
+
 When implementing, focus on these likely files:
+
 - Validation: `*RequirementsStep.tsx`, `ApiDefinitionStep.tsx`
 - Navigation: `PracticeStepper.tsx`, `PracticeFlow.tsx`
 - Hamburger menu: Create new `HamburgerMenu.tsx` + `Sidebar.tsx` components
@@ -255,8 +268,6 @@ When implementing, focus on these likely files:
 
 **Last Updated:** 2025-01-06
 **Design Principle:** Mobile-first, accessible, interview-realistic experience
-
-
 
 mobile:
 full text boxes instead of box in box for the first 2 steps in the practice and for the step 3

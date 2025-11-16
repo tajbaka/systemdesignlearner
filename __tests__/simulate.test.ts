@@ -5,7 +5,11 @@ import { simulate } from "@/app/components/simulation";
 import { mulberry32 } from "@/lib/rng";
 import { snapToGrid, findScenarioPath } from "@/app/components/utils";
 
-const makeSpec = (kind: ComponentSpec["kind"], baseLatencyMs: number, capacityRps: number): ComponentSpec => ({
+const makeSpec = (
+  kind: ComponentSpec["kind"],
+  baseLatencyMs: number,
+  capacityRps: number
+): ComponentSpec => ({
   kind,
   label: kind,
   baseLatencyMs,

@@ -1,8 +1,4 @@
-import type {
-  ComponentKind,
-  PlacedNode,
-  Edge,
-} from "@/app/components/types";
+import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 import type {
   HighLevelChoice,
@@ -73,7 +69,10 @@ export const PRESET_CHOICES: HighLevelChoice[] = [
   {
     presetId: "db_only",
     components: ["Web", "Service", "DB (Postgres)"],
-    notes: ["Fast to ship but DB handles every redirect.", "Add read replicas later if traffic climbs."],
+    notes: [
+      "Fast to ship but DB handles every redirect.",
+      "Add read replicas later if traffic climbs.",
+    ],
   },
   {
     presetId: "cache_primary",
@@ -147,7 +146,14 @@ const SEED_NODE_BLUEPRINTS: Array<{ id: string; kind: ComponentKind; x: number; 
   { id: "seed-web", kind: "Web", x: -200, y: 0 },
 ];
 
-const SEED_EDGE_BLUEPRINTS: Array<{ id: string; from: string; to: string; linkLatencyMs: number; sourceHandle?: string; targetHandle?: string }> = [];
+const SEED_EDGE_BLUEPRINTS: Array<{
+  id: string;
+  from: string;
+  to: string;
+  linkLatencyMs: number;
+  sourceHandle?: string;
+  targetHandle?: string;
+}> = [];
 
 const buildSeedNodes = (): PlacedNode[] =>
   SEED_NODE_BLUEPRINTS.map((blueprint) => ({

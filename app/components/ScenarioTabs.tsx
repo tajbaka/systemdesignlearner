@@ -9,7 +9,7 @@ export interface ScenarioTabsProps {
 
 export default function ScenarioTabs({ scenario }: ScenarioTabsProps) {
   const [activeTab, setActiveTab] = useState<"flow" | "api">("flow");
-  
+
   const hasApi = scenario.api && scenario.api.length > 0;
   const apiLints = hasApi ? lintApi(scenario) : [];
 
@@ -66,7 +66,10 @@ export default function ScenarioTabs({ scenario }: ScenarioTabsProps) {
               <h5 className="text-xs font-semibold text-zinc-400 mb-1">Suggested Components</h5>
               <div className="flex flex-wrap gap-1">
                 {scenario.suggestedComponents.map((comp, i) => (
-                  <span key={i} className="px-2 py-0.5 text-xs bg-blue-500/10 text-blue-300 rounded border border-blue-400/20">
+                  <span
+                    key={i}
+                    className="px-2 py-0.5 text-xs bg-blue-500/10 text-blue-300 rounded border border-blue-400/20"
+                  >
                     {comp}
                   </span>
                 ))}
@@ -79,7 +82,7 @@ export default function ScenarioTabs({ scenario }: ScenarioTabsProps) {
       {activeTab === "api" && hasApi && (
         <div className="space-y-3">
           <h4 className="text-sm font-semibold text-zinc-300">API Endpoints</h4>
-          
+
           {/* API Endpoints Table */}
           <div className="overflow-x-auto scrollbar-hide">
             <table className="w-full text-xs border-collapse">
@@ -97,13 +100,19 @@ export default function ScenarioTabs({ scenario }: ScenarioTabsProps) {
                 {scenario.api!.map((endpoint, i) => (
                   <tr key={i} className="border-b border-white/5">
                     <td className="p-2">
-                      <span className={`px-1.5 py-0.5 rounded text-xs font-mono ${
-                        endpoint.method === "GET" ? "bg-green-500/20 text-green-300" :
-                        endpoint.method === "POST" ? "bg-blue-500/20 text-blue-300" :
-                        endpoint.method === "PUT" ? "bg-amber-500/20 text-amber-300" :
-                        endpoint.method === "DELETE" ? "bg-red-500/20 text-red-300" :
-                        "bg-gray-500/20 text-gray-300"
-                      }`}>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-xs font-mono ${
+                          endpoint.method === "GET"
+                            ? "bg-green-500/20 text-green-300"
+                            : endpoint.method === "POST"
+                              ? "bg-blue-500/20 text-blue-300"
+                              : endpoint.method === "PUT"
+                                ? "bg-amber-500/20 text-amber-300"
+                                : endpoint.method === "DELETE"
+                                  ? "bg-red-500/20 text-red-300"
+                                  : "bg-gray-500/20 text-gray-300"
+                        }`}
+                      >
                         {endpoint.method}
                       </span>
                     </td>
@@ -117,9 +126,7 @@ export default function ScenarioTabs({ scenario }: ScenarioTabsProps) {
                     <td className="p-2 text-zinc-400 max-w-24 truncate">
                       {endpoint.responseShape || "-"}
                     </td>
-                    <td className="p-2 text-zinc-400 max-w-32 truncate">
-                      {endpoint.notes || "-"}
-                    </td>
+                    <td className="p-2 text-zinc-400 max-w-32 truncate">{endpoint.notes || "-"}</td>
                   </tr>
                 ))}
               </tbody>

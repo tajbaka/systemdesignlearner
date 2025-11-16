@@ -29,7 +29,7 @@ export const metadata: Metadata = {
   ),
   title: {
     default: "System Design Interview Practice & Tutorial - Interactive Sandbox 2025",
-    template: "%s | System Design Sandbox"
+    template: "%s | System Design Sandbox",
   },
   description:
     "Ace your system design interview with hands-on practice! Interactive tutorials for distributed systems, scalability patterns & architecture design. Free practice scenarios with instant feedback. Master system design interviews in 2025.",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     "interview prep",
     "technical interview",
     "software engineering",
-    "interactive learning"
+    "interactive learning",
   ],
   authors: [{ name: "System Design Sandbox" }],
   creator: "System Design Sandbox",
@@ -60,9 +60,9 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
   openGraph: {
@@ -265,9 +265,7 @@ export default function RootLayout({
             </>
           )}
         </head>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}
-        >
+        <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}>
           <ScrollToTop />
           <PostHogProvider>
             <ThemeProvider>{children}</ThemeProvider>

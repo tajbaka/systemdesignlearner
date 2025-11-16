@@ -23,9 +23,7 @@ export function VoiceCaptureBridge({
       const trimmed = transcript.trim();
       if (!trimmed) return;
 
-      const next = value.trim()
-        ? `${value.trim()} ${trimmed}`
-        : trimmed;
+      const next = value.trim() ? `${value.trim()} ${trimmed}` : trimmed;
 
       onChange(next);
     },

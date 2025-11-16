@@ -22,7 +22,8 @@ import { SCENARIOS } from "@/lib/scenarios";
 
 function PracticeFlowInner() {
   const session = usePracticeSession();
-  const { hydrated, currentStep, setStep, isReadOnly, state, markStep, setAuth, setRequirements } = session;
+  const { hydrated, currentStep, setStep, isReadOnly, state, markStep, setAuth, setRequirements } =
+    session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
@@ -39,15 +40,15 @@ function PracticeFlowInner() {
       setApiMobileEditing(event.detail.editing);
     };
 
-    window.addEventListener('apiMobileEditorChange', handleEditorChange as EventListener);
+    window.addEventListener("apiMobileEditorChange", handleEditorChange as EventListener);
     return () => {
-      window.removeEventListener('apiMobileEditorChange', handleEditorChange as EventListener);
+      window.removeEventListener("apiMobileEditorChange", handleEditorChange as EventListener);
     };
   }, []);
 
   // Track keyboard position using Visual Viewport API
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.visualViewport) return;
+    if (typeof window === "undefined" || !window.visualViewport) return;
 
     const updateKeyboardOffset = () => {
       if (!window.visualViewport) return;
@@ -67,23 +68,23 @@ function PracticeFlowInner() {
       }
     };
 
-    window.visualViewport.addEventListener('resize', updateKeyboardOffset);
-    window.visualViewport.addEventListener('scroll', updateKeyboardOffset);
+    window.visualViewport.addEventListener("resize", updateKeyboardOffset);
+    window.visualViewport.addEventListener("scroll", updateKeyboardOffset);
 
     // Initial check
     updateKeyboardOffset();
 
     return () => {
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', updateKeyboardOffset);
-        window.visualViewport.removeEventListener('scroll', updateKeyboardOffset);
+        window.visualViewport.removeEventListener("resize", updateKeyboardOffset);
+        window.visualViewport.removeEventListener("scroll", updateKeyboardOffset);
       }
     };
   }, []);
 
   // Get scenario title from SCENARIOS
   const scenarioTitle = useMemo(() => {
-    const scenario = SCENARIOS.find(s => s.id === state.slug);
+    const scenario = SCENARIOS.find((s) => s.id === state.slug);
     return scenario?.title;
   }, [state.slug]);
 
@@ -108,12 +109,8 @@ function PracticeFlowInner() {
   } = useIterativeFeedback();
 
   // Sandbox evaluation hook
-  const { waitingForSimulation, setWaitingForSimulation, buildSandboxFeedback } = useSandboxEvaluation(
-    session,
-    currentStep,
-    setScoringFeedback,
-    setVerification
-  );
+  const { waitingForSimulation, setWaitingForSimulation, buildSandboxFeedback } =
+    useSandboxEvaluation(session, currentStep, setScoringFeedback, setVerification);
 
   // Navigation hook
   const {
@@ -164,11 +161,11 @@ function PracticeFlowInner() {
     if (signedIn && !state.auth.isAuthed) {
       setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
       // Clear auth flow flag from URL after successful auth
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         const url = new URL(window.location.href);
-        if (url.searchParams.has('auth_flow')) {
-          url.searchParams.delete('auth_flow');
-          window.history.replaceState({}, '', url.toString());
+        if (url.searchParams.has("auth_flow")) {
+          url.searchParams.delete("auth_flow");
+          window.history.replaceState({}, "", url.toString());
         }
       }
       return;
@@ -186,8 +183,8 @@ function PracticeFlowInner() {
     }
 
     // Check if we're in the middle of an auth flow (user clicked sign in, being redirected)
-    const inAuthFlow = typeof window !== 'undefined' &&
-      new URL(window.location.href).searchParams.has('auth_flow');
+    const inAuthFlow =
+      typeof window !== "undefined" && new URL(window.location.href).searchParams.has("auth_flow");
 
     // If not authenticated (and not signed in via Clerk) and has completed protected steps, clear them
     // Don't clear if user is signed in via Clerk - they're in the process of auth state sync
@@ -195,7 +192,7 @@ function PracticeFlowInner() {
     // This prevents clearing progress when page reloads after Clerk auth redirect
     // and Clerk hasn't finished loading yet (isSignedIn is briefly false)
     // OAuth flows can take 5-8 seconds (redirect to provider + back + Clerk initialization)
-    const recentlyUpdated = state.updatedAt && (Date.now() - state.updatedAt) < 10000;
+    const recentlyUpdated = state.updatedAt && Date.now() - state.updatedAt < 10000;
 
     // Don't clear progress if we're in an auth flow (URL flag present)
     if (!state.auth.isAuthed && !signedIn && !recentlyUpdated && !inAuthFlow) {
@@ -254,7 +251,10 @@ function PracticeFlowInner() {
   const config = STEP_CONFIGS[currentStep];
   const isSandboxStep = currentStep === "sandbox";
 
-  const nextDisabled = useMemo(() => (config?.nextDisabled ? config.nextDisabled(session) : false), [config, session]);
+  const nextDisabled = useMemo(
+    () => (config?.nextDisabled ? config.nextDisabled(session) : false),
+    [config, session]
+  );
   const showBack = config?.showBack ?? PRACTICE_STEPS.indexOf(currentStep) > 0;
   const showNext = config?.showNext ?? true;
   const nextLabel = config?.nextLabel ?? "Next";
@@ -486,7 +486,12 @@ function PracticeFlowInner() {
           scenarioTitle={scenarioTitle}
           onStepChange={async (step) => {
             // Allow free navigation to already-completed steps and unlock steps one at a time
-            const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
+            const stepsNeedingScoring: PracticeStep[] = [
+              "functional",
+              "nonFunctional",
+              "api",
+              "sandbox",
+            ];
             const currentIndex = PRACTICE_STEPS.indexOf(currentStep);
             const targetIndex = PRACTICE_STEPS.indexOf(step);
 
@@ -513,7 +518,8 @@ function PracticeFlowInner() {
 
             // Check if current step needs scoring and hasn't been scored yet
             const currentStepNeedsScoring = stepsNeedingScoring.includes(currentStep);
-            const currentStepNotScored = currentStepNeedsScoring &&
+            const currentStepNotScored =
+              currentStepNeedsScoring &&
               (currentStep === "sandbox"
                 ? !session.state.scores?.design
                 : currentStep === "score"
@@ -574,10 +580,11 @@ function PracticeFlowInner() {
           className={
             isSandboxStep
               ? "flex-1 min-h-0 overflow-hidden pt-[120px] sm:pt-[200px]"
-              : "flex-1 min-h-0 overflow-hidden pb-20 sm:pb-28 pt-[120px] sm:pt-[200px]"
+              : "flex-1 min-h-0 overflow-y-auto pb-20 sm:pb-28 pt-[120px] sm:pt-[200px]"
           }
           style={{
-            paddingBottom: !isSandboxStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
+            paddingBottom:
+              !isSandboxStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
           }}
         >
           <PracticeStepContent
@@ -616,7 +623,9 @@ function PracticeFlowInner() {
               sideOffset={8}
             >
               <p className="text-xs sm:text-sm font-semibold">Add Components</p>
-              <p className="text-[10px] sm:text-xs mt-0.5 sm:mt-1">Click here to add services, databases, caches, and more to your architecture</p>
+              <p className="text-[10px] sm:text-xs mt-0.5 sm:mt-1">
+                Click here to add services, databases, caches, and more to your architecture
+              </p>
             </TooltipContent>
           </Tooltip>
         ) : null}
@@ -626,19 +635,25 @@ function PracticeFlowInner() {
         <IterativeFeedbackModal
           isOpen={
             !!iterativeFeedbackState.result &&
-            (currentStep === "functional" || currentStep === "nonFunctional" || currentStep === "api")
+            (currentStep === "functional" ||
+              currentStep === "nonFunctional" ||
+              currentStep === "api")
           }
           currentStep={currentStep}
           result={iterativeFeedbackState.result!}
           onClose={() => clearIterativeFeedback()}
-          onContinue={iterativeFeedbackState.result && !iterativeFeedbackState.result.ui.blocking ? proceedToNext : undefined}
+          onContinue={
+            iterativeFeedbackState.result && !iterativeFeedbackState.result.ui.blocking
+              ? proceedToNext
+              : undefined
+          }
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
 
         <footer
           className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur"
           style={{
-            transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : 'none',
+            transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
           }}
         >
           <PracticeFeedbackPanel
@@ -651,7 +666,10 @@ function PracticeFlowInner() {
               setScoringFeedback(null);
               clearIterativeFeedback(); // Also clear iterative feedback state
               if (currentStep !== "sandbox") {
-                session.setStepScore(currentStep as "functional" | "nonFunctional" | "api", undefined);
+                session.setStepScore(
+                  currentStep as "functional" | "nonFunctional" | "api",
+                  undefined
+                );
               }
             }}
             onContinue={proceedToNext}
@@ -676,7 +694,10 @@ function PracticeFlowInner() {
                 ? state.requirements.functionalSummary
                 : currentStep === "nonFunctional"
                   ? state.requirements.nonFunctional.notes
-                  : currentStep === "api" && apiMobileEditing && typeof window !== "undefined" && window._apiMobileEditorVoiceValue !== undefined
+                  : currentStep === "api" &&
+                      apiMobileEditing &&
+                      typeof window !== "undefined" &&
+                      window._apiMobileEditorVoiceValue !== undefined
                     ? window._apiMobileEditorVoiceValue
                     : undefined
             }
@@ -698,7 +719,10 @@ function PracticeFlowInner() {
                         },
                       });
                     }
-                  : currentStep === "api" && apiMobileEditing && typeof window !== "undefined" && window._apiMobileEditorVoiceOnChange
+                  : currentStep === "api" &&
+                      apiMobileEditing &&
+                      typeof window !== "undefined" &&
+                      window._apiMobileEditorVoiceOnChange
                     ? window._apiMobileEditorVoiceOnChange
                     : undefined
             }

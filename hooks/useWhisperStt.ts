@@ -228,8 +228,7 @@ export function useWhisperStt(options: SttHookOptions): SttHookState {
       setIsConnecting(false);
       setIsRecording(true);
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to start recording";
+      const message = err instanceof Error ? err.message : "Failed to start recording";
       logger.error("Failed to start recording:", err);
       setError(message);
       setIsConnecting(false);

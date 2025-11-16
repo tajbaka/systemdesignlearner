@@ -25,5 +25,3 @@ export class UndoStack {
     return structuredClone(next);
   }
 }
-
-

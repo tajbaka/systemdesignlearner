@@ -22,6 +22,7 @@ Run the SQL migration in your Supabase SQL editor:
 ```
 
 This will create:
+
 - `email_subscriptions` table for newsletter signups and feedback tracking (allows same email for different types)
 - `feedback_submissions` table for detailed feedback content
 - Proper indexes and Row Level Security policies
@@ -33,11 +34,13 @@ This will create:
 If you've already run the initial schema, run these migrations in order:
 
 1. **Fix unique constraint:**
+
 ```sql
 -- Copy and paste the contents of database/migrations/002_update_unique_constraint.sql
 ```
 
 2. **Add consent and provenance fields:**
+
 ```sql
 -- Copy and paste the contents of database/migrations/003_add_consent_and_provenance.sql
 ```

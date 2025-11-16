@@ -12,6 +12,7 @@ This directory contains React Email templates for sending confirmation emails to
 ### 1. Install Dependencies
 
 Already installed:
+
 ```bash
 npm install react-email @react-email/components resend
 ```
@@ -38,6 +39,7 @@ EMAIL_FROM=noreply@yourdomain.com
 ### 4. Verify Your Domain (Production)
 
 For production use, you need to verify your domain in Resend:
+
 1. Go to Resend Dashboard → Domains
 2. Add your domain (e.g., `yourdomain.com`)
 3. Add the DNS records they provide to your domain's DNS settings
@@ -72,6 +74,7 @@ The email service provides two functions:
 2. **sendNewsletterConfirmation**: Sends a welcome email after newsletter subscription
 
 Both functions:
+
 - Check if `RESEND_API_KEY` is configured
 - Render the React Email template to HTML
 - Send the email via Resend
@@ -80,6 +83,7 @@ Both functions:
 ### API Integration
 
 The email functions are called in:
+
 - `app/api/feedback/route.ts`: Sends feedback confirmation after successful submission
 - `app/api/subscribe/route.ts`: Sends newsletter confirmation after successful subscription
 
@@ -90,6 +94,7 @@ Both API routes use a fire-and-forget pattern - the email is sent asynchronously
 ### Modifying Templates
 
 Edit the template files directly:
+
 - `emails/feedback-confirmation.tsx`
 - `emails/newsletter-confirmation.tsx`
 
@@ -106,6 +111,7 @@ React Email uses inline styles for maximum email client compatibility. All style
 ## Email Client Compatibility
 
 React Email templates are designed to work across all major email clients:
+
 - Gmail
 - Outlook
 - Apple Mail

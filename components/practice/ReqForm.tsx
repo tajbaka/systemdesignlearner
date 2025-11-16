@@ -32,7 +32,13 @@ const ensureDefaults = (value?: Requirements): Requirements => {
   return next;
 };
 
-export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false }: ReqFormProps) => {
+export const ReqForm = ({
+  value,
+  locked,
+  onChange,
+  onContinue,
+  readOnly = false,
+}: ReqFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const requirements = useMemo(() => ensureDefaults(value), [value]);
 
@@ -48,7 +54,6 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
     };
     onChange(next);
   };
-
 
   const handleNonFunctionalChange = (key: keyof Requirements["nonFunctional"], raw: string) => {
     if (readOnly) return;
@@ -90,12 +95,14 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
                 requirements.functional[toggle.id]
                   ? "border-blue-400 bg-blue-950/50"
                   : "border-zinc-700"
-              } ${(locked || readOnly) ? "opacity-60" : ""}`}
+              } ${locked || readOnly ? "opacity-60" : ""}`}
               onClick={() => handleToggle(toggle.id)}
             >
               <span className="flex-1 min-w-0">
                 <span className="text-sm font-semibold text-white block">{toggle.label}</span>
-                <span className="block text-xs text-zinc-400 leading-relaxed">{toggle.description}</span>
+                <span className="block text-xs text-zinc-400 leading-relaxed">
+                  {toggle.description}
+                </span>
               </span>
             </div>
           ))}
@@ -162,12 +169,17 @@ export const ReqForm = ({ value, locked, onChange, onContinue, readOnly = false 
         </div>
         <div className="mt-4 rounded-lg bg-amber-900/60 p-3 sm:p-4">
           <p className="text-sm text-amber-200 leading-relaxed">
-            Keep read latency low by serving redirects from cache or edge. Database must not sit on the hot redirect path.
+            Keep read latency low by serving redirects from cache or edge. Database must not sit on
+            the hot redirect path.
           </p>
         </div>
       </section>
 
-      {error ? <p role="alert" className="text-sm text-red-400">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-400">
+          {error}
+        </p>
+      ) : null}
 
       <div className="flex justify-end pt-2">
         <button

@@ -62,17 +62,8 @@ const Diagram = ({ components }: { components: string[] }) => (
       const y = 12 + index * 34;
       return (
         <g key={component} transform={`translate(16, ${y})`}>
-          <rect
-            width={208}
-            height={28}
-            rx={8}
-            className="fill-blue-950 stroke-blue-400/80"
-          />
-          <text
-            x={12}
-            y={18}
-            className="fill-blue-200 text-[10px] sm:text-[12px] font-medium"
-          >
+          <rect width={208} height={28} rx={8} className="fill-blue-950 stroke-blue-400/80" />
+          <text x={12} y={18} className="fill-blue-200 text-[10px] sm:text-[12px] font-medium">
             {component}
           </text>
         </g>
@@ -81,7 +72,13 @@ const Diagram = ({ components }: { components: string[] }) => (
   </svg>
 );
 
-export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly = false }: HighLevelPresetsProps) => {
+export const HighLevelPresets = ({
+  value,
+  locked,
+  onChange,
+  onContinue,
+  readOnly = false,
+}: HighLevelPresetsProps) => {
   const [error, setError] = useState<string | null>(null);
 
   const currentPresetId = value?.presetId;
@@ -110,7 +107,8 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly
   return (
     <div className="space-y-4 sm:space-y-6">
       <p className="text-sm text-zinc-400 px-1">
-        Choose the architecture that best fits the redirect workload. Cards are keyboard focusable and clickable.
+        Choose the architecture that best fits the redirect workload. Cards are keyboard focusable
+        and clickable.
       </p>
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {PRESETS.map((preset) => {
@@ -120,7 +118,7 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly
               key={preset.presetId}
               type="button"
               onClick={() => {
-                if ('vibrate' in navigator && !isSelected) navigator.vibrate(30);
+                if ("vibrate" in navigator && !isSelected) navigator.vibrate(30);
                 handleSelect(preset);
               }}
               disabled={locked || readOnly}
@@ -129,12 +127,16 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly
                 isSelected
                   ? "border-blue-400 bg-blue-950"
                   : "border-zinc-700 bg-zinc-900 hover:border-blue-400/60 hover:bg-blue-950/40"
-              } ${(locked || readOnly) ? "opacity-60" : ""}`}
+              } ${locked || readOnly ? "opacity-60" : ""}`}
             >
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div className="flex-1 min-w-0">
-                  <span className="block text-base sm:text-lg font-semibold text-white">{preset.title}</span>
-                  <span className="block text-sm text-zinc-400 leading-relaxed">{preset.tagline}</span>
+                  <span className="block text-base sm:text-lg font-semibold text-white">
+                    {preset.title}
+                  </span>
+                  <span className="block text-sm text-zinc-400 leading-relaxed">
+                    {preset.tagline}
+                  </span>
                 </div>
                 {preset.highlight ? (
                   <span className="rounded-full bg-emerald-500 px-2 sm:px-3 py-1 text-xs font-semibold text-white flex-shrink-0">
@@ -145,14 +147,20 @@ export const HighLevelPresets = ({ value, locked, onChange, onContinue, readOnly
               <Diagram components={preset.components} />
               <ul className="mt-3 sm:mt-4 list-disc space-y-1 pl-4 sm:pl-5 text-xs text-zinc-400">
                 {preset.notes?.map((note) => (
-                  <li key={note} className="leading-relaxed">{note}</li>
+                  <li key={note} className="leading-relaxed">
+                    {note}
+                  </li>
                 ))}
               </ul>
             </button>
           );
         })}
       </div>
-      {error ? <p role="alert" className="text-sm text-red-400">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-400">
+          {error}
+        </p>
+      ) : null}
       <div className="flex justify-end pt-2">
         <button
           type="button"

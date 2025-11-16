@@ -64,10 +64,11 @@ const handleNext = async () => {
       // ... simulation handling
     }
   }
-}
+};
 ```
 
 **What happens:**
+
 1. Checks if already verifying (prevents double-clicks)
 2. Sets verification state to show loading UI
 3. Routes to sandbox-specific logic
@@ -83,15 +84,17 @@ if (session.currentStep === "sandbox") {
     setVerification({
       isVerifying: false,
       result: {
-        blocking: [{
-          category: "requirement",
-          severity: "blocking",
-          message: "Please run the simulation before continuing.",
-          actionable: "Click the 'Run Simulation' button to test your design."
-        }],
-        canProceed: false
+        blocking: [
+          {
+            category: "requirement",
+            severity: "blocking",
+            message: "Please run the simulation before continuing.",
+            actionable: "Click the 'Run Simulation' button to test your design.",
+          },
+        ],
+        canProceed: false,
       },
-      error: null
+      error: null,
     });
     return;
   }
@@ -103,6 +106,7 @@ if (session.currentStep === "sandbox") {
 ```
 
 **What happens:**
+
 1. Checks `session.state.sandbox.simulationCompleted` flag
 2. If simulation wasn't run, shows blocking error
 3. If simulation is running, waits for completion
@@ -155,10 +159,11 @@ const evaluateCurrentStep = async (
       break;
     }
   }
-}
+};
 ```
 
 **What happens:**
+
 1. Creates a progress tracker for UI updates
 2. Gathers input data:
    - Design nodes (components placed on board)
@@ -239,6 +244,7 @@ for (const requirement of config.componentRequirements) {
 ```
 
 **What it checks:**
+
 - Is there a Service component? ✓
 - Is there a Cache (Redis/Memcached)? ✓
 - Is there a Database (Postgres/MySQL/MongoDB)? ✓
@@ -247,6 +253,7 @@ for (const requirement of config.componentRequirements) {
 - Is there a Rate Limiter (if rate limiting selected)? ✓
 
 **Scoring:**
+
 - Each required component present = +5 points
 - Each optional component present = +2-3 points
 - Missing required component = blocking error
@@ -372,6 +379,7 @@ private async explainWithAI(
 ```
 
 **AI receives:**
+
 - Current score breakdown
 - List of components in design
 - List of connections in design
@@ -381,6 +389,7 @@ private async explainWithAI(
 - What's missing (warnings/blocking)
 
 **AI provides:**
+
 - Enhanced explanations of architectural decisions
 - Specific advice on improving the design
 - Context-aware suggestions based on requirements
@@ -402,11 +411,7 @@ const handleRunSimulation = async () => {
 
   try {
     // Find path through architecture
-    const path = findScenarioPath(
-      design.nodes,
-      design.edges,
-      SCENARIOS.urlShortener
-    );
+    const path = findScenarioPath(design.nodes, design.edges, SCENARIOS.urlShortener);
 
     // Evaluate the scenario
     const results = evaluateScenario(
@@ -428,16 +433,16 @@ const handleRunSimulation = async () => {
       simulationResults: results,
       simulationCompleted: true,
     });
-
   } catch (err) {
     setSimulationError("Simulation failed");
   } finally {
     setIsRunning(false);
   }
-}
+};
 ```
 
 **What happens:**
+
 1. Finds a valid path through the architecture
 2. Simulates requests flowing through that path
 3. Calculates latencies, throughput, costs
@@ -461,7 +466,7 @@ export function findScenarioPath(
   type State = {
     current: NodeId | null;
     path: NodeId[];
-    visited: Set<NodeId>
+    visited: Set<NodeId>;
   };
 
   // Build bidirectional adjacency map
@@ -494,7 +499,7 @@ export function findScenarioPath(
           nextStates.push({
             current: candidate,
             path: [candidate],
-            visited: new Set([candidate])
+            visited: new Set([candidate]),
           });
           stepAdvanced = true;
         }
@@ -503,7 +508,7 @@ export function findScenarioPath(
           nextStates.push({
             current: candidate,
             path: [...state.path, candidate],
-            visited: new Set([...state.visited, candidate])
+            visited: new Set([...state.visited, candidate]),
           });
           stepAdvanced = true;
         }
@@ -524,7 +529,7 @@ export function findScenarioPath(
 
   return {
     nodeIds: bestState.path,
-    missingKinds: Array.from(missingKinds)
+    missingKinds: Array.from(missingKinds),
   };
 }
 ```
@@ -577,7 +582,7 @@ export function evaluateScenario(
 
   // Calculate metrics for each node in path
   for (const nodeId of path) {
-    const node = nodes.find(n => n.id === nodeId);
+    const node = nodes.find((n) => n.id === nodeId);
     if (!node) continue;
 
     const spec = node.spec;
@@ -600,7 +605,7 @@ export function evaluateScenario(
     pathComponents.push({
       kind: spec.kind,
       latency: Math.round(latency),
-      rps: effectiveRps
+      rps: effectiveRps,
     });
   }
 
@@ -616,8 +621,8 @@ export function evaluateScenario(
     path: pathComponents,
     meetsRequirements: {
       rps: meetsRpsRequirement,
-      latency: meetsLatencyRequirement
-    }
+      latency: meetsLatencyRequirement,
+    },
   };
 }
 ```
@@ -663,26 +668,24 @@ Each component requirement can be `requiredBy` functional requirements:
 
 ```typescript
 // Component is required if any of its requiredBy conditions are met
-const isRequired = requirement.requiredBy?.some(
-  (reqId) => functionalRequirements[reqId]
-);
+const isRequired = requirement.requiredBy?.some((reqId) => functionalRequirements[reqId]);
 
 if (isRequired && matchingNodes.length === 0) {
   // User selected "redirection" but no cache present
   blocking.push({
-    message: "Cache is required for redirection"
+    message: "Cache is required for redirection",
   });
 }
 ```
 
 **Examples:**
 
-| Functional Requirement | Required Components |
-|------------------------|---------------------|
-| `url-shortening` | Service, Database |
-| `redirection` | Service, Cache, Database |
-| `basic-analytics` | Message Queue, Worker Pool |
-| `rate-limiting` | Rate Limiter |
+| Functional Requirement | Required Components        |
+| ---------------------- | -------------------------- |
+| `url-shortening`       | Service, Database          |
+| `redirection`          | Service, Cache, Database   |
+| `basic-analytics`      | Message Queue, Worker Pool |
+| `rate-limiting`        | Rate Limiter               |
 
 ### Non-Functional Requirements → Design
 
@@ -709,24 +712,25 @@ Architecture patterns can be triggered by NFR thresholds:
 
 ```typescript
 // Check if NFR thresholds trigger this pattern
-const isTriggered = pattern.triggeredBy.nfrThresholds &&
+const isTriggered =
+  pattern.triggeredBy.nfrThresholds &&
   Object.entries(pattern.triggeredBy.nfrThresholds).some(
     ([key, threshold]) => nonFunctionalRequirements[key] >= threshold
   );
 
 if (isTriggered && !hasAllComponents) {
   warnings.push({
-    message: pattern.feedbackTemplates.missing
+    message: pattern.feedbackTemplates.missing,
   });
 }
 ```
 
 **Examples:**
 
-| NFR Threshold | Required Pattern |
-|---------------|------------------|
-| readRps > 10,000 | Load Balancer + replicas |
-| p95RedirectMs < 50ms | Cache-aside pattern |
+| NFR Threshold        | Required Pattern              |
+| -------------------- | ----------------------------- |
+| readRps > 10,000     | Load Balancer + replicas      |
+| p95RedirectMs < 50ms | Cache-aside pattern           |
 | availability > 99.9% | Multi-region deployment hints |
 
 ### API Definitions → Design
@@ -747,7 +751,7 @@ When user modifies the board:
 const handleNodesChange = (newNodes: PlacedNode[]) => {
   setDesign({
     ...design,
-    nodes: newNodes
+    nodes: newNodes,
   });
 
   // Clear simulation results when design changes
@@ -755,7 +759,7 @@ const handleNodesChange = (newNodes: PlacedNode[]) => {
     ...design,
     nodes: newNodes,
     simulationCompleted: false,
-    simulationResults: null
+    simulationResults: null,
   });
 
   // Clear design score
@@ -845,29 +849,34 @@ Design evaluated with new state
 ### Key Files & Their Roles
 
 #### Navigation & Orchestration
+
 - **`hooks/usePracticeNavigation.ts`**: Handles "Next" button, verification flow
 - **`components/practice/PracticeFlow.tsx`**: Main practice session container
 - **`components/practice/PracticeFooter.tsx`**: Footer with navigation buttons
 
 #### Scoring & Evaluation
+
 - **`hooks/usePracticeScoring.ts`**: Evaluates each step, routes to engines
 - **`lib/scoring/engines/design.ts`**: Design scoring engine (components, patterns, paths)
 - **`lib/scoring/configs/url-shortener.json`**: Requirements and scoring rules
 - **`lib/scoring/types.ts`**: TypeScript types for scoring system
 
 #### Simulation
+
 - **`components/practice/stages/RunStage.tsx`**: Simulation UI and execution
 - **`lib/scenarios.ts`**: Scenario definitions and evaluation logic
 - **`app/components/utils.ts`**: Path finding algorithms
 - **`app/components/data.ts`**: Component library with specs
 
 #### Design State Management
+
 - **`components/practice/stages/DesignStage.tsx`**: Design board container
 - **`app/components/ReactFlowBoard.tsx`**: React Flow integration
 - **`app/components/SystemDesignNode.tsx`**: Individual component rendering
 - **`components/practice/session/PracticeSessionProvider.tsx`**: Session state
 
 #### Feedback & UI
+
 - **`components/practice/FeedbackModal.tsx`**: Scoring feedback modal
 - **`components/practice/VerificationFeedback.tsx`**: Inline validation feedback
 - **`components/practice/EvaluationProgress.tsx`**: Progress indicator during scoring
@@ -961,14 +970,15 @@ Design evaluated with new state
    - Connect Cache → Database
 
 3. **User clicks "Run Simulation":**
+
    ```typescript
    // Path finding starts
-   findScenarioPath(nodes, edges, SCENARIOS.urlShortener)
+   findScenarioPath(nodes, edges, SCENARIOS.urlShortener);
 
    // Returns: [web-1, api-gw-1, service-1, cache-1, db-1]
 
    // Scenario evaluation
-   evaluateScenario(scenario, nodes, edges, path)
+   evaluateScenario(scenario, nodes, edges, path);
 
    // Calculates:
    // - Latency: 3ms + 2ms + 5ms + 1ms + 4ms = 15ms ✓
@@ -977,6 +987,7 @@ Design evaluated with new state
    ```
 
 4. **Results displayed:**
+
    ```
    ✓ Latency: 15ms (target: <100ms)
    ✓ Throughput: 1,200 RPS (target: >1,000 RPS)
@@ -986,6 +997,7 @@ Design evaluated with new state
    ```
 
 5. **User clicks "Next":**
+
    ```typescript
    // Verification starts
    handleNext() → evaluateCurrentStep("sandbox")
@@ -1004,6 +1016,7 @@ Design evaluated with new state
    ```
 
 6. **Component check:**
+
    ```typescript
    // ✓ Service present (+5 points)
    // ✓ Cache (Redis) present (+5 points)
@@ -1013,6 +1026,7 @@ Design evaluated with new state
    ```
 
 7. **Pattern check:**
+
    ```typescript
    // ✓ Cache-aside pattern detected (+10 points)
    //   Service → Cache → Database connection found
@@ -1021,6 +1035,7 @@ Design evaluated with new state
    ```
 
 8. **Critical path check:**
+
    ```typescript
    // ✓ Redirect path valid (+10 points)
    //   Web → API Gateway → Service → Cache → Database
@@ -1029,6 +1044,7 @@ Design evaluated with new state
    ```
 
 9. **Final score:**
+
    ```
    Components: 15/15
    Patterns: 10/10
@@ -1037,6 +1053,7 @@ Design evaluated with new state
    ```
 
 10. **AI feedback generated:**
+
     ```
     ✓ Outstanding architecture!
     ✓ Cache-aside pattern ensures fast redirects
@@ -1051,10 +1068,11 @@ Design evaluated with new state
     - User can click "Continue" or "Revise"
 
 12. **User adds Message Queue:**
+
     ```typescript
     // State updated
-    simulationCompleted = false  // Invalidated
-    designScore = undefined      // Cleared
+    simulationCompleted = false; // Invalidated
+    designScore = undefined; // Cleared
 
     // Must re-run simulation
     ```
@@ -1091,12 +1109,12 @@ Design evaluated with new state
 
 ### Bottlenecks & Solutions
 
-| Bottleneck | Impact | Solution |
-|------------|--------|----------|
-| AI feedback latency | 2-3s delay | Show structural results immediately, AI enhances async |
-| Path finding complexity | O(n²) worst case | Bidirectional search, early pruning, deduplication |
-| React Flow re-renders | Laggy dragging | Memoized node data, debounced position updates |
-| Large edge lists | Slow connection validation | Adjacency map indexing, Set-based lookups |
+| Bottleneck              | Impact                     | Solution                                               |
+| ----------------------- | -------------------------- | ------------------------------------------------------ |
+| AI feedback latency     | 2-3s delay                 | Show structural results immediately, AI enhances async |
+| Path finding complexity | O(n²) worst case           | Bidirectional search, early pruning, deduplication     |
+| React Flow re-renders   | Laggy dragging             | Memoized node data, debounced position updates         |
+| Large edge lists        | Slow connection validation | Adjacency map indexing, Set-based lookups              |
 
 ---
 
@@ -1140,6 +1158,7 @@ Design evaluated with new state
 **Cause**: `simulationCompleted` flag is false
 
 **Debug**:
+
 ```typescript
 console.log(session.state.sandbox.simulationCompleted); // false
 ```
@@ -1151,9 +1170,16 @@ console.log(session.state.sandbox.simulationCompleted); // false
 **Cause**: Components not matching configuration
 
 **Debug**:
+
 ```typescript
-console.log("Nodes:", nodes.map(n => n.spec.kind));
-console.log("Required:", config.componentRequirements.map(r => r.kind));
+console.log(
+  "Nodes:",
+  nodes.map((n) => n.spec.kind)
+);
+console.log(
+  "Required:",
+  config.componentRequirements.map((r) => r.kind)
+);
 ```
 
 **Solution**: Check component names match exactly (case-sensitive)
@@ -1163,6 +1189,7 @@ console.log("Required:", config.componentRequirements.map(r => r.kind));
 **Cause**: Missing connections in architecture
 
 **Debug**:
+
 ```typescript
 console.log("Adjacency:", adjacency);
 console.log("Missing kinds:", missingKinds);
@@ -1175,6 +1202,7 @@ console.log("Missing kinds:", missingKinds);
 **Cause**: OpenAI API error or rate limit
 
 **Debug**:
+
 ```typescript
 console.log("AI error:", error);
 ```
@@ -1194,12 +1222,14 @@ Step 4's simulation and scoring system is a multi-phase pipeline that:
 5. **Evaluates** against requirements
 
 The system is designed to be:
+
 - **Incremental**: Score updates as user builds
 - **Explainable**: Detailed feedback on every decision
 - **Adaptive**: Requirements flow from previous steps
 - **Performant**: Optimized algorithms with caching
 
 By understanding this flow, you can:
+
 - Debug scoring issues
 - Extend scoring rules
 - Add new component types

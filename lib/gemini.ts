@@ -4,7 +4,9 @@ let genAI: GoogleGenerativeAI | null = null;
 
 function getGenAI() {
   if (!process.env.GEMINI_API_KEY) {
-    throw new Error("GEMINI_API_KEY environment variable is not set. Please add it to your .env file. Get a free API key at https://aistudio.google.com/app/apikey");
+    throw new Error(
+      "GEMINI_API_KEY environment variable is not set. Please add it to your .env file. Get a free API key at https://aistudio.google.com/app/apikey"
+    );
   }
 
   if (!genAI) {

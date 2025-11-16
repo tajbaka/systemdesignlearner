@@ -15,7 +15,9 @@ import type {
   QualitativeAspect,
 } from "../types";
 
-export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalScoringInput, NonFunctionalScoringConfig> {
+export class NonFunctionalScoringEngine
+  implements IScoringEngine<NonFunctionalScoringInput, NonFunctionalScoringConfig>
+{
   /**
    * Evaluate non-functional requirements qualitatively
    */
@@ -37,7 +39,8 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
         category: "requirement",
         severity: "blocking",
         message: `Please provide more detail about your non-functional requirements (at least ${minLength} characters).`,
-        actionable: "Describe performance, scalability, availability, and other quality attributes.",
+        actionable:
+          "Describe performance, scalability, availability, and other quality attributes.",
       });
       return {
         score: 0,
@@ -53,8 +56,14 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
     // Check for coreRequirements and optionalRequirements (new structure)
     if (config.coreRequirements || config.optionalRequirements) {
       // Calculate total weights
-      const totalCoreWeight = (config.coreRequirements || []).reduce((sum, req) => sum + req.weight, 0);
-      const totalOptionalWeight = (config.optionalRequirements || []).reduce((sum, req) => sum + req.weight, 0);
+      const totalCoreWeight = (config.coreRequirements || []).reduce(
+        (sum, req) => sum + req.weight,
+        0
+      );
+      const totalOptionalWeight = (config.optionalRequirements || []).reduce(
+        (sum, req) => sum + req.weight,
+        0
+      );
 
       // Evaluate core requirements
       let coreScore = 0;
@@ -209,7 +218,9 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
     // Apply decision rules
     if (decisionRules) {
       for (const rule of decisionRules) {
-        const conditionMet = functionalRequirements[rule.condition.functionalRequirementId] === rule.condition.required;
+        const conditionMet =
+          functionalRequirements[rule.condition.functionalRequirementId] ===
+          rule.condition.required;
         if (conditionMet) {
           rule.questions.forEach((q) => applicable.add(q));
         }
@@ -219,7 +230,9 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
     // Check individual question requiredBy
     for (const question of allQuestions) {
       if (question.requiredBy && question.requiredBy.length > 0) {
-        const required = question.requiredBy.some((reqId) => functionalRequirements[reqId] === true);
+        const required = question.requiredBy.some(
+          (reqId) => functionalRequirements[reqId] === true
+        );
         if (required) {
           applicable.add(question.id);
         }
@@ -251,7 +264,9 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
           feedback: {
             category: "requirement",
             severity: "blocking",
-            message: question.feedbackTemplates.missing || `Missing required value for: ${question.prompt}`,
+            message:
+              question.feedbackTemplates.missing ||
+              `Missing required value for: ${question.prompt}`,
             relatedTo: question.id,
             actionable: `Please specify ${question.prompt.toLowerCase()}`,
           },
@@ -291,7 +306,9 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
         feedback: {
           category: "performance",
           severity: "warning",
-          message: question.feedbackTemplates.tooLow || `${question.prompt}: ${value} ${range.unit || ""} may be too low.`,
+          message:
+            question.feedbackTemplates.tooLow ||
+            `${question.prompt}: ${value} ${range.unit || ""} may be too low.`,
           relatedTo: question.id,
           actionable: `Consider a value closer to ${range.target || range.min} ${range.unit || ""}`,
         },
@@ -305,7 +322,9 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
         feedback: {
           category: "performance",
           severity: "warning",
-          message: question.feedbackTemplates.tooHigh || `${question.prompt}: ${value} ${range.unit || ""} is very high.`,
+          message:
+            question.feedbackTemplates.tooHigh ||
+            `${question.prompt}: ${value} ${range.unit || ""} is very high.`,
           relatedTo: question.id,
           actionable: `This requires significant infrastructure. Ensure your design scales appropriately.`,
         },
@@ -313,7 +332,7 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
     }
 
     // Value is within optimal range
-    const isNearTarget = range.target && Math.abs(value - range.target) <= (range.target * 0.3);
+    const isNearTarget = range.target && Math.abs(value - range.target) <= range.target * 0.3;
     return {
       score: weight,
       feedback: {
@@ -359,7 +378,10 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
   /**
    * Extract value from input based on question ID
    */
-  private extractValue(questionId: string, input: NonFunctionalScoringInput): number | string | null {
+  private extractValue(
+    questionId: string,
+    input: NonFunctionalScoringInput
+  ): number | string | null {
     switch (questionId) {
       case "read-rps":
         return input.readRps;
@@ -398,7 +420,8 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
       warnings.push({
         category: "performance",
         severity: "warning",
-        message: "99.99% availability requires multi-region deployment, automated failover, and comprehensive monitoring.",
+        message:
+          "99.99% availability requires multi-region deployment, automated failover, and comprehensive monitoring.",
         actionable: "Ensure your design includes redundancy at every layer.",
       });
     }
@@ -413,7 +436,8 @@ export class NonFunctionalScoringEngine implements IScoringEngine<NonFunctionalS
       warnings.push({
         category: "performance",
         severity: "info",
-        message: "High write throughput (5K+ RPS) requires careful database selection and potentially sharding.",
+        message:
+          "High write throughput (5K+ RPS) requires careful database selection and potentially sharding.",
         actionable: "Consider write-optimized databases or event sourcing patterns.",
       });
     }

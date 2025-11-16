@@ -19,5 +19,3 @@ export function decodeDesign<T = unknown>(str: string): T {
   const json = inflate(bytes, { to: "string" }) as string;
   return JSON.parse(json) as T;
 }
-
-

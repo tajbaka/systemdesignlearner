@@ -31,7 +31,11 @@ export function useIterativeFeedback() {
       _additionalContext?: string
     ): Promise<IterativeFeedbackResult | null> => {
       // Only run for steps that currently support the Gemini iterative loop
-      if (currentStep !== "functional" && currentStep !== "nonFunctional" && currentStep !== "api") {
+      if (
+        currentStep !== "functional" &&
+        currentStep !== "nonFunctional" &&
+        currentStep !== "api"
+      ) {
         return null;
       }
 
@@ -46,34 +50,43 @@ export function useIterativeFeedback() {
       const startedAt = getNow();
 
       try {
-
         const feedback = session.state.iterativeFeedback;
         if (!feedback) {
           throw new Error("Iterative feedback state not initialized");
         }
 
-        const stepKey = currentStep === "functional" ? "functional"
-          : currentStep === "nonFunctional" ? "nonFunctional"
-          : "api";
-        const stepFeedback = currentStep === "functional"
-          ? feedback.functional
-          : currentStep === "nonFunctional"
-          ? feedback.nonFunctional
-          : feedback.api;
+        const stepKey =
+          currentStep === "functional"
+            ? "functional"
+            : currentStep === "nonFunctional"
+              ? "nonFunctional"
+              : "api";
+        const stepFeedback =
+          currentStep === "functional"
+            ? feedback.functional
+            : currentStep === "nonFunctional"
+              ? feedback.nonFunctional
+              : feedback.api;
 
-        const userContent = currentStep === "functional"
-          ? session.state.requirements.functionalSummary
-          : currentStep === "nonFunctional"
-          ? session.state.requirements.nonFunctional.notes
-          : session.state.apiDefinition.endpoints.map(ep =>
-              `${ep.method} ${ep.path}: ${ep.notes}`
-            ).join("\n\n");
+        const userContent =
+          currentStep === "functional"
+            ? session.state.requirements.functionalSummary
+            : currentStep === "nonFunctional"
+              ? session.state.requirements.nonFunctional.notes
+              : session.state.apiDefinition.endpoints
+                  .map((ep) => `${ep.method} ${ep.path}: ${ep.notes}`)
+                  .join("\n\n");
 
         // Check if we have a cached result for unchanged content
         if (stepFeedback.lastContent === userContent && stepFeedback.cachedResult) {
           logger.info("[useIterativeFeedback] Using cached result, content unchanged");
           const durationMs = getNow() - startedAt;
-          setState({ isLoading: false, result: stepFeedback.cachedResult, error: null, lastDurationMs: durationMs });
+          setState({
+            isLoading: false,
+            result: stepFeedback.cachedResult,
+            error: null,
+            lastDurationMs: durationMs,
+          });
           return stepFeedback.cachedResult;
         }
 
@@ -112,13 +125,16 @@ export function useIterativeFeedback() {
 
         // Update session with new question, content, cached result, and attempt count
         // Reset attempt count if topic resolved (no blocking issues)
-        session.updateIterativeFeedback(stepKey as "functional" | "nonFunctional" | "api", (prev) => ({
-          ...prev,
-          lastContent: userContent,
-          currentQuestion: result.nextQuestion?.question ?? null,
-          cachedResult: result, // Cache the result for instant display next time
-          attemptCount: result.ui.blocking ? newAttemptCount : 0, // Reset if not blocking
-        }));
+        session.updateIterativeFeedback(
+          stepKey as "functional" | "nonFunctional" | "api",
+          (prev) => ({
+            ...prev,
+            lastContent: userContent,
+            currentQuestion: result.nextQuestion?.question ?? null,
+            cachedResult: result, // Cache the result for instant display next time
+            attemptCount: result.ui.blocking ? newAttemptCount : 0, // Reset if not blocking
+          })
+        );
 
         const durationMs = getNow() - startedAt;
         setState({ isLoading: false, result, error: null, lastDurationMs: durationMs });
@@ -130,10 +146,16 @@ export function useIterativeFeedback() {
         });
         return result;
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to get iterative feedback";
+        const errorMessage =
+          error instanceof Error ? error.message : "Failed to get iterative feedback";
         logger.error("Iterative feedback failed:", error);
         const durationMs = getNow() - startedAt;
-        setState({ isLoading: false, result: null, error: errorMessage, lastDurationMs: durationMs });
+        setState({
+          isLoading: false,
+          result: null,
+          error: errorMessage,
+          lastDurationMs: durationMs,
+        });
         return null;
       }
     },
@@ -143,18 +165,15 @@ export function useIterativeFeedback() {
   /**
    * Reset feedback progress for a specific step or all steps
    */
-  const resetFeedback = useCallback(
-    (session: PracticeSessionValue, step?: PracticeStep) => {
-      if (step && ["functional", "nonFunctional", "api", "sandbox"].includes(step)) {
-        const stepKey = step === "sandbox" ? "design" : step;
-        session.resetIterativeFeedback(stepKey as "functional" | "nonFunctional" | "api" | "design");
-      } else {
-        session.resetIterativeFeedback();
-      }
-      setState({ isLoading: false, result: null, error: null, lastDurationMs: null });
-    },
-    []
-  );
+  const resetFeedback = useCallback((session: PracticeSessionValue, step?: PracticeStep) => {
+    if (step && ["functional", "nonFunctional", "api", "sandbox"].includes(step)) {
+      const stepKey = step === "sandbox" ? "design" : step;
+      session.resetIterativeFeedback(stepKey as "functional" | "nonFunctional" | "api" | "design");
+    } else {
+      session.resetIterativeFeedback();
+    }
+    setState({ isLoading: false, result: null, error: null, lastDurationMs: null });
+  }, []);
 
   /**
    * Clear current state without resetting session
@@ -167,7 +186,7 @@ export function useIterativeFeedback() {
    * Set iterative feedback state directly (for sandbox design scoring)
    */
   const setFeedbackState = useCallback((newState: Partial<IterativeFeedbackState>) => {
-    setState(prev => ({ ...prev, ...newState }));
+    setState((prev) => ({ ...prev, ...newState }));
   }, []);
 
   return {

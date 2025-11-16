@@ -52,7 +52,7 @@ export default function NodeCard({
     // Long press for delete mode (mobile only)
     longPressTimer.current = setTimeout(() => {
       if (!hasMoved.current) {
-        if ('vibrate' in navigator) {
+        if ("vibrate" in navigator) {
           navigator.vibrate([100, 50, 100, 50, 100]); // iOS-style vibration
         }
         // Trigger delete mode instead of drag
@@ -74,7 +74,7 @@ export default function NodeCard({
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
-    
+
     // Simple tap (not long press, not moved)
     if (!hasMoved.current) {
       onTouchEnd?.(e, node.id);
@@ -187,7 +187,12 @@ export default function NodeCard({
           title="Delete component"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       )}

@@ -3,7 +3,7 @@
 @plugin "tailwindcss-animate";
 
 /* React Flow styles */
-@import '@xyflow/react/dist/style.css';
+@import "@xyflow/react/dist/style.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -98,12 +98,12 @@ textarea {
 
 /* Hide scrollbars while maintaining functionality */
 .scrollbar-hide {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+  scrollbar-width: none; /* Firefox */
 }
 
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;  /* Safari and Chrome */
+  display: none; /* Safari and Chrome */
 }
 
 /* Styled scrollbar for text areas */
@@ -138,7 +138,8 @@ textarea {
 }
 
 /* Prevent pull-to-refresh and page scroll on touch devices */
-html, body {
+html,
+body {
   overscroll-behavior: none;
   overscroll-behavior-y: none;
   overscroll-behavior-x: none;
@@ -146,7 +147,8 @@ html, body {
 
 /* Additional mobile scroll prevention */
 @media screen and (max-width: 1024px) {
-  html, body {
+  html,
+  body {
     /* Completely prevent any scroll behavior on mobile */
     overscroll-behavior: none !important;
     -webkit-overflow-scrolling: touch;
@@ -184,16 +186,36 @@ html, body {
 }
 
 @keyframes haptic-pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.98); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.98);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* Shake animation for mobile delete mode */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
-  20%, 40%, 60%, 80% { transform: translateX(2px); }
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(2px);
+  }
 }
 
 .animate-shake {
@@ -302,8 +324,13 @@ html, body {
 
 /* Pulsing text animation */
 @keyframes pulse-slow {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 .animate-pulse-slow {
   animation: pulse-slow 2.5s ease-in-out infinite;
@@ -395,9 +422,15 @@ html, body {
 .cl-socialButtonsBlockButton,
 .cl-socialButtonsBlockButton__github,
 .cl-socialButtonsBlockButton__google {
-  background: linear-gradient(135deg, #27272a 0%, #1f1f23 100%) !important; /* zinc-800 to darker gradient */
+  background: linear-gradient(
+    135deg,
+    #27272a 0%,
+    #1f1f23 100%
+  ) !important; /* zinc-800 to darker gradient */
   border: 1px solid #3f3f46 !important; /* zinc-700 - subtle border */
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.03) inset !important;
+  box-shadow:
+    0 1px 3px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset !important;
   transition: all 0.2s ease !important;
   color: #fafafa !important; /* zinc-50 - near white */
 }
@@ -407,7 +440,9 @@ html, body {
 .cl-socialButtonsBlockButton__google:hover {
   background: linear-gradient(135deg, #3f3f46 0%, #27272a 100%) !important; /* zinc-700 gradient */
   border-color: #52525b !important; /* zinc-600 */
-  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.2) inset !important;
+  box-shadow:
+    0 2px 4px 0 rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(16, 185, 129, 0.2) inset !important;
   transform: translateY(-1px) !important;
   color: #ffffff !important; /* pure white on hover */
 }

@@ -1,42 +1,47 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: process.env.SITE_URL || 'https://www.systemdesignsandbox.com',
+  siteUrl: process.env.SITE_URL || "https://www.systemdesignsandbox.com",
   generateRobotsTxt: true,
   robotsTxtOptions: {
     policies: [
       {
-        userAgent: '*',
-        allow: '/',
+        userAgent: "*",
+        allow: "/",
       },
     ],
   },
-  exclude: ['/api/*', '/server-sitemap.xml'],
+  exclude: ["/api/*", "/server-sitemap.xml"],
   generateIndexSitemap: false,
-  changefreq: 'weekly',
+  changefreq: "weekly",
   priority: 0.7,
   transform: async (config, path) => {
     // Custom priority for important pages
     let priority = 0.7;
-    let changefreq = 'weekly';
+    let changefreq = "weekly";
 
-    if (path === '/') {
+    if (path === "/") {
       priority = 1.0;
-      changefreq = 'daily';
-    } else if (path.startsWith('/practice/url-shortener') || path === '/practice') {
+      changefreq = "daily";
+    } else if (path.startsWith("/practice/url-shortener") || path === "/practice") {
       priority = 0.9;
-      changefreq = 'daily';
-    } else if (path === '/interview-guide' || path === '/examples') {
+      changefreq = "daily";
+    } else if (path === "/interview-guide" || path === "/examples") {
       priority = 0.9;
-      changefreq = 'weekly';
-    } else if (path === '/docs') {
+      changefreq = "weekly";
+    } else if (path === "/docs") {
       priority = 0.8;
-      changefreq = 'weekly';
-    } else if (path === '/feedback' || path === '/privacy' || path === '/terms' || path === '/cookies') {
+      changefreq = "weekly";
+    } else if (
+      path === "/feedback" ||
+      path === "/privacy" ||
+      path === "/terms" ||
+      path === "/cookies"
+    ) {
       priority = 0.3;
-      changefreq = 'monthly';
-    } else if (path === '/play') {
+      changefreq = "monthly";
+    } else if (path === "/play") {
       priority = 0.7;
-      changefreq = 'weekly';
+      changefreq = "weekly";
     }
 
     return {
@@ -46,4 +51,4 @@ module.exports = {
       lastmod: new Date().toISOString(),
     };
   },
-}
+};

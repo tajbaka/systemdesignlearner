@@ -1,12 +1,7 @@
 import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import type { PracticeStep } from "@/lib/practice/types";
 import { CheckCircle2, AlertCircle, X } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 type IterativeFeedbackModalProps = {
   isOpen: boolean;
@@ -49,7 +44,10 @@ export function IterativeFeedbackModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent hideClose className="max-w-xl rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-2xl">
+      <DialogContent
+        hideClose
+        className="max-w-xl rounded-3xl border border-border bg-card p-4 sm:p-6 shadow-2xl"
+      >
         <DialogDescription className="sr-only">
           Feedback on your answer with score and suggestions for improvement
         </DialogDescription>
@@ -57,11 +55,13 @@ export function IterativeFeedbackModal({
         <div className="mb-4 sm:mb-6 flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0">
             {/* Score - Hero element when 100% */}
-            <p className={`mb-2 font-bold ${
-              allTopicsCovered
-                ? 'text-3xl sm:text-4xl text-emerald-400'
-                : 'text-2xl sm:text-3xl text-foreground'
-            }`}>
+            <p
+              className={`mb-2 font-bold ${
+                allTopicsCovered
+                  ? "text-3xl sm:text-4xl text-emerald-400"
+                  : "text-2xl sm:text-3xl text-foreground"
+              }`}
+            >
               {scoreDisplay}
             </p>
             {/* Title with icon - Secondary */}
@@ -103,17 +103,27 @@ export function IterativeFeedbackModal({
 
           {/* Improvement question */}
           {nextPrompt && (
-            <div className={
-              blocking
-                ? "rounded-xl border border-amber-400/30 bg-amber-950/40 p-4"
-                : allTopicsCovered
-                  ? "mt-4 rounded-xl border border-blue-400/30 bg-blue-950/40 p-4"
-                  : "rounded-xl border border-blue-400/30 bg-blue-950/40 p-4"
-            }>
-              <h3 className={`mb-2 text-sm font-semibold ${blocking ? "text-amber-300" : "text-blue-300"}`}>
-                {blocking ? "Missing requirement:" : allTopicsCovered ? "💡 Bonus feature:" : "💡 To reach 100%:"}
+            <div
+              className={
+                blocking
+                  ? "rounded-xl border border-amber-400/30 bg-amber-950/40 p-4"
+                  : allTopicsCovered
+                    ? "mt-4 rounded-xl border border-blue-400/30 bg-blue-950/40 p-4"
+                    : "rounded-xl border border-blue-400/30 bg-blue-950/40 p-4"
+              }
+            >
+              <h3
+                className={`mb-2 text-sm font-semibold ${blocking ? "text-amber-300" : "text-blue-300"}`}
+              >
+                {blocking
+                  ? "Missing requirement:"
+                  : allTopicsCovered
+                    ? "💡 Bonus feature:"
+                    : "💡 To reach 100%:"}
               </h3>
-              <p className={`text-sm ${blocking ? "text-amber-100" : "text-blue-100"}`}>{nextPrompt}</p>
+              <p className={`text-sm ${blocking ? "text-amber-100" : "text-blue-100"}`}>
+                {nextPrompt}
+              </p>
             </div>
           )}
 

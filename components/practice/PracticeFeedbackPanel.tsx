@@ -34,7 +34,8 @@ export function PracticeFeedbackPanel({
     verification.error ||
     scoringProgressSteps.length > 0 ||
     scoringFeedback ||
-    (verification.result && (verification.result.blocking.length > 0 || verification.result.warnings.length > 0));
+    (verification.result &&
+      (verification.result.blocking.length > 0 || verification.result.warnings.length > 0));
 
   return (
     <>
@@ -66,10 +67,14 @@ export function PracticeFeedbackPanel({
         feedbackResult={scoringFeedback!}
         onRevise={onRevise}
         onContinue={onContinue}
-        improvementQuestion={(scoringFeedback as FeedbackResult & { improvementQuestion?: string })?.improvementQuestion}
+        improvementQuestion={
+          (scoringFeedback as FeedbackResult & { improvementQuestion?: string })
+            ?.improvementQuestion
+        }
       />
 
-      {verification.result && (verification.result.blocking.length > 0 || verification.result.warnings.length > 0) ? (
+      {verification.result &&
+      (verification.result.blocking.length > 0 || verification.result.warnings.length > 0) ? (
         <div className="mx-auto w-full max-w-5xl px-4 pt-4">
           <VerificationFeedback
             blocking={verification.result.blocking}

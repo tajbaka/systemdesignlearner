@@ -13,9 +13,14 @@ export type VerificationResult = {
 /**
  * Build prompt for functional requirements verification
  */
-export function buildFunctionalPrompt(summary: string, selectedFeatures: Requirements["functional"]) {
+export function buildFunctionalPrompt(
+  summary: string,
+  selectedFeatures: Requirements["functional"]
+) {
   const required = scoringConfig.steps.functional.coreRequirements;
-  const optional = scoringConfig.steps.functional.optionalRequirements.filter((opt: { id: string }) => selectedFeatures[opt.id as keyof typeof selectedFeatures]);
+  const optional = scoringConfig.steps.functional.optionalRequirements.filter(
+    (opt: { id: string }) => selectedFeatures[opt.id as keyof typeof selectedFeatures]
+  );
 
   return `You are verifying functional requirements for a URL Shortener system design practice exercise.
 
@@ -57,10 +62,10 @@ export function buildNonFunctionalPrompt(
   const nf = reference.nonFunctional;
 
   // Extract categories from the JSON structure
-  const readThroughput = nf.categories.find(c => c.id === "readThroughput");
-  const writeThroughput = nf.categories.find(c => c.id === "writeThroughput");
-  const latency = nf.categories.find(c => c.id === "latency");
-  const availabilityCategory = nf.categories.find(c => c.id === "availability");
+  const readThroughput = nf.categories.find((c) => c.id === "readThroughput");
+  const writeThroughput = nf.categories.find((c) => c.id === "writeThroughput");
+  const latency = nf.categories.find((c) => c.id === "latency");
+  const availabilityCategory = nf.categories.find((c) => c.id === "availability");
 
   return `You are verifying non-functional requirements for a URL Shortener system design.
 
@@ -93,10 +98,15 @@ Return ONLY valid JSON:
 /**
  * Build prompt for API definition verification
  */
-export function buildApiPrompt(endpoints: ApiEndpoint[], selectedFeatures: Requirements["functional"]) {
+export function buildApiPrompt(
+  endpoints: ApiEndpoint[],
+  selectedFeatures: Requirements["functional"]
+) {
   const requiredEndpoints = reference.apiEndpoints.filter((e) => e.required);
   const optionalEndpoints = reference.apiEndpoints.filter(
-    (e) => !e.required && (!e.requiresFeature || selectedFeatures[e.requiresFeature as keyof typeof selectedFeatures])
+    (e) =>
+      !e.required &&
+      (!e.requiresFeature || selectedFeatures[e.requiresFeature as keyof typeof selectedFeatures])
   );
 
   return `You are verifying API design for a URL Shortener system.
@@ -160,17 +170,16 @@ function itemToString(item: unknown): string {
 export function parseVerificationResponse(text: string): VerificationResult {
   try {
     // Remove markdown code blocks if present
-    const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const cleaned = text
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
     const parsed = JSON.parse(cleaned);
 
     return {
       canProceed: parsed.canProceed ?? true,
-      blocking: Array.isArray(parsed.blocking)
-        ? parsed.blocking.map(itemToString)
-        : [],
-      warnings: Array.isArray(parsed.warnings)
-        ? parsed.warnings.map(itemToString)
-        : [],
+      blocking: Array.isArray(parsed.blocking) ? parsed.blocking.map(itemToString) : [],
+      warnings: Array.isArray(parsed.warnings) ? parsed.warnings.map(itemToString) : [],
     };
   } catch (error) {
     logger.error("Failed to parse verification response:", error);
@@ -178,7 +187,9 @@ export function parseVerificationResponse(text: string): VerificationResult {
     return {
       canProceed: true,
       blocking: [],
-      warnings: ["Verification service returned invalid response. Please review your input carefully."],
+      warnings: [
+        "Verification service returned invalid response. Please review your input carefully.",
+      ],
     };
   }
 }

@@ -19,12 +19,8 @@ interface SpeechRecognition extends EventTarget {
   abort(): void;
   onstart: ((this: SpeechRecognition, ev: Event) => void) | null;
   onend: ((this: SpeechRecognition, ev: Event) => void) | null;
-  onerror:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void)
-    | null;
-  onresult:
-    | ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void)
-    | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => void) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => void) | null;
 }
 
 interface SpeechRecognitionErrorEvent extends Event {
@@ -227,8 +223,7 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
 
       recognition.start();
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Failed to start recording";
+      const message = err instanceof Error ? err.message : "Failed to start recording";
       setError(message);
       cleanup();
     }

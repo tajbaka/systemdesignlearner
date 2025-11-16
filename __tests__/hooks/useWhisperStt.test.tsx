@@ -90,16 +90,14 @@ describe("useWhisperStt", () => {
     });
 
     globalThis.fetch = fetchMock as unknown as typeof fetch;
-    mediaRecorderGlobal.MediaRecorder =
-      MockMediaRecorder as unknown as MediaRecorderConstructor;
+    mediaRecorderGlobal.MediaRecorder = MockMediaRecorder as unknown as MediaRecorderConstructor;
   });
 
   afterEach(() => {
     vi.clearAllMocks();
     globalThis.fetch = originalFetch;
     mediaRecorderGlobal.MediaRecorder = originalMediaRecorder;
-    (navigator as unknown as { mediaDevices: MediaDevices }).mediaDevices =
-      originalMediaDevices;
+    (navigator as unknown as { mediaDevices: MediaDevices }).mediaDevices = originalMediaDevices;
     MockMediaRecorder.instances = [];
   });
 
@@ -119,8 +117,7 @@ describe("useWhisperStt", () => {
 
     expect(result.current.isRecording).toBe(true);
 
-    const recorder =
-      MockMediaRecorder.instances[MockMediaRecorder.instances.length - 1];
+    const recorder = MockMediaRecorder.instances[MockMediaRecorder.instances.length - 1];
     expect(recorder).toBeDefined();
     expect(recorder.state).toBe("recording");
 
@@ -175,8 +172,7 @@ describe("useWhisperStt", () => {
       await result.current.start();
     });
 
-    const recorder =
-      MockMediaRecorder.instances[MockMediaRecorder.instances.length - 1];
+    const recorder = MockMediaRecorder.instances[MockMediaRecorder.instances.length - 1];
 
     act(() => {
       const blob = new Blob(["audio data"], { type: "audio/webm" });

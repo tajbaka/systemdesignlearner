@@ -17,7 +17,7 @@ export function AuthGateStep() {
       track("practice_auth_completed", {
         slug: state.slug,
         provider: "clerk",
-        userId: user.id
+        userId: user.id,
       });
     }
   }, [isSignedIn, user, isAuthed, setAuth, state.slug]);
@@ -40,7 +40,8 @@ export function AuthGateStep() {
               URL Shortener
             </h2>
             <p className="text-sm leading-relaxed text-zinc-300">
-              Store your design, unlock daily streaks, and share a verified pass badge. You can skip for now and keep practicing locally.
+              Store your design, unlock daily streaks, and share a verified pass badge. You can skip
+              for now and keep practicing locally.
             </p>
           </div>
         </div>
@@ -50,7 +51,8 @@ export function AuthGateStep() {
         <div className="flex flex-col gap-4 sm:gap-5">
           {isSignedIn ? (
             <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-xs text-emerald-100">
-              Great! You&apos;re signed in as {user?.primaryEmailAddress?.emailAddress}. Your progress will be saved.
+              Great! You&apos;re signed in as {user?.primaryEmailAddress?.emailAddress}. Your
+              progress will be saved.
             </div>
           ) : (
             <div className="flex justify-center">
@@ -59,7 +61,7 @@ export function AuthGateStep() {
                   elements: {
                     rootBox: "mx-auto",
                     card: "bg-zinc-900/70 border-zinc-800",
-                  }
+                  },
                 }}
               />
             </div>
@@ -68,7 +70,8 @@ export function AuthGateStep() {
           {!isSignedIn && (
             <>
               <p className="text-xs text-zinc-500">
-                We&apos;ll store your practice progress securely. No spam — just reminders for fresh drills.
+                We&apos;ll store your practice progress securely. No spam — just reminders for fresh
+                drills.
               </p>
 
               <button

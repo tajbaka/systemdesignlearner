@@ -20,7 +20,7 @@ function stringSimilarity(str1: string, str2: string): number {
   const words1 = new Set(s1.split(/\s+/));
   const words2 = new Set(s2.split(/\s+/));
 
-  const intersection = new Set([...words1].filter(x => words2.has(x)));
+  const intersection = new Set([...words1].filter((x) => words2.has(x)));
   const union = new Set([...words1, ...words2]);
 
   return intersection.size / union.size;
@@ -53,7 +53,7 @@ function mergeFeedbackItems(items: FeedbackItem[]): FeedbackItem {
 
   // Collect unique actionables
   const actionables = items
-    .map(item => item.actionable)
+    .map((item) => item.actionable)
     .filter((a): a is string => !!a)
     .filter((a, i, arr) => arr.indexOf(a) === i);
 
@@ -149,7 +149,7 @@ export function extractUniqueAIInsights(
 
   for (const aiMsg of aiMessages) {
     // Check if AI message adds new information
-    const isDuplicate = ruleBasedMessages.some(ruleMsg => {
+    const isDuplicate = ruleBasedMessages.some((ruleMsg) => {
       const similarity = stringSimilarity(aiMsg, ruleMsg);
       return similarity > 0.6;
     });
@@ -208,19 +208,20 @@ export function mergeGroupedFeedback(grouped: Map<string, FeedbackItem[]>): Feed
       });
     } else {
       // Combine multiple issues for same context
-      const messages = items.map(item => simplifyMessage(item.message));
+      const messages = items.map((item) => simplifyMessage(item.message));
       const uniqueMessages = [...new Set(messages)];
 
-      const combinedMessage = context !== "general"
-        ? `${context}: ${uniqueMessages.join("; ")}`
-        : uniqueMessages.join("; ");
+      const combinedMessage =
+        context !== "general"
+          ? `${context}: ${uniqueMessages.join("; ")}`
+          : uniqueMessages.join("; ");
 
       merged.push({
         category: items[0].category,
         severity: items[0].severity,
         message: combinedMessage,
         relatedTo: context !== "general" ? context : undefined,
-        actionable: items.find(i => i.actionable)?.actionable,
+        actionable: items.find((i) => i.actionable)?.actionable,
       });
     }
   }

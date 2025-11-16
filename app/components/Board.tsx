@@ -1,6 +1,10 @@
 "use client";
 import React, { useRef, useImperativeHandle, forwardRef } from "react";
-import { TransformWrapper, TransformComponent, ReactZoomPanPinchContentRef } from "react-zoom-pan-pinch";
+import {
+  TransformWrapper,
+  TransformComponent,
+  ReactZoomPanPinchContentRef,
+} from "react-zoom-pan-pinch";
 import { ComponentKind, Edge, NodeId, PlacedNode } from "./types";
 import { findNode, linePath } from "./utils";
 import NodeCard from "./NodeCard";
@@ -53,38 +57,41 @@ interface BoardProps {
   onSelectEdge?: (edgeId: string | null) => void;
 }
 
-const Board = forwardRef<BoardApi, BoardProps>(function Board({
-  nodes,
-  edges,
-  lastPath,
-  linkingFrom,
-  linkingFromPort = null,
-  cursor,
-  selectedNode = null,
-  selectedEdge = null,
-  isConnectMode = false,
-  dragging = null,
-  deletingNode = null,
-  onMouseMove,
-  onTouchMove,
-  onMouseUp,
-  onTouchEnd,
-  onMouseLeave,
-  onMouseDown,
-  onNodeMouseDown,
-  onNodeMouseUp,
-  onNodeTouchStart,
-  onNodeTouchEnd,
-  onPortMouseDown,
-  onPortTouchStart,
-  onWorldCenterChange,
-  onForceUpdateWorldCenter,
-  focusCenter = null,
-  onDrop,
-  onDeleteNode,
-  onCameraChange,
-  onSelectEdge,
-}, ref) {
+const Board = forwardRef<BoardApi, BoardProps>(function Board(
+  {
+    nodes,
+    edges,
+    lastPath,
+    linkingFrom,
+    linkingFromPort = null,
+    cursor,
+    selectedNode = null,
+    selectedEdge = null,
+    isConnectMode = false,
+    dragging = null,
+    deletingNode = null,
+    onMouseMove,
+    onTouchMove,
+    onMouseUp,
+    onTouchEnd,
+    onMouseLeave,
+    onMouseDown,
+    onNodeMouseDown,
+    onNodeMouseUp,
+    onNodeTouchStart,
+    onNodeTouchEnd,
+    onPortMouseDown,
+    onPortTouchStart,
+    onWorldCenterChange,
+    onForceUpdateWorldCenter,
+    focusCenter = null,
+    onDrop,
+    onDeleteNode,
+    onCameraChange,
+    onSelectEdge,
+  },
+  ref
+) {
   const boardRef = useRef<HTMLDivElement | null>(null);
   const transformStateRef = useRef<{ positionX: number; positionY: number; scale: number }>({
     positionX: 0,
@@ -95,126 +102,134 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
   const lastEmittedCenter = useRef<{ x: number; y: number } | null>(null);
   const [, setTransformTick] = React.useState(0); // force rerenders for overlays
 
-  const emitWorldCenter = React.useCallback((force = false) => {
-    const rect = boardRef.current?.getBoundingClientRect();
-    if (!rect || !onWorldCenterChange) return;
-    
-    // Skip if rect has no dimensions (component not mounted properly)
-    if (rect.width === 0 || rect.height === 0) return;
-    
-    const { positionX, positionY, scale } = transformStateRef.current;
-    const cx = (rect.width / 2 - positionX) / scale;
-    const cy = (rect.height / 2 - positionY) / scale;
-    
-    // Only emit if center has changed significantly (> 10 pixels to reduce spam)
-    // Unless force is true (e.g., after a drop or spawn)
-    if (!force && lastEmittedCenter.current) {
-      const dx = Math.abs(cx - lastEmittedCenter.current.x);
-      const dy = Math.abs(cy - lastEmittedCenter.current.y);
-      if (dx < 10 && dy < 10) return;
-    }
-    
-    lastEmittedCenter.current = { x: cx, y: cy };
-    onWorldCenterChange({ x: cx, y: cy });
-  }, [onWorldCenterChange]);
+  const emitWorldCenter = React.useCallback(
+    (force = false) => {
+      const rect = boardRef.current?.getBoundingClientRect();
+      if (!rect || !onWorldCenterChange) return;
+
+      // Skip if rect has no dimensions (component not mounted properly)
+      if (rect.width === 0 || rect.height === 0) return;
+
+      const { positionX, positionY, scale } = transformStateRef.current;
+      const cx = (rect.width / 2 - positionX) / scale;
+      const cy = (rect.height / 2 - positionY) / scale;
+
+      // Only emit if center has changed significantly (> 10 pixels to reduce spam)
+      // Unless force is true (e.g., after a drop or spawn)
+      if (!force && lastEmittedCenter.current) {
+        const dx = Math.abs(cx - lastEmittedCenter.current.x);
+        const dy = Math.abs(cy - lastEmittedCenter.current.y);
+        if (dx < 10 && dy < 10) return;
+      }
+
+      lastEmittedCenter.current = { x: cx, y: cy };
+      onWorldCenterChange({ x: cx, y: cy });
+    },
+    [onWorldCenterChange]
+  );
 
   // Expose imperative API
-  useImperativeHandle(ref, () => ({
-    getWorldCenter(): { x: number; y: number } {
-      const rect = boardRef.current?.getBoundingClientRect();
-      if (!rect || rect.width === 0 || rect.height === 0) {
-        return { x: 6000, y: 4000 }; // fallback to grid center
-      }
-      const { positionX, positionY, scale } = transformStateRef.current;
-      // Use the same corrected center calculation as getViewportWorldRect
-      const cx = (500 - positionX) / scale;
-      const cy = (500 - positionY) / scale;
-      return { x: cx, y: cy };
-    },
+  useImperativeHandle(
+    ref,
+    () => ({
+      getWorldCenter(): { x: number; y: number } {
+        const rect = boardRef.current?.getBoundingClientRect();
+        if (!rect || rect.width === 0 || rect.height === 0) {
+          return { x: 6000, y: 4000 }; // fallback to grid center
+        }
+        const { positionX, positionY, scale } = transformStateRef.current;
+        // Use the same corrected center calculation as getViewportWorldRect
+        const cx = (500 - positionX) / scale;
+        const cy = (500 - positionY) / scale;
+        return { x: cx, y: cy };
+      },
 
-    getTransform(): { positionX: number; positionY: number; scale: number } {
-      return { ...transformStateRef.current };
-    },
+      getTransform(): { positionX: number; positionY: number; scale: number } {
+        return { ...transformStateRef.current };
+      },
 
-    getViewportWorldRect(): { left: number; top: number; width: number; height: number } {
-      const rect = boardRef.current?.getBoundingClientRect();
-      const { positionX, positionY, scale } = transformStateRef.current;
-      if (!rect || !scale) {
-        return { left: 0, top: 0, width: GRID_WIDTH, height: GRID_HEIGHT };
-      }
-      // User empirically found that the actual viewport center is at screen coordinates (500, 500)
-      // So the world center is at: center = (500 - position) / scale
-      const centerX = (900 - positionX) / scale;
-      const centerY = (500 - positionY) / scale;
+      getViewportWorldRect(): { left: number; top: number; width: number; height: number } {
+        const rect = boardRef.current?.getBoundingClientRect();
+        const { positionX, positionY, scale } = transformStateRef.current;
+        if (!rect || !scale) {
+          return { left: 0, top: 0, width: GRID_WIDTH, height: GRID_HEIGHT };
+        }
+        // User empirically found that the actual viewport center is at screen coordinates (500, 500)
+        // So the world center is at: center = (500 - position) / scale
+        const centerX = (900 - positionX) / scale;
+        const centerY = (500 - positionY) / scale;
 
-      // Reduce viewport size to match actual visible area (user sees smaller viewport than calculated)
-      const viewportReductionFactor = 6; // Make viewport appear half the calculated size
-      const halfWidth = (rect.width / scale / viewportReductionFactor) / 2;
-      const halfHeight = (rect.height / scale / viewportReductionFactor) / 2;
+        // Reduce viewport size to match actual visible area (user sees smaller viewport than calculated)
+        const viewportReductionFactor = 6; // Make viewport appear half the calculated size
+        const halfWidth = rect.width / scale / viewportReductionFactor / 2;
+        const halfHeight = rect.height / scale / viewportReductionFactor / 2;
 
-      return {
-        left: centerX - halfWidth,
-        top: centerY - halfHeight,
-        width: rect.width / scale / viewportReductionFactor,
-        height: rect.height / scale / viewportReductionFactor,
-      };
-    },
+        return {
+          left: centerX - halfWidth,
+          top: centerY - halfHeight,
+          width: rect.width / scale / viewportReductionFactor,
+          height: rect.height / scale / viewportReductionFactor,
+        };
+      },
 
-    centerTo(worldPoint: { x: number; y: number }): void {
-      const rect = boardRef.current?.getBoundingClientRect();
-      if (!rect || !setTransformRef.current) return;
+      centerTo(worldPoint: { x: number; y: number }): void {
+        const rect = boardRef.current?.getBoundingClientRect();
+        if (!rect || !setTransformRef.current) return;
 
-      const scale = transformStateRef.current.scale;
-      const targetX = rect.width / 2 - worldPoint.x * scale;
-      const targetY = rect.height / 2 - worldPoint.y * scale;
+        const scale = transformStateRef.current.scale;
+        const targetX = rect.width / 2 - worldPoint.x * scale;
+        const targetY = rect.height / 2 - worldPoint.y * scale;
 
-      setTransformRef.current(targetX, targetY, scale);
-      transformStateRef.current = { positionX: targetX, positionY: targetY, scale };
-      emitWorldCenter();
-      setTransformTick((t) => t + 1);
-    },
-
-    centerToGrid(): void {
-      const rect = boardRef.current?.getBoundingClientRect();
-      if (!rect || !setTransformRef.current) {
-        return;
-      }
-
-      if (nodes.length > 0) {
-        // Center on barycenter (average position) of all nodes without changing scale
-        const totalX = nodes.reduce((sum, node) => sum + node.x, 0);
-        const totalY = nodes.reduce((sum, node) => sum + node.y, 0);
-        const barycenterX = totalX / nodes.length;
-        const barycenterY = totalY / nodes.length;
-
-        // Use the corrected positioning formula (same as onInit)
-        const currentScale = transformStateRef.current.scale;
-        const x = 200 - barycenterX * currentScale;
-        const y = 350 - barycenterY * currentScale;
-
-        setTransformRef.current(x, y, currentScale);
-        transformStateRef.current = { positionX: x, positionY: y, scale: currentScale };
+        setTransformRef.current(targetX, targetY, scale);
+        transformStateRef.current = { positionX: targetX, positionY: targetY, scale };
         emitWorldCenter();
-      } else {
-        // No nodes, center to board center (same as initial positioning)
-        const boardCenterX = GRID_WIDTH / 2;
-        const boardCenterY = GRID_HEIGHT / 2;
-        const x = 500 - boardCenterX * 2; // Use scale = 2 like initial
-        const y = 500 - boardCenterY * 2;
-        setTransformRef.current(x, y, 2);
-        transformStateRef.current = { positionX: x, positionY: y, scale: 2 };
-        emitWorldCenter();
-      }
-      setTransformTick((t) => t + 1);
-    },
-  }), [emitWorldCenter, nodes]);
+        setTransformTick((t) => t + 1);
+      },
+
+      centerToGrid(): void {
+        const rect = boardRef.current?.getBoundingClientRect();
+        if (!rect || !setTransformRef.current) {
+          return;
+        }
+
+        if (nodes.length > 0) {
+          // Center on barycenter (average position) of all nodes without changing scale
+          const totalX = nodes.reduce((sum, node) => sum + node.x, 0);
+          const totalY = nodes.reduce((sum, node) => sum + node.y, 0);
+          const barycenterX = totalX / nodes.length;
+          const barycenterY = totalY / nodes.length;
+
+          // Use the corrected positioning formula (same as onInit)
+          const currentScale = transformStateRef.current.scale;
+          const x = 200 - barycenterX * currentScale;
+          const y = 350 - barycenterY * currentScale;
+
+          setTransformRef.current(x, y, currentScale);
+          transformStateRef.current = { positionX: x, positionY: y, scale: currentScale };
+          emitWorldCenter();
+        } else {
+          // No nodes, center to board center (same as initial positioning)
+          const boardCenterX = GRID_WIDTH / 2;
+          const boardCenterY = GRID_HEIGHT / 2;
+          const x = 500 - boardCenterX * 2; // Use scale = 2 like initial
+          const y = 500 - boardCenterY * 2;
+          setTransformRef.current(x, y, 2);
+          transformStateRef.current = { positionX: x, positionY: y, scale: 2 };
+          emitWorldCenter();
+        }
+        setTransformTick((t) => t + 1);
+      },
+    }),
+    [emitWorldCenter, nodes]
+  );
 
   // Expose emitWorldCenter to parent via callback
   React.useEffect(() => {
     if (onForceUpdateWorldCenter) {
       // Replace the callback with our emitWorldCenter function
       // This is a bit hacky but allows parent to force update
-      (onForceUpdateWorldCenter as unknown as { current?: () => void }).current = () => emitWorldCenter(true);
+      (onForceUpdateWorldCenter as unknown as { current?: () => void }).current = () =>
+        emitWorldCenter(true);
     }
   }, [onForceUpdateWorldCenter, emitWorldCenter]);
 
@@ -224,15 +239,15 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
     const timer = setTimeout(() => {
       emitWorldCenter();
     }, 100);
-    
+
     const handleResize = () => {
       emitWorldCenter();
     };
-    
-    window.addEventListener('resize', handleResize);
+
+    window.addEventListener("resize", handleResize);
     return () => {
       clearTimeout(timer);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
@@ -242,16 +257,16 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
     if (!focusCenter || !setTransformRef.current) return;
     const rect = boardRef.current?.getBoundingClientRect();
     if (!rect) return;
-    
+
     const scale = transformStateRef.current.scale || 1;
     const targetX = rect.width / 2 - focusCenter.x * scale;
     const targetY = rect.height / 2 - focusCenter.y * scale;
-    
+
     // Smooth animation to the target position
     const currentX = transformStateRef.current.positionX;
     const currentY = transformStateRef.current.positionY;
     const distance = Math.sqrt(Math.pow(targetX - currentX, 2) + Math.pow(targetY - currentY, 2));
-    
+
     // If distance is small, just snap. Otherwise animate.
     if (distance < 50) {
       setTransformRef.current(targetX, targetY, scale);
@@ -262,27 +277,27 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
       const startTime = performance.now();
       const startX = currentX;
       const startY = currentY;
-      
+
       const animate = (currentTime: number) => {
         if (!setTransformRef.current) return;
-        
+
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / duration, 1);
-        
+
         // Ease out cubic
         const easeProgress = 1 - Math.pow(1 - progress, 3);
-        
+
         const x = startX + (targetX - startX) * easeProgress;
         const y = startY + (targetY - startY) * easeProgress;
-        
+
         setTransformRef.current(x, y, scale);
         transformStateRef.current = { positionX: x, positionY: y, scale };
-        
+
         if (progress < 1) {
           requestAnimationFrame(animate);
         }
       };
-      
+
       requestAnimationFrame(animate);
     }
   }, [focusCenter]);
@@ -307,14 +322,13 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
       }}
       onDrop={(e) => {
         e.preventDefault();
-        const kind =
-          (e.dataTransfer?.getData("application/x-sds-kind") ||
-            e.dataTransfer?.getData("text/plain") ||
-            "") as ComponentKind;
+        const kind = (e.dataTransfer?.getData("application/x-sds-kind") ||
+          e.dataTransfer?.getData("text/plain") ||
+          "") as ComponentKind;
         if (!kind) return;
         const rect = boardRef.current?.getBoundingClientRect();
         if (!rect) return;
-        
+
         // Calculate drop position - use same formula as worldCenter for consistency
         const clientX = e.clientX - rect.left;
         const clientY = e.clientY - rect.top;
@@ -323,10 +337,10 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
           x: (clientX - positionX) / scale,
           y: (clientY - positionY) / scale,
         };
-        
+
         // Force update worldCenter so it's accurate for any subsequent spawn() calls
         emitWorldCenter(true);
-        
+
         onDrop(kind, world);
       }}
       className="relative rounded-3xl border border-white/10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800 via-zinc-900 to-black overflow-hidden"
@@ -380,7 +394,13 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
         }}
       >
         {(ref: ReactZoomPanPinchContentRef) => {
-          type Handlers = Partial<{ zoomIn: () => void; zoomOut: () => void; resetTransform: () => void; centerView: () => void; setTransform: (x: number, y: number, scale: number) => void }>;
+          type Handlers = Partial<{
+            zoomIn: () => void;
+            zoomOut: () => void;
+            resetTransform: () => void;
+            centerView: () => void;
+            setTransform: (x: number, y: number, scale: number) => void;
+          }>;
           const handlers = ref as unknown as Handlers;
           const resetTransform = handlers.resetTransform ?? (() => {});
           const setTransform = handlers.setTransform ?? (() => {});
@@ -421,186 +441,219 @@ const Board = forwardRef<BoardApi, BoardProps>(function Board({
           };
 
           return (
-          <>
-            {/* Controls - hidden on mobile, visible on desktop */}
-            <div className="absolute z-10 top-2 sm:top-3 left-2 sm:left-3 hidden sm:flex gap-2">
-              <button
-                className="px-3 h-10 rounded-lg bg-white/10 border border-white/15 text-xs text-zinc-200 hover:bg-white/20 transition touch-manipulation"
-                onClick={() => {
-                  if ('vibrate' in navigator) navigator.vibrate(50);
-                  centerToGrid();
-                }}
-                aria-label="Reset view"
-              >
-                reset
-              </button>
-            </div>
-
-            {/* Delete Bin - shown when dragging */}
-            {dragging && (
-              <div className="absolute z-10 bottom-20 right-4 sm:bottom-20 sm:right-4 block">
-                <div
-                  className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-400/60 flex items-center justify-center hover:bg-red-500/30 transition-colors cursor-pointer"
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = "move";
+            <>
+              {/* Controls - hidden on mobile, visible on desktop */}
+              <div className="absolute z-10 top-2 sm:top-3 left-2 sm:left-3 hidden sm:flex gap-2">
+                <button
+                  className="px-3 h-10 rounded-lg bg-white/10 border border-white/15 text-xs text-zinc-200 hover:bg-white/20 transition touch-manipulation"
+                  onClick={() => {
+                    if ("vibrate" in navigator) navigator.vibrate(50);
+                    centerToGrid();
                   }}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    if (onDeleteNode && dragging) {
-                      onDeleteNode(dragging);
-                      if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
-                    }
-                  }}
-                  title="Drop here to delete component"
+                  aria-label="Reset view"
                 >
-                  <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </div>
+                  reset
+                </button>
               </div>
-            )}
 
-            {/* Content */}
-            <TransformComponent wrapperClass="cursor-grab active:cursor-grabbing z-0">
-              <div
-                className="relative bg-[radial-gradient(circle,_rgba(255,255,255,0.05)_1px,_transparent_1px)] bg-[length:20px_20px]"
-                style={{ width: 12000, height: 8000 }}
-                onMouseMove={(e) => {
-                  const rect = boardRef.current?.getBoundingClientRect();
-                  if (!rect) return;
-                  const x = e.clientX - rect.left;
-                  const y = e.clientY - rect.top;
-                  const { positionX, positionY, scale } = transformStateRef.current;
-                  const world = {
-                    x: (x - positionX) / scale,
-                    y: (y - positionY) / scale,
-                  };
-                  onMouseMove(e, world);
-                }}
-                onTouchMove={(e) => {
-                  if (!onTouchMove) return;
-                  const rect = boardRef.current?.getBoundingClientRect();
-                  if (!rect) return;
-                  const touch = e.touches[0];
-                  if (!touch) return;
-                  const x = touch.clientX - rect.left;
-                  const y = touch.clientY - rect.top;
-                  const { positionX, positionY, scale } = transformStateRef.current;
-                  const world = {
-                    x: (x - positionX) / scale,
-                    y: (y - positionY) / scale,
-                  };
-                  onTouchMove(e, world);
-                }}
-              >
-                {/* Grid */}
-                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox={`0 0 ${GRID_WIDTH} ${GRID_HEIGHT}`}>
-                  <defs>
-                    <pattern id="smallGrid" width="24" height="24" patternUnits="userSpaceOnUse">
-                      <path d="M 24 0 L 0 0 0 24" fill="none" stroke="rgba(255,255,255,0.10)" strokeWidth="1" />
-                    </pattern>
-                    <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
-                      <rect width="120" height="120" fill="url(#smallGrid)" />
-                      <path d="M 120 0 L 0 0 0 120" fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth="1.5" />
-                    </pattern>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#grid)" />
-
-                  {/* Edges underneath nodes */}
-                  {edges.map((e) => {
-                    const from = findNode(nodes, e.from);
-                    const to = findNode(nodes, e.to);
-                    if (!from || !to) return null;
-                    const pathD = linePath(from.x, from.y, to.x, to.y);
-                    const isSelected = selectedEdge === e.id;
-                    return (
-                      <g key={e.id}>
-                        <path
-                          d={pathD}
-                          stroke={isSelected ? "rgba(96,165,250,0.85)" : "rgba(255,255,255,0.22)"}
-                          strokeWidth={isSelected ? 3.5 : 2}
-                          markerEnd="url(#arrow)"
-                          fill="none"
-                        />
-                        <path
-                          d={pathD}
-                          stroke="transparent"
-                          strokeWidth={12}
-                          fill="none"
-                          onMouseDown={(evt) => {
-                            evt.stopPropagation();
-                            onSelectEdge?.(e.id);
-                          }}
-                          onTouchStart={(evt) => {
-                            evt.stopPropagation();
-                            evt.preventDefault();
-                            onSelectEdge?.(e.id);
-                          }}
-                          style={{ cursor: "pointer" }}
-                        />
-                      </g>
-                    );
-                  })}
-
-                  {/* Temp linking line (during connect drag) */}
-                  {linkingFrom && cursor && (() => {
-                    const from = findNode(nodes, linkingFrom);
-                    if (!from) return null;
-                    const start = (() => {
-                      switch (linkingFromPort) {
-                        case "E":
-                          return { x: from.x + 95, y: from.y };
-                        case "W":
-                          return { x: from.x - 95, y: from.y };
-                        case "N":
-                          return { x: from.x, y: from.y - 45 };
-                        case "S":
-                          return { x: from.x, y: from.y + 45 };
-                        default:
-                          return { x: from.x, y: from.y };
+              {/* Delete Bin - shown when dragging */}
+              {dragging && (
+                <div className="absolute z-10 bottom-20 right-4 sm:bottom-20 sm:right-4 block">
+                  <div
+                    className="w-16 h-16 rounded-full bg-red-500/20 border-2 border-red-400/60 flex items-center justify-center hover:bg-red-500/30 transition-colors cursor-pointer"
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      e.dataTransfer.dropEffect = "move";
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      if (onDeleteNode && dragging) {
+                        onDeleteNode(dragging);
+                        if ("vibrate" in navigator) navigator.vibrate([100, 50, 100]);
                       }
-                    })();
-                    return (
+                    }}
+                    title="Drop here to delete component"
+                  >
+                    <svg
+                      className="w-8 h-8 text-red-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
                       <path
-                        d={linePath(start.x, start.y, cursor.x, cursor.y)}
-                        stroke="rgba(16,185,129,0.6)"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
                         strokeWidth={2}
-                        strokeDasharray="6 6"
-                        fill="none"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                       />
-                    );
-                  })()}
+                    </svg>
+                  </div>
+                </div>
+              )}
 
-                  <defs>
-                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
-                      <path d="M0,0 L0,6 L9,3 z" fill="rgba(255,255,255,0.35)" />
-                    </marker>
-                  </defs>
-                </svg>
+              {/* Content */}
+              <TransformComponent wrapperClass="cursor-grab active:cursor-grabbing z-0">
+                <div
+                  className="relative bg-[radial-gradient(circle,_rgba(255,255,255,0.05)_1px,_transparent_1px)] bg-[length:20px_20px]"
+                  style={{ width: 12000, height: 8000 }}
+                  onMouseMove={(e) => {
+                    const rect = boardRef.current?.getBoundingClientRect();
+                    if (!rect) return;
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const { positionX, positionY, scale } = transformStateRef.current;
+                    const world = {
+                      x: (x - positionX) / scale,
+                      y: (y - positionY) / scale,
+                    };
+                    onMouseMove(e, world);
+                  }}
+                  onTouchMove={(e) => {
+                    if (!onTouchMove) return;
+                    const rect = boardRef.current?.getBoundingClientRect();
+                    if (!rect) return;
+                    const touch = e.touches[0];
+                    if (!touch) return;
+                    const x = touch.clientX - rect.left;
+                    const y = touch.clientY - rect.top;
+                    const { positionX, positionY, scale } = transformStateRef.current;
+                    const world = {
+                      x: (x - positionX) / scale,
+                      y: (y - positionY) / scale,
+                    };
+                    onTouchMove(e, world);
+                  }}
+                >
+                  {/* Grid */}
+                  <svg
+                    className="absolute inset-0 w-full h-full"
+                    preserveAspectRatio="none"
+                    viewBox={`0 0 ${GRID_WIDTH} ${GRID_HEIGHT}`}
+                  >
+                    <defs>
+                      <pattern id="smallGrid" width="24" height="24" patternUnits="userSpaceOnUse">
+                        <path
+                          d="M 24 0 L 0 0 0 24"
+                          fill="none"
+                          stroke="rgba(255,255,255,0.10)"
+                          strokeWidth="1"
+                        />
+                      </pattern>
+                      <pattern id="grid" width="120" height="120" patternUnits="userSpaceOnUse">
+                        <rect width="120" height="120" fill="url(#smallGrid)" />
+                        <path
+                          d="M 120 0 L 0 0 0 120"
+                          fill="none"
+                          stroke="rgba(255,255,255,0.18)"
+                          strokeWidth="1.5"
+                        />
+                      </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
 
-                {/* Nodes */}
-                {nodes.map((n) => (
-                  <NodeCard
-                    key={n.id}
-                    node={n}
-                    isInPath={lastPath.includes(n.id)}
-                    isSelected={selectedNode === n.id}
-                    isConnectMode={isConnectMode && linkingFrom === n.id}
-                    isDeleting={deletingNode === n.id}
-                    onMouseDown={onNodeMouseDown}
-                    onMouseUp={onNodeMouseUp}
-                    onTouchStart={onNodeTouchStart}
-                    onTouchEnd={onNodeTouchEnd}
-                    onPortMouseDown={onPortMouseDown}
-                    onPortTouchStart={onPortTouchStart}
-                    onDelete={onDeleteNode}
-                  />
-                ))}
-              </div>
-            </TransformComponent>
+                    {/* Edges underneath nodes */}
+                    {edges.map((e) => {
+                      const from = findNode(nodes, e.from);
+                      const to = findNode(nodes, e.to);
+                      if (!from || !to) return null;
+                      const pathD = linePath(from.x, from.y, to.x, to.y);
+                      const isSelected = selectedEdge === e.id;
+                      return (
+                        <g key={e.id}>
+                          <path
+                            d={pathD}
+                            stroke={isSelected ? "rgba(96,165,250,0.85)" : "rgba(255,255,255,0.22)"}
+                            strokeWidth={isSelected ? 3.5 : 2}
+                            markerEnd="url(#arrow)"
+                            fill="none"
+                          />
+                          <path
+                            d={pathD}
+                            stroke="transparent"
+                            strokeWidth={12}
+                            fill="none"
+                            onMouseDown={(evt) => {
+                              evt.stopPropagation();
+                              onSelectEdge?.(e.id);
+                            }}
+                            onTouchStart={(evt) => {
+                              evt.stopPropagation();
+                              evt.preventDefault();
+                              onSelectEdge?.(e.id);
+                            }}
+                            style={{ cursor: "pointer" }}
+                          />
+                        </g>
+                      );
+                    })}
 
-          </>
+                    {/* Temp linking line (during connect drag) */}
+                    {linkingFrom &&
+                      cursor &&
+                      (() => {
+                        const from = findNode(nodes, linkingFrom);
+                        if (!from) return null;
+                        const start = (() => {
+                          switch (linkingFromPort) {
+                            case "E":
+                              return { x: from.x + 95, y: from.y };
+                            case "W":
+                              return { x: from.x - 95, y: from.y };
+                            case "N":
+                              return { x: from.x, y: from.y - 45 };
+                            case "S":
+                              return { x: from.x, y: from.y + 45 };
+                            default:
+                              return { x: from.x, y: from.y };
+                          }
+                        })();
+                        return (
+                          <path
+                            d={linePath(start.x, start.y, cursor.x, cursor.y)}
+                            stroke="rgba(16,185,129,0.6)"
+                            strokeWidth={2}
+                            strokeDasharray="6 6"
+                            fill="none"
+                          />
+                        );
+                      })()}
+
+                    <defs>
+                      <marker
+                        id="arrow"
+                        markerWidth="10"
+                        markerHeight="10"
+                        refX="6"
+                        refY="3"
+                        orient="auto"
+                        markerUnits="strokeWidth"
+                      >
+                        <path d="M0,0 L0,6 L9,3 z" fill="rgba(255,255,255,0.35)" />
+                      </marker>
+                    </defs>
+                  </svg>
+
+                  {/* Nodes */}
+                  {nodes.map((n) => (
+                    <NodeCard
+                      key={n.id}
+                      node={n}
+                      isInPath={lastPath.includes(n.id)}
+                      isSelected={selectedNode === n.id}
+                      isConnectMode={isConnectMode && linkingFrom === n.id}
+                      isDeleting={deletingNode === n.id}
+                      onMouseDown={onNodeMouseDown}
+                      onMouseUp={onNodeMouseUp}
+                      onTouchStart={onNodeTouchStart}
+                      onTouchEnd={onNodeTouchEnd}
+                      onPortMouseDown={onPortMouseDown}
+                      onPortTouchStart={onPortTouchStart}
+                      onDelete={onDeleteNode}
+                    />
+                  ))}
+                </div>
+              </TransformComponent>
+            </>
           );
         }}
       </TransformWrapper>

@@ -5,7 +5,11 @@ import type { ComponentKind } from "@/app/components/types";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import DesignStage from "@/components/practice/stages/DesignStage";
 import RunStage from "@/components/practice/stages/RunStage";
-import type { PracticeDesignState, Requirements, PracticeApiDefinitionState } from "@/lib/practice/types";
+import type {
+  PracticeDesignState,
+  Requirements,
+  PracticeApiDefinitionState,
+} from "@/lib/practice/types";
 import Palette from "@/app/components/Palette";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 
@@ -43,22 +47,24 @@ const computeAllowedComponents = (
   }
 
   // Based on API routes - detect search/query endpoints
-  const hasSearchEndpoint = apiDefinition.endpoints.some((ep) =>
-    ep.path.toLowerCase().includes("search") ||
-    ep.path.toLowerCase().includes("query") ||
-    ep.notes.toLowerCase().includes("search")
+  const hasSearchEndpoint = apiDefinition.endpoints.some(
+    (ep) =>
+      ep.path.toLowerCase().includes("search") ||
+      ep.path.toLowerCase().includes("query") ||
+      ep.notes.toLowerCase().includes("search")
   );
   if (hasSearchEndpoint) {
     searchComponents.forEach((kind) => set.add(kind));
   }
 
   // Based on API routes - detect streaming/realtime endpoints
-  const hasStreamingEndpoint = apiDefinition.endpoints.some((ep) =>
-    ep.path.toLowerCase().includes("stream") ||
-    ep.path.toLowerCase().includes("websocket") ||
-    ep.path.toLowerCase().includes("realtime") ||
-    ep.notes.toLowerCase().includes("stream") ||
-    ep.notes.toLowerCase().includes("realtime")
+  const hasStreamingEndpoint = apiDefinition.endpoints.some(
+    (ep) =>
+      ep.path.toLowerCase().includes("stream") ||
+      ep.path.toLowerCase().includes("websocket") ||
+      ep.path.toLowerCase().includes("realtime") ||
+      ep.notes.toLowerCase().includes("stream") ||
+      ep.notes.toLowerCase().includes("realtime")
   );
   if (hasStreamingEndpoint) {
     streamingComponents.forEach((kind) => set.add(kind));
@@ -104,13 +110,7 @@ export function SandboxStep({
   runPanelOpen: _runPanelOpen,
   onRunPanelChange,
 }: SandboxStepProps) {
-  const {
-    state,
-    setDesign,
-    setRun,
-    setStepScore,
-    isReadOnly,
-  } = usePracticeSession();
+  const { state, setDesign, setRun, setStepScore, isReadOnly } = usePracticeSession();
 
   const allowedComponents = useMemo(
     () => computeAllowedComponents(state.requirements, state.apiDefinition),
@@ -163,17 +163,19 @@ export function SandboxStep({
               e.preventDefault();
               e.stopPropagation();
               // Let the drop event bubble to ReactFlowBoard
-              const kind = e.dataTransfer.getData("application/x-sds-kind") || e.dataTransfer.getData("text/plain");
+              const kind =
+                e.dataTransfer.getData("application/x-sds-kind") ||
+                e.dataTransfer.getData("text/plain");
               if (!kind || isReadOnly) return;
 
               // Close the palette
               onMobilePaletteChange(false);
 
               // Get the canvas element and trigger drop on it
-              const canvas = document.querySelector('.react-flow');
+              const canvas = document.querySelector(".react-flow");
               if (canvas) {
                 const _canvasBounds = canvas.getBoundingClientRect();
-                const dropEvent = new DragEvent('drop', {
+                const dropEvent = new DragEvent("drop", {
                   bubbles: true,
                   cancelable: true,
                   clientX: e.clientX,
@@ -187,9 +189,7 @@ export function SandboxStep({
           />
 
           {/* Sidebar */}
-          <div
-            className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl border border-zinc-800 bg-zinc-900 shadow-2xl transition-transform duration-300 ease-out lg:inset-x-auto lg:right-6 lg:w-full lg:max-w-md translate-y-0 pointer-events-auto"
-          >
+          <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl border border-zinc-800 bg-zinc-900 shadow-2xl transition-transform duration-300 ease-out lg:inset-x-auto lg:right-6 lg:w-full lg:max-w-md translate-y-0 pointer-events-auto">
             {/* Header */}
             <div className="flex items-center justify-between p-4">
               <h2 className="text-lg font-semibold text-white">Components</h2>
@@ -200,7 +200,12 @@ export function SandboxStep({
                 aria-label="Close"
               >
                 <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -240,7 +245,7 @@ export function SandboxStep({
       )}
 
       {/* Keep RunStage mounted but hidden so window._runSimulation is always available */}
-      <div style={{ display: 'none' }}>
+      <div style={{ display: "none" }}>
         <RunStage
           design={state.design}
           run={state.run}

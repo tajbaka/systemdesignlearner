@@ -16,13 +16,23 @@ export function lintApi(scenario: Scenario): string[] {
     }
 
     // Search endpoints should include query param "q"
-    if (endpoint.method === "GET" && endpoint.path.includes("/search") && !endpoint.query?.includes("q")) {
+    if (
+      endpoint.method === "GET" &&
+      endpoint.path.includes("/search") &&
+      !endpoint.query?.includes("q")
+    ) {
       msgs.push(`Search endpoint "${endpoint.path}" should include query param "q".`);
     }
 
     // List endpoints should have pagination params
-    if (endpoint.method === "GET" && !endpoint.path.includes("/:") && !endpoint.query?.some(q => ["limit", "offset", "page"].includes(q))) {
-      msgs.push(`List endpoint "${endpoint.path}" should include pagination params (limit, offset, or page).`);
+    if (
+      endpoint.method === "GET" &&
+      !endpoint.path.includes("/:") &&
+      !endpoint.query?.some((q) => ["limit", "offset", "page"].includes(q))
+    ) {
+      msgs.push(
+        `List endpoint "${endpoint.path}" should include pagination params (limit, offset, or page).`
+      );
     }
 
     // POST endpoints should have body shape
@@ -54,8 +64,22 @@ export function lintApi(scenario: Scenario): string[] {
 
 function isVerb(word: string): boolean {
   const commonVerbs = [
-    "create", "update", "delete", "get", "fetch", "send", "post", "put", 
-    "add", "remove", "insert", "modify", "change", "save", "load", "retrieve"
+    "create",
+    "update",
+    "delete",
+    "get",
+    "fetch",
+    "send",
+    "post",
+    "put",
+    "add",
+    "remove",
+    "insert",
+    "modify",
+    "change",
+    "save",
+    "load",
+    "retrieve",
   ];
   return commonVerbs.includes(word.toLowerCase());
 }

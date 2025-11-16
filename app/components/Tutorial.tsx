@@ -14,33 +14,38 @@ const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: "welcome",
     title: "Welcome to System Design Sandbox",
-    content: "Let's build your first system! We'll create a Spotify-like music streaming service. This tutorial will guide you through the basics.",
-    action: "complete"
+    content:
+      "Let's build your first system! We'll create a Spotify-like music streaming service. This tutorial will guide you through the basics.",
+    action: "complete",
   },
   {
     id: "drag-components",
     title: "Step 1: Add Components",
-    content: "Drag these components from the palette to the board: Client → CDN → API Gateway → Service → Cache (Redis) → DB (Postgres) → Object Store (S3)",
-    action: "drag"
+    content:
+      "Drag these components from the palette to the board: Client → CDN → API Gateway → Service → Cache (Redis) → DB (Postgres) → Object Store (S3)",
+    action: "drag",
   },
   {
     id: "connect-components",
-    title: "Step 2: Connect Components", 
-    content: "Now connect the components in order by clicking on a component's output port and dragging to the next component's input port.",
-    action: "connect"
+    title: "Step 2: Connect Components",
+    content:
+      "Now connect the components in order by clicking on a component's output port and dragging to the next component's input port.",
+    action: "connect",
   },
   {
     id: "run-simulation",
     title: "Step 3: Run Simulation",
-    content: "Click the 'Run' button to test your design. We'll see if it meets the performance requirements for Spotify's streaming scenario.",
-    action: "run"
+    content:
+      "Click the 'Run' button to test your design. We'll see if it meets the performance requirements for Spotify's streaming scenario.",
+    action: "run",
   },
   {
     id: "review-results",
     title: "Tutorial Complete!",
-    content: "Great job! You've built your first system. Review the results and try optimizing the design. Use hints if you need help improving the score.",
-    action: "complete"
-  }
+    content:
+      "Great job! You've built your first system. Review the results and try optimizing the design. Use hints if you need help improving the score.",
+    action: "complete",
+  },
 ];
 
 export interface TutorialProps {
@@ -50,7 +55,12 @@ export interface TutorialProps {
   currentStep: number;
 }
 
-export default function Tutorial({ isVisible, onClose, onStepComplete, currentStep }: TutorialProps) {
+export default function Tutorial({
+  isVisible,
+  onClose,
+  onStepComplete,
+  currentStep,
+}: TutorialProps) {
   if (!isVisible || currentStep >= TUTORIAL_STEPS.length) return null;
 
   const step = TUTORIAL_STEPS[currentStep];
@@ -81,22 +91,17 @@ export default function Tutorial({ isVisible, onClose, onStepComplete, currentSt
               Step {currentStep + 1} of {TUTORIAL_STEPS.length}
             </div>
           </div>
-          <button
-            onClick={handleSkip}
-            className="text-zinc-400 hover:text-zinc-300 text-sm"
-          >
+          <button onClick={handleSkip} className="text-zinc-400 hover:text-zinc-300 text-sm">
             Skip Tutorial
           </button>
         </div>
-        
-        <p className="text-sm text-zinc-300 leading-relaxed mb-6">
-          {step.content}
-        </p>
+
+        <p className="text-sm text-zinc-300 leading-relaxed mb-6">{step.content}</p>
 
         {/* Progress bar */}
         <div className="mb-6">
           <div className="w-full bg-zinc-800 rounded-full h-1.5">
-            <div 
+            <div
               className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${((currentStep + 1) / TUTORIAL_STEPS.length) * 100}%` }}
             />
@@ -169,6 +174,6 @@ export function useTutorial() {
     onStepComplete: handleStepComplete,
     onClose: closeTutorial,
     resetTutorial,
-    currentStepData: isVisible ? TUTORIAL_STEPS[currentStep] : null
+    currentStepData: isVisible ? TUTORIAL_STEPS[currentStep] : null,
   };
 }

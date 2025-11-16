@@ -1,7 +1,7 @@
 "use client";
 import React, { useRef, useEffect, useState, memo, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Handle, Position, NodeProps, useReactFlow } from '@xyflow/react';
+import { Handle, Position, NodeProps, useReactFlow } from "@xyflow/react";
 import { SystemDesignNode as SystemDesignNodeType } from "./types";
 import { handleClass, isoClass } from "./styles";
 import { iconFor } from "./icons";
@@ -34,7 +34,7 @@ const SystemDesignNodeComponent = ({
   const _onUpdateReplicas = data.onUpdateReplicas ?? onUpdateReplicasProp;
   const [isHovered, setIsHovered] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editValue, setEditValue] = useState('');
+  const [editValue, setEditValue] = useState("");
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const hasMoved = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -48,24 +48,30 @@ const SystemDesignNodeComponent = ({
     }, 0);
   }, [data.customLabel, data.spec.label]);
 
-  const handleRename = useCallback((newLabel: string) => {
-    const trimmedLabel = newLabel.trim();
-    const currentDisplayLabel = data.customLabel || data.spec.label;
-    if (trimmedLabel && trimmedLabel !== currentDisplayLabel) {
-      onRename?.(id, trimmedLabel);
-    }
-    setIsEditing(false);
-  }, [data.customLabel, data.spec.label, onRename, id]);
-
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleRename(editValue);
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
+  const handleRename = useCallback(
+    (newLabel: string) => {
+      const trimmedLabel = newLabel.trim();
+      const currentDisplayLabel = data.customLabel || data.spec.label;
+      if (trimmedLabel && trimmedLabel !== currentDisplayLabel) {
+        onRename?.(id, trimmedLabel);
+      }
       setIsEditing(false);
-    }
-  }, [editValue, handleRename]);
+    },
+    [data.customLabel, data.spec.label, onRename, id]
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        handleRename(editValue);
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        setIsEditing(false);
+      }
+    },
+    [editValue, handleRename]
+  );
 
   const handleTouchStart = () => {
     hasMoved.current = false;
@@ -74,7 +80,7 @@ const SystemDesignNodeComponent = ({
     // Long press for delete mode (mobile only)
     longPressTimer.current = setTimeout(() => {
       if (!hasMoved.current) {
-        if ('vibrate' in navigator) {
+        if ("vibrate" in navigator) {
           navigator.vibrate([100, 50, 100, 50, 100]); // iOS-style vibration
         }
         // Trigger delete mode - this will be handled by parent component
@@ -231,7 +237,7 @@ const SystemDesignNodeComponent = ({
                 handleRename(editValue);
               }}
               className="bg-zinc-700 border border-zinc-500 rounded px-1 py-0 text-sm font-semibold tracking-wide text-zinc-100 focus:outline-none focus:border-blue-400 min-w-0 flex-1"
-              style={{ maxWidth: '120px' }}
+              style={{ maxWidth: "120px" }}
             />
           ) : (
             <div
@@ -265,7 +271,12 @@ const SystemDesignNodeComponent = ({
           title="Delete component (or press Delete key)"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
           </svg>
         </button>
       )}

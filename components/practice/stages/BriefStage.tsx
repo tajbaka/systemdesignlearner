@@ -35,7 +35,8 @@ export default function BriefStage({
           <div className="space-y-2">
             <h2 className="text-xl font-semibold text-white sm:text-2xl">URL Shortener</h2>
             <p className="text-sm text-zinc-300 leading-relaxed">
-              You are shipping a fast redirect service. We pre-loaded the baseline goals—check the toggles, tweak the targets, and lock in the brief to start designing.
+              You are shipping a fast redirect service. We pre-loaded the baseline goals—check the
+              toggles, tweak the targets, and lock in the brief to start designing.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-xs text-blue-100 lg:flex-nowrap">

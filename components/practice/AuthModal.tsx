@@ -21,7 +21,7 @@ export function AuthModal({ isOpen, onClose: _onClose, onAuthenticated, slug }: 
       track("practice_auth_completed", {
         slug,
         provider: "clerk",
-        userId: user.id
+        userId: user.id,
       });
       // Small delay to ensure Clerk state is fully settled
       setTimeout(() => {
@@ -36,13 +36,14 @@ export function AuthModal({ isOpen, onClose: _onClose, onAuthenticated, slug }: 
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       {isSignedIn ? (
         <div className="rounded-2xl border border-emerald-400/30 bg-emerald-500/10 p-4 text-sm text-emerald-100 mx-4">
-          ✓ You&apos;re signed in as {user?.primaryEmailAddress?.emailAddress}. Your progress will be saved!
+          ✓ You&apos;re signed in as {user?.primaryEmailAddress?.emailAddress}. Your progress will
+          be saved!
         </div>
       ) : (
         <SignIn
           routing="hash"
-          forceRedirectUrl={typeof window !== 'undefined' ? window.location.href : undefined}
-          fallbackRedirectUrl={typeof window !== 'undefined' ? window.location.href : undefined}
+          forceRedirectUrl={typeof window !== "undefined" ? window.location.href : undefined}
+          fallbackRedirectUrl={typeof window !== "undefined" ? window.location.href : undefined}
           appearance={{
             elements: {
               rootBox: "mx-auto",
@@ -52,8 +53,8 @@ export function AuthModal({ isOpen, onClose: _onClose, onAuthenticated, slug }: 
               },
               card: {
                 boxShadow: "none",
-              }
-            }
+              },
+            },
           }}
         />
       )}

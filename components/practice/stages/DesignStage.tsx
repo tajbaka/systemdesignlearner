@@ -7,10 +7,7 @@ import ReactFlowBoard from "@/app/components/ReactFlowBoard";
 import Palette from "@/app/components/Palette";
 import { findScenarioPath } from "@/app/components/utils";
 import { SCENARIOS } from "@/lib/scenarios";
-import type {
-  PracticeDesignState,
-  Requirements,
-} from "@/lib/practice/types";
+import type { PracticeDesignState, Requirements } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
@@ -75,8 +72,7 @@ const tutorialStepsFor = (requirements: Requirements): TutorialStep[] => {
       title: "Drop in Redis for speed",
       body: "Open the Components list and drag “Cache (Redis)” onto the board. Place it beside the Service so we can route reads through it.",
       auto: true,
-      check: ({ nodes }) =>
-        nodes.some((node) => node.spec.kind === "Cache (Redis)"),
+      check: ({ nodes }) => nodes.some((node) => node.spec.kind === "Cache (Redis)"),
     },
     {
       id: "wire-cache",
@@ -157,8 +153,7 @@ const tutorialStepsFor = (requirements: Requirements): TutorialStep[] => {
 const hasEdge = (edges: Edge[], fromId: string, toId: string) =>
   edges.some(
     (edge) =>
-      (edge.from === fromId && edge.to === toId) ||
-      (edge.from === toId && edge.to === fromId)
+      (edge.from === fromId && edge.to === toId) || (edge.from === toId && edge.to === fromId)
   );
 
 const pruneEdges = (edges: Edge[], nodes: PlacedNode[]): Edge[] => {
@@ -215,14 +210,14 @@ export default function DesignStage({
   const [clipboard, setClipboard] = useState<{ nodes: PlacedNode[]; edges: Edge[] } | null>(null);
 
   const allowedKinds = useMemo<ComponentKind[]>(
-    () => (allowedComponentKinds && allowedComponentKinds.length ? allowedComponentKinds : RECOMMENDED_COMPONENTS),
+    () =>
+      allowedComponentKinds && allowedComponentKinds.length
+        ? allowedComponentKinds
+        : RECOMMENDED_COMPONENTS,
     [allowedComponentKinds]
   );
   const paletteItems = useMemo(
-    () =>
-      COMPONENT_LIBRARY.filter((component) =>
-        allowedKinds.includes(component.kind)
-      ),
+    () => COMPONENT_LIBRARY.filter((component) => allowedKinds.includes(component.kind)),
     [allowedKinds]
   );
 
@@ -232,7 +227,10 @@ export default function DesignStage({
       return; // Don't save history during undo/redo
     }
 
-    const newState = { nodes: JSON.parse(JSON.stringify(nodes)), edges: JSON.parse(JSON.stringify(edges)) };
+    const newState = {
+      nodes: JSON.parse(JSON.stringify(nodes)),
+      edges: JSON.parse(JSON.stringify(edges)),
+    };
 
     // Remove any states after current index (when user makes new change after undo)
     historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
@@ -320,12 +318,12 @@ export default function DesignStage({
     if (editingLocked) return;
 
     const nodesToCopy = selectedNodeId
-      ? design.nodes.filter(node => node.id === selectedNodeId)
+      ? design.nodes.filter((node) => node.id === selectedNodeId)
       : design.nodes;
 
-    const nodeIds = new Set(nodesToCopy.map(n => n.id));
-    const edgesToCopy = design.edges.filter(edge =>
-      nodeIds.has(edge.from) && nodeIds.has(edge.to)
+    const nodeIds = new Set(nodesToCopy.map((n) => n.id));
+    const edgesToCopy = design.edges.filter(
+      (edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to)
     );
 
     setClipboard({
@@ -342,10 +340,11 @@ export default function DesignStage({
 
     // Create ID mapping for pasted nodes
     const idMapping = new Map<string, string>();
-    const pastedNodes: PlacedNode[] = clipboard.nodes.map(node => {
-      const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const pastedNodes: PlacedNode[] = clipboard.nodes.map((node) => {
+      const uniqueId =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const newId = `node-${node.spec.kind}-${uniqueId}`;
       idMapping.set(node.id, newId);
 
@@ -358,10 +357,11 @@ export default function DesignStage({
     });
 
     // Update edges with new node IDs
-    const pastedEdges: Edge[] = clipboard.edges.map(edge => {
-      const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const pastedEdges: Edge[] = clipboard.edges.map((edge) => {
+      const uniqueId =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       return {
         ...edge,
@@ -396,36 +396,36 @@ export default function DesignStage({
       const isMod = event.ctrlKey || event.metaKey;
 
       // Undo: Ctrl+Z (without Shift)
-      if (isMod && event.key === 'z' && !event.shiftKey) {
+      if (isMod && event.key === "z" && !event.shiftKey) {
         event.preventDefault();
         handleUndo();
         return;
       }
 
       // Redo: Ctrl+Shift+Z or Ctrl+Y
-      if (isMod && ((event.key === 'z' && event.shiftKey) || event.key === 'y')) {
+      if (isMod && ((event.key === "z" && event.shiftKey) || event.key === "y")) {
         event.preventDefault();
         handleRedo();
         return;
       }
 
       // Copy: Ctrl+C
-      if (isMod && event.key === 'c') {
+      if (isMod && event.key === "c") {
         event.preventDefault();
         handleCopy();
         return;
       }
 
       // Paste: Ctrl+V
-      if (isMod && event.key === 'v') {
+      if (isMod && event.key === "v") {
         event.preventDefault();
         handlePaste();
         return;
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleUndo, handleRedo, handleCopy, handlePaste]);
 
   const tutorialSteps = useMemo(() => tutorialStepsFor(requirements), [requirements]);
@@ -434,7 +434,7 @@ export default function DesignStage({
   const currentStep =
     design.guidedDismissed || design.guidedCompleted
       ? null
-      : tutorialSteps[design.guidedStepIndex] ?? null;
+      : (tutorialSteps[design.guidedStepIndex] ?? null);
 
   // Clamp guided index if requirements changed and removed steps
   useEffect(() => {
@@ -504,7 +504,10 @@ export default function DesignStage({
       guidedDismissed: true,
       freeModeUnlocked: true,
     }));
-    track("practice_design_guided_skipped", { slug: "url-shortener", step: currentStep?.id ?? "unknown" });
+    track("practice_design_guided_skipped", {
+      slug: "url-shortener",
+      step: currentStep?.id ?? "unknown",
+    });
   }, [design.guidedDismissed, updateDesign, currentStep?.id, editingLocked]);
 
   const addNode = useCallback(
@@ -513,9 +516,10 @@ export default function DesignStage({
       const spec = componentSpecFor(kind);
       const nodePosition = position ?? nextPosition(design.nodes);
       // FIX Issue #15: Use crypto.randomUUID() to prevent ID collisions
-      const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const uniqueId =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       const newNodes = [
         ...design.nodes,
@@ -559,9 +563,10 @@ export default function DesignStage({
       let newEdges: Edge[] = [];
 
       // FIX Issue #15: Use crypto.randomUUID() to prevent ID collisions
-      const uniqueId = typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const uniqueId =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       updateDesign((prev) => {
         const exists = prev.edges.some(
           (existing) =>
@@ -747,9 +752,7 @@ export default function DesignStage({
       let newNodes: PlacedNode[] = [];
 
       updateDesign((prev) => {
-        newNodes = prev.nodes.map(node =>
-          node.id === nodeId ? { ...node, replicas } : node
-        );
+        newNodes = prev.nodes.map((node) => (node.id === nodeId ? { ...node, replicas } : node));
         return {
           ...prev,
           nodes: newNodes,
@@ -780,7 +783,7 @@ export default function DesignStage({
       if (editingLocked) return;
       updateDesign((prev) => ({
         ...prev,
-        nodes: prev.nodes.map(node =>
+        nodes: prev.nodes.map((node) =>
           node.id === nodeId ? { ...node, customLabel: newLabel } : node
         ),
       }));
@@ -804,11 +807,14 @@ export default function DesignStage({
     }
   }, []);
 
-  const handleNodeTouchStart = useCallback((nodeId: string) => {
-    if (editingLocked) return;
-    setSelectedNodeId(nodeId);
-    setSelectedEdgeId(null);
-  }, [editingLocked]);
+  const handleNodeTouchStart = useCallback(
+    (nodeId: string) => {
+      if (editingLocked) return;
+      setSelectedNodeId(nodeId);
+      setSelectedEdgeId(null);
+    },
+    [editingLocked]
+  );
 
   const handleNodeTouchEnd = useCallback(() => {
     // Touch end currently unused; reserved for future mobile gestures
@@ -875,7 +881,15 @@ export default function DesignStage({
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     }
-  }, [editingLocked, selectedEdgeId, selectedNodeId, updateDesign, session, design.nodes, saveToHistory]);
+  }, [
+    editingLocked,
+    selectedEdgeId,
+    selectedNodeId,
+    updateDesign,
+    session,
+    design.nodes,
+    saveToHistory,
+  ]);
 
   const serviceNode = useMemo(
     () => design.nodes.find((node) => node.spec.kind === "Service"),
@@ -989,7 +1003,12 @@ export default function DesignStage({
                     title="Delete selected"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -1033,9 +1052,12 @@ export default function DesignStage({
             Phase 2 · Guided design
           </div>
           <div className="space-y-2">
-            <h2 className="hidden text-xl font-semibold text-white sm:block sm:text-2xl">URL Shortener</h2>
+            <h2 className="hidden text-xl font-semibold text-white sm:block sm:text-2xl">
+              URL Shortener
+            </h2>
             <p className="text-sm text-zinc-300 leading-relaxed">
-              Follow the checklist to shape a fast redirect path. The palette and coach panel flank the canvas so you can iterate with plenty of room.
+              Follow the checklist to shape a fast redirect path. The palette and coach panel flank
+              the canvas so you can iterate with plenty of room.
             </p>
           </div>
           <div className="flex flex-wrap gap-2 text-xs text-emerald-100 lg:flex-nowrap">
@@ -1087,9 +1109,12 @@ export default function DesignStage({
       <section className="rounded-3xl border border-zinc-800 bg-zinc-900/60 p-4 sm:p-6">
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(280px,0.9fr)_minmax(720px,1.2fr)_minmax(280px,0.9fr)] lg:items-start lg:gap-6 lg:max-w-screen-2xl lg:mx-auto">
           <aside className="order-3 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-2 lg:order-1 lg:sticky lg:top-28 lg:h-[640px] lg:flex lg:flex-col lg:min-h-[640px] lg:overflow-hidden">
-            <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">Component palette</h3>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
+              Component palette
+            </h3>
             <p className="mt-1 text-xs text-zinc-400 leading-relaxed">
-              Pick the blocks you need. Tap to drop components on mobile, or drag and drop on desktop to place them exactly where you want.
+              Pick the blocks you need. Tap to drop components on mobile, or drag and drop on
+              desktop to place them exactly where you want.
             </p>
             <Palette
               componentLibrary={paletteItems}
@@ -1118,8 +1143,18 @@ export default function DesignStage({
                       aria-label="Delete selected"
                       title="Delete selected"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -1152,10 +1187,14 @@ export default function DesignStage({
 
           <aside className="order-1 flex flex-col gap-4 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:order-3 lg:order-3 lg:sticky lg:top-28 lg:h-[620px] lg:min-h-[620px]">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">Guided steps</h3>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
+                Guided steps
+              </h3>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-zinc-500">
-                  {design.guidedCompleted ? "Complete" : `${Math.min(design.guidedStepIndex + 1, stepCount)}/${stepCount}`}
+                  {design.guidedCompleted
+                    ? "Complete"
+                    : `${Math.min(design.guidedStepIndex + 1, stepCount)}/${stepCount}`}
                 </span>
                 {!design.guidedDismissed && !design.guidedCompleted ? (
                   <button
@@ -1200,7 +1239,9 @@ export default function DesignStage({
             <div className="space-y-2 text-xs text-zinc-400">
               <div
                 className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
-                  cacheOnPath ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-100" : "border-zinc-700"
+                  cacheOnPath
+                    ? "border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+                    : "border-zinc-700"
                 }`}
               >
                 <span className="h-2 w-2 rounded-full bg-current" />
@@ -1209,7 +1250,9 @@ export default function DesignStage({
               {requiresAnalytics ? (
                 <div
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
-                    analyticsReady ? "border-indigo-400/40 bg-indigo-500/10 text-indigo-100" : "border-zinc-700"
+                    analyticsReady
+                      ? "border-indigo-400/40 bg-indigo-500/10 text-indigo-100"
+                      : "border-zinc-700"
                   }`}
                 >
                   <span className="h-2 w-2 rounded-full bg-current" />
@@ -1219,7 +1262,9 @@ export default function DesignStage({
               {requiresRateLimit ? (
                 <div
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
-                    rateLimiterReady ? "border-amber-400/40 bg-amber-500/10 text-amber-100" : "border-zinc-700"
+                    rateLimiterReady
+                      ? "border-amber-400/40 bg-amber-500/10 text-amber-100"
+                      : "border-zinc-700"
                   }`}
                 >
                   <span className="h-2 w-2 rounded-full bg-current" />
@@ -1229,7 +1274,9 @@ export default function DesignStage({
               {requiresAdminDelete ? (
                 <div
                   className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${
-                    adminFlowReady ? "border-rose-400/40 bg-rose-500/10 text-rose-100" : "border-zinc-700"
+                    adminFlowReady
+                      ? "border-rose-400/40 bg-rose-500/10 text-rose-100"
+                      : "border-zinc-700"
                   }`}
                 >
                   <span className="h-2 w-2 rounded-full bg-current" />

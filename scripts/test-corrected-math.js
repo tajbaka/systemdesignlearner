@@ -18,7 +18,7 @@ const mockRect = {
 
 // Test the corrected viewport calculation
 function testCorrectedViewportMath() {
-  console.log('Testing corrected viewport math...');
+  console.log("Testing corrected viewport math...");
 
   // User's corrected implementation
   const getViewportWorldRect = () => {
@@ -29,14 +29,14 @@ function testCorrectedViewportMath() {
     }
     // NOTE: world = (screen - translate) / scale
     const left = (0 - positionX) / scale;
-    const top  = (0 - positionY) / scale;
-    const width  = rect.width  / scale;  // divide, not multiply
-    const height = rect.height / scale;  // divide, not multiply
+    const top = (0 - positionY) / scale;
+    const width = rect.width / scale; // divide, not multiply
+    const height = rect.height / scale; // divide, not multiply
     return { left, top, width, height };
   };
 
   const viewportRect = getViewportWorldRect();
-  console.log('Corrected viewport rect:', viewportRect);
+  console.log("Corrected viewport rect:", viewportRect);
 
   // Expected calculations:
   // left = (0 - (-100)) / 0.8 = 100 / 0.8 = 125
@@ -49,23 +49,27 @@ function testCorrectedViewportMath() {
   const expectedWidth = mockRect.width / mockTransformState.scale;
   const expectedHeight = mockRect.height / mockTransformState.scale;
 
-  console.log(`Expected: left=${expectedLeft}, top=${expectedTop}, width=${expectedWidth}, height=${expectedHeight}`);
+  console.log(
+    `Expected: left=${expectedLeft}, top=${expectedTop}, width=${expectedWidth}, height=${expectedHeight}`
+  );
 
   const tolerance = 0.001;
-  if (Math.abs(viewportRect.left - expectedLeft) < tolerance &&
-      Math.abs(viewportRect.top - expectedTop) < tolerance &&
-      Math.abs(viewportRect.width - expectedWidth) < tolerance &&
-      Math.abs(viewportRect.height - expectedHeight) < tolerance) {
-    console.log('✅ Corrected viewport math is accurate!');
-    console.log('✅ Viewport should no longer be gigantic in the minimap');
+  if (
+    Math.abs(viewportRect.left - expectedLeft) < tolerance &&
+    Math.abs(viewportRect.top - expectedTop) < tolerance &&
+    Math.abs(viewportRect.width - expectedWidth) < tolerance &&
+    Math.abs(viewportRect.height - expectedHeight) < tolerance
+  ) {
+    console.log("✅ Corrected viewport math is accurate!");
+    console.log("✅ Viewport should no longer be gigantic in the minimap");
   } else {
-    console.log('❌ Viewport calculations still incorrect');
+    console.log("❌ Viewport calculations still incorrect");
   }
 }
 
 // Test world center calculation (should be unchanged)
 function testWorldCenter() {
-  console.log('\nTesting world center calculation...');
+  console.log("\nTesting world center calculation...");
 
   const getWorldCenter = () => {
     const rect = mockRect;
@@ -79,7 +83,7 @@ function testWorldCenter() {
   };
 
   const worldCenter = getWorldCenter();
-  console.log('World center:', worldCenter);
+  console.log("World center:", worldCenter);
 
   // Expected: (400 - (-100)) / 0.8 = 500 / 0.8 = 625 for x
   // Expected: (300 - (-50)) / 0.8 = 350 / 0.8 = 437.5 for y
@@ -89,12 +93,14 @@ function testWorldCenter() {
   console.log(`Expected center: x=${expectedX}, y=${expectedY}`);
 
   const tolerance = 0.001;
-  if (Math.abs(worldCenter.x - expectedX) < tolerance &&
-      Math.abs(worldCenter.y - expectedY) < tolerance) {
-    console.log('✅ World center calculation is correct!');
-    console.log('✅ Spawn placement should now be accurate');
+  if (
+    Math.abs(worldCenter.x - expectedX) < tolerance &&
+    Math.abs(worldCenter.y - expectedY) < tolerance
+  ) {
+    console.log("✅ World center calculation is correct!");
+    console.log("✅ Spawn placement should now be accurate");
   } else {
-    console.log('❌ World center calculation is incorrect');
+    console.log("❌ World center calculation is incorrect");
   }
 }
 

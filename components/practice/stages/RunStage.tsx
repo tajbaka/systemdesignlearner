@@ -4,16 +4,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { SCENARIOS } from "@/lib/scenarios";
 import { simulate } from "@/app/components/simulation";
 import { validateDesignForScenario } from "@/lib/practice/validation";
-import type { PracticeDesignState, PracticeRunState, Requirements, PracticeStepScores } from "@/lib/practice/types";
+import type {
+  PracticeDesignState,
+  PracticeRunState,
+  Requirements,
+  PracticeStepScores,
+} from "@/lib/practice/types";
 import type { PlacedNode } from "@/app/components/types";
 import type { Scenario } from "@/lib/scenarios";
 import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
-import {
-  evaluateDesignOptimized,
-  scoreSimulation,
-  loadScoringConfig,
-} from "@/lib/scoring/index";
+import { evaluateDesignOptimized, scoreSimulation, loadScoringConfig } from "@/lib/scoring/index";
 import type { FeedbackResult } from "@/lib/scoring/types";
 
 type UpdateRunFn = (updater: (prev: PracticeRunState) => PracticeRunState) => void;
@@ -189,8 +190,14 @@ export default function RunStage({
       // FIX Issue #2: Add timeout wrapper to prevent hanging simulation
       const simulationPromise = (async () => {
         console.log("[RunStage] Running simulation");
-        console.log("[RunStage] Nodes:", design.nodes.map((n) => ({ id: n.id, kind: n.spec.kind })));
-        console.log("[RunStage] Edges:", design.edges.map((e) => ({ id: e.id, from: e.from, to: e.to })));
+        console.log(
+          "[RunStage] Nodes:",
+          design.nodes.map((n) => ({ id: n.id, kind: n.spec.kind }))
+        );
+        console.log(
+          "[RunStage] Edges:",
+          design.edges.map((e) => ({ id: e.id, from: e.from, to: e.to }))
+        );
         console.log("[RunStage] Using validated path:", validatedPath);
 
         // Evaluate design architecture (in background, non-blocking)
@@ -219,7 +226,12 @@ export default function RunStage({
               }
             );
 
-            logger.info("Design evaluation complete, score:", designScore.score, "/", designScore.maxScore);
+            logger.info(
+              "Design evaluation complete, score:",
+              designScore.score,
+              "/",
+              designScore.maxScore
+            );
             setStepScore("design", designScore);
           } catch (err) {
             logger.error("Design scoring failed", err);
@@ -233,7 +245,8 @@ export default function RunStage({
                 {
                   category: "architecture",
                   severity: "warning",
-                  message: "Design evaluation encountered an error. Your design may not have been fully scored.",
+                  message:
+                    "Design evaluation encountered an error. Your design may not have been fully scored.",
                 },
               ],
               positive: [],
@@ -322,7 +335,9 @@ export default function RunStage({
       }
 
       if (err instanceof Error && err.message === "Simulation timeout") {
-        setError("Simulation timed out after 15 seconds. Please simplify your design or try again.");
+        setError(
+          "Simulation timed out after 15 seconds. Please simplify your design or try again."
+        );
       } else {
         setError("Simulation failed. Adjust your graph and try again.");
       }

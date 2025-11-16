@@ -8,8 +8,5 @@ export const encodeDesign = (preset: HighLevelChoice): string => {
   };
 
   const json = JSON.stringify(payload);
-  return btoa(json)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/, "");
+  return btoa(json).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 };

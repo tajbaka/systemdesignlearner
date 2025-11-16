@@ -3,7 +3,7 @@
  * Only logs in development environment
  */
 
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = process.env.NODE_ENV === "development";
 
 export const logger = {
   log: (...args: unknown[]) => {

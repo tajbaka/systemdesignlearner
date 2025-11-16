@@ -296,13 +296,13 @@ ${endpoints.map((ep) => `${ep.method} ${ep.path}\n  Documentation: ${ep.notes ||
 
 Current Feedback:
 Strengths:
-${feedback.positive.map(p => `- ${p.message}`).join("\n")}
+${feedback.positive.map((p) => `- ${p.message}`).join("\n")}
 
 Issues:
-${feedback.warnings.map(w => `- ${w.message}`).join("\n")}
+${feedback.warnings.map((w) => `- ${w.message}`).join("\n")}
 
 Existing Suggestions:
-${feedback.suggestions.map(s => `- ${s.message}`).join("\n")}
+${feedback.suggestions.map((s) => `- ${s.message}`).join("\n")}
 
 Task: Provide specific, actionable advice to reach 100% score. Focus on:
 1. What's missing or incomplete in the current design

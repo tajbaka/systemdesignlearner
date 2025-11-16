@@ -43,11 +43,13 @@ Trade-off:
 ### Whisper Direct API (Default)
 
 #### 1. Server Route (`app/api/transcribe/route.ts`)
+
 - Proxies audio files to OpenAI Whisper API
 - Runs server-side only with your `OPENAI_API_KEY`
 - Handles file size validation (25 MB max)
 
 #### 2. Hook (`hooks/useWhisperStt.ts`)
+
 - Uses MediaRecorder for audio capture
 - Records to blob, uploads on stop
 - Fast startup (~175ms)
@@ -56,6 +58,7 @@ Trade-off:
 ### Web Speech API (Optional Fallback)
 
 #### 3. Hook (`hooks/useWebSpeechStt.ts`)
+
 - Browser-native speech recognition (Chrome only)
 - No server required
 - Enabled with `NEXT_PUBLIC_ENABLE_WEB_SPEECH=1`
@@ -63,12 +66,14 @@ Trade-off:
 ### UI Components
 
 #### 4. PushToTalk Component (`components/practice/PushToTalk.tsx`)
+
 - Push to talk button with hold or toggle modes
 - Keyboard shortcut: Space to start/stop when focused
 - Cmd/Ctrl+M to switch between hold and toggle modes
 - Automatically selects implementation (Web Speech or Whisper)
 
 #### 5. Bridge Component (`components/practice/VoiceCaptureBridge.tsx`)
+
 - Integrates PushToTalk with existing textarea inputs
 - Appends final transcripts to the current value
 - Integrated into practice step forms
@@ -80,12 +85,14 @@ Trade-off:
 ### Previous Architecture (Realtime API)
 
 **What We Used Before:**
+
 - GPT-4o Realtime API (`gpt-4o-realtime-preview-2024-12-17`)
 - Whisper-1 for transcription (via `input_audio_transcription` config)
 - WebRTC peer connections
 - Complex 680-line implementation
 
 **Problems with Realtime API:**
+
 1. **Over-engineered**: Using a conversational AI API for simple transcription
 2. **High Latency**: WebRTC negotiation added ~1.5-2 seconds before recording starts
 3. **Complex Code**: 680 lines managing peer connections, data channels, session state
@@ -93,6 +100,7 @@ Trade-off:
 5. **Overkill Features**: We didn't use text-to-speech, turn detection, or conversation features
 
 **Migration Flow:**
+
 ```
 User clicks mic
     ↓
@@ -112,6 +120,7 @@ Ready to record (Total: ~1500-2800ms)
 ### Current Architecture (Whisper API)
 
 **Simplified Flow:**
+
 ```
 User clicks mic
     ↓
@@ -134,15 +143,15 @@ Return final transcript
 
 ### Trade-off Comparison
 
-| Aspect | Realtime API (Old) | Whisper API (Current) |
-|--------|-------------------|----------------------|
-| **Startup Latency** | 1500-2800ms | ~500ms |
-| **Code Complexity** | 680 lines | ~150 lines |
-| **Streaming** | Real-time interim results | No (batch only) |
-| **Accuracy** | Whisper-1 | Whisper-1 (same) |
-| **Cost per 1000 min** | $6.00 | $6.00 |
-| **Max Audio Length** | Unlimited streaming | 25 MB per file |
-| **Browser Support** | Chrome/Firefox/Safari | Chrome/Firefox/Safari |
+| Aspect                | Realtime API (Old)        | Whisper API (Current) |
+| --------------------- | ------------------------- | --------------------- |
+| **Startup Latency**   | 1500-2800ms               | ~500ms                |
+| **Code Complexity**   | 680 lines                 | ~150 lines            |
+| **Streaming**         | Real-time interim results | No (batch only)       |
+| **Accuracy**          | Whisper-1                 | Whisper-1 (same)      |
+| **Cost per 1000 min** | $6.00                     | $6.00                 |
+| **Max Audio Length**  | Unlimited streaming       | 25 MB per file        |
+| **Browser Support**   | Chrome/Firefox/Safari     | Chrome/Firefox/Safari |
 
 **Status:** Migration complete ✅. All Realtime API code has been removed.
 
@@ -183,6 +192,7 @@ This is disabled by default. Note: Web Speech API takes priority over Whisper Di
 #### Basic Test
 
 1. Start the development server:
+
 ```bash
 pnpm dev
 ```
@@ -203,11 +213,13 @@ pnpm dev
 ### Testing Modes
 
 **Hold Mode** (default):
+
 - Press and hold the mic button
 - Speak while holding
 - Release to stop
 
 **Toggle Mode**:
+
 - Click the "Hold mode" text below the button to switch
 - Click mic button once to start
 - Click again to stop
@@ -248,17 +260,9 @@ function MyComponent() {
 
   return (
     <div className="relative">
-      <textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        className="w-full pr-14"
-      />
+      <textarea value={value} onChange={(e) => setValue(e.target.value)} className="w-full pr-14" />
       <div className="absolute bottom-3 right-3">
-        <VoiceCaptureBridge
-          value={value}
-          onChange={setValue}
-          stepId="my-unique-step-id"
-        />
+        <VoiceCaptureBridge value={value} onChange={setValue} stepId="my-unique-step-id" />
       </div>
     </div>
   );
@@ -268,11 +272,13 @@ function MyComponent() {
 ### Browser Compatibility
 
 **Whisper Direct** (default):
+
 - Chrome/Edge: Full support
 - Firefox: Full support
 - Safari: Full support
 
 **Web Speech API** (optional):
+
 - Chrome/Edge only
 - Must enable with `NEXT_PUBLIC_ENABLE_WEB_SPEECH=1`
 
@@ -335,15 +341,18 @@ Total to transcript:    ~500-1100ms after recording stops
 ### Common Issues
 
 **Issue**: Recording starts but never stops
+
 - Check that you're releasing the button in hold mode
 - Try switching to toggle mode with Cmd/Ctrl+M
 
 **Issue**: Transcript is empty
+
 - Ensure you spoke clearly
 - Check microphone levels in system settings
 - Verify internet connection during upload
 
 **Issue**: "Microphone access denied"
+
 - Check browser permissions in settings
 - Click the lock icon in address bar to manage permissions
 - Try a different browser if Safari is blocking
@@ -363,20 +372,24 @@ Total to transcript:    ~500-1100ms after recording stops
 ## Migration Notes (For Reference)
 
 ### Files Removed (Realtime API)
+
 - `app/api/realtime/route.ts` - Token minting server route
 - `hooks/useRealtimeStt.ts` - WebRTC peer connection management (680 lines)
 
 ### Files Added (Whisper API)
+
 - `app/api/transcribe/route.ts` - Simple REST proxy to Whisper API
 - `hooks/useWhisperStt.ts` - MediaRecorder-based implementation
 
 ### Files Updated
+
 - `components/practice/PushToTalk.tsx` - Switched from Realtime to Whisper hook
 - `components/practice/VoiceCaptureBridge.tsx` - Updated integration
 
 ### Why We Migrated
 
 The Realtime API was designed for conversational AI applications with features like:
+
 - Real-time bidirectional communication
 - Text-to-speech output
 - Turn detection for conversations
@@ -385,6 +398,7 @@ The Realtime API was designed for conversational AI applications with features l
 **We only needed:** Simple speech-to-text transcription
 
 **Result:** By switching to the direct Whisper API, we achieved:
+
 - 60-80% faster startup
 - 80% less code to maintain
 - Identical transcription quality

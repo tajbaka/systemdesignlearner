@@ -23,7 +23,9 @@ export function VerificationFeedback({
   className = "",
 }: VerificationFeedbackProps) {
   // Use feedbackResult if provided, otherwise use legacy props
-  const blockingMessages = feedbackResult ? feedbackResult.blocking.map((f) => f.message) : blocking;
+  const blockingMessages = feedbackResult
+    ? feedbackResult.blocking.map((f) => f.message)
+    : blocking;
   const warningMessages = feedbackResult ? feedbackResult.warnings.map((f) => f.message) : warnings;
   const positiveMessages = feedbackResult?.positive.map((f) => f.message) || [];
   const suggestionMessages = feedbackResult?.suggestions.map((f) => f.message) || [];
@@ -105,11 +107,7 @@ export function VerificationFeedback({
           <div className="flex-1 space-y-2">
             <h3
               className={`text-sm font-semibold ${
-                hasBlocking
-                  ? "text-rose-100"
-                  : hasWarnings
-                    ? "text-amber-100"
-                    : "text-emerald-100"
+                hasBlocking ? "text-rose-100" : hasWarnings ? "text-amber-100" : "text-emerald-100"
               }`}
             >
               {hasBlocking

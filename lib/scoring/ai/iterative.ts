@@ -112,7 +112,7 @@ export async function assessCoverage(
   userContent: string,
   previousQuestion?: string | null
 ): Promise<{ coverage: CoverageReport; nextTopicId: string | null; question: string | null }> {
-  const topicsForModel = step.topics.map(t => ({
+  const topicsForModel = step.topics.map((t) => ({
     id: t.id,
     label: t.label,
     description: t.description ?? "",
@@ -126,7 +126,7 @@ export async function assessCoverage(
   // Build endpoint-specific validation rules for API step
   let endpointValidationRules = "";
   if (isApiStep && step.endpointRequirements) {
-    const endpointDetails = step.endpointRequirements.map(ep => ({
+    const endpointDetails = step.endpointRequirements.map((ep) => ({
       id: ep.id,
       method: ep.method,
       examplePath: ep.examplePath,
@@ -142,7 +142,10 @@ For each endpoint, verify:
 2. **Request Body** (for POST/PATCH): Must explicitly mention the specific field names that are sent in the request, either in JSON format OR in natural language (e.g., "body contains longUrl, customSlug, and expiresAt fields" counts as covered)
 3. **Response Details**: Must explicitly mention what fields or data are returned, either in JSON format OR in natural language (e.g., "returns the shortUrl, slug, and createdAt" counts as covered)
 4. **Error Handling**: Must mention at least one error case (e.g., 400, 404, 409, 410) or describe what happens when something goes wrong
-5. **Documentation Completeness**: Must address the required concepts: ${step.endpointRequirements.flatMap(ep => ep.documentationHints).filter((v, i, a) => a.indexOf(v) === i).join(", ")}
+5. **Documentation Completeness**: Must address the required concepts: ${step.endpointRequirements
+      .flatMap((ep) => ep.documentationHints)
+      .filter((v, i, a) => a.indexOf(v) === i)
+      .join(", ")}
 
 Expected Endpoints:
 ${JSON.stringify(endpointDetails, null, 2)}
@@ -176,10 +179,14 @@ Rules
 - For storage/persistence in non-functional requirements: The candidate must explicitly mention databases, persistence, or storage - don't infer it.
 - For rate limiting, abuse prevention, or security topics: The candidate must explicitly mention them - don't assume they're implied.
 - For admin/user management topics: The candidate must explicitly describe the feature - don't assume it's covered by authentication.
-${isApiStep ? `- For API endpoint topics: An endpoint is covered if it includes BOTH request details AND response details with explicit field/data names. Accept both JSON format and natural language.
+${
+  isApiStep
+    ? `- For API endpoint topics: An endpoint is covered if it includes BOTH request details AND response details with explicit field/data names. Accept both JSON format and natural language.
 - Examples that COUNT as covered: "body contains longUrl, customSlug, and expiresAt" OR "body: { longUrl, customSlug, expiresAt }" OR "request includes the long URL, optional custom slug, and optional expiration date"
 - Examples that are TOO VAGUE: "request: url" OR "body contains the URL" OR "returns the short link" (must specify field names)
-- Focus questions on the NEXT missing topic in priority order (required topics first). Never ask about topics already marked as covered.` : ''}
+- Focus questions on the NEXT missing topic in priority order (required topics first). Never ask about topics already marked as covered.`
+    : ""
+}
 - If uncertain or if coverage is incomplete, treat it as missing.
 - When writing the question, focus on the user's intent/behavior (e.g., "what should happen when...") and never reveal solution details (no HTTP codes, algorithms, numbers, etc.).
 - If a previous question exists and the topic is still missing, sharpen the same question without giving away the answer.
@@ -210,13 +217,15 @@ ${previousQuestion ? `"${previousQuestion}"` : "null"}
   const missingSet = new Set(result.missing);
 
   // normalize to the provided topics order
-  const covered = step.topics.filter(t => coveredSet.has(t.id)).map(t => ({ id: t.id, label: t.label }));
+  const covered = step.topics
+    .filter((t) => coveredSet.has(t.id))
+    .map((t) => ({ id: t.id, label: t.label }));
   const missing = step.topics
-    .filter(t => missingSet.has(t.id))
-    .map(t => ({ id: t.id, label: t.label, required: Boolean(t.required) }));
+    .filter((t) => missingSet.has(t.id))
+    .map((t) => ({ id: t.id, label: t.label, required: Boolean(t.required) }));
 
-  const requiredList = step.topics.filter(t => t.required);
-  const requiredCovered = requiredList.every(t => coveredSet.has(t.id));
+  const requiredList = step.topics.filter((t) => t.required);
+  const requiredCovered = requiredList.every((t) => coveredSet.has(t.id));
   // For 100% score, only core requirements need to be covered (optional are bonus)
   const allCovered = requiredCovered;
 
@@ -231,14 +240,14 @@ ${previousQuestion ? `"${previousQuestion}"` : "null"}
  * 2) Pick next topic: required first in declared order, then optional
  */
 export function pickNextTopic(step: StepConfig, coverage: CoverageReport): Topic | null {
-  const coveredIds = new Set(coverage.covered.map(c => c.id));
+  const coveredIds = new Set(coverage.covered.map((c) => c.id));
 
   // required first
-  for (const t of step.topics.filter(x => x.required)) {
+  for (const t of step.topics.filter((x) => x.required)) {
     if (!coveredIds.has(t.id)) return t;
   }
   // then optional
-  for (const t of step.topics.filter(x => !x.required)) {
+  for (const t of step.topics.filter((x) => !x.required)) {
     if (!coveredIds.has(t.id)) return t;
   }
   return null;
@@ -291,8 +300,8 @@ ${previousQuestion ? `"${previousQuestion}"` : "null"}
  *    Optional requirements = bonus points on top
  */
 function computeScore(step: StepConfig, coveredIds: Set<string>) {
-  const coreTopics = step.topics.filter(t => t.required);
-  const optionalTopics = step.topics.filter(t => !t.required);
+  const coreTopics = step.topics.filter((t) => t.required);
+  const optionalTopics = step.topics.filter((t) => !t.required);
 
   // Calculate max score based on core topics only (this represents 100%)
   const maxCoreWeight = coreTopics.reduce((acc, t) => acc + (t.weight ?? 1), 0);
@@ -342,10 +351,14 @@ export async function getIterativeFeedback(
   previousQuestion?: string | null,
   attemptCount?: number
 ): Promise<IterativeFeedbackResult> {
-  const { coverage, nextTopicId, question } = await assessCoverage(step, userContent, previousQuestion);
+  const { coverage, nextTopicId, question } = await assessCoverage(
+    step,
+    userContent,
+    previousQuestion
+  );
 
   let nextQuestion: QuestionResult | null = null;
-  const topicFromModel = nextTopicId ? step.topics.find(t => t.id === nextTopicId) : null;
+  const topicFromModel = nextTopicId ? step.topics.find((t) => t.id === nextTopicId) : null;
 
   // Check if there are ANY topics left (core OR optional)
   const hasAnyMissingTopics = coverage.missing.length > 0;
@@ -368,25 +381,25 @@ export async function getIterativeFeedback(
     }
   }
 
-  const coveredIds = new Set(coverage.covered.map(c => c.id));
+  const coveredIds = new Set(coverage.covered.map((c) => c.id));
   const score = computeScore(step, coveredIds);
 
   // Build covered lines with visual distinction for core vs optional
-  const coreTopics = step.topics.filter(t => t.required);
-  const optionalTopics = step.topics.filter(t => !t.required);
+  const coreTopics = step.topics.filter((t) => t.required);
+  const optionalTopics = step.topics.filter((t) => !t.required);
 
   const coveredCoreLines = coverage.covered
-    .filter(c => coreTopics.some(t => t.id === c.id))
-    .map(c => `✓ ${c.label}: covered`);
+    .filter((c) => coreTopics.some((t) => t.id === c.id))
+    .map((c) => `✓ ${c.label}: covered`);
 
   const coveredOptionalLines = coverage.covered
-    .filter(c => optionalTopics.some(t => t.id === c.id))
-    .map(c => `✓ ${c.label}: covered`);
+    .filter((c) => optionalTopics.some((t) => t.id === c.id))
+    .map((c) => `✓ ${c.label}: covered`);
 
   // Combine: core first, then optional (with bonus indicator if any)
   const coveredLines = [
     ...coveredCoreLines,
-    ...(coveredOptionalLines.length > 0 ? coveredOptionalLines : [])
+    ...(coveredOptionalLines.length > 0 ? coveredOptionalLines : []),
   ];
 
   const blocking = !coverage.requiredCovered;
@@ -394,13 +407,14 @@ export async function getIterativeFeedback(
   // After 3 attempts on the same topic, provide an example hint
   let exampleHint: string | null = null;
   if (attemptCount && attemptCount >= 3 && nextQuestion && blocking) {
-    const topic = step.topics.find(t => t.id === nextQuestion.topicId);
+    const topic = step.topics.find((t) => t.id === nextQuestion.topicId);
 
     // For API step, get example from endpoint requirements
     if (step.stepId === "api" && step.endpointRequirements) {
-      const endpoint = step.endpointRequirements.find(ep =>
-        nextQuestion.topicId.includes(ep.id) ||
-        ep.purpose.toLowerCase().includes(topic?.label.toLowerCase() || "")
+      const endpoint = step.endpointRequirements.find(
+        (ep) =>
+          nextQuestion.topicId.includes(ep.id) ||
+          ep.purpose.toLowerCase().includes(topic?.label.toLowerCase() || "")
       );
       if (endpoint?.exampleNotes) {
         exampleHint = `Method: ${endpoint.method}\nPath: ${endpoint.examplePath}\n\n${endpoint.exampleNotes}`;

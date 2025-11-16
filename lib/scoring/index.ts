@@ -262,10 +262,6 @@ export {
 
 // Re-export progress tracking
 export type { ProgressStep, ProgressCallback, EvaluationProgress } from "./ai/progress";
-export {
-  createFunctionalProgress,
-  createApiProgress,
-  createDesignProgress,
-} from "./ai/progress";
+export { createFunctionalProgress, createApiProgress, createDesignProgress } from "./ai/progress";
 
 export { isAIAvailable } from "./ai/gemini";

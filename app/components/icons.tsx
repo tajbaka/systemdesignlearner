@@ -136,5 +136,3 @@ export function iconFor(kind: ComponentKind) {
       return IconService;
   }
 }
-
-

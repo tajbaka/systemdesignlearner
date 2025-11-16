@@ -57,8 +57,9 @@ export default function SystemDesignEditor() {
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [isSimPanelCollapsed, setIsSimPanelCollapsed] = useState(false);
 
-  const selectedScenario = useMemo(() =>
-    SCENARIOS.find((s: Scenario) => s.id === selectedScenarioId)!, [selectedScenarioId]
+  const selectedScenario = useMemo(
+    () => SCENARIOS.find((s: Scenario) => s.id === selectedScenarioId)!,
+    [selectedScenarioId]
   );
   const specsByKind = useMemo(() => {
     const map = new Map<ComponentKind, (typeof COMPONENT_LIBRARY)[number]>();
@@ -153,72 +154,79 @@ export default function SystemDesignEditor() {
 
   // Auto-expand panel when there are simulation errors or failures
   React.useEffect(() => {
-    const hasErrors = simulationError ||
-      (simulationResult && simulationResult.scoreBreakdown?.outcome === "fail");
+    const hasErrors =
+      simulationError || (simulationResult && simulationResult.scoreBreakdown?.outcome === "fail");
 
     if (hasErrors && isSimPanelCollapsed) {
       setIsSimPanelCollapsed(false);
     }
   }, [simulationError, simulationResult, isSimPanelCollapsed]);
 
-  const addNode = useCallback((kind: ComponentKind, position?: { x: number; y: number }) => {
-    const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
+  const addNode = useCallback(
+    (kind: ComponentKind, position?: { x: number; y: number }) => {
+      const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind)!;
 
-    let nodePosition: { x: number; y: number };
+      let nodePosition: { x: number; y: number };
 
-    if (position) {
-      // Use the provided position (from drag & drop)
-      nodePosition = position;
-    } else {
-      // Default fallback position
-      const nodesCount = nodes.length;
-      nodePosition = {
-        x: (nodesCount % 5) * 250 - 500,
-        y: Math.floor(nodesCount / 5) * 250 - 250
+      if (position) {
+        // Use the provided position (from drag & drop)
+        nodePosition = position;
+      } else {
+        // Default fallback position
+        const nodesCount = nodes.length;
+        nodePosition = {
+          x: (nodesCount % 5) * 250 - 500,
+          y: Math.floor(nodesCount / 5) * 250 - 250,
+        };
+
+        // Try to find a better empty spot without moving existing nodes
+        const existingPositions = new Set(
+          nodes.map((node) => `${Math.round(node.x / 100)},${Math.round(node.y / 100)}`)
+        );
+
+        // Try positions in a spiral pattern starting from center
+        let attempts = 0;
+        const spacing = 200;
+
+        while (attempts < 50) {
+          // Limit attempts to avoid infinite loop
+          const radius = Math.floor(attempts / 8) * spacing;
+          const angle = (attempts % 8) * (Math.PI / 4);
+          const x = Math.round((radius * Math.cos(angle)) / spacing) * spacing;
+          const y = Math.round((radius * Math.sin(angle)) / spacing) * spacing;
+
+          const key = `${Math.round(x / 100)},${Math.round(y / 100)}`;
+          if (!existingPositions.has(key)) {
+            nodePosition = { x, y };
+            break; // Found a good spot, exit the loop
+          }
+          attempts++;
+        }
+      }
+
+      const newNode: PlacedNode = {
+        id: uid(),
+        spec,
+        x: nodePosition.x,
+        y: nodePosition.y,
+        replicas: 1,
       };
 
-      // Try to find a better empty spot without moving existing nodes
-      const existingPositions = new Set(
-        nodes.map(node => `${Math.round(node.x / 100)},${Math.round(node.y / 100)}`)
-      );
-
-      // Try positions in a spiral pattern starting from center
-      let attempts = 0;
-      const spacing = 200;
-
-      while (attempts < 50) { // Limit attempts to avoid infinite loop
-        const radius = Math.floor(attempts / 8) * spacing;
-        const angle = (attempts % 8) * (Math.PI / 4);
-        const x = Math.round(radius * Math.cos(angle) / spacing) * spacing;
-        const y = Math.round(radius * Math.sin(angle) / spacing) * spacing;
-
-        const key = `${Math.round(x / 100)},${Math.round(y / 100)}`;
-        if (!existingPositions.has(key)) {
-          nodePosition = { x, y };
-          break; // Found a good spot, exit the loop
-        }
-        attempts++;
-      }
-    }
-
-    const newNode: PlacedNode = {
-      id: uid(),
-      spec,
-      x: nodePosition.x,
-      y: nodePosition.y,
-      replicas: 1,
-    };
-
-    setNodes((prev) => [...prev, newNode]);
-  }, [nodes]);
+      setNodes((prev) => [...prev, newNode]);
+    },
+    [nodes]
+  );
 
   const handleConnect = useCallback((newEdge: Edge) => {
     setEdges((prev) => [...prev, newEdge]);
   }, []);
 
-  const handleDrop = useCallback((kind: string, position: { x: number; y: number }) => {
-    addNode(kind as ComponentKind, position);
-  }, [addNode]);
+  const handleDrop = useCallback(
+    (kind: string, position: { x: number; y: number }) => {
+      addNode(kind as ComponentKind, position);
+    },
+    [addNode]
+  );
 
   const handleNodesChange = useCallback((updatedNodes: PlacedNode[]) => {
     setNodes(updatedNodes);
@@ -233,25 +241,23 @@ export default function SystemDesignEditor() {
   }, []);
 
   const handleDeleteNode = useCallback((nodeId: string) => {
-    setNodes(prev => prev.filter(node => node.id !== nodeId));
+    setNodes((prev) => prev.filter((node) => node.id !== nodeId));
     let nextEdges: Edge[] = [];
-    setEdges(prev => {
-      nextEdges = prev.filter(edge => edge.from !== nodeId && edge.to !== nodeId);
+    setEdges((prev) => {
+      nextEdges = prev.filter((edge) => edge.from !== nodeId && edge.to !== nodeId);
       return nextEdges;
     });
-    setSelectedNode(prev => (prev === nodeId ? null : prev));
-    setSelectedEdgeId(prev => {
+    setSelectedNode((prev) => (prev === nodeId ? null : prev));
+    setSelectedEdgeId((prev) => {
       if (!prev) return prev;
-      return nextEdges.some(edge => edge.id === prev) ? prev : null;
+      return nextEdges.some((edge) => edge.id === prev) ? prev : null;
     });
   }, []);
 
   const handleRenameNode = useCallback((nodeId: string, newLabel: string) => {
-    setNodes(prev => prev.map(node =>
-      node.id === nodeId
-        ? { ...node, customLabel: newLabel }
-        : node
-    ));
+    setNodes((prev) =>
+      prev.map((node) => (node.id === nodeId ? { ...node, customLabel: newLabel } : node))
+    );
   }, []);
 
   // Mobile-specific handlers
@@ -259,20 +265,23 @@ export default function SystemDesignEditor() {
     setIsAddSheetOpen(true);
   }, []);
 
-  const handleAddComponentFromSheet = useCallback((kind: ComponentKind) => {
-    addNode(kind);
-    setIsAddSheetOpen(false);
-    // Auto-center on the new node
-    setTimeout(() => {
-      const newNode = nodes[nodes.length - 1]; // Get the most recently added node
-      if (newNode) {
-        setSelectedNode(newNode.id);
-      }
-    }, 100);
-  }, [addNode, nodes]);
+  const handleAddComponentFromSheet = useCallback(
+    (kind: ComponentKind) => {
+      addNode(kind);
+      setIsAddSheetOpen(false);
+      // Auto-center on the new node
+      setTimeout(() => {
+        const newNode = nodes[nodes.length - 1]; // Get the most recently added node
+        if (newNode) {
+          setSelectedNode(newNode.id);
+        }
+      }, 100);
+    },
+    [addNode, nodes]
+  );
 
   const handleSimPanelToggle = useCallback(() => {
-    setIsSimPanelCollapsed(prev => !prev);
+    setIsSimPanelCollapsed((prev) => !prev);
   }, []);
 
   // Mobile touch handlers for React Flow (throttled for performance)
@@ -308,12 +317,16 @@ export default function SystemDesignEditor() {
       const path = findScenarioPath(selectedScenario, nodes, edges);
 
       if (path.missingKinds.length > 0) {
-        setSimulationError(`Missing required components: ${path.missingKinds.join(", ")}. Add these components to your design.`);
+        setSimulationError(
+          `Missing required components: ${path.missingKinds.join(", ")}. Add these components to your design.`
+        );
         return;
       }
 
       if (path.nodeIds.length === 0) {
-        setSimulationError("No valid path found through your components. Make sure all components are properly connected from start to finish.");
+        setSimulationError(
+          "No valid path found through your components. Make sure all components are properly connected from start to finish."
+        );
         return;
       }
 
@@ -323,13 +336,15 @@ export default function SystemDesignEditor() {
       // Check if failed
       const failed = !result.meetsLatency || !result.meetsRps || result.failedByChaos;
       if (failed) {
-        setFailAttempts(prev => prev + 1);
+        setFailAttempts((prev) => prev + 1);
       } else {
         setFailAttempts(0); // Reset on success
       }
     } catch (error) {
       logger.error("Simulation error:", error);
-      setSimulationError("Simulation failed due to an unexpected error. Check your design and try again.");
+      setSimulationError(
+        "Simulation failed due to an unexpected error. Check your design and try again."
+      );
     }
   }, [selectedScenario, nodes, edges, chaosMode]);
 
@@ -343,8 +358,8 @@ export default function SystemDesignEditor() {
   const handleDeleteSelection = useCallback(() => {
     if (selectedEdgeId) {
       let nextEdges: Edge[] = [];
-      setEdges(prev => {
-        nextEdges = prev.filter(edge => edge.id !== selectedEdgeId);
+      setEdges((prev) => {
+        nextEdges = prev.filter((edge) => edge.id !== selectedEdgeId);
         return nextEdges;
       });
       setSelectedEdgeId(null);
@@ -422,13 +437,20 @@ export default function SystemDesignEditor() {
           </div>
         ) : simulationResult ? (
           <div className="flex items-center gap-3 text-sm">
-            <div className={`px-2 py-1 rounded text-xs font-semibold ${
-              simulationResult.scoreBreakdown?.outcome === "pass" ? "bg-emerald-500/20 text-emerald-300" :
-              simulationResult.scoreBreakdown?.outcome === "partial" ? "bg-yellow-500/20 text-yellow-300" :
-              "bg-red-500/20 text-red-300"
-            }`}>
-              {simulationResult.scoreBreakdown?.outcome === "pass" ? "PASS" :
-               simulationResult.scoreBreakdown?.outcome === "partial" ? "PARTIAL" : "FAIL"}
+            <div
+              className={`px-2 py-1 rounded text-xs font-semibold ${
+                simulationResult.scoreBreakdown?.outcome === "pass"
+                  ? "bg-emerald-500/20 text-emerald-300"
+                  : simulationResult.scoreBreakdown?.outcome === "partial"
+                    ? "bg-yellow-500/20 text-yellow-300"
+                    : "bg-red-500/20 text-red-300"
+              }`}
+            >
+              {simulationResult.scoreBreakdown?.outcome === "pass"
+                ? "PASS"
+                : simulationResult.scoreBreakdown?.outcome === "partial"
+                  ? "PARTIAL"
+                  : "FAIL"}
             </div>
             <span className="text-zinc-300">
               Score: {simulationResult.scoreBreakdown?.totalScore || 0}/100
@@ -474,7 +496,9 @@ export default function SystemDesignEditor() {
             >
               <div className="flex flex-col items-center gap-2">
                 <Icon className="text-zinc-200" size={24} />
-                <div className="text-sm font-medium text-zinc-200 text-center">{component.label}</div>
+                <div className="text-sm font-medium text-zinc-200 text-center">
+                  {component.label}
+                </div>
                 <div className="text-xs text-zinc-400 text-center">
                   {component.baseLatencyMs}ms · {component.capacityRps} rps
                 </div>

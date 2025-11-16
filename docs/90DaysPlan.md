@@ -1,5 +1,5 @@
 # 90DaysPlan.md
->
+
 > Goal: Validate whether **System Design Sandbox** (or renamed product) can become a real, profitable business with recurring user interest — within 90 days, with minimal backend and cost.
 
 ---
@@ -8,28 +8,28 @@
 
 Prove three things fast:
 
-1. **People care** about visual, hands-on system design practice.  
-2. **They return** to use it again.  
+1. **People care** about visual, hands-on system design practice.
+2. **They return** to use it again.
 3. **Some pay** for deeper value (Coach Hints, Profile, Metrics).
 
 ---
 
 ## ⚙️ Core Principles
 
-- Ship small, fast, measurable increments.  
-- Favor *localStorage + no-auth analytics* over premature backend.  
-- Every week must produce **observable data** (users, engagement, revenue).  
+- Ship small, fast, measurable increments.
+- Favor _localStorage + no-auth analytics_ over premature backend.
+- Every week must produce **observable data** (users, engagement, revenue).
 - Stop if metrics stay flat after two pivots.
 
 ---
 
 ## 🗓️ Timeline Overview
 
-| Phase | Duration | Theme | Key Outcome |
-|-------|-----------|--------|--------------|
-| 1 | Weeks 1–4 | Attention & Problem Validation | People click, play, and sign up |
-| 2 | Weeks 5–8 | Retention & Habit Loop | People return & share results |
-| 3 | Weeks 9–12 | Monetization & Decision | People pay or clearly don’t |
+| Phase | Duration   | Theme                          | Key Outcome                     |
+| ----- | ---------- | ------------------------------ | ------------------------------- |
+| 1     | Weeks 1–4  | Attention & Problem Validation | People click, play, and sign up |
+| 2     | Weeks 5–8  | Retention & Habit Loop         | People return & share results   |
+| 3     | Weeks 9–12 | Monetization & Decision        | People pay or clearly don’t     |
 
 ---
 
@@ -37,7 +37,7 @@ Prove three things fast:
 
 ### Goal
 
-Confirm that developers *want* to practice system design visually.
+Confirm that developers _want_ to practice system design visually.
 
 ### Deliverables ✅ COMPLETED (Oct 11, 2025)
 
@@ -65,13 +65,13 @@ Confirm that developers *want* to practice system design visually.
 **Week 1 Check:** Oct 18, 2025
 **Week 2 Check:** Oct 25, 2025 (Final Review)
 
-| Metric | PostHog Event | Target | Week 1 Actual (Oct 18) | Week 2 Actual (Oct 25) | Status |
-|--------|---------------|--------|------------------------|------------------------|--------|
-| Unique visitors | `$pageview` (unique users) | 500 | — | — | ✅ Tracking |
-| Practice starts | `practice_start` | 100 | — | — | ✅ Tracking |
-| Email signups | `email_capture_success` | 30 (6%) | — | — | ✅ Tracking |
-| Organic shares | `practice_shared` | 10+ | — | — | ✅ Tracking |
-| First-pass wins | `practice_pass_first` | N/A | — | — | ✅ Tracking |
+| Metric          | PostHog Event              | Target  | Week 1 Actual (Oct 18) | Week 2 Actual (Oct 25) | Status      |
+| --------------- | -------------------------- | ------- | ---------------------- | ---------------------- | ----------- |
+| Unique visitors | `$pageview` (unique users) | 500     | —                      | —                      | ✅ Tracking |
+| Practice starts | `practice_start`           | 100     | —                      | —                      | ✅ Tracking |
+| Email signups   | `email_capture_success`    | 30 (6%) | —                      | —                      | ✅ Tracking |
+| Organic shares  | `practice_shared`          | 10+     | —                      | —                      | ✅ Tracking |
+| First-pass wins | `practice_pass_first`      | N/A     | —                      | —                      | ✅ Tracking |
 
 **Baseline (Oct 11):** 1 visitor, 1 practice start, 1 email signup, 6 shares, 3 first-pass wins
 
@@ -98,17 +98,17 @@ Check if users come back and finish multiple challenges.
 
 ### Growth Actions
 
-- Post short demo videos showing “visual feedback loop”  
-- Run $50 Reddit/X ad test for dev keywords  
+- Post short demo videos showing “visual feedback loop”
+- Run $50 Reddit/X ad test for dev keywords
 - DM or email early users: “How did it feel?”
 
 ### Success Metrics
 
-| Metric | Target |
-|---------|--------|
-| ≥25% returning within 48h | ✅ Retention signal |
-| ≥10% share pass card | ✅ Virality seed |
-| ≥3 user interviews | ✅ Qual feedback loop |
+| Metric                    | Target                |
+| ------------------------- | --------------------- |
+| ≥25% returning within 48h | ✅ Retention signal   |
+| ≥10% share pass card      | ✅ Virality seed      |
+| ≥3 user interviews        | ✅ Qual feedback loop |
 
 ### Review Checkpoint
 
@@ -120,12 +120,12 @@ If retention <10% → revise ladder UX, shorten time-to-aha.
 
 ### Goal
 
-Test willingness to pay — *do users value the upgrade?*
+Test willingness to pay — _do users value the upgrade?_
 
 ### Deliverables
 
-- Stripe Link integration (no backend)  
-  - $29 lifetime “Pro” tier → unlock hints, profile, metrics  
+- Stripe Link integration (no backend)
+  - $29 lifetime “Pro” tier → unlock hints, profile, metrics
 - Add upgrade modal on pass/fail screen  
   “Unlock Coach Hints, Pro scenarios, share cards.”
 - Add `/u/local` stub profile
@@ -133,17 +133,17 @@ Test willingness to pay — *do users value the upgrade?*
 
 ### Launch
 
-- Announce to waitlist  
-- Product Hunt + Indie Hackers “v1 launch”  
+- Announce to waitlist
+- Product Hunt + Indie Hackers “v1 launch”
 - Track `checkout_view`, `checkout_click`, `checkout_success`
 
 ### Success Metrics
 
-| Metric | Target |
-|---------|--------|
-| ≥3% free→Pro conversion | ✅ Market willingness |
-| ≥$500 revenue in 30 days | ✅ Business potential |
-| ≥5 public posts/tweets mentioning it | ✅ Organic resonance |
+| Metric                               | Target                |
+| ------------------------------------ | --------------------- |
+| ≥3% free→Pro conversion              | ✅ Market willingness |
+| ≥$500 revenue in 30 days             | ✅ Business potential |
+| ≥5 public posts/tweets mentioning it | ✅ Organic resonance  |
 
 ### Review Checkpoint
 
@@ -153,30 +153,30 @@ If conversion <1% but traffic healthy → pivot to mentor/bootcamp B2B or AI fee
 
 ## ⚖️ Decision Framework
 
-| Evidence | Interpretation | Next Step |
-|-----------|----------------|------------|
-| Strong activation + retention + payment | Business ✅ | Expand scenarios, add Supabase Auth |
-| Good activation, poor conversion | Interest only | Add more value before paywall |
-| Weak activation (<3%) | No clear demand | Pivot or pause idea |
+| Evidence                                | Interpretation  | Next Step                           |
+| --------------------------------------- | --------------- | ----------------------------------- |
+| Strong activation + retention + payment | Business ✅     | Expand scenarios, add Supabase Auth |
+| Good activation, poor conversion        | Interest only   | Add more value before paywall       |
+| Weak activation (<3%)                   | No clear demand | Pivot or pause idea                 |
 
 ---
 
 ## 🧭 Optional Stretch Goals (after day 90)
 
-- Add Supabase Auth for syncing progress  
-- Implement public leaderboards  
-- Add AI Coach feedback (GPT-based)  
+- Add Supabase Auth for syncing progress
+- Implement public leaderboards
+- Add AI Coach feedback (GPT-based)
 - Bundle with interview-prep YouTubers (affiliate)
 
 ---
 
 ## 📈 Tracking Stack
 
-- **Analytics**: PostHog / Umami (anon UUID)  
-- **Payments**: Stripe Link / LemonSqueezy  
-- **Hosting**: Vercel  
-- **Storage**: LocalStorage (Supabase later)  
-- **Feedback**: Manual DMs + form  
+- **Analytics**: PostHog / Umami (anon UUID)
+- **Payments**: Stripe Link / LemonSqueezy
+- **Hosting**: Vercel
+- **Storage**: LocalStorage (Supabase later)
+- **Feedback**: Manual DMs + form
 - **KPIs Dashboard**: Notion / Airtable manually updated weekly
 
 ---
@@ -185,10 +185,10 @@ If conversion <1% but traffic healthy → pivot to mentor/bootcamp B2B or AI fee
 
 If by day 90:
 
-- <25% returning users,  
-- <3% upgrade conversion,  
+- <25% returning users,
+- <3% upgrade conversion,
 - <50 total signups →  
-→ archive project or reposition to **B2B bootcamp training tool.**
+  → archive project or reposition to **B2B bootcamp training tool.**
 
 Otherwise → proceed to Supabase Auth + 5 more scenarios → **v1 launch.**
 

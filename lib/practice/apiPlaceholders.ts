@@ -11,8 +11,10 @@ const FALLBACK_PLACEHOLDER =
 const METHOD_PLACEHOLDERS: Record<HttpMethod, string> = {
   POST: "Request Body: { ... what fields? ... }\n\nResponse (2xx): { ... what data to return? ... }\nResponse (4xx): { ... error cases? ... }\n\nBehavior: What happens when this endpoint is called?",
   GET: "Query Params: What parameters are needed?\n\nResponse (2xx): What should be returned?\nResponse (4xx): What error cases could occur?\n\nBehavior: How should this endpoint behave? Any caching considerations?",
-  PATCH: "Request Body: { ... what can be updated? ... }\n\nResponse (2xx): { ... what to return? ... }\nResponse (4xx): { ... error cases? ... }\n\nValidation: What rules and authorization?\nBehavior: What gets updated and how?",
-  DELETE: "Request Body: Typically none for DELETE\n\nResponse (2xx): What indicates success?\nResponse (4xx): What error cases?\n\nValidation: Authorization requirements?\nBehavior: What gets deleted? Any cleanup needed?",
+  PATCH:
+    "Request Body: { ... what can be updated? ... }\n\nResponse (2xx): { ... what to return? ... }\nResponse (4xx): { ... error cases? ... }\n\nValidation: What rules and authorization?\nBehavior: What gets updated and how?",
+  DELETE:
+    "Request Body: Typically none for DELETE\n\nResponse (2xx): What indicates success?\nResponse (4xx): What error cases?\n\nValidation: Authorization requirements?\nBehavior: What gets deleted? Any cleanup needed?",
 };
 
 const SPECIFIC_PLACEHOLDERS: Array<{
@@ -34,17 +36,16 @@ const SPECIFIC_PLACEHOLDERS: Array<{
   },
 ];
 
-const LEGACY_PLACEHOLDERS = new Set<string>([
-  FALLBACK_PLACEHOLDER,
-  "Describe the request payload, response codes, and validation rules.",
-].map(normalizeText));
+const LEGACY_PLACEHOLDERS = new Set<string>(
+  [FALLBACK_PLACEHOLDER, "Describe the request payload, response codes, and validation rules."].map(
+    normalizeText
+  )
+);
 
 export const getApiNotesPlaceholder = (method: HttpMethod, rawPath: string): string => {
   const normalizedPath = normalizePathKey(rawPath);
   const special = SPECIFIC_PLACEHOLDERS.find(
-    (entry) =>
-      entry.method === method &&
-      normalizePathKey(entry.path) === normalizedPath
+    (entry) => entry.method === method && normalizePathKey(entry.path) === normalizedPath
   );
 
   if (special) {

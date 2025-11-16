@@ -1,6 +1,6 @@
 "use client";
-import React from 'react';
-import { EdgeProps, getSmoothStepPath } from '@xyflow/react';
+import React from "react";
+import { EdgeProps, getSmoothStepPath } from "@xyflow/react";
 
 export default function BidirectionalEdge({
   id,
@@ -14,7 +14,6 @@ export default function BidirectionalEdge({
   markerEnd,
   selected,
 }: EdgeProps) {
-
   // Create parallel paths offset by 2px in both directions
   const [upperLeftPath] = getSmoothStepPath({
     sourceX: sourceX - 2,
@@ -34,7 +33,7 @@ export default function BidirectionalEdge({
     targetPosition,
   });
 
-  const strokeColor = selected ? '#3b82f6' : '#10b981'; // Blue when selected, green when not
+  const strokeColor = selected ? "#3b82f6" : "#10b981"; // Blue when selected, green when not
 
   return (
     <>
@@ -42,9 +41,9 @@ export default function BidirectionalEdge({
       <path
         style={{
           strokeWidth: 10,
-          stroke: 'transparent',
-          fill: 'none',
-          pointerEvents: 'stroke',
+          stroke: "transparent",
+          fill: "none",
+          pointerEvents: "stroke",
         }}
         className="react-flow__edge-path"
         d={upperLeftPath}
@@ -57,10 +56,10 @@ export default function BidirectionalEdge({
           ...style,
           strokeWidth: selected ? 3 : 2, // Thicker when selected
           stroke: strokeColor,
-          strokeDasharray: '8,8',
-          animation: 'bidirectional-flow-forward 1.5s linear infinite',
-          fill: 'none',
-          pointerEvents: 'none',
+          strokeDasharray: "8,8",
+          animation: "bidirectional-flow-forward 1.5s linear infinite",
+          fill: "none",
+          pointerEvents: "none",
         }}
         d={upperLeftPath}
         markerEnd={markerEnd}
@@ -72,10 +71,10 @@ export default function BidirectionalEdge({
           ...style,
           strokeWidth: selected ? 3 : 2, // Thicker when selected
           stroke: strokeColor,
-          strokeDasharray: '8,8',
-          animation: 'bidirectional-flow-backward 1.5s linear infinite',
-          fill: 'none',
-          pointerEvents: 'none',
+          strokeDasharray: "8,8",
+          animation: "bidirectional-flow-backward 1.5s linear infinite",
+          fill: "none",
+          pointerEvents: "none",
         }}
         d={lowerRightPath}
         markerEnd={markerEnd}

@@ -14,9 +14,7 @@ type SandboxEvaluationResult = {
 /**
  * Builds feedback from simulation results, merging simulation and design scores
  */
-function buildSandboxFeedback(
-  session: PracticeSessionValue
-): SandboxEvaluationResult | null {
+function buildSandboxFeedback(session: PracticeSessionValue): SandboxEvaluationResult | null {
   const result = session.state.run.lastResult;
   const designScore = session.state.scores?.design;
 
@@ -69,16 +67,16 @@ function buildSandboxFeedback(
       maxScore: 30,
       percentage: result.scoreBreakdown?.totalScore ?? 0,
       blocking: [], // No hard blocking - allow continue
-      warnings: warnings.map(msg => ({
+      warnings: warnings.map((msg) => ({
         message: msg,
         category: "performance" as const,
-        severity: "warning" as const
+        severity: "warning" as const,
       })),
       positive: [],
-      suggestions: suggestions.map(msg => ({
+      suggestions: suggestions.map((msg) => ({
         message: msg,
         category: "bestPractice" as const,
-        severity: "info" as const
+        severity: "info" as const,
       })),
     };
 
@@ -88,44 +86,74 @@ function buildSandboxFeedback(
     const lbPresent = acceptanceResults["lb-service"] === true;
     const analyticsPresent = acceptanceResults["analytics"] === true;
 
-    const filteredDesignBlocking = designScore.blocking.filter(b => {
+    const filteredDesignBlocking = designScore.blocking.filter((b) => {
       // Remove cache-related warnings if cache is actually present
       if (cachePresent && (b.relatedTo === "cache-aside" || b.relatedTo === "Cache (Redis)")) {
-        console.log("[useSandboxEvaluation] Filtering out cache warning since cache is present:", b.message);
+        console.log(
+          "[useSandboxEvaluation] Filtering out cache warning since cache is present:",
+          b.message
+        );
         return false;
       }
       // Remove LB-related warnings if LB is actually present
       if (lbPresent && (b.relatedTo === "Load Balancer" || b.relatedTo === "API Gateway")) {
-        console.log("[useSandboxEvaluation] Filtering out LB warning since LB is present:", b.message);
+        console.log(
+          "[useSandboxEvaluation] Filtering out LB warning since LB is present:",
+          b.message
+        );
         return false;
       }
       // Remove analytics warnings if analytics is actually present
-      if (analyticsPresent && (b.relatedTo === "analytics" || b.relatedTo === "Message Queue (Kafka Topic)")) {
-        console.log("[useSandboxEvaluation] Filtering out analytics warning since analytics is present:", b.message);
+      if (
+        analyticsPresent &&
+        (b.relatedTo === "analytics" || b.relatedTo === "Message Queue (Kafka Topic)")
+      ) {
+        console.log(
+          "[useSandboxEvaluation] Filtering out analytics warning since analytics is present:",
+          b.message
+        );
         return false;
       }
       return true;
     });
 
     // Also filter warnings
-    const filteredDesignWarnings = designScore.warnings.filter(w => {
+    const filteredDesignWarnings = designScore.warnings.filter((w) => {
       if (cachePresent && (w.relatedTo === "cache-aside" || w.relatedTo === "Cache (Redis)")) {
-        console.log("[useSandboxEvaluation] Filtering out cache warning since cache is present:", w.message);
+        console.log(
+          "[useSandboxEvaluation] Filtering out cache warning since cache is present:",
+          w.message
+        );
         return false;
       }
       if (lbPresent && (w.relatedTo === "Load Balancer" || w.relatedTo === "API Gateway")) {
-        console.log("[useSandboxEvaluation] Filtering out LB warning since LB is present:", w.message);
+        console.log(
+          "[useSandboxEvaluation] Filtering out LB warning since LB is present:",
+          w.message
+        );
         return false;
       }
-      if (analyticsPresent && (w.relatedTo === "analytics" || w.relatedTo === "Message Queue (Kafka Topic)")) {
-        console.log("[useSandboxEvaluation] Filtering out analytics warning since analytics is present:", w.message);
+      if (
+        analyticsPresent &&
+        (w.relatedTo === "analytics" || w.relatedTo === "Message Queue (Kafka Topic)")
+      ) {
+        console.log(
+          "[useSandboxEvaluation] Filtering out analytics warning since analytics is present:",
+          w.message
+        );
         return false;
       }
       return true;
     });
 
-    console.log("[useSandboxEvaluation] After filtering - filteredDesignBlocking:", filteredDesignBlocking);
-    console.log("[useSandboxEvaluation] After filtering - filteredDesignWarnings:", filteredDesignWarnings);
+    console.log(
+      "[useSandboxEvaluation] After filtering - filteredDesignBlocking:",
+      filteredDesignBlocking
+    );
+    console.log(
+      "[useSandboxEvaluation] After filtering - filteredDesignWarnings:",
+      filteredDesignWarnings
+    );
     console.log("[useSandboxEvaluation] Simulation warnings:", simulationFeedback.warnings);
 
     const mergedFeedback: FeedbackResult = {
@@ -135,8 +163,8 @@ function buildSandboxFeedback(
       blocking: [], // No blocking - allow continue
       warnings: [
         ...simulationFeedback.warnings,
-        ...filteredDesignBlocking.map(b => ({ ...b, severity: "warning" as const })), // Convert blocking to warnings
-        ...filteredDesignWarnings
+        ...filteredDesignBlocking.map((b) => ({ ...b, severity: "warning" as const })), // Convert blocking to warnings
+        ...filteredDesignWarnings,
       ],
       positive: designScore.positive,
       suggestions: [...simulationFeedback.suggestions, ...designScore.suggestions.slice(0, 2)],
@@ -185,7 +213,7 @@ export function useSandboxEvaluation(
       currentStep,
       hasRun: Boolean(lastResult),
       hasDesignScore: session.state.scores?.design !== undefined,
-      designScore: session.state.scores?.design
+      designScore: session.state.scores?.design,
     });
 
     if (!waitingForSimulation || currentStep !== "sandbox") return;
@@ -218,14 +246,25 @@ export function useSandboxEvaluation(
       }
 
       // Stop waiting and clear verifying AFTER setting feedback
-      console.log("[useSandboxEvaluation useEffect] Clearing waitingForSimulation and verification");
+      console.log(
+        "[useSandboxEvaluation useEffect] Clearing waitingForSimulation and verification"
+      );
       setWaitingForSimulation(false);
       setVerification({ isVerifying: false, result: null, error: null });
     }
 
     // Cleanup timeout on unmount or when dependencies change
     return () => clearTimeout(timeoutId);
-  }, [waitingForSimulation, session, session.state.run.lastResult, session.state.scores?.design, session.state.requirements, currentStep, setScoringFeedback, setVerification]);
+  }, [
+    waitingForSimulation,
+    session,
+    session.state.run.lastResult,
+    session.state.scores?.design,
+    session.state.requirements,
+    currentStep,
+    setScoringFeedback,
+    setVerification,
+  ]);
 
   return {
     waitingForSimulation,

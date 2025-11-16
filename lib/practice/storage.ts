@@ -3,7 +3,9 @@ import { logger } from "@/lib/logger";
 
 const storageKey = (slug: PracticeState["slug"]) => `sds-practice-${slug}`;
 
-export const loadPractice = (slug: PracticeState["slug"]): PracticeState | Record<string, unknown> | null => {
+export const loadPractice = (
+  slug: PracticeState["slug"]
+): PracticeState | Record<string, unknown> | null => {
   if (typeof window === "undefined") {
     return null;
   }

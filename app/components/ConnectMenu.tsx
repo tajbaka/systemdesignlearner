@@ -18,7 +18,7 @@ function ConnectMenu({
 
   return (
     <div className="relative">
-      <button 
+      <button
         className="w-full px-3 py-2 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition text-sm cursor-pointer"
         onClick={() => setOpen((v) => !v)}
       >
@@ -39,7 +39,7 @@ function ConnectMenu({
             ))}
           </select>
           <div className="flex justify-end mt-3 gap-2">
-            <button 
+            <button
               className="px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 transition text-xs cursor-pointer"
               onClick={() => setOpen(false)}
             >

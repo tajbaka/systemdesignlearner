@@ -3,7 +3,8 @@ import { DocsPageClient } from "./DocsPageClient";
 
 export const metadata: Metadata = {
   title: "System Design Tutorial & Documentation - Complete Guide 2025",
-  description: "Master system design fundamentals: capacity planning (RPS), latency optimization (P95), caching patterns, and architecture best practices. Complete guide with interactive examples for interview preparation.",
+  description:
+    "Master system design fundamentals: capacity planning (RPS), latency optimization (P95), caching patterns, and architecture best practices. Complete guide with interactive examples for interview preparation.",
   keywords: [
     "system design tutorial",
     "system design guide",
@@ -16,7 +17,8 @@ export const metadata: Metadata = {
   ],
   openGraph: {
     title: "System Design Tutorial & Documentation - Complete Guide",
-    description: "Learn capacity planning, latency optimization, caching strategies, and common architecture patterns. Essential guide for system design mastery.",
+    description:
+      "Learn capacity planning, latency optimization, caching strategies, and common architecture patterns. Essential guide for system design mastery.",
     type: "website",
   },
 };

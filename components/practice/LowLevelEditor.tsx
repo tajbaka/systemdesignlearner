@@ -31,10 +31,14 @@ function lintPracticeApi(apis: LowLevel["apis"]): string[] {
       msgs.push(`Create operation "${api.path}" should use POST method.`);
     }
     if (api.path.includes("/update") && api.method !== "POST") {
-      msgs.push(`Update operation "${api.path}" should use POST method (since only GET/POST are available).`);
+      msgs.push(
+        `Update operation "${api.path}" should use POST method (since only GET/POST are available).`
+      );
     }
     if (api.path.includes("/delete") && api.method !== "POST") {
-      msgs.push(`Delete operation "${api.path}" should use POST method (since only GET/POST are available).`);
+      msgs.push(
+        `Delete operation "${api.path}" should use POST method (since only GET/POST are available).`
+      );
     }
 
     // POST endpoints should mention body in notes
@@ -48,8 +52,22 @@ function lintPracticeApi(apis: LowLevel["apis"]): string[] {
 
 function isVerb(word: string): boolean {
   const commonVerbs = [
-    "create", "update", "delete", "get", "fetch", "send", "post", "put",
-    "add", "remove", "insert", "modify", "change", "save", "load", "retrieve"
+    "create",
+    "update",
+    "delete",
+    "get",
+    "fetch",
+    "send",
+    "post",
+    "put",
+    "add",
+    "remove",
+    "insert",
+    "modify",
+    "change",
+    "save",
+    "load",
+    "retrieve",
   ];
   return commonVerbs.includes(word.toLowerCase());
 }
@@ -114,13 +132,23 @@ const buildCapacityHints = (readRps: number, cacheHit: number) => {
   return { dbReads, hints };
 };
 
-export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly = false }: LowLevelEditorProps) => {
+export const LowLevelEditor = ({
+  value,
+  locked,
+  onChange,
+  onContinue,
+  readOnly = false,
+}: LowLevelEditorProps) => {
   const [schemaErrors, setSchemaErrors] = useState<Record<string, string | null>>({});
   const [error, setError] = useState<string | null>(null);
 
   const lowLevel = useMemo(() => ensureDefaults(value), [value]);
   const { dbReads, hints } = useMemo(
-    () => buildCapacityHints(lowLevel.capacityAssumptions.readRps, lowLevel.capacityAssumptions.cacheHit),
+    () =>
+      buildCapacityHints(
+        lowLevel.capacityAssumptions.readRps,
+        lowLevel.capacityAssumptions.cacheHit
+      ),
     [lowLevel.capacityAssumptions.cacheHit, lowLevel.capacityAssumptions.readRps]
   );
   const apiLintMessages = useMemo(() => lintPracticeApi(lowLevel.apis), [lowLevel.apis]);
@@ -233,7 +261,10 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
         </header>
         <div className="space-y-4">
           {lowLevel.apis.map((api, index) => (
-            <div key={`${api.method}-${api.path}`} className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-3 sm:p-4">
+            <div
+              key={`${api.method}-${api.path}`}
+              className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-3 sm:p-4"
+            >
               <div className="flex flex-col gap-3">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex items-center px-2 py-1 rounded text-xs font-mono font-semibold bg-zinc-700 text-zinc-300 uppercase">
@@ -261,10 +292,20 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
         {apiLintMessages.length > 0 && (
           <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 bg-amber-900/20 border-amber-800/50">
             <div className="flex items-center gap-2 mb-2">
-              <svg className="w-4 h-4 text-amber-600 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg
+                className="w-4 h-4 text-amber-600 text-amber-400"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
-              <span className="text-sm font-semibold text-amber-800 text-amber-200">API Design Suggestions</span>
+              <span className="text-sm font-semibold text-amber-800 text-amber-200">
+                API Design Suggestions
+              </span>
             </div>
             <ul className="text-sm text-amber-700 text-amber-300 space-y-1">
               {apiLintMessages.map((msg, index) => (
@@ -326,17 +367,24 @@ export const LowLevelEditor = ({ value, locked, onChange, onContinue, readOnly =
         </div>
         <div className="mt-4 grid gap-2 rounded-lg bg-blue-950/60 p-3 sm:p-4 text-sm text-blue-100">
           <p className="leading-relaxed">
-            Derived DB reads: <strong>{dbReads.toLocaleString()}</strong> per second (~{Math.round(dbReads)} /s).
+            Derived DB reads: <strong>{dbReads.toLocaleString()}</strong> per second (~
+            {Math.round(dbReads)} /s).
           </p>
           <ul className="list-disc space-y-1 pl-4 sm:pl-5">
             {hints.slice(0, 3).map((hint) => (
-              <li key={hint} className="leading-relaxed">{hint}</li>
+              <li key={hint} className="leading-relaxed">
+                {hint}
+              </li>
             ))}
           </ul>
         </div>
       </section>
 
-      {error ? <p role="alert" className="text-sm text-red-600 text-red-400">{error}</p> : null}
+      {error ? (
+        <p role="alert" className="text-sm text-red-600 text-red-400">
+          {error}
+        </p>
+      ) : null}
 
       <div className="flex justify-end pt-2">
         <button

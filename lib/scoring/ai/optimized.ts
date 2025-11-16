@@ -61,14 +61,13 @@ export async function evaluateFunctionalOptimized(
   }
 
   try {
-    const allRequirements = [
-      ...config.coreRequirements,
-      ...config.optionalRequirements,
-    ].map((r) => ({
-      id: r.id,
-      label: r.label,
-      description: r.description,
-    }));
+    const allRequirements = [...config.coreRequirements, ...config.optionalRequirements].map(
+      (r) => ({
+        id: r.id,
+        label: r.label,
+        description: r.description,
+      })
+    );
 
     // Run rule-based and AI in parallel
     const [ruleBasedResult, aiExtracted] = await Promise.all([
@@ -243,7 +242,7 @@ export async function evaluateApiOptimized(
           {
             positive: topPositive,
             warnings: topWarnings,
-            suggestions: aiAnalysis.suggestions.map(s => ({ message: s })),
+            suggestions: aiAnalysis.suggestions.map((s) => ({ message: s })),
           },
           functionalReqList
         );
@@ -283,13 +282,11 @@ export async function evaluateApiOptimized(
 
     // Combine AI suggestions with improvement path
     const allSuggestions = [
-      ...aiAnalysis.suggestions
-        .slice(0, 2)
-        .map((s) => ({
-          category: "architecture" as const,
-          severity: "info" as const,
-          message: `💡 ${s}`,
-        })),
+      ...aiAnalysis.suggestions.slice(0, 2).map((s) => ({
+        category: "architecture" as const,
+        severity: "info" as const,
+        message: `💡 ${s}`,
+      })),
       ...improvementSuggestions.slice(0, 3), // Top 3 improvement suggestions
     ];
 
@@ -379,13 +376,11 @@ export async function evaluateDesignOptimized(
     const positive = allFeedback.filter((f) => f.severity === "positive").slice(0, 3);
 
     // Add top AI recommendations as suggestions
-    const suggestions = aiAnalysis.recommendations
-      .slice(0, 2)
-      .map((rec) => ({
-        category: "architecture" as const,
-        severity: "info" as const,
-        message: `💡 ${rec}`,
-      }));
+    const suggestions = aiAnalysis.recommendations.slice(0, 2).map((rec) => ({
+      category: "architecture" as const,
+      severity: "info" as const,
+      message: `💡 ${rec}`,
+    }));
 
     progress?.complete(0, "Design analysis complete!");
 

@@ -119,8 +119,19 @@ export default function ScenarioPanel({
       const total = simulationResult.scoreBreakdown.totalScore;
       return (
         <span className="md:hidden inline-flex items-center gap-1 rounded-full border border-emerald-400/40 bg-emerald-500/20 px-2.5 py-0.5 text-xs font-semibold text-emerald-200">
-          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3l6.16 3.205-1.18 6.878L12 15.771l-5-2.688-1.18-6.878z" />
+          <svg
+            className="h-3.5 w-3.5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 3l6.16 3.205-1.18 6.878L12 15.771l-5-2.688-1.18-6.878z"
+            />
           </svg>
           {total}/100
         </span>
@@ -129,27 +140,50 @@ export default function ScenarioPanel({
 
     if (!outcome) return null;
 
-    const baseClasses = "md:hidden inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold";
+    const baseClasses =
+      "md:hidden inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold";
     switch (outcome) {
       case "pass":
-        return <span className={`${baseClasses} border border-emerald-400/40 bg-emerald-500/20 text-emerald-200`}>PASS</span>;
+        return (
+          <span
+            className={`${baseClasses} border border-emerald-400/40 bg-emerald-500/20 text-emerald-200`}
+          >
+            PASS
+          </span>
+        );
       case "partial":
-        return <span className={`${baseClasses} border border-amber-400/40 bg-amber-500/15 text-amber-200`}>PARTIAL</span>;
+        return (
+          <span
+            className={`${baseClasses} border border-amber-400/40 bg-amber-500/15 text-amber-200`}
+          >
+            PARTIAL
+          </span>
+        );
       case "fail":
-        return <span className={`${baseClasses} border border-rose-400/40 bg-rose-500/15 text-rose-200`}>FAIL</span>;
+        return (
+          <span className={`${baseClasses} border border-rose-400/40 bg-rose-500/15 text-rose-200`}>
+            FAIL
+          </span>
+        );
       case "chaos_fail":
-        return <span className={`${baseClasses} border border-rose-400/40 bg-rose-500/20 text-rose-100`}>CHAOS</span>;
+        return (
+          <span className={`${baseClasses} border border-rose-400/40 bg-rose-500/20 text-rose-100`}>
+            CHAOS
+          </span>
+        );
       default:
         return null;
     }
   }, [simulationResult, outcome]);
 
-  const runButtonClasses = React.useMemo(() => (
-    `px-3 py-1.5 rounded-lg border border-emerald-400/40 flex items-center gap-1.5 text-sm font-medium touch-manipulation transition ` +
-    (simulationRunning
-      ? `bg-emerald-500/30 text-emerald-100 cursor-wait animate-pulse`
-      : `bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 cursor-pointer`)
-  ), [simulationRunning]);
+  const runButtonClasses = React.useMemo(
+    () =>
+      `px-3 py-1.5 rounded-lg border border-emerald-400/40 flex items-center gap-1.5 text-sm font-medium touch-manipulation transition ` +
+      (simulationRunning
+        ? `bg-emerald-500/30 text-emerald-100 cursor-wait animate-pulse`
+        : `bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 cursor-pointer`),
+    [simulationRunning]
+  );
 
   return (
     <div className="flex min-h-0 h-full flex-1 flex-col overflow-hidden text-zinc-300">
@@ -213,11 +247,7 @@ export default function ScenarioPanel({
               className="w-full rounded-lg border border-white/10 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-200 cursor-pointer transition-all duration-200 hover:bg-zinc-700/50 hover:border-white/20 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50"
             >
               {scenarios.map((s) => (
-                <option
-                  key={s.id}
-                  value={s.id}
-                  className="bg-zinc-800 text-zinc-200 py-1"
-                >
+                <option key={s.id} value={s.id} className="bg-zinc-800 text-zinc-200 py-1">
                   {s.title} [{s.category}] [{s.difficulty}]
                 </option>
               ))}
@@ -260,10 +290,10 @@ export default function ScenarioPanel({
                         (outcome === "pass"
                           ? "border border-emerald-300/30 bg-emerald-400/15 text-emerald-300"
                           : outcome === "partial"
-                          ? "border border-amber-300/30 bg-amber-400/10 text-amber-300"
-                          : outcome === "fail"
-                          ? "border border-rose-300/30 bg-rose-400/10 text-rose-300"
-                          : "border border-red-300/30 bg-red-500/15 text-red-300")
+                            ? "border border-amber-300/30 bg-amber-400/10 text-amber-300"
+                            : outcome === "fail"
+                              ? "border border-rose-300/30 bg-rose-400/10 text-rose-300"
+                              : "border border-red-300/30 bg-red-500/15 text-red-300")
                       }
                     >
                       {outcome === "pass" && "PASS"}
@@ -281,10 +311,12 @@ export default function ScenarioPanel({
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <span>
-                    Latency P95: <b>{simulationResult.latencyMsP95}ms</b> / {selectedScenario.latencyBudgetMsP95}ms
+                    Latency P95: <b>{simulationResult.latencyMsP95}ms</b> /{" "}
+                    {selectedScenario.latencyBudgetMsP95}ms
                   </span>
                   <span>
-                    Capacity: <b>{simulationResult.capacityRps} rps</b> / {selectedScenario.requiredRps} rps
+                    Capacity: <b>{simulationResult.capacityRps} rps</b> /{" "}
+                    {selectedScenario.requiredRps} rps
                   </span>
                 </div>
 
@@ -329,8 +361,8 @@ export default function ScenarioPanel({
                 )}
                 {!simulationResult.meetsRps && (
                   <div className="text-xs text-zinc-400">
-                    Bottleneck suspected. Try adding a cache, sharding, or another service replica. Backlog growth ~{" "}
-                    {simulationResult.backlogGrowthRps} rps.
+                    Bottleneck suspected. Try adding a cache, sharding, or another service replica.
+                    Backlog growth ~ {simulationResult.backlogGrowthRps} rps.
                   </div>
                 )}
               </div>
@@ -346,7 +378,6 @@ export default function ScenarioPanel({
                 </ul>
               </div>
             )}
-
           </div>
         </div>
       </div>

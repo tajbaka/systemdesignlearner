@@ -83,7 +83,7 @@ export function usePracticeScoring() {
 
           // Filter out empty placeholder endpoints before scoring
           const validEndpoints = session.state.apiDefinition.endpoints.filter(
-            ep => ep.path.trim().length > 0
+            (ep) => ep.path.trim().length > 0
           );
 
           result = await evaluateApiOptimized(

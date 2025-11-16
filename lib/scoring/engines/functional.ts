@@ -14,7 +14,9 @@ import type {
   KeywordMatch,
 } from "../types";
 
-export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoringInput, FunctionalScoringConfig> {
+export class FunctionalScoringEngine
+  implements IScoringEngine<FunctionalScoringInput, FunctionalScoringConfig>
+{
   /**
    * Evaluate functional requirements
    */
@@ -41,7 +43,10 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
 
     // Calculate total weights
     const totalCoreWeight = config.coreRequirements.reduce((sum, req) => sum + req.weight, 0);
-    const totalOptionalWeight = config.optionalRequirements.reduce((sum, req) => sum + req.weight, 0);
+    const totalOptionalWeight = config.optionalRequirements.reduce(
+      (sum, req) => sum + req.weight,
+      0
+    );
 
     // Evaluate core requirements
     const coreResults = this.evaluateRequirements(
@@ -117,7 +122,8 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
       suggestions.push({
         category: "requirement",
         severity: "info",
-        message: "Consider adding optional features like custom aliases, analytics, or expiration to enhance your solution.",
+        message:
+          "Consider adding optional features like custom aliases, analytics, or expiration to enhance your solution.",
       });
     }
 
@@ -144,7 +150,7 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
     normalizedText: string,
     selectedRequirements: Record<string, boolean>,
     minKeywordsMatch: number
-  ): Array<{ requirement: typeof requirements[0]; matched: boolean; matches: KeywordMatch[] }> {
+  ): Array<{ requirement: (typeof requirements)[0]; matched: boolean; matches: KeywordMatch[] }> {
     return requirements.map((requirement) => {
       // Check if requirement was explicitly selected (from checkbox/form)
       const explicitlySelected = selectedRequirements[requirement.id] === true;
@@ -170,7 +176,9 @@ export class FunctionalScoringEngine implements IScoringEngine<FunctionalScoring
 
       let context: string | undefined;
       if (found) {
-        const match = text.match(new RegExp(`.{0,20}${this.escapeRegex(keyword.toLowerCase())}.{0,20}`, "i"));
+        const match = text.match(
+          new RegExp(`.{0,20}${this.escapeRegex(keyword.toLowerCase())}.{0,20}`, "i")
+        );
         context = match ? match[0] : undefined;
       }
 

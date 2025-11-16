@@ -13,7 +13,16 @@
           "id": "url-shortening",
           "label": "URL Shortening",
           "description": "Accept a long URL and return a short, compact alias.",
-          "keywords": ["shorten", "create", "generate", "alias", "short url", "short link", "compact", "slug"],
+          "keywords": [
+            "shorten",
+            "create",
+            "generate",
+            "alias",
+            "short url",
+            "short link",
+            "compact",
+            "slug"
+          ],
           "weight": 20,
           "required": true,
           "category": "core",
@@ -26,7 +35,16 @@
           "id": "redirection",
           "label": "URL Redirection",
           "description": "Resolve a short URL and redirect the client to the original long URL.",
-          "keywords": ["redirect", "forward", "resolve", "lookup", "301", "302", "navigate", "send to"],
+          "keywords": [
+            "redirect",
+            "forward",
+            "resolve",
+            "lookup",
+            "301",
+            "302",
+            "navigate",
+            "send to"
+          ],
           "weight": 20,
           "required": true,
           "category": "core",
@@ -39,7 +57,16 @@
           "id": "uniqueness",
           "label": "Uniqueness Guarantee",
           "description": "Each short URL is unique and maps to exactly one long URL.",
-          "keywords": ["unique", "collision", "duplicate", "hash", "base62", "distinct", "no conflict", "guarantee"],
+          "keywords": [
+            "unique",
+            "collision",
+            "duplicate",
+            "hash",
+            "base62",
+            "distinct",
+            "no conflict",
+            "guarantee"
+          ],
           "weight": 20,
           "required": true,
           "category": "core",
@@ -80,7 +107,16 @@
           "id": "basic-analytics",
           "label": "Analytics and Metrics",
           "description": "Track usage per short URL such as click counts and referrers.",
-          "keywords": ["analytics", "metrics", "clicks", "count", "stats", "track", "monitor", "views"],
+          "keywords": [
+            "analytics",
+            "metrics",
+            "clicks",
+            "count",
+            "stats",
+            "track",
+            "monitor",
+            "views"
+          ],
           "weight": 1,
           "required": false,
           "category": "optional",
@@ -125,7 +161,17 @@
           "id": "performance",
           "label": "Performance and Latency",
           "description": "Redirects should be fast. Aim for sub 100 ms p95 on the redirect path.",
-          "keywords": ["fast", "quick", "responsive", "low latency", "speed", "instant", "milliseconds", "p95", "p99"],
+          "keywords": [
+            "fast",
+            "quick",
+            "responsive",
+            "low latency",
+            "speed",
+            "instant",
+            "milliseconds",
+            "p95",
+            "p99"
+          ],
           "weight": 5,
           "required": true,
           "examplePhrases": [
@@ -137,7 +183,19 @@
           "id": "scalability",
           "label": "Scalability and Throughput",
           "description": "Handle large read traffic with growth and spikes. Reference targets from the brief.",
-          "keywords": ["scale", "traffic", "load", "growth", "volume", "requests", "concurrent", "high traffic", "throughput", "rps", "qps"],
+          "keywords": [
+            "scale",
+            "traffic",
+            "load",
+            "growth",
+            "volume",
+            "requests",
+            "concurrent",
+            "high traffic",
+            "throughput",
+            "rps",
+            "qps"
+          ],
           "weight": 5,
           "required": true,
           "examplePhrases": [
@@ -149,7 +207,17 @@
           "id": "availability",
           "label": "Availability and Reliability",
           "description": "Service should be highly available with no single points of failure.",
-          "keywords": ["available", "uptime", "reliable", "always on", "24/7", "downtime", "fault tolerant", "99.9", "sla"],
+          "keywords": [
+            "available",
+            "uptime",
+            "reliable",
+            "always on",
+            "24/7",
+            "downtime",
+            "fault tolerant",
+            "99.9",
+            "sla"
+          ],
           "weight": 5,
           "required": true,
           "examplePhrases": [
@@ -163,7 +231,16 @@
           "id": "data-durability",
           "label": "Data Durability and Persistence",
           "description": "URL mappings should survive crashes. Use persistence, replication, and backups.",
-          "keywords": ["durable", "persist", "backup", "replicate", "no data loss", "recovery", "snapshot", "wal"],
+          "keywords": [
+            "durable",
+            "persist",
+            "backup",
+            "replicate",
+            "no data loss",
+            "recovery",
+            "snapshot",
+            "wal"
+          ],
           "weight": 2,
           "required": false,
           "examplePhrases": [
@@ -175,7 +252,15 @@
           "id": "consistency-model",
           "label": "Consistency Tradeoffs",
           "description": "Pick acceptable consistency per path. Redirects need strong mapping. Analytics can be eventual.",
-          "keywords": ["consistency", "eventual", "strong", "cap theorem", "partition", "trade-off", "stale reads"],
+          "keywords": [
+            "consistency",
+            "eventual",
+            "strong",
+            "cap theorem",
+            "partition",
+            "trade-off",
+            "stale reads"
+          ],
           "weight": 2,
           "required": false,
           "examplePhrases": [
@@ -187,7 +272,16 @@
           "id": "security",
           "label": "Security and Abuse Prevention",
           "description": "Mitigate abuse and attacks. Validate targets and control traffic.",
-          "keywords": ["security", "abuse", "rate limit", "ddos", "malicious", "spam", "throttle", "blacklist"],
+          "keywords": [
+            "security",
+            "abuse",
+            "rate limit",
+            "ddos",
+            "malicious",
+            "spam",
+            "throttle",
+            "blacklist"
+          ],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -199,7 +293,16 @@
           "id": "monitoring",
           "label": "Observability and Monitoring",
           "description": "Collect metrics, logs, traces, and set alerts for key SLOs.",
-          "keywords": ["monitor", "observability", "metrics", "logging", "alerts", "dashboard", "trace", "debug"],
+          "keywords": [
+            "monitor",
+            "observability",
+            "metrics",
+            "logging",
+            "alerts",
+            "dashboard",
+            "trace",
+            "debug"
+          ],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -211,7 +314,14 @@
           "id": "caching-policy",
           "label": "Caching Policy",
           "description": "Choose 302 to count every hit or 301 to favor client caching.",
-          "keywords": ["cache", "301", "302", "analytics accuracy", "browser cache", "redirect policy"],
+          "keywords": [
+            "cache",
+            "301",
+            "302",
+            "analytics accuracy",
+            "browser cache",
+            "redirect policy"
+          ],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -235,7 +345,15 @@
           "id": "id-generation-resilience",
           "label": "ID Generation Resilience",
           "description": "If using a counter service, avoid a single point of failure and plan for contention.",
-          "keywords": ["id", "counter", "generator", "availability", "contention", "shard", "retry"],
+          "keywords": [
+            "id",
+            "counter",
+            "generator",
+            "availability",
+            "contention",
+            "shard",
+            "retry"
+          ],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -253,7 +371,18 @@
           "id": "create-url-endpoint",
           "label": "URL Creation Endpoint",
           "description": "POST endpoint to create shortened URLs with documented request/response",
-          "keywords": ["POST", "create", "shorten", "body", "request", "url", "api/v1", "fields", "response", "returns"],
+          "keywords": [
+            "POST",
+            "create",
+            "shorten",
+            "body",
+            "request",
+            "url",
+            "api/v1",
+            "fields",
+            "response",
+            "returns"
+          ],
           "weight": 25,
           "required": true,
           "examplePhrases": [
@@ -279,7 +408,17 @@
           "id": "error-handling",
           "label": "Error Handling",
           "description": "Document error codes and scenarios (400, 404, 409, 410, 429)",
-          "keywords": ["error", "400", "404", "409", "410", "429", "invalid", "not found", "expired"],
+          "keywords": [
+            "error",
+            "400",
+            "404",
+            "409",
+            "410",
+            "429",
+            "invalid",
+            "not found",
+            "expired"
+          ],
           "weight": 3,
           "required": false,
           "examplePhrases": [
@@ -337,18 +476,10 @@
           "pathPattern": "/api/v1/(shorten|urls)",
           "pathPatternRegex": "^/api/v\\d+/(shorten|urls)$",
           "purpose": "Create a new short URL from a long URL",
-          "requiredBy": [
-            "url-shortening"
-          ],
+          "requiredBy": ["url-shortening"],
           "weight": 25,
           "required": true,
-          "documentationHints": [
-            "request",
-            "body",
-            "response",
-            "url",
-            "error"
-          ],
+          "documentationHints": ["request", "body", "response", "url", "error"],
           "minDocumentationLength": 40,
           "examplePath": "/api/v1/shorten",
           "exampleNotes": "POST with body containing url, optional customAlias, and optional expiresAt. Returns shortId and shortUrl. Errors: 400 (invalid URL), 409 (alias taken)."
@@ -359,18 +490,10 @@
           "pathPattern": "/{slug}",
           "pathPatternRegex": "^(/api/v\\d+)?/?(\\{[a-zA-Z0-9_-]+\\}|:[a-zA-Z0-9_-]+|[a-zA-Z0-9_-]+)$",
           "purpose": "Redirect to the original long URL",
-          "requiredBy": [
-            "redirection"
-          ],
+          "requiredBy": ["redirection"],
           "weight": 25,
           "required": true,
-          "documentationHints": [
-            "redirect",
-            "301",
-            "302",
-            "error",
-            "not found"
-          ],
+          "documentationHints": ["redirect", "301", "302", "error", "not found"],
           "minDocumentationLength": 30,
           "examplePath": "/{shortId}",
           "exampleNotes": "GET /{shortId} returns HTTP 301/302 redirect to original URL. Returns 404 if not found or expired."
@@ -381,17 +504,10 @@
           "pathPattern": "/api/v1/(stats|analytics)/",
           "pathPatternRegex": "^/api/v\\d+/(stats|analytics)/.*$",
           "purpose": "Retrieve analytics and metrics for a short URL",
-          "requiredBy": [
-            "basic-analytics"
-          ],
+          "requiredBy": ["basic-analytics"],
           "weight": 6,
           "required": false,
-          "documentationHints": [
-            "clicks",
-            "count",
-            "analytics",
-            "metrics"
-          ],
+          "documentationHints": ["clicks", "count", "analytics", "metrics"],
           "minDocumentationLength": 30,
           "examplePath": "/api/v1/stats/{shortId}",
           "exampleNotes": "Returns clicks count, lastAccessed timestamp, and referrers list. Requires auth if user-specific."
@@ -404,16 +520,10 @@
           "pathPattern": "/api/v1/urls/",
           "pathPatternRegex": "^/api/v\\d+/urls/.*$",
           "purpose": "Delete a short URL",
-          "requiredBy": [
-            "admin-delete"
-          ],
+          "requiredBy": ["admin-delete"],
           "weight": 2,
           "required": false,
-          "documentationHints": [
-            "delete",
-            "remove",
-            "auth"
-          ],
+          "documentationHints": ["delete", "remove", "auth"],
           "minDocumentationLength": 20,
           "examplePath": "/api/v1/urls/{shortId}",
           "exampleNotes": "DELETE requires authentication. Returns 204 on success, 403 if unauthorized."
@@ -424,17 +534,10 @@
           "pathPattern": "/api/v1/urls",
           "pathPatternRegex": "^/api/v\\d+/urls$",
           "purpose": "List all URLs for authenticated user",
-          "requiredBy": [
-            "user-accounts",
-            "admin-delete"
-          ],
+          "requiredBy": ["user-accounts", "admin-delete"],
           "weight": 2,
           "required": false,
-          "documentationHints": [
-            "list",
-            "pagination",
-            "auth"
-          ],
+          "documentationHints": ["list", "pagination", "auth"],
           "minDocumentationLength": 20,
           "examplePath": "/api/v1/urls",
           "exampleNotes": "Returns paginated list of user's URLs. Requires authentication."
@@ -445,16 +548,10 @@
           "pathPattern": "/api/v1/urls/",
           "pathPatternRegex": "^/api/v\\d+/urls/.*$",
           "purpose": "Update a short URL's properties",
-          "requiredBy": [
-            "admin-delete"
-          ],
+          "requiredBy": ["admin-delete"],
           "weight": 1,
           "required": false,
-          "documentationHints": [
-            "update",
-            "edit",
-            "auth"
-          ],
+          "documentationHints": ["update", "edit", "auth"],
           "minDocumentationLength": 20,
           "examplePath": "/api/v1/urls/{shortId}",
           "exampleNotes": "PUT to update expiration or destination. Requires auth."
@@ -490,10 +587,7 @@
         {
           "kind": "API Gateway",
           "required": true,
-          "requiredBy": [
-            "url-shortening",
-            "redirection"
-          ],
+          "requiredBy": ["url-shortening", "redirection"],
           "weight": 7,
           "minReplicas": 1,
           "feedbackTemplates": {
@@ -504,10 +598,7 @@
         {
           "kind": "Service",
           "required": true,
-          "requiredBy": [
-            "url-shortening",
-            "redirection"
-          ],
+          "requiredBy": ["url-shortening", "redirection"],
           "weight": 10,
           "minReplicas": 1,
           "feedbackTemplates": {
@@ -522,9 +613,7 @@
           "kind": "Cache (Redis)",
           "required": false,
           "requiredBy": [],
-          "alternativesAccepted": [
-            "Object Cache (Memcached)"
-          ],
+          "alternativesAccepted": ["Object Cache (Memcached)"],
           "weight": 0,
           "minReplicas": 1,
           "feedbackTemplates": {
@@ -535,14 +624,8 @@
         {
           "kind": "DB (Postgres)",
           "required": true,
-          "requiredBy": [
-            "url-shortening",
-            "redirection"
-          ],
-          "alternativesAccepted": [
-            "DB (MySQL)",
-            "DB (MongoDB)"
-          ],
+          "requiredBy": ["url-shortening", "redirection"],
+          "alternativesAccepted": ["DB (MySQL)", "DB (MongoDB)"],
           "weight": 8,
           "minReplicas": 1,
           "feedbackTemplates": {
@@ -556,20 +639,10 @@
           "id": "basic-data-path",
           "name": "Basic Data Flow Path",
           "description": "The core path from API Gateway through Service to Database for basic functionality",
-          "startComponents": [
-            "API Gateway"
-          ],
-          "endComponents": [
-            "DB (Postgres)",
-            "DB (MySQL)",
-            "DB (MongoDB)"
-          ],
-          "mustInclude": [
-            "Service"
-          ],
-          "mustNotInclude": [
-            "Web"
-          ],
+          "startComponents": ["API Gateway"],
+          "endComponents": ["DB (Postgres)", "DB (MySQL)", "DB (MongoDB)"],
+          "mustInclude": ["Service"],
+          "mustNotInclude": ["Web"],
           "maxHops": 3,
           "minHops": 3,
           "weight": 10,
@@ -615,10 +688,7 @@
             }
           ],
           "triggeredBy": {
-            "functionalReqs": [
-              "url-shortening",
-              "redirection"
-            ]
+            "functionalReqs": ["url-shortening", "redirection"]
           },
           "weight": 0,
           "required": true,
@@ -632,10 +702,7 @@
           "id": "api-gateway-to-services",
           "name": "API Gateway Routes to Services",
           "description": "API Gateway must connect to Service nodes to route requests",
-          "requiredComponents": [
-            "API Gateway",
-            "Service"
-          ],
+          "requiredComponents": ["API Gateway", "Service"],
           "requiredConnections": [
             {
               "from": "API Gateway",
@@ -665,10 +732,7 @@
             }
           ],
           "triggeredBy": {
-            "functionalReqs": [
-              "url-shortening",
-              "redirection"
-            ]
+            "functionalReqs": ["url-shortening", "redirection"]
           },
           "weight": 0,
           "required": true,
@@ -682,10 +746,7 @@
           "id": "service-to-database",
           "name": "Services Access Database",
           "description": "Service nodes must connect to the database to persist and retrieve URL mappings",
-          "requiredComponents": [
-            "Service",
-            "DB (Postgres)"
-          ],
+          "requiredComponents": ["Service", "DB (Postgres)"],
           "requiredConnections": [
             {
               "from": "Service",
@@ -694,10 +755,7 @@
           ],
           "forbiddenConnections": [],
           "triggeredBy": {
-            "functionalReqs": [
-              "url-shortening",
-              "redirection"
-            ]
+            "functionalReqs": ["url-shortening", "redirection"]
           },
           "weight": 0,
           "required": true,
@@ -711,11 +769,7 @@
           "id": "cache-layer",
           "name": "Cache Layer for Performance",
           "description": "Optional cache layer connected between Service and Database for optimized reads",
-          "requiredComponents": [
-            "Service",
-            "Cache (Redis)",
-            "DB (Postgres)"
-          ],
+          "requiredComponents": ["Service", "Cache (Redis)", "DB (Postgres)"],
           "requiredConnections": [
             {
               "from": "Service",
@@ -743,12 +797,7 @@
           "id": "dual-service-scale",
           "name": "Split Read and Write Services",
           "description": "Bonus for introducing a second service so reads and writes can scale independently.",
-          "requiredComponents": [
-            "API Gateway",
-            "Service",
-            "Service",
-            "DB (Postgres)"
-          ],
+          "requiredComponents": ["API Gateway", "Service", "Service", "DB (Postgres)"],
           "requiredConnections": [
             {
               "from": "API Gateway",
@@ -776,18 +825,11 @@
           "id": "complete-data-flow",
           "name": "Complete Request Flow",
           "description": "There should be a complete path from API Gateway through services to the database",
-          "requiredComponents": [
-            "API Gateway",
-            "Service",
-            "DB (Postgres)"
-          ],
+          "requiredComponents": ["API Gateway", "Service", "DB (Postgres)"],
           "requiredConnections": [],
           "forbiddenConnections": [],
           "triggeredBy": {
-            "functionalReqs": [
-              "url-shortening",
-              "redirection"
-            ]
+            "functionalReqs": ["url-shortening", "redirection"]
           },
           "weight": 0,
           "required": true,
@@ -830,9 +872,7 @@
             }
           ],
           "triggeredBy": {
-            "functionalReqs": [
-              "redirection"
-            ]
+            "functionalReqs": ["redirection"]
           },
           "weight": 0,
           "required": false,
@@ -875,9 +915,7 @@
             }
           ],
           "triggeredBy": {
-            "functionalReqs": [
-              "redirection"
-            ]
+            "functionalReqs": ["redirection"]
           },
           "weight": 0,
           "required": false,
@@ -920,10 +958,7 @@
             }
           ],
           "triggeredBy": {
-            "functionalReqs": [
-              "url-shortening",
-              "redirection"
-            ]
+            "functionalReqs": ["url-shortening", "redirection"]
           },
           "weight": 0,
           "required": false,
@@ -946,10 +981,7 @@
             }
           ],
           "triggeredBy": {
-            "functionalReqs": [
-              "url-shortening",
-              "redirection"
-            ]
+            "functionalReqs": ["url-shortening", "redirection"]
           },
           "weight": 0,
           "required": false,
@@ -972,10 +1004,7 @@
             }
           ],
           "triggeredBy": {
-            "functionalReqs": [
-              "url-shortening",
-              "redirection"
-            ]
+            "functionalReqs": ["url-shortening", "redirection"]
           },
           "weight": 0,
           "required": false,

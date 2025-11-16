@@ -28,14 +28,7 @@ const MicIcon = () => (
 
 const LoadingSpinner = () => (
   <svg className="h-5 w-5 animate-spin" viewBox="0 0 24 24" fill="none">
-    <circle
-      className="opacity-25"
-      cx="12"
-      cy="12"
-      r="10"
-      stroke="currentColor"
-      strokeWidth="4"
-    />
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
     <path
       className="opacity-75"
       fill="currentColor"
@@ -56,8 +49,7 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const useWebSpeech =
-    typeof window !== "undefined" &&
-    process.env.NEXT_PUBLIC_ENABLE_WEB_SPEECH === "1";
+    typeof window !== "undefined" && process.env.NEXT_PUBLIC_ENABLE_WEB_SPEECH === "1";
 
   const webSpeechStt = useWebSpeechStt({
     stepId,
@@ -70,22 +62,37 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
   });
 
   // Use Web Speech API if enabled (Chrome only), otherwise use Whisper Direct
-  const { isRecording, isConnecting, isProcessing, interimText, error, audioLevel, start, stop, cancel } =
-    useWebSpeech ? webSpeechStt : whisperStt;
+  const {
+    isRecording,
+    isConnecting,
+    isProcessing,
+    interimText,
+    error,
+    audioLevel,
+    start,
+    stop,
+    cancel,
+  } = useWebSpeech ? webSpeechStt : whisperStt;
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (disabled || mode !== "hold") return;
-    e.preventDefault(); // Prevent click from firing
-    logger.log("Mouse down - starting recording");
-    start();
-  }, [disabled, mode, start]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (disabled || mode !== "hold") return;
+      e.preventDefault(); // Prevent click from firing
+      logger.log("Mouse down - starting recording");
+      start();
+    },
+    [disabled, mode, start]
+  );
 
-  const handleMouseUp = useCallback((e: React.MouseEvent) => {
-    if (disabled || mode !== "hold") return;
-    e.preventDefault();
-    logger.log("Mouse up - stopping recording");
-    stop();
-  }, [disabled, mode, stop]);
+  const handleMouseUp = useCallback(
+    (e: React.MouseEvent) => {
+      if (disabled || mode !== "hold") return;
+      e.preventDefault();
+      logger.log("Mouse up - stopping recording");
+      stop();
+    },
+    [disabled, mode, stop]
+  );
 
   const handleMouseLeave = useCallback(() => {
     if (disabled || mode !== "hold" || !isRecording) return;
@@ -93,22 +100,25 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
     stop();
   }, [disabled, mode, isRecording, stop]);
 
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    if (disabled) return;
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (disabled) return;
 
-    // In hold mode, prevent click from interfering with pointer events
-    if (mode === "hold") {
-      e.preventDefault();
-      return;
-    }
+      // In hold mode, prevent click from interfering with pointer events
+      if (mode === "hold") {
+        e.preventDefault();
+        return;
+      }
 
-    // Toggle mode logic
-    if (isRecording) {
-      stop();
-    } else {
-      start();
-    }
-  }, [disabled, mode, isRecording, start, stop]);
+      // Toggle mode logic
+      if (isRecording) {
+        stop();
+      } else {
+        start();
+      }
+    },
+    [disabled, mode, isRecording, start, stop]
+  );
 
   const handleCancel = useCallback(() => {
     if (!isRecording) return;
@@ -165,8 +175,8 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
               isConnecting
                 ? "Connecting..."
                 : isProcessing
-                ? "Processing..."
-                : "Dictate your answer"
+                  ? "Processing..."
+                  : "Dictate your answer"
             }
             className={`inline-flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 ${
               isConnecting || isProcessing
@@ -202,7 +212,13 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
             aria-label="Cancel recording"
             className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-zinc-700 hover:bg-zinc-600 transition-colors text-zinc-400 hover:text-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
           >
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              viewBox="0 0 16 16"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" />
             </svg>
           </button>
@@ -214,7 +230,13 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
             aria-label="Stop and transcribe"
             className="inline-flex h-11 w-11 items-center justify-center rounded-full border-2 border-blue-500 bg-transparent hover:bg-blue-500/10 transition-all text-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400"
           >
-            <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <svg
+              viewBox="0 0 16 16"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
               <path d="M3 8l3 3l7-7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>

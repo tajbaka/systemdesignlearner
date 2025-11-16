@@ -13,7 +13,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint .",
-    "generate-icons": "node scripts/generate-icons.js"
+    "generate-icons": "node scripts/generate-icons.js",
+    "prepare": "husky"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.34.1",
@@ -61,7 +62,9 @@
     "@vitejs/plugin-react": "^5.0.4",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
+    "husky": "^9.1.7",
     "jsdom": "^26.1.0",
+    "lint-staged": "^16.2.6",
     "prettier": "^3.6.2",
     "sharp": "^0.34.4",
     "stylelint": "^16.24.0",
@@ -70,6 +73,7 @@
     "to-ico": "^1.1.5",
     "ts-node": "^10.9.2",
     "typescript": "^5",
+    "vite": "^6.0.1",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
   }

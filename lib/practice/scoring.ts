@@ -33,12 +33,12 @@ export function scorePractice(state: PracticeState): PracticeScoreBreakdown {
     }
 
     // Check if architecture can handle the throughput
-    if ((nonFunctional.readRps || 0) > 1000 && !components.some(c => c.includes("Cache"))) {
+    if ((nonFunctional.readRps || 0) > 1000 && !components.some((c) => c.includes("Cache"))) {
       hints.push("High read throughput needs caching layer");
     }
 
     // Latency budget assessment
-    if ((nonFunctional.p95RedirectMs || 0) < 200 && !components.some(c => c.includes("Cache"))) {
+    if ((nonFunctional.p95RedirectMs || 0) < 200 && !components.some((c) => c.includes("Cache"))) {
       hints.push("Strict latency budget requires in-memory cache");
     }
 
@@ -52,7 +52,7 @@ export function scorePractice(state: PracticeState): PracticeScoreBreakdown {
   if (state.requirements) {
     const { functional } = state.requirements;
     const requiredFeatures = ["create-short-url", "redirect-by-slug"];
-    const implementedRequired = requiredFeatures.filter(f => functional[f]);
+    const implementedRequired = requiredFeatures.filter((f) => functional[f]);
 
     // Must have core features
     if (implementedRequired.length === requiredFeatures.length) {
@@ -62,8 +62,8 @@ export function scorePractice(state: PracticeState): PracticeScoreBreakdown {
     }
 
     // Bonus for additional features
-    const optionalFeatures = Object.keys(functional).filter(f => !requiredFeatures.includes(f));
-    const implementedOptional = optionalFeatures.filter(f => functional[f]);
+    const optionalFeatures = Object.keys(functional).filter((f) => !requiredFeatures.includes(f));
+    const implementedOptional = optionalFeatures.filter((f) => functional[f]);
     checklistScore += (implementedOptional.length / optionalFeatures.length) * 10;
   }
 
@@ -108,10 +108,13 @@ export function scorePractice(state: PracticeState): PracticeScoreBreakdown {
 
   // Add contextual hints based on failures
   if (outcome === "fail" || outcome === "partial") {
-    if (!highSelection?.components.some(c => c.includes("Cache"))) {
+    if (!highSelection?.components.some((c) => c.includes("Cache"))) {
       hints.push("Add Redis cache to handle redirect traffic efficiently");
     }
-    if ((state.requirements?.nonFunctional.p95RedirectMs || 0) < 100 && !hints.some(h => h.includes("latency"))) {
+    if (
+      (state.requirements?.nonFunctional.p95RedirectMs || 0) < 100 &&
+      !hints.some((h) => h.includes("latency"))
+    ) {
       hints.push("Consider edge caching or CDN for sub-100ms latency targets");
     }
     if ((lowLevel?.capacityAssumptions.cacheHit || 0) < 85) {
@@ -125,6 +128,6 @@ export function scorePractice(state: PracticeState): PracticeScoreBreakdown {
     costScore: Math.round(costScore),
     totalScore,
     outcome,
-    hints: [...new Set(hints)] // Remove duplicates
+    hints: [...new Set(hints)], // Remove duplicates
   };
 }

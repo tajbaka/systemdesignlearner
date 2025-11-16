@@ -46,8 +46,7 @@ const STEP_META: Record<PracticeStep, StepMeta> = {
   },
 };
 
-const getStepNumber = (stepId: PracticeStep): number =>
-  PRACTICE_STEPS.indexOf(stepId) + 1;
+const getStepNumber = (stepId: PracticeStep): number => PRACTICE_STEPS.indexOf(stepId) + 1;
 
 const computeUnlockedIndex = (progress: PracticeProgress): number => {
   let max = -1;
@@ -88,16 +87,20 @@ export function PracticeStepper({
     >
       {/* Scenario Title - Shows on all screen sizes above the steps */}
       {scenarioTitle && (
-        <div className="flex items-center justify-center pl-16 pr-6 lg:pl-20 lg:pr-6" style={{ paddingTop: '22px', paddingBottom: '22px' }}>
-          <h2 className="text-xl font-semibold text-white sm:text-2xl">
-            {scenarioTitle}
-          </h2>
+        <div
+          className="flex items-center justify-center pl-16 pr-6 lg:pl-20 lg:pr-6"
+          style={{ paddingTop: "22px", paddingBottom: "22px" }}
+        >
+          <h2 className="text-xl font-semibold text-white sm:text-2xl">{scenarioTitle}</h2>
         </div>
       )}
 
       {/* Mobile Stepper */}
       {!hideMobileStepper ? (
-        <div className="sm:hidden animate-in fade-in duration-300 delay-200" style={{ paddingBottom: '5px' }}>
+        <div
+          className="sm:hidden animate-in fade-in duration-300 delay-200"
+          style={{ paddingBottom: "5px" }}
+        >
           <div
             className="relative mb-2 h-6 pl-16 pr-6"
             style={{ "--dot": "24px" } as React.CSSProperties}
@@ -107,7 +110,7 @@ export function PracticeStepper({
               style={{
                 left: "calc(var(--dot) / 2)",
                 right: "calc(var(--dot) / 2)",
-                top: "calc(var(--dot) / 2 - 1px)"
+                top: "calc(var(--dot) / 2 - 1px)",
               }}
               aria-hidden
             />
@@ -125,9 +128,7 @@ export function PracticeStepper({
                 className="h-full bg-blue-400/60 transition-transform duration-500 origin-left"
                 style={{
                   transform: `scaleX(${
-                    PRACTICE_STEPS.length > 1
-                      ? currentIndex / (PRACTICE_STEPS.length - 1)
-                      : 0
+                    PRACTICE_STEPS.length > 1 ? currentIndex / (PRACTICE_STEPS.length - 1) : 0
                   })`,
                 }}
               />
@@ -207,9 +208,7 @@ export function PracticeStepper({
               className="h-full bg-blue-400/60 transition-transform duration-500 origin-left"
               style={{
                 transform: `scaleX(${
-                  PRACTICE_STEPS.length > 1
-                    ? currentIndex / (PRACTICE_STEPS.length - 1)
-                    : 0
+                  PRACTICE_STEPS.length > 1 ? currentIndex / (PRACTICE_STEPS.length - 1) : 0
                 })`,
               }}
             />
@@ -223,7 +222,11 @@ export function PracticeStepper({
             const statusLabel = completed ? "completed" : disabled ? "locked" : "available";
 
             return (
-              <li key={step.id} className="z-10 flex flex-1 flex-col items-center" style={{ opacity: isCurrent ? 0.9 : completed ? 0.7 : 0.4 }}>
+              <li
+                key={step.id}
+                className="z-10 flex flex-1 flex-col items-center"
+                style={{ opacity: isCurrent ? 0.9 : completed ? 0.7 : 0.4 }}
+              >
                 <button
                   type="button"
                   onClick={() => {
