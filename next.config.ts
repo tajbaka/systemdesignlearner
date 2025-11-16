@@ -100,4 +100,12 @@ export default withSentryConfig(nextConfig, {
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true,
+
+  // Configure source map handling
+  sourcemaps: {
+    // Ignore third-party library source maps to reduce noise and processing time
+    ignore: ["node_modules"],
+    // Delete source maps after upload for security
+    deleteSourcemapsAfterUpload: true,
+  },
 });
