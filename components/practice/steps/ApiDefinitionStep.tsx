@@ -610,7 +610,7 @@ export function ApiDefinitionStep() {
               </div>
 
               {/* Editor */}
-              <div className="relative flex-1">
+              <div className="relative flex-1 overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
                 <textarea
                   value={mobileEditingEndpoint.notes}
                   onChange={(event) =>
@@ -622,7 +622,7 @@ export function ApiDefinitionStep() {
                   onBlur={() => markEndpointTouched(mobileEditingEndpoint.id)}
                   placeholder="What does this endpoint do? Describe the request and response."
                   disabled={isReadOnly}
-                  className="w-full h-full resize-none border-none bg-transparent px-4 pb-16 pt-4 text-base leading-7 text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-0"
+                  className="w-full min-h-full resize-none border-none bg-transparent px-4 pb-16 pt-4 text-base leading-7 text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-0"
                 />
               </div>
             </div>

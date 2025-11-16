@@ -169,14 +169,14 @@ export function NonFunctionalRequirementsStep() {
       </div>
 
       {/* Mobile fullscreen layout */}
-      <div className="sm:hidden h-full flex flex-col">
-        <div className="relative flex-1">
+      <div className="sm:hidden h-full flex flex-col overflow-y-auto overscroll-contain" style={{ WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+        <div className="relative flex-1 min-h-full">
           <textarea
             ref={textareaRef}
             value={nf.notes}
             onChange={(event) => handleSummaryChange(event.target.value)}
             placeholder={"NON-FUNCTIONAL REQUIREMENTS\nDescribe performance goals like latency, throughput, and availability"}
-            className="w-full h-full resize-none border-none bg-transparent px-4 pb-16 pt-4 text-base leading-7 text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-0"
+            className="w-full min-h-full resize-none border-none bg-transparent px-4 pb-16 pt-4 text-base leading-7 text-zinc-100 placeholder:text-zinc-400 focus:outline-none focus-visible:ring-0"
             disabled={isReadOnly}
           />
         </div>

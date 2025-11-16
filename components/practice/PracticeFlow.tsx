@@ -574,8 +574,11 @@ function PracticeFlowInner() {
           className={
             isSandboxStep
               ? "flex-1 min-h-0 overflow-hidden pt-[120px] sm:pt-[200px]"
-              : "flex-1 min-h-0 overflow-y-auto pb-20 sm:pb-28 pt-[120px] sm:pt-[200px]"
+              : "flex-1 min-h-0 overflow-hidden pb-20 sm:pb-28 pt-[120px] sm:pt-[200px]"
           }
+          style={{
+            paddingBottom: !isSandboxStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
+          }}
         >
           <PracticeStepContent
             currentStep={currentStep}
