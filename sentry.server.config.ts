@@ -37,7 +37,8 @@ Sentry.init({
     // Remove environment variables that might contain secrets
     if (event.contexts?.runtime?.env) {
       const sanitized: Record<string, string> = {};
-      Object.keys(event.contexts.runtime.env).forEach((key) => {
+      const envVars = event.contexts.runtime.env as Record<string, string>;
+      Object.keys(envVars).forEach((key) => {
         if (
           key.includes("KEY") ||
           key.includes("SECRET") ||
@@ -46,7 +47,7 @@ Sentry.init({
         ) {
           sanitized[key] = "[Filtered]";
         } else {
-          sanitized[key] = event.contexts.runtime.env[key];
+          sanitized[key] = envVars[key];
         }
       });
       event.contexts.runtime.env = sanitized;
