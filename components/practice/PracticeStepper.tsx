@@ -2,6 +2,7 @@
 
 import { PRACTICE_STEPS, type PracticeProgress, type PracticeStep } from "@/lib/practice/types";
 import { useMemo } from "react";
+import { useUser } from "@clerk/nextjs";
 
 type PracticeStepperProps = {
   current: PracticeStep;
@@ -10,6 +11,7 @@ type PracticeStepperProps = {
   readOnly?: boolean;
   hideMobileStepper?: boolean;
   scenarioTitle?: string;
+  isAuthenticated?: boolean;
 };
 
 type StepMeta = {
@@ -65,16 +67,25 @@ export function PracticeStepper({
   readOnly = false,
   hideMobileStepper = false,
   scenarioTitle,
+  isAuthenticated: isAuthenticatedProp,
 }: PracticeStepperProps) {
+  const { isSignedIn } = useUser();
   const currentIndex = useMemo(() => PRACTICE_STEPS.indexOf(current), [current]);
   const unlockedIndex = useMemo(() => computeUnlockedIndex(progress), [progress]);
 
   const steps = useMemo(() => PRACTICE_STEPS.map((step) => STEP_META[step]), []);
 
+  // Use prop if provided, otherwise check Clerk
+  const isAuthenticated = isAuthenticatedProp ?? isSignedIn;
+
   const isStepDisabled = (step: PracticeStep) => {
     if (readOnly) return false;
     const stepIndex = PRACTICE_STEPS.indexOf(step);
     if (stepIndex === 0) return false;
+
+    // Score step (index 4) requires authentication
+    if (step === "score" && !isAuthenticated) return true;
+
     return stepIndex > unlockedIndex + 1;
   };
 
@@ -83,7 +94,7 @@ export function PracticeStepper({
   return (
     <nav
       aria-label="Practice steps"
-      className="fixed top-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
+      className="bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80"
     >
       {/* Scenario Title - Shows on all screen sizes above the steps */}
       {scenarioTitle && (

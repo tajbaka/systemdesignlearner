@@ -22,7 +22,7 @@ export const completeStep = (session: PracticeSessionValue, step: PracticeStep) 
 export const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
   functional: {
     id: "functional",
-    showBack: false,
+    showBack: true,
     nextLabel: "Next",
     nextDisabled: (session) => {
       const summary = session.state.requirements.functionalSummary.trim();
@@ -36,10 +36,9 @@ export const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
     showBack: true,
     nextLabel: "Next",
     nextDisabled: (session) => {
-      // Allow progression even without numeric values
-      // Only require that user has written some notes
-      const nf = session.state.requirements.nonFunctional;
-      return !nf.notes.trim();
+      const notes = session.state.requirements.nonFunctional.notes.trim();
+      // Require at least 50 characters for meaningful description
+      return !notes || notes.length < 50;
     },
     onNext: (session) => completeStep(session, "nonFunctional"),
   },
@@ -86,7 +85,7 @@ export const getHelperText = (
     return "Run the simulation and achieve a passing score to continue.";
   }
   if (currentStep === "nonFunctional" && nextDisabled) {
-    return "Please describe the performance constraints before continuing.";
+    return "Please provide a detailed description (at least 50 characters) of the performance constraints.";
   }
   if (currentStep === "api" && nextDisabled) {
     return "Add meaningful descriptions (at least 10 characters) for each API endpoint.";

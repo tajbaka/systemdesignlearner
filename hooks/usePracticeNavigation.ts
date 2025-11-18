@@ -487,6 +487,14 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
       return;
     }
 
+    // If on functional step (first step), navigate back to intro page
+    if (session.currentStep === "functional") {
+      if (typeof window !== "undefined") {
+        window.location.href = `/practice/${session.state.slug}/intro`;
+      }
+      return;
+    }
+
     session.goPrev();
   };
 
@@ -501,8 +509,10 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
   };
 
   const handleAuthModalClose = () => {
-    // Don't allow closing without authenticating
-    // User must sign in to proceed
+    // Allow user to close the modal and return to sandbox
+    setShowAuthModal(false);
+    // Mark auth as skipped so they can try again later
+    session.setAuth((prev) => ({ ...prev, skipped: true }));
   };
 
   return {

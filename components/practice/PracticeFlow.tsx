@@ -484,6 +484,7 @@ function PracticeFlowInner() {
           current={currentStep}
           progress={session.state.completed}
           scenarioTitle={scenarioTitle}
+          isAuthenticated={state.auth.isAuthed || Boolean(isSignedIn)}
           onStepChange={async (step) => {
             // Allow free navigation to already-completed steps and unlock steps one at a time
             const stepsNeedingScoring: PracticeStep[] = [
@@ -579,8 +580,8 @@ function PracticeFlowInner() {
         <div
           className={
             isSandboxStep
-              ? "flex-1 min-h-0 overflow-hidden pt-[120px] sm:pt-[200px]"
-              : "flex-1 min-h-0 overflow-y-auto pb-20 sm:pb-28 pt-[120px] sm:pt-[200px]"
+              ? "flex-1 min-h-0 overflow-hidden"
+              : "flex-1 min-h-0 overflow-y-auto sm:pt-[20px]"
           }
           style={{
             paddingBottom:
@@ -651,7 +652,7 @@ function PracticeFlowInner() {
         />
 
         <footer
-          className="fixed bottom-0 left-0 right-0 z-30 bg-zinc-950/90 backdrop-blur"
+          // className="backdrop-blur"
           style={{
             transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
           }}

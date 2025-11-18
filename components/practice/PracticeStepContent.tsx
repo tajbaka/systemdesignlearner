@@ -47,5 +47,5 @@ export function PracticeStepContent({
     return <div className="h-full w-full">{stepContent}</div>;
   }
 
-  return <div className="h-full sm:h-auto sm:px-4 sm:py-6">{stepContent}</div>;
+  return <div className="h-full w-full sm:h-auto sm:px-4 sm:py-6">{stepContent}</div>;
 }

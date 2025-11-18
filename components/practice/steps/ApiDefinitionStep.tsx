@@ -22,7 +22,7 @@ export function ApiDefinitionStep() {
   const endpoints = useMemo(() => state.apiDefinition.endpoints, [state.apiDefinition.endpoints]);
   const [openId, setOpenId] = useState<string | null>(() => endpoints[0]?.id ?? null);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
-    () => new Set([endpoints[0]?.id].filter(Boolean))
+    () => new Set(endpoints.map((ep) => ep.id))
   );
   const [touchedEndpoints, setTouchedEndpoints] = useState<Set<string>>(new Set());
 
@@ -345,12 +345,10 @@ export function ApiDefinitionStep() {
 
           {endpoints.map((endpoint, index) => {
             const isOpen = expandedIds.has(endpoint.id);
-            const hasPath = endpoint.path.trim().length > 0;
-            const hasValidNotes = endpoint.notes.trim().length >= 10;
             const isTouched = touchedEndpoints.has(endpoint.id);
-            const hasError = hasPath && !hasValidNotes && !isReadOnly;
+            const hasError = feedbackMessage.length > 0 && !isReadOnly;
             const shouldShowError = hasError && isTouched;
-
+            const trimmedLength = endpoint.notes.trim().length;
             // Determine which field to highlight based on feedback
             const highlightField = endpointsToHighlight.get(endpoint.id);
             const shouldHighlightPath = showHighlights && highlightField === "path" && !isReadOnly;
@@ -360,11 +358,7 @@ export function ApiDefinitionStep() {
             return (
               <article
                 key={endpoint.id}
-                className={`overflow-hidden rounded-3xl border transition-[max-height,opacity] duration-300 ${
-                  shouldShowError
-                    ? "border-red-500/50 bg-red-950/10"
-                    : "border-zinc-800 bg-zinc-900/70"
-                } ${isOpen ? "max-h-[999px] opacity-100" : "max-h-[120px] opacity-80"}`}
+                className={`overflow-hidden rounded-3xl border transition-[max-height,opacity] duration-300 ${"border-zinc-800 bg-zinc-900/70"} ${isOpen ? "max-h-[999px] opacity-100" : "max-h-[120px] opacity-80"}`}
               >
                 <div className="flex w-full flex-wrap items-center justify-center gap-2 p-4 sm:flex-nowrap sm:justify-between sm:gap-3 sm:p-6">
                   <div className="flex flex-1 flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
@@ -376,10 +370,6 @@ export function ApiDefinitionStep() {
                           method: event.target.value as ApiEndpoint["method"],
                         }))
                       }
-                      onFocus={() => {
-                        // Clear highlights when clicking inside the select
-                        setShowHighlights(false);
-                      }}
                       disabled={isReadOnly}
                       className="h-10 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs font-semibold uppercase tracking-wide text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
                     >
@@ -404,17 +394,20 @@ export function ApiDefinitionStep() {
                             path: value,
                           }));
                         }}
-                        onFocus={() => {
-                          // Clear highlights when clicking inside the input
-                          setShowHighlights(false);
-                        }}
                         disabled={isReadOnly}
                         className={`h-10 w-full rounded-full border pl-6 pr-4 text-sm text-zinc-100 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60 ${
                           shouldHighlightPath
-                            ? "border-amber-400/70 bg-amber-950/30 ring-2 ring-amber-400/40 focus-visible:ring-2 focus-visible:ring-amber-500"
+                            ? "border-amber-400/30 bg-amber-950/30 ring-2 ring-amber-400/10 focus-visible:ring-2 focus-visible:ring-amber-500"
                             : "border-zinc-700 bg-zinc-900 focus:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500"
                         }`}
                       />
+                      <p
+                        className={`mt-2 text-xs ${shouldHighlightPath ? "text-amber-400" : "text-zinc-500"}`}
+                      >
+                        {shouldHighlightPath
+                          ? `The path should follow restful conventions, review the feedback and make changes`
+                          : ""}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -465,11 +458,9 @@ export function ApiDefinitionStep() {
                   <div className="px-4 pb-4 sm:px-6">
                     <div
                       className={`relative mt-2 rounded-2xl border transition-colors duration-300 ${
-                        shouldShowError
-                          ? "border-red-500/50 bg-red-950/20"
-                          : shouldHighlightNotes
-                            ? "border-amber-400/50 bg-amber-950/20 ring-2 ring-amber-400/30"
-                            : "border-zinc-700 bg-zinc-950/60"
+                        shouldHighlightNotes
+                          ? "border-amber-400/50 bg-amber-950/20 ring-2 ring-amber-400/30"
+                          : "border-zinc-700 bg-zinc-950/60"
                       }`}
                     >
                       <textarea
@@ -480,23 +471,15 @@ export function ApiDefinitionStep() {
                             notes: event.target.value,
                           }))
                         }
-                        onFocus={() => {
-                          // Clear highlights when clicking inside the textarea
-                          setShowHighlights(false);
-                        }}
                         onBlur={() => {
                           markEndpointTouched(endpoint.id);
-                          // Clear highlights when clicking outside
-                          setShowHighlights(false);
                         }}
                         placeholder={getApiNotesPlaceholder(endpoint.method, endpoint.path)}
                         disabled={isReadOnly}
                         className={`styled-scrollbar min-h-[280px] w-full resize-y rounded-2xl border-none bg-transparent px-4 pb-4 pr-14 pt-4 text-sm leading-6 text-zinc-100 placeholder:text-zinc-500 focus:outline-none ${
-                          shouldShowError
-                            ? "focus-visible:ring-2 focus-visible:ring-red-500"
-                            : shouldHighlightNotes
-                              ? "focus-visible:ring-2 focus-visible:ring-amber-500"
-                              : "focus-visible:ring-2 focus-visible:ring-blue-500"
+                          shouldHighlightNotes
+                            ? "focus-visible:ring-2 focus-visible:ring-amber-500"
+                            : "focus-visible:ring-2 focus-visible:ring-blue-500"
                         } disabled:cursor-not-allowed disabled:opacity-60`}
                       />
                       <div className="absolute bottom-3 right-3">
@@ -514,11 +497,13 @@ export function ApiDefinitionStep() {
                       </div>
                     </div>
 
-                    {(shouldShowError || shouldHighlightNotes) && (
+                    {!isReadOnly && (shouldHighlightNotes || trimmedLength < 10) && (
                       <p
-                        className={`mt-2 text-xs ${shouldShowError ? "text-red-400" : "text-amber-400"}`}
+                        className={`mt-2 text-xs ${trimmedLength < 10 ? "text-white/50" : shouldHighlightNotes ? "text-amber-400" : "text-zinc-500"}`}
                       >
-                        Please add a meaningful description (at least 10 characters).
+                        {shouldShowError
+                          ? `The following section needs to be updated based on the feedback.`
+                          : `Remaining characters needed: ${10 - trimmedLength}`}
                       </p>
                     )}
 
@@ -554,35 +539,57 @@ export function ApiDefinitionStep() {
         >
           <div className="flex-1 overflow-y-auto pb-20">
             <div className="space-y-3 p-4">
-              {endpoints.map((endpoint) => (
-                <button
-                  key={endpoint.id}
-                  type="button"
-                  onClick={() => setMobileEditingId(endpoint.id)}
-                  className="w-full text-left rounded-2xl border border-zinc-800 bg-zinc-900/70 p-4 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-98"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex h-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 px-3 text-[10px] font-semibold uppercase tracking-wide text-zinc-100">
-                      {endpoint.method}
-                    </span>
-                    <span className="flex-1 text-sm text-zinc-200 font-mono">
-                      /{endpoint.path || <span className="text-zinc-500 italic">new-endpoint</span>}
-                    </span>
-                    <svg viewBox="0 0 16 16" className="h-4 w-4 text-zinc-400" fill="none">
-                      <path
-                        d="M6 4l4 4-4 4"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </div>
-                  {endpoint.notes && (
-                    <p className="mt-2 text-xs text-zinc-400 line-clamp-2">{endpoint.notes}</p>
-                  )}
-                </button>
-              ))}
+              {endpoints.map((endpoint) => {
+                const highlightField = endpointsToHighlight.get(endpoint.id);
+                const shouldHighlightPath =
+                  showHighlights && highlightField === "path" && !isReadOnly;
+                const shouldHighlightNotes =
+                  showHighlights && highlightField === "notes" && !isReadOnly;
+
+                return (
+                  <button
+                    key={endpoint.id}
+                    type="button"
+                    onClick={() => setMobileEditingId(endpoint.id)}
+                    className={`w-full text-left rounded-2xl border p-4 transition hover:bg-zinc-900 active:scale-98 ${
+                      shouldHighlightPath || shouldHighlightNotes
+                        ? "border-amber-400/50 bg-amber-950/20"
+                        : "border-zinc-800 bg-zinc-900/70 hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex h-8 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 px-3 text-[10px] font-semibold uppercase tracking-wide text-zinc-100">
+                        {endpoint.method}
+                      </span>
+                      <span className="flex-1 text-sm text-zinc-200 font-mono">
+                        /
+                        {endpoint.path || (
+                          <span className="text-zinc-500 italic">new-endpoint</span>
+                        )}
+                      </span>
+                      <svg viewBox="0 0 16 16" className="h-4 w-4 text-zinc-400" fill="none">
+                        <path
+                          d="M6 4l4 4-4 4"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </div>
+
+                    {/* Notes preview */}
+                    {endpoint.notes && (
+                      <p className={`mt-2 text-xs line-clamp-2 text-zinc-400`}>
+                        {endpoint.notes.length > 0
+                          ? endpoint.notes.slice(0, 1).toUpperCase() +
+                            endpoint.notes.slice(1).toLowerCase()
+                          : "No description"}
+                      </p>
+                    )}
+                  </button>
+                );
+              })}
 
               {!isReadOnly && (
                 <button
