@@ -33,8 +33,6 @@ import { loadPractice, savePractice } from "@/lib/practice/storage";
 import { track } from "@/lib/analytics";
 import { isLegacyPlaceholderContent } from "@/lib/practice/apiPlaceholders";
 
-const PRACTICE_SLUG: PracticeState["slug"] = "url-shortener";
-
 type LegacyLocked = {
   brief?: boolean;
   design?: boolean;
@@ -56,9 +54,10 @@ type LegacyPracticeState = Partial<{
 }>;
 
 const ensureRequirements = (
-  value?: Requirements | LegacyPracticeState["requirements"]
+  value?: Requirements | LegacyPracticeState["requirements"],
+  slug = "url-shortener"
 ): Requirements => {
-  const defaults = makeDefaultRequirements();
+  const defaults = makeDefaultRequirements(slug);
   if (!value) return defaults;
 
   const candidate = value as Requirements;
@@ -95,9 +94,12 @@ const ensureRequirements = (
   };
 };
 
-const ensureApiDefinition = (value?: PracticeApiDefinitionState): PracticeApiDefinitionState => {
+const ensureApiDefinition = (
+  value?: PracticeApiDefinitionState,
+  slug = "url-shortener"
+): PracticeApiDefinitionState => {
   if (!value || !Array.isArray(value.endpoints)) {
-    return makeDefaultApiDefinition();
+    return makeDefaultApiDefinition(slug);
   }
 
   const endpoints = value.endpoints.map((endpoint, index) => {
@@ -120,8 +122,11 @@ const ensureApiDefinition = (value?: PracticeApiDefinitionState): PracticeApiDef
   };
 };
 
-const sanitizeDesignState = (value?: PracticeDesignState): PracticeDesignState => {
-  const design = value ?? makeDefaultDesignState();
+const sanitizeDesignState = (
+  value?: PracticeDesignState,
+  slug = "url-shortener"
+): PracticeDesignState => {
+  const design = value ?? makeDefaultDesignState(slug);
   const nodeIds = new Set(design.nodes.map((node) => node.id));
   const edgeIds = new Set(design.edges.map((edge) => edge.id));
   const hasLegacySeedEdge =
@@ -188,8 +193,11 @@ const ensureIterativeFeedback = (value?: PracticeIterativeFeedback): PracticeIte
   },
 });
 
-const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeState => {
-  const defaults = makeInitialPracticeState();
+const mergeState = (
+  raw: PracticeState | LegacyPracticeState | null,
+  slug: string
+): PracticeState => {
+  const defaults = makeInitialPracticeState(slug);
   if (!raw) return defaults;
 
   const candidate = raw as PracticeState;
@@ -199,14 +207,17 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
     Array.isArray((candidate as PracticeState).apiDefinition?.endpoints);
 
   if (isModern) {
+    // Use the slug from candidate if it exists, otherwise use the provided slug
+    const finalSlug = candidate.slug || slug;
     return {
       ...defaults,
       ...candidate,
+      slug: finalSlug,
       // Ensure currentStep exists, default to functional if not present (for backwards compatibility)
       currentStep: candidate.currentStep ?? defaults.currentStep,
-      requirements: ensureRequirements(candidate.requirements),
-      apiDefinition: ensureApiDefinition(candidate.apiDefinition),
-      design: sanitizeDesignState(candidate.design ?? defaults.design),
+      requirements: ensureRequirements(candidate.requirements, finalSlug),
+      apiDefinition: ensureApiDefinition(candidate.apiDefinition, finalSlug),
+      design: sanitizeDesignState(candidate.design ?? defaults.design, finalSlug),
       run: {
         ...defaults.run,
         ...(candidate.run ?? {}),
@@ -222,10 +233,10 @@ const mergeState = (raw: PracticeState | LegacyPracticeState | null): PracticeSt
   const legacy = raw as LegacyPracticeState;
   return {
     ...defaults,
-    slug: "url-shortener",
-    requirements: ensureRequirements(legacy.requirements as Requirements),
-    apiDefinition: ensureApiDefinition(),
-    design: sanitizeDesignState(legacy.design ?? defaults.design),
+    slug,
+    requirements: ensureRequirements(legacy.requirements as Requirements, slug),
+    apiDefinition: ensureApiDefinition(undefined, slug),
+    design: sanitizeDesignState(legacy.design ?? defaults.design, slug),
     run: {
       ...defaults.run,
       ...(legacy.run ?? {}),
@@ -270,9 +281,6 @@ type PracticeSessionContextValue = {
   isReadOnly: boolean;
   hydrated: boolean;
   currentStep: PracticeStep;
-  setStep: (step: PracticeStep) => void;
-  goNext: () => void;
-  goPrev: () => void;
   setRequirements: (value: Requirements) => void;
   setApiDefinition: (
     updater: (prev: PracticeApiDefinitionState) => PracticeApiDefinitionState
@@ -296,11 +304,22 @@ const PracticeSessionContext = createContext<PracticeSessionContextValue | undef
 
 type PracticeSessionProviderProps = {
   children: React.ReactNode;
+  slug: string;
+  initialStep: PracticeStep;
   sharedState?: PracticeState | null;
 };
 
-export function PracticeSessionProvider({ children, sharedState }: PracticeSessionProviderProps) {
-  const [state, setState] = useState<PracticeState>(() => makeInitialPracticeState());
+export function PracticeSessionProvider({
+  children,
+  slug,
+  initialStep,
+  sharedState,
+}: PracticeSessionProviderProps) {
+  const [state, setState] = useState<PracticeState>(() => {
+    const initial = makeInitialPracticeState(slug);
+    // Use initialStep from URL instead of deriving from state
+    return { ...initial, currentStep: initialStep };
+  });
   const [hydrated, setHydrated] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const saveTimeout = useRef<number | null>(null);
@@ -308,33 +327,31 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
 
   useEffect(() => {
     if (sharedState) {
-      let merged = mergeState(sharedState);
-      // Set currentStep to score for shared state
-      merged = { ...merged, currentStep: "score" };
+      let merged = mergeState(sharedState, slug);
+      // Use initialStep from URL for shared state too
+      merged = { ...merged, currentStep: initialStep };
       setState(merged);
       setIsReadOnly(true);
       setHydrated(true);
-      track("practice_shared_viewed", { slug: PRACTICE_SLUG });
+      track("practice_shared_viewed", { slug });
       return;
     }
 
-    const stored = loadPractice(PRACTICE_SLUG);
-    let merged = ensureAuthProgressConsistency(mergeState(stored));
-    // Derive the initial step if currentStep is not set or doesn't make sense
-    const derivedStep = deriveInitialStep(merged);
-    if (!merged.currentStep || merged.currentStep !== derivedStep) {
-      merged = { ...merged, currentStep: derivedStep };
-    }
+    const stored = loadPractice(slug);
+    let merged = ensureAuthProgressConsistency(mergeState(stored, slug));
+    // Use initialStep from URL instead of deriving
+    merged = { ...merged, currentStep: initialStep };
     setState(merged);
     setIsReadOnly(false);
     setHydrated(true);
 
     track("practice_start", {
-      slug: PRACTICE_SLUG,
+      slug,
+      step: initialStep,
       isFirstVisit: !stored,
       hasProgress: Boolean(stored),
     });
-  }, [sharedState]);
+  }, [sharedState, slug, initialStep]);
 
   useEffect(() => {
     latestStateRef.current = state;
@@ -397,7 +414,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
     (value: Requirements) => {
       setStateWithTimestamp((prev) => ({
         ...prev,
-        requirements: ensureRequirements(value),
+        requirements: ensureRequirements(value, prev.slug),
       }));
     },
     [setStateWithTimestamp]
@@ -407,7 +424,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
     (updater: (prev: PracticeApiDefinitionState) => PracticeApiDefinitionState) => {
       setStateWithTimestamp((prev) => ({
         ...prev,
-        apiDefinition: ensureApiDefinition(updater(prev.apiDefinition)),
+        apiDefinition: ensureApiDefinition(updater(prev.apiDefinition), prev.slug),
       }));
     },
     [setStateWithTimestamp]
@@ -469,35 +486,6 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
     [setStateWithTimestamp]
   );
 
-  const setStep = useCallback(
-    (step: PracticeStep) => {
-      if (isReadOnly) {
-        // For read-only mode, just update state directly
-        setState((prev) => ({ ...prev, currentStep: step }));
-        return;
-      }
-      setStateWithTimestamp((prev) => ({ ...prev, currentStep: step }));
-      track("practice_step_viewed", { slug: PRACTICE_SLUG, step });
-    },
-    [isReadOnly, setStateWithTimestamp]
-  );
-
-  const goNext = useCallback(() => {
-    if (isReadOnly) return;
-    const index = PRACTICE_STEPS.indexOf(state.currentStep);
-    if (index === -1 || index >= PRACTICE_STEPS.length - 1) return;
-    const next = PRACTICE_STEPS[index + 1];
-    setStep(next);
-  }, [state.currentStep, isReadOnly, setStep]);
-
-  const goPrev = useCallback(() => {
-    if (isReadOnly) return;
-    const index = PRACTICE_STEPS.indexOf(state.currentStep);
-    if (index <= 0) return;
-    const prevStep = PRACTICE_STEPS[index - 1];
-    setStep(prevStep);
-  }, [state.currentStep, isReadOnly, setStep]);
-
   const updateIterativeFeedback = useCallback(
     (
       step: keyof PracticeIterativeFeedback,
@@ -544,7 +532,7 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
           iterativeFeedback: ensureIterativeFeedback(),
         };
       });
-      track("practice_iterative_feedback_reset", { slug: PRACTICE_SLUG, step: step || "all" });
+      track("practice_iterative_feedback_reset", { slug: state.slug, step: step || "all" });
     },
     [setStateWithTimestamp]
   );
@@ -565,9 +553,6 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       isReadOnly,
       hydrated,
       currentStep: state.currentStep,
-      setStep,
-      goNext,
-      goPrev,
       setRequirements,
       setApiDefinition,
       setDesign,
@@ -583,9 +568,6 @@ export function PracticeSessionProvider({ children, sharedState }: PracticeSessi
       state,
       isReadOnly,
       hydrated,
-      setStep,
-      goNext,
-      goPrev,
       setRequirements,
       setApiDefinition,
       setDesign,

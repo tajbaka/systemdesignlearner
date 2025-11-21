@@ -1,13 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { PRACTICE_STEPS, type PracticeProgress, type PracticeStep } from "@/lib/practice/types";
 import { useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 
 type PracticeStepperProps = {
+  scenario: string;
   current: PracticeStep;
   progress: PracticeProgress;
-  onStepChange: ((step: PracticeStep) => void) | ((step: PracticeStep) => Promise<void>);
   readOnly?: boolean;
   hideMobileStepper?: boolean;
   scenarioTitle?: string;
@@ -60,10 +61,21 @@ const computeUnlockedIndex = (progress: PracticeProgress): number => {
   return max;
 };
 
+// Convert step name to URL-friendly format
+const stepToUrl = (step: PracticeStep): string => {
+  if (step === "nonFunctional") return "non-functional";
+  return step;
+};
+
+// Build step URL
+const getStepUrl = (scenario: string, step: PracticeStep): string => {
+  return `/practice/${scenario}/${stepToUrl(step)}`;
+};
+
 export function PracticeStepper({
+  scenario,
   current,
   progress,
-  onStepChange,
   readOnly = false,
   hideMobileStepper = false,
   scenarioTitle,
@@ -154,13 +166,14 @@ export function PracticeStepper({
 
                 return (
                   <li key={step.id} className="flex-1 text-center">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!disabled) onStepChange(step.id);
+                    <Link
+                      href={disabled ? `#` : getStepUrl(scenario, step.id)}
+                      onClick={(e) => {
+                        if (disabled) e.preventDefault();
                       }}
-                      disabled={disabled}
-                      className={`relative z-20 mx-auto flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 disabled:cursor-not-allowed ${
+                      className={`relative z-20 mx-auto flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-medium transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+                        disabled ? "cursor-not-allowed" : "cursor-pointer"
+                      } ${
                         isCurrent
                           ? "bg-blue-500/80 text-blue-50 ring-2 ring-blue-400/30 scale-110"
                           : completed
@@ -181,7 +194,7 @@ export function PracticeStepper({
                       <span className="sr-only">
                         Step {stepNumber} of {PRACTICE_STEPS.length}, {step.label}, {statusLabel}
                       </span>
-                    </button>
+                    </Link>
                   </li>
                 );
               })}
@@ -238,13 +251,14 @@ export function PracticeStepper({
                 className="z-10 flex flex-1 flex-col items-center"
                 style={{ opacity: isCurrent ? 0.9 : completed ? 0.7 : 0.4 }}
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (!disabled) onStepChange(step.id);
+                <Link
+                  href={disabled ? `#` : getStepUrl(scenario, step.id)}
+                  onClick={(e) => {
+                    if (disabled) e.preventDefault();
                   }}
-                  disabled={disabled}
-                  className="group flex flex-col items-center gap-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 disabled:cursor-not-allowed"
+                  className={`group flex flex-col items-center gap-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 focus-visible:ring-offset-2 focus-visible:ring-offset-zinc-950 ${
+                    disabled ? "cursor-not-allowed" : "cursor-pointer"
+                  }`}
                   aria-current={isCurrent ? "step" : undefined}
                   aria-disabled={disabled}
                 >
@@ -254,7 +268,9 @@ export function PracticeStepper({
                         ? "bg-blue-500/80 text-blue-50 ring-2 ring-blue-400/30 scale-110"
                         : completed
                           ? "bg-emerald-500/60 text-emerald-50 scale-100"
-                          : "bg-zinc-800/40 text-zinc-500 group-hover:bg-zinc-700/60 group-hover:text-zinc-300 group-disabled:opacity-50 scale-90"
+                          : disabled
+                            ? "bg-zinc-800/40 text-zinc-500 opacity-50 scale-90"
+                            : "bg-zinc-800/40 text-zinc-500 group-hover:bg-zinc-700/60 group-hover:text-zinc-300 scale-90"
                     }`}
                   >
                     {completed && !isCurrent ? (
@@ -272,7 +288,9 @@ export function PracticeStepper({
                           ? "text-blue-300"
                           : completed
                             ? "text-emerald-300"
-                            : "text-zinc-500 group-hover:text-zinc-400 group-disabled:opacity-50"
+                            : disabled
+                              ? "text-zinc-500 opacity-50"
+                              : "text-zinc-500 group-hover:text-zinc-400"
                       }`}
                     >
                       {step.label}
@@ -284,7 +302,7 @@ export function PracticeStepper({
                   <span className="sr-only">
                     Step {stepNumber} of {PRACTICE_STEPS.length}, {statusLabel}
                   </span>
-                </button>
+                </Link>
               </li>
             );
           })}

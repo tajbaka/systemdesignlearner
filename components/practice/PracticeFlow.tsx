@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import PracticeStepper from "@/components/practice/PracticeStepper";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -8,7 +9,7 @@ import { OnboardingProvider, useOnboarding } from "@/components/practice/Practic
 import { OnboardingTooltip } from "@/components/practice/OnboardingTooltip";
 import { useUser } from "@clerk/nextjs";
 import { AuthModal } from "@/components/practice/AuthModal";
-import { PRACTICE_STEPS, type PracticeStep, type PracticeStepScores } from "@/lib/practice/types";
+import { PRACTICE_STEPS } from "@/lib/practice/types";
 import { STEP_CONFIGS, getHelperText, completeStep } from "@/lib/practice/step-configs";
 import { usePracticeScoring } from "@/hooks/usePracticeScoring";
 import { useSandboxEvaluation } from "@/hooks/useSandboxEvaluation";
@@ -21,9 +22,9 @@ import { IterativeFeedbackModal } from "@/components/practice/IterativeFeedbackM
 import { SCENARIOS } from "@/lib/scenarios";
 
 function PracticeFlowInner() {
+  const router = useRouter();
   const session = usePracticeSession();
-  const { hydrated, currentStep, setStep, isReadOnly, state, markStep, setAuth, setRequirements } =
-    session;
+  const { hydrated, currentStep, isReadOnly, state, markStep, setAuth, setRequirements } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
@@ -204,7 +205,7 @@ function PracticeFlowInner() {
       }
       // Only redirect if not in the auth flow (modal not showing)
       if (currentStep === "score" && !showAuthModal) {
-        setStep("sandbox");
+        router.push(`/practice/${state.slug}/sandbox`);
       }
     }
   }, [
@@ -214,7 +215,8 @@ function PracticeFlowInner() {
     isSignedIn,
     markStep,
     setAuth,
-    setStep,
+    router,
+    state.slug,
     state.auth.isAuthed,
     state.completed.sandbox,
     state.completed.score,
@@ -481,98 +483,11 @@ function PracticeFlowInner() {
       />
       <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
         <PracticeStepper
+          scenario={session.state.slug}
           current={currentStep}
           progress={session.state.completed}
           scenarioTitle={scenarioTitle}
           isAuthenticated={state.auth.isAuthed || Boolean(isSignedIn)}
-          onStepChange={async (step) => {
-            // Allow free navigation to already-completed steps and unlock steps one at a time
-            const stepsNeedingScoring: PracticeStep[] = [
-              "functional",
-              "nonFunctional",
-              "api",
-              "sandbox",
-            ];
-            const currentIndex = PRACTICE_STEPS.indexOf(currentStep);
-            const targetIndex = PRACTICE_STEPS.indexOf(step);
-
-            // Calculate the furthest unlocked step (same logic as PracticeStepper)
-            let unlockedIndex = -1;
-            PRACTICE_STEPS.forEach((s, index) => {
-              if (session.state.completed[s]) {
-                unlockedIndex = index;
-              }
-            });
-
-            // Check if the target step is accessible (unlocked)
-            const isTargetAccessible = targetIndex <= unlockedIndex + 1;
-
-            // Don't allow navigation to locked steps (beyond unlockedIndex + 1)
-            if (!isReadOnly && !isTargetAccessible) {
-              setVerification({
-                isVerifying: false,
-                result: null,
-                error: "Please complete the previous steps first.",
-              });
-              return;
-            }
-
-            // Check if current step needs scoring and hasn't been scored yet
-            const currentStepNeedsScoring = stepsNeedingScoring.includes(currentStep);
-            const currentStepNotScored =
-              currentStepNeedsScoring &&
-              (currentStep === "sandbox"
-                ? !session.state.scores?.design
-                : currentStep === "score"
-                  ? false // Score step doesn't need evaluation
-                  : !session.state.scores?.[currentStep as keyof PracticeStepScores]);
-
-            if (
-              !isReadOnly &&
-              targetIndex > currentIndex &&
-              currentStepNeedsScoring &&
-              currentStepNotScored &&
-              currentStep !== "sandbox" // Sandbox step is special - scoring happens during simulation
-            ) {
-              // Evaluate current step before allowing forward navigation (even to completed steps)
-              // This ensures scores are saved when navigating via stepper clicks
-              setVerification({ isVerifying: true, result: null, error: null });
-              const result = await evaluateCurrentStep(currentStep, session);
-              setVerification({ isVerifying: false, result: null, error: null });
-
-              if (result && result.blocking.length === 0) {
-                // Evaluation passed or has warnings only, allow navigation
-                setStep(step);
-              } else if (!result) {
-                // Evaluation failed
-                setVerification({
-                  isVerifying: false,
-                  result: null,
-                  error: "Please complete the current step before continuing.",
-                });
-              }
-              // If blocking issues, stay on current step and show feedback
-            } else {
-              // Allow navigation for: backward movement, already-scored steps, sandbox step, or non-scoring steps
-              // Clear any verification errors when navigating freely
-              clearVerification();
-
-              // Special case: If navigating from sandbox to score for the first time
-              // (score step not yet completed), ensure design score exists
-              if (currentStep === "sandbox" && step === "score" && !session.state.completed.score) {
-                if (!session.state.scores?.design) {
-                  setVerification({
-                    isVerifying: false,
-                    result: null,
-                    error: "Please run the simulation before continuing to see your score.",
-                  });
-                  return;
-                }
-              }
-
-              setStep(step);
-            }
-          }}
           readOnly={isReadOnly}
           hideMobileStepper={false}
         />
@@ -688,7 +603,7 @@ function PracticeFlowInner() {
             isVerifying={verification.isVerifying}
             onBack={handleBack}
             onNext={handleNext}
-            onBackToSandbox={() => setStep("sandbox")}
+            onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
             apiMobileEditing={apiMobileEditing}
             voiceCaptureValue={
               currentStep === "functional"

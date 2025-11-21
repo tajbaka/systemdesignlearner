@@ -137,7 +137,7 @@ export type PracticeIterativeFeedback = {
 };
 
 export type PracticeState = {
-  slug: "url-shortener";
+  slug: string;
   currentStep: PracticeStep;
   requirements: Requirements;
   apiDefinition: PracticeApiDefinitionState;

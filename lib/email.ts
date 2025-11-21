@@ -4,11 +4,22 @@ import FeedbackConfirmationEmail from "@/emails/feedback-confirmation";
 import NewsletterConfirmationEmail from "@/emails/newsletter-confirmation";
 import { logger } from "@/lib/logger";
 
-// Initialize Resend with API key from environment variables
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 // Default sender email (configure this in your Resend dashboard)
 const FROM_EMAIL = process.env.EMAIL_FROM || "onboarding@resend.dev";
+
+/**
+ * Get Resend client instance
+ * Returns null if RESEND_API_KEY is not configured (e.g., in dev mode)
+ */
+function getResendClient(): Resend | null {
+  if (!process.env.RESEND_API_KEY) {
+    if (process.env.NODE_ENV !== "development") {
+      throw new Error("RESEND_API_KEY not configured");
+    }
+    return null;
+  }
+  return new Resend(process.env.RESEND_API_KEY);
+}
 
 export interface SendFeedbackConfirmationParams {
   to: string;
@@ -30,7 +41,8 @@ export async function sendFeedbackConfirmation({
 }: SendFeedbackConfirmationParams) {
   try {
     // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
+    const resend = getResendClient();
+    if (!resend) {
       logger.warn("RESEND_API_KEY not configured. Skipping email send.");
       return { success: false, error: "Email service not configured" };
     }
@@ -63,7 +75,8 @@ export async function sendFeedbackConfirmation({
 export async function sendNewsletterConfirmation({ to }: SendNewsletterConfirmationParams) {
   try {
     // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
+    const resend = getResendClient();
+    if (!resend) {
       logger.warn("RESEND_API_KEY not configured. Skipping email send.");
       return { success: false, error: "Email service not configured" };
     }

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { PracticeStep } from "@/lib/practice/types";
 import type { FeedbackResult } from "@/lib/scoring/types";
 import type { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
@@ -6,6 +7,7 @@ import type { VerificationState } from "./usePracticeScoring";
 import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import { STEP_CONFIGS } from "@/lib/practice/step-configs";
 import { logger } from "@/lib/logger";
+import { PRACTICE_STEPS } from "@/lib/practice/types";
 
 const STEPS_WITH_ITERATIVE: PracticeStep[] = ["functional", "nonFunctional", "api"];
 
@@ -66,7 +68,28 @@ type NavigationOptions = {
   ) => Promise<IterativeFeedbackResult | null>;
 };
 
+// Helper to convert step to URL format
+const stepToUrl = (step: PracticeStep): string => {
+  if (step === "nonFunctional") return "non-functional";
+  return step;
+};
+
+// Get next step in sequence
+const getNextStep = (currentStep: PracticeStep): PracticeStep | null => {
+  const currentIndex = PRACTICE_STEPS.indexOf(currentStep);
+  if (currentIndex === -1 || currentIndex >= PRACTICE_STEPS.length - 1) return null;
+  return PRACTICE_STEPS[currentIndex + 1];
+};
+
+// Get previous step in sequence
+const getPrevStep = (currentStep: PracticeStep): PracticeStep | null => {
+  const currentIndex = PRACTICE_STEPS.indexOf(currentStep);
+  if (currentIndex <= 0) return null;
+  return PRACTICE_STEPS[currentIndex - 1];
+};
+
 export function usePracticeNavigation(session: PracticeSessionValue, options: NavigationOptions) {
+  const router = useRouter();
   const scenario = SCENARIOS.find((item) => item.id === session.state.slug) ?? SCENARIOS[0];
   const [showAuthModal, setShowAuthModal] = useState(false);
   const {
@@ -85,7 +108,14 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
     const config = STEP_CONFIGS[session.currentStep];
     const advance = () => {
       config?.onNext?.(session);
-      session.goNext();
+
+      // Get next step and navigate via URL
+      const nextStep = getNextStep(session.currentStep);
+      if (nextStep) {
+        const nextUrl = `/practice/${session.state.slug}/${stepToUrl(nextStep)}`;
+        router.push(nextUrl);
+      }
+
       // CRITICAL: Flush to storage after React processes the state updates
       // Use setTimeout to ensure state updates have been batched and ref updated
       setTimeout(() => {
@@ -117,21 +147,16 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
         // Advance to score step
         const config = STEP_CONFIGS[session.currentStep];
         config?.onNext?.(session);
-        session.goNext();
 
         // CRITICAL: Flush synchronously to localStorage BEFORE opening auth modal
         // This ensures the state is saved before Clerk redirects the page
         session.flushToStorage();
 
-        // Set URL flag to indicate auth flow in progress
-        // This survives page reloads and helps detect returning from OAuth
-        if (typeof window !== "undefined") {
-          const url = new URL(window.location.href);
-          url.searchParams.set("auth_flow", "true");
-          window.history.replaceState({}, "", url.toString());
-        }
+        // Navigate to score step via URL
+        const scoreUrl = `/practice/${session.state.slug}/score?auth_flow=true`;
+        router.push(scoreUrl);
 
-        // Show auth modal immediately after flush
+        // Show auth modal immediately after navigation
         setShowAuthModal(true);
       }
       return;
@@ -495,7 +520,12 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
       return;
     }
 
-    session.goPrev();
+    // Navigate to previous step
+    const prevStep = getPrevStep(session.currentStep);
+    if (prevStep) {
+      const prevUrl = `/practice/${session.state.slug}/${stepToUrl(prevStep)}`;
+      router.push(prevUrl);
+    }
   };
 
   const handleAuthModalAuthenticated = () => {

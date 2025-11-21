@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { encodeDesign as encodeShare } from "@/lib/shareLink";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { track } from "@/lib/analytics";
@@ -78,7 +79,8 @@ const buildSharePayload = (state: ReturnType<typeof usePracticeSession>["state"]
 });
 
 export function ScoreShareStep() {
-  const { state, setStep, isReadOnly: _isReadOnly } = usePracticeSession();
+  const router = useRouter();
+  const { state, isReadOnly: _isReadOnly } = usePracticeSession();
   const { isSignedIn } = useUser();
   const lastResult = state.run.lastResult;
   const scores = state.scores;
@@ -239,7 +241,7 @@ export function ScoreShareStep() {
             <div className="flex gap-2 justify-center">
               <button
                 type="button"
-                onClick={() => setStep("sandbox")}
+                onClick={() => router.push(`/practice/${state.slug}/sandbox`)}
                 className="inline-flex h-10 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 Back to Sandbox
@@ -254,86 +256,25 @@ export function ScoreShareStep() {
   if (!cumulativeScore) {
     return (
       <div className="space-y-6 pb-40 sm:pb-8 px-4 lg:pl-20 lg:pr-4 pt-[20px] sm:pt-0">
-        {!cumulativeScore ? (
-          <section className="space-y-6 rounded-3xl border border-amber-800 bg-amber-900/20 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
-            <div className="text-center space-y-4">
-              <div className="text-6xl">⚠️</div>
-              <h3 className="text-xl font-semibold text-amber-200">Incomplete Practice Session</h3>
-              <p className="text-sm text-amber-100">
-                You need to complete all steps (Functional Requirements, Non-Functional
-                Requirements, API Definition, and Design with Simulation) to see your final score.
-              </p>
-              <div className="flex gap-2 justify-center">
-                <button
-                  type="button"
-                  onClick={() => setStep("functional")}
-                  className="inline-flex h-10 items-center justify-center rounded-full border border-amber-400/40 bg-amber-500/10 px-4 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
-                >
-                  Go to Step 1
-                </button>
-              </div>
+        <section className="space-y-6 rounded-3xl border border-amber-800 bg-amber-900/20 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
+          <div className="text-center space-y-4">
+            <div className="text-6xl">⚠️</div>
+            <h3 className="text-xl font-semibold text-amber-200">Incomplete Practice Session</h3>
+            <p className="text-sm text-amber-100">
+              You need to complete all steps (Functional Requirements, Non-Functional Requirements,
+              API Definition, and Design with Simulation) to see your final score.
+            </p>
+            <div className="flex gap-2 justify-center">
+              <button
+                type="button"
+                onClick={() => router.push(`/practice/${state.slug}/functional`)}
+                className="inline-flex h-10 items-center justify-center rounded-full border border-amber-400/40 bg-amber-500/10 px-4 text-sm font-semibold text-amber-100 transition hover:bg-amber-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
+              >
+                Go to Step 1
+              </button>
             </div>
-          </section>
-        ) : (
-          <section className="space-y-6 rounded-3xl border border-zinc-800 bg-zinc-900/70 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
-            <div className="text-center space-y-4">
-              <div>
-                <div
-                  className={`inline-block text-6xl sm:text-8xl font-bold text-${getGradeColor(cumulativeScore.grade)}-400`}
-                >
-                  {cumulativeScore.grade}
-                </div>
-                <div className="mt-2 text-xl sm:text-2xl font-semibold text-white">
-                  {formatScore(cumulativeScore.total)}/100
-                </div>
-                <div className="mt-1 text-sm text-zinc-400">
-                  {getGradeDescription(cumulativeScore.grade)}
-                </div>
-              </div>
-            </div>
-
-            {/* Score Breakdown by Step */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-zinc-300">
-                Score by Step
-              </h3>
-              <div className="space-y-2">
-                {stepScoreItems.map((step, index) => {
-                  const percentage =
-                    step.maxPoints === 0
-                      ? 0
-                      : Math.min(100, (step.result.score / step.maxPoints) * 100);
-                  return (
-                    <div
-                      key={step.id}
-                      className="flex items-center justify-between gap-2 rounded-xl border border-zinc-700 bg-zinc-900/60 p-3"
-                    >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-300">
-                          {index + 1}
-                        </div>
-                        <span className="text-sm font-medium text-zinc-200 truncate">
-                          {step.label}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="h-2 w-16 sm:w-24 overflow-hidden rounded-full bg-zinc-800">
-                          <div
-                            className={`h-full ${step.barClass}`}
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-                        <span className="text-xs sm:text-sm font-semibold text-white min-w-[3rem] sm:min-w-[5rem] text-right">
-                          {formatScore(step.result.score)}/{formatScore(step.maxPoints)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        )}
+          </div>
+        </section>
       </div>
     );
   }

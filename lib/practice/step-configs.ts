@@ -1,6 +1,7 @@
 import type { PracticeStep } from "@/lib/practice/types";
 import type { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { track } from "@/lib/analytics";
+import { getScenarioMetadata } from "@/lib/practice/scenario-configs";
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
@@ -18,6 +19,19 @@ export const completeStep = (session: PracticeSessionValue, step: PracticeStep) 
   session.markStep(step, true);
   track("practice_step_completed", { slug: session.state.slug, step });
 };
+
+/**
+ * Get step configuration that's aware of the current scenario.
+ * This allows different scenarios to have different validation rules or labels.
+ */
+export function getStepConfig(step: PracticeStep, slug: string): StepConfig {
+  const baseConfig = STEP_CONFIGS[step];
+  const scenario = getScenarioMetadata(slug);
+
+  // You can customize configs per scenario here in the future
+  // For now, return the base config
+  return baseConfig;
+}
 
 export const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
   functional: {

@@ -247,6 +247,7 @@ export function SandboxStep({
       {/* Keep RunStage mounted but hidden so window._runSimulation is always available */}
       <div style={{ display: "none" }}>
         <RunStage
+          slug={state.slug}
           design={state.design}
           run={state.run}
           requirements={state.requirements}

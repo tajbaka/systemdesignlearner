@@ -5,6 +5,7 @@ import type { Requirements } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
 
 type BriefStageProps = {
+  slug?: string;
   value: Requirements;
   locked: boolean;
   onChange: (value: Requirements) => void;
@@ -19,6 +20,7 @@ const INTRO_POINTS = [
 ];
 
 export default function BriefStage({
+  slug = "url-shortener",
   value,
   locked,
   onChange,
@@ -61,7 +63,7 @@ export default function BriefStage({
           onContinue={(next) => {
             onComplete(next);
             track("practice_brief_locked", {
-              slug: "url-shortener",
+              slug,
               custom_alias: next.functional["custom-alias"],
               analytics: next.functional["basic-analytics"],
             });

@@ -41,8 +41,6 @@ type TutorialStep = {
   check?: (ctx: { nodes: PlacedNode[]; edges: Edge[]; requirements: Requirements }) => boolean;
 };
 
-const URL_SHORTENER = SCENARIOS.find((scenario) => scenario.id === "url-shortener")!;
-
 const RECOMMENDED_COMPONENTS: ComponentKind[] = [
   "Web",
   "API Gateway",
@@ -280,7 +278,7 @@ export default function DesignStage({
       isUndoRedoActionRef.current = false;
     }, 100);
 
-    track("practice_design_undo", { slug: "url-shortener" });
+    track("practice_design_undo", { slug: session.state.slug });
   }, [editingLocked, updateDesign, session]);
 
   // Redo function
@@ -310,7 +308,7 @@ export default function DesignStage({
       isUndoRedoActionRef.current = false;
     }, 100);
 
-    track("practice_design_redo", { slug: "url-shortener" });
+    track("practice_design_redo", { slug: session.state.slug });
   }, [editingLocked, updateDesign, session]);
 
   // Copy function
@@ -331,7 +329,7 @@ export default function DesignStage({
       edges: JSON.parse(JSON.stringify(edgesToCopy)),
     });
 
-    track("practice_design_copy", { slug: "url-shortener", nodeCount: nodesToCopy.length });
+    track("practice_design_copy", { slug: session.state.slug, nodeCount: nodesToCopy.length });
   }, [editingLocked, selectedNodeId, design.nodes, design.edges]);
 
   // Paste function
@@ -386,7 +384,7 @@ export default function DesignStage({
     session.setStepScore("design", undefined);
     session.setStepScore("simulation", undefined);
 
-    track("practice_design_paste", { slug: "url-shortener", nodeCount: pastedNodes.length });
+    track("practice_design_paste", { slug: session.state.slug, nodeCount: pastedNodes.length });
   }, [editingLocked, clipboard, updateDesign, session]);
 
   // Keyboard shortcuts
@@ -468,7 +466,7 @@ export default function DesignStage({
         const nextIndex = prev.guidedStepIndex + 1;
         const isComplete = nextIndex >= stepCount;
         if (isComplete && !prev.guidedCompleted) {
-          track("practice_design_tutorial_completed", { slug: "url-shortener" });
+          track("practice_design_tutorial_completed", { slug: session.state.slug });
         }
         return {
           ...prev,
@@ -505,7 +503,7 @@ export default function DesignStage({
       freeModeUnlocked: true,
     }));
     track("practice_design_guided_skipped", {
-      slug: "url-shortener",
+      slug: session.state.slug,
       step: currentStep?.id ?? "unknown",
     });
   }, [design.guidedDismissed, updateDesign, currentStep?.id, editingLocked]);
@@ -551,7 +549,7 @@ export default function DesignStage({
       session.setStepScore("design", undefined);
       session.setStepScore("simulation", undefined);
 
-      track("practice_design_node_added", { slug: "url-shortener", kind });
+      track("practice_design_node_added", { slug: session.state.slug, kind });
     },
     [design.nodes, design.edges, editingLocked, updateDesign, session, saveToHistory]
   );
@@ -773,7 +771,11 @@ export default function DesignStage({
       session.setStepScore("design", undefined);
       session.setStepScore("simulation", undefined);
 
-      track("practice_design_node_replicas_changed", { slug: "url-shortener", nodeId, replicas });
+      track("practice_design_node_replicas_changed", {
+        slug: session.state.slug,
+        nodeId,
+        replicas,
+      });
     },
     [editingLocked, updateDesign, session, design.edges, saveToHistory]
   );
@@ -788,7 +790,7 @@ export default function DesignStage({
         ),
       }));
 
-      track("practice_design_node_renamed", { slug: "url-shortener", nodeId, newLabel });
+      track("practice_design_node_renamed", { slug: session.state.slug, nodeId, newLabel });
     },
     [editingLocked, updateDesign]
   );
@@ -973,12 +975,14 @@ export default function DesignStage({
     (!requiresAdminDelete || adminFlowReady);
 
   const pathPreview = useMemo(() => {
-    const path = findScenarioPath(URL_SHORTENER, design.nodes, design.edges);
+    const scenario = SCENARIOS.find((s) => s.id === session.state.slug);
+    if (!scenario) return [];
+    const path = findScenarioPath(scenario, design.nodes, design.edges);
     return path.nodeIds.map((id) => {
       const node = design.nodes.find((n) => n.id === id);
       return node?.spec.label ?? node?.spec.kind ?? id;
     });
-  }, [design.nodes, design.edges]);
+  }, [design.nodes, design.edges, session.state.slug]);
 
   const canContinue = !editingLocked && (designReady || designComplete);
 
@@ -1294,7 +1298,7 @@ export default function DesignStage({
             <button
               type="button"
               onClick={() => {
-                track("practice_design_goback_clicked", { slug: "url-shortener" });
+                track("practice_design_goback_clicked", { slug: session.state.slug });
                 onGoBack();
               }}
               disabled={editingLocked}
@@ -1307,7 +1311,7 @@ export default function DesignStage({
             <button
               type="button"
               onClick={() => {
-                track("practice_design_continue_clicked", { slug: "url-shortener" });
+                track("practice_design_continue_clicked", { slug: session.state.slug });
                 onContinue();
               }}
               disabled={!canContinue}

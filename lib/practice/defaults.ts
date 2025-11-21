@@ -1,5 +1,3 @@
-import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
-import { COMPONENT_LIBRARY } from "@/app/components/data";
 import type {
   HighLevelChoice,
   LowLevel,
@@ -9,61 +7,27 @@ import type {
   Requirements,
   PracticeApiDefinitionState,
 } from "./types";
+import * as ScenarioConfigs from "./scenario-configs";
 
-export const FUNCTIONAL_TOGGLES = [
-  {
-    id: "create-short-url",
-    label: "Create short URL",
-    description: "Generate short links via API/UI",
-    default: true,
-  },
-  {
-    id: "redirect-by-slug",
-    label: "Redirect by slug",
-    description: "Resolve slug to destination",
-    default: true,
-  },
-  {
-    id: "custom-alias",
-    label: "Custom alias",
-    description: "Allow requester to choose slug",
-    default: false,
-  },
-  {
-    id: "basic-analytics",
-    label: "Basic click analytics",
-    description: "Track total clicks and last seen",
-    default: false,
-  },
-  {
-    id: "rate-limiting",
-    label: "Rate limiting",
-    description: "Throttle abusive clients",
-    default: false,
-  },
-  {
-    id: "admin-delete",
-    label: "Admin delete",
-    description: "Admin can revoke short links",
-    default: false,
-  },
-] as const;
+/**
+ * Get functional toggles for a specific scenario.
+ * Defaults to url-shortener if slug not provided.
+ * @deprecated Use ScenarioConfigs.getFunctionalToggles(slug) instead
+ */
+export const getFunctionalToggles = (slug = "url-shortener") => {
+  return ScenarioConfigs.getFunctionalToggles(slug);
+};
 
-export const makeDefaultRequirements = (): Requirements => ({
-  functionalSummary: "",
-  functional: FUNCTIONAL_TOGGLES.reduce<Requirements["functional"]>((acc, toggle) => {
-    acc[toggle.id] = toggle.default;
-    return acc;
-  }, {}),
-  nonFunctional: {
-    readRps: 0,
-    writeRps: 0,
-    p95RedirectMs: 0,
-    rateLimitNotes: "",
-    availability: "99.9",
-    notes: "",
-  },
-});
+// Keep legacy export for backwards compatibility
+export const FUNCTIONAL_TOGGLES = getFunctionalToggles("url-shortener");
+
+/**
+ * Create default requirements for a specific scenario.
+ * @param slug - The scenario slug (defaults to "url-shortener")
+ */
+export const makeDefaultRequirements = (slug = "url-shortener"): Requirements => {
+  return ScenarioConfigs.makeDefaultRequirements(slug);
+};
 
 export const PRESET_CHOICES: HighLevelChoice[] = [
   {
@@ -134,89 +98,41 @@ export const makeDefaultLowLevel = (): LowLevel => ({
   },
 });
 
-const specFor = (kind: ComponentKind) => {
-  const spec = COMPONENT_LIBRARY.find((component) => component.kind === kind);
-  if (!spec) {
-    throw new Error(`Missing component spec for ${kind}`);
-  }
-  return spec;
+/**
+ * Create default design state for a specific scenario.
+ * @param slug - The scenario slug (defaults to "url-shortener")
+ */
+export const makeDefaultDesignState = (slug = "url-shortener"): PracticeDesignState => {
+  return ScenarioConfigs.makeDefaultDesignState(slug);
 };
 
-const SEED_NODE_BLUEPRINTS: Array<{ id: string; kind: ComponentKind; x: number; y: number }> = [
-  { id: "seed-web", kind: "Web", x: -200, y: 0 },
-];
+/**
+ * Create default run state for a specific scenario.
+ * @param slug - The scenario slug (defaults to "url-shortener")
+ */
+export const makeDefaultRunState = (slug = "url-shortener"): PracticeRunState => {
+  return ScenarioConfigs.makeDefaultRunState(slug);
+};
 
-const SEED_EDGE_BLUEPRINTS: Array<{
-  id: string;
-  from: string;
-  to: string;
-  linkLatencyMs: number;
-  sourceHandle?: string;
-  targetHandle?: string;
-}> = [];
+/**
+ * Create default API definition for a specific scenario.
+ * @param slug - The scenario slug (defaults to "url-shortener")
+ */
+export const makeDefaultApiDefinition = (slug = "url-shortener"): PracticeApiDefinitionState => {
+  return ScenarioConfigs.makeDefaultApiDefinition(slug);
+};
 
-const buildSeedNodes = (): PlacedNode[] =>
-  SEED_NODE_BLUEPRINTS.map((blueprint) => ({
-    id: blueprint.id,
-    spec: specFor(blueprint.kind),
-    x: blueprint.x,
-    y: blueprint.y,
-    replicas: 1,
-  }));
-
-const buildSeedEdges = (): Edge[] =>
-  SEED_EDGE_BLUEPRINTS.map((blueprint) => ({
-    id: blueprint.id,
-    from: blueprint.from,
-    to: blueprint.to,
-    linkLatencyMs: blueprint.linkLatencyMs,
-    sourceHandle: blueprint.sourceHandle,
-    targetHandle: blueprint.targetHandle,
-  }));
-
-export const makeDefaultDesignState = (): PracticeDesignState => ({
-  nodes: buildSeedNodes(),
-  edges: buildSeedEdges(),
-  guidedStepIndex: 0,
-  guidedCompleted: false,
-  guidedDismissed: false,
-  freeModeUnlocked: false,
-  redirectMode: "302",
-});
-
-export const makeDefaultRunState = (): PracticeRunState => ({
-  attempts: 0,
-  chaosMode: false,
-  isRunning: false,
-  lastResult: null,
-});
-
-export const makeDefaultApiDefinition = (): PracticeApiDefinitionState => ({
-  endpoints: [
-    {
-      id: "post-shorten",
-      method: "POST",
-      path: "api/v1/urls",
-      notes: "",
-      suggested: true,
-    },
-    {
-      id: "get-slug",
-      method: "GET",
-      path: "{slug}",
-      notes: "",
-      suggested: true,
-    },
-  ],
-});
-
-export const makeInitialPracticeState = (): PracticeState => ({
-  slug: "url-shortener",
+/**
+ * Create initial practice state for a specific scenario.
+ * @param slug - The scenario slug (defaults to "url-shortener")
+ */
+export const makeInitialPracticeState = (slug = "url-shortener"): PracticeState => ({
+  slug,
   currentStep: "functional",
-  requirements: makeDefaultRequirements(),
-  apiDefinition: makeDefaultApiDefinition(),
-  design: makeDefaultDesignState(),
-  run: makeDefaultRunState(),
+  requirements: makeDefaultRequirements(slug),
+  apiDefinition: makeDefaultApiDefinition(slug),
+  design: makeDefaultDesignState(slug),
+  run: makeDefaultRunState(slug),
   auth: {
     isAuthed: false,
     skipped: false,

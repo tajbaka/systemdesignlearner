@@ -398,7 +398,7 @@ function ReactFlowBoardInner({
         }}
         minZoom={0.1}
         maxZoom={2}
-        deleteKeyCode={["Delete", "Backspace"]}
+        deleteKeyCode={onDeleteNode ? ["Delete", "Backspace"] : null}
         multiSelectionKeyCode="Meta"
         connectionLineStyle={{ strokeWidth: 2, stroke: "#10b981", strokeDasharray: "5,5" }}
         defaultEdgeOptions={{
@@ -415,9 +415,9 @@ function ReactFlowBoardInner({
         preventScrolling={true}
         // Reduce re-renders
         onlyRenderVisibleElements={true}
-        elementsSelectable={true}
-        nodesConnectable={true}
-        nodesDraggable={true}
+        elementsSelectable={Boolean(onNodeSelect || onEdgeSelect)}
+        nodesConnectable={Boolean(onConnect)}
+        nodesDraggable={Boolean(onNodesChange)}
         // Disable expensive features on mobile
         elevateEdgesOnSelect={false}
         elevateNodesOnSelect={false}

@@ -20,13 +20,7 @@ const geistMono = Geist_Mono({
 const fbPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_VERCEL_URL
-      ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-      : process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : "https://www.systemdesignsandbox.com"
-  ),
+  metadataBase: new URL(`https://${process.env.NEXT_PUBLIC_VERCEL_URL}`),
   title: {
     default: "System Design Interview Practice & Tutorial - Interactive Sandbox 2025",
     template: "%s | System Design Sandbox",
@@ -73,21 +67,14 @@ export const metadata: Metadata = {
     title: "System Design Interview Practice & Tutorial - Interactive Sandbox",
     description:
       "Master system design interviews with hands-on practice. Interactive scenarios for distributed systems, scalability, and architecture patterns. Free tutorials with instant feedback.",
-    images: [
-      {
-        url: "/og-image.png",
-        width: 1200,
-        height: 630,
-        alt: "System Design Sandbox - Interactive Interview Prep",
-      },
-    ],
+    // images removed - child layouts will provide specific images
   },
   twitter: {
     card: "summary_large_image",
     title: "System Design Interview Practice & Tutorial - Interactive Sandbox",
     description:
       "Master system design interviews with hands-on practice. Interactive scenarios, instant feedback, real-world examples. Free tutorials for 2025!",
-    images: ["/og-image.png"],
+    // images removed - child layouts will provide specific images
     creator: "@systemdesignsb",
   },
   icons: {

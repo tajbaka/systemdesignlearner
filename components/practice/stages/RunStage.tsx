@@ -21,6 +21,7 @@ type UpdateRunFn = (updater: (prev: PracticeRunState) => PracticeRunState) => vo
 type SetStepScoreFn = (step: keyof PracticeStepScores, result: FeedbackResult) => void;
 
 type RunStageProps = {
+  slug: string;
   design: PracticeDesignState;
   run: PracticeRunState;
   requirements: Requirements;
@@ -33,8 +34,6 @@ type RunStageProps = {
   showFooterControls?: boolean;
   continueLabel?: string;
 };
-
-const URL_SHORTENER = SCENARIOS.find((scenario) => scenario.id === "url-shortener")!;
 
 const outcomeBadge = (status: string | undefined) => {
   switch (status) {
@@ -132,6 +131,7 @@ const deriveHints = (
 };
 
 export default function RunStage({
+  slug,
   design,
   run,
   requirements,
@@ -146,9 +146,11 @@ export default function RunStage({
 }: RunStageProps) {
   const [error, setError] = useState<string | null>(null);
 
+  const scenario = useMemo(() => SCENARIOS.find((s) => s.id === slug)!, [slug]);
+
   const hints = useMemo(
-    () => deriveHints(run.lastResult, requirements, design.nodes, URL_SHORTENER),
-    [run.lastResult, requirements, design.nodes]
+    () => deriveHints(run.lastResult, requirements, design.nodes, scenario),
+    [run.lastResult, requirements, design.nodes, scenario]
   );
   const outcome =
     run.lastResult?.scoreBreakdown?.outcome ??
@@ -164,13 +166,13 @@ export default function RunStage({
       ...prev,
       chaosMode: !prev.chaosMode,
     }));
-    track("practice_run_chaos_toggled", { slug: "url-shortener" });
+    track("practice_run_chaos_toggled", { slug });
   }, [locked, readOnly, run.isRunning, updateRun]);
 
   const handleRun = useCallback(async () => {
     if (locked || readOnly || run.isRunning) return;
 
-    const validation = validateDesignForScenario(URL_SHORTENER, design.nodes, design.edges);
+    const validation = validateDesignForScenario(scenario, design.nodes, design.edges);
     if (!validation.ok) {
       setError(validation.message);
       if (typeof window !== "undefined") {
@@ -204,7 +206,7 @@ export default function RunStage({
         if (setStepScore) {
           try {
             logger.info("Starting design evaluation...");
-            const config = await loadScoringConfig("url-shortener");
+            const config = await loadScoringConfig(slug);
 
             // Evaluate design with AI
             const designScore = await evaluateDesignOptimized(
@@ -256,7 +258,7 @@ export default function RunStage({
         }
 
         const result = simulate(
-          URL_SHORTENER,
+          scenario,
           validatedPath,
           design.nodes,
           design.edges,
@@ -267,7 +269,7 @@ export default function RunStage({
         // Convert simulation result to FeedbackResult and save
         if (setStepScore) {
           try {
-            const config = await loadScoringConfig("url-shortener");
+            const config = await loadScoringConfig(slug);
 
             const simulationScore = scoreSimulation(
               {
@@ -275,9 +277,9 @@ export default function RunStage({
                 meetsLatency: result.meetsLatency,
                 failedByChaos: result.failedByChaos,
                 actualRps: result.capacityRps,
-                targetRps: URL_SHORTENER.requiredRps,
+                targetRps: scenario.requiredRps,
                 actualLatency: result.latencyMsP95,
-                targetLatency: URL_SHORTENER.latencyBudgetMsP95,
+                targetLatency: scenario.latencyBudgetMsP95,
               },
               config
             );
@@ -305,7 +307,7 @@ export default function RunStage({
         });
 
         track("practice_run_completed", {
-          slug: "url-shortener",
+          slug,
           attempts: run.attempts + 1,
           outcome:
             result.scoreBreakdown?.outcome ?? (result.failedByChaos ? "chaos_fail" : "unknown"),
@@ -316,8 +318,8 @@ export default function RunStage({
 
         if (result.scoreBreakdown?.outcome === "pass" && !run.firstPassAt) {
           const attemptCount = run.attempts + 1;
-          track("practice_run_first_pass", { slug: "url-shortener", attempts: attemptCount });
-          track("practice_pass_first", { scenario: "url-shortener", attempts: attemptCount });
+          track("practice_run_first_pass", { slug, attempts: attemptCount });
+          track("practice_pass_first", { scenario: slug, attempts: attemptCount });
         }
       })();
 
@@ -471,7 +473,7 @@ export default function RunStage({
                   <dd
                     className={run.lastResult.meetsLatency ? "text-emerald-300" : "text-rose-300"}
                   >
-                    {run.lastResult.latencyMsP95} ms (target ≤ {URL_SHORTENER.latencyBudgetMsP95}
+                    {run.lastResult.latencyMsP95} ms (target ≤ {scenario.latencyBudgetMsP95}
                      ms)
                   </dd>
                 </div>
@@ -479,7 +481,7 @@ export default function RunStage({
                   <dt>Throughput capacity</dt>
                   <dd className={run.lastResult.meetsRps ? "text-emerald-300" : "text-rose-300"}>
                     {run.lastResult.capacityRps.toLocaleString()} rps (target ≥{" "}
-                    {URL_SHORTENER.requiredRps.toLocaleString()} rps)
+                    {scenario.requiredRps.toLocaleString()} rps)
                   </dd>
                 </div>
                 <div className="flex items-center justify-between text-xs text-zinc-400">
@@ -546,7 +548,7 @@ export default function RunStage({
             <button
               type="button"
               onClick={() => {
-                track("practice_run_goback_clicked", { slug: "url-shortener", outcome });
+                track("practice_run_goback_clicked", { slug, outcome });
                 onGoBack();
               }}
               disabled={locked || readOnly}
@@ -559,7 +561,7 @@ export default function RunStage({
             <button
               type="button"
               onClick={() => {
-                track("practice_run_continue_clicked", { slug: "url-shortener", outcome });
+                track("practice_run_continue_clicked", { slug, outcome });
                 onContinue();
               }}
               disabled={!canContinue || locked || readOnly}
