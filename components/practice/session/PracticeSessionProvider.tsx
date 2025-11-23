@@ -248,7 +248,7 @@ const mergeState = (
   };
 };
 
-const deriveInitialStep = (state: PracticeState): PracticeStep => {
+const _deriveInitialStep = (state: PracticeState): PracticeStep => {
   for (const step of PRACTICE_STEPS) {
     if (!state.completed[step]) {
       return step;

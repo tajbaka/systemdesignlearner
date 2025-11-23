@@ -26,7 +26,7 @@ export const completeStep = (session: PracticeSessionValue, step: PracticeStep) 
  */
 export function getStepConfig(step: PracticeStep, slug: string): StepConfig {
   const baseConfig = STEP_CONFIGS[step];
-  const scenario = getScenarioMetadata(slug);
+  const _scenario = getScenarioMetadata(slug);
 
   // You can customize configs per scenario here in the future
   // For now, return the base config

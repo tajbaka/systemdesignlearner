@@ -13,6 +13,7 @@ const METHOD_PLACEHOLDERS: Record<HttpMethod, string> = {
   GET: "Query Params: What parameters are needed?\n\nResponse (2xx): What should be returned?\nResponse (4xx): What error cases could occur?\n\nBehavior: How should this endpoint behave? Any caching considerations?",
   PATCH:
     "Request Body: { ... what can be updated? ... }\n\nResponse (2xx): { ... what to return? ... }\nResponse (4xx): { ... error cases? ... }\n\nValidation: What rules and authorization?\nBehavior: What gets updated and how?",
+  PUT: "Request Body: { ... complete resource representation ... }\n\nResponse (2xx): { ... what to return? ... }\nResponse (4xx): { ... error cases? ... }\n\nValidation: What rules and authorization?\nBehavior: How is the resource created or replaced?",
   DELETE:
     "Request Body: Typically none for DELETE\n\nResponse (2xx): What indicates success?\nResponse (4xx): What error cases?\n\nValidation: Authorization requirements?\nBehavior: What gets deleted? Any cleanup needed?",
 };

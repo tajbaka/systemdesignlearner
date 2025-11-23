@@ -33,7 +33,7 @@ Sentry.init({
   ],
 
   // Security: Filter sensitive data before sending to Sentry
-  beforeSend(event, hint) {
+  beforeSend(event, _hint) {
     // Don't send events in development
     if (isDevelopment) {
       return null;

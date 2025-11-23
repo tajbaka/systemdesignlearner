@@ -5,7 +5,7 @@ import type {
   PracticeDesignState,
   PracticeRunState,
 } from "./types";
-import type { PlacedNode, Edge, ComponentKind } from "@/app/components/types";
+import type { ComponentKind } from "@/app/components/types";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 
 const specFor = (kind: ComponentKind) => {

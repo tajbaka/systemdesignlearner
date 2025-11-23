@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { SCENARIOS } from "@/lib/scenarios";
 import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
 import PracticeStepClient from "./PracticeStepClient";

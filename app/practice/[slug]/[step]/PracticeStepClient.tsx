@@ -36,7 +36,7 @@ interface PracticeStepClientProps {
 export default function PracticeStepClient({
   scenario,
   step,
-  searchParams,
+  searchParams: _searchParams,
 }: PracticeStepClientProps) {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;

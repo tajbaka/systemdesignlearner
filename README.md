@@ -4,7 +4,7 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black.svg)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.0-61dafb.svg)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6.svg)](https://www.typescriptlang.org/) 
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6.svg)](https://www.typescriptlang.org/)
 [![Vitest](https://img.shields.io/badge/Vitest-3.x-6E9F18.svg)](https://vitest.dev/)
 
 ## ✨ What Makes It Special
