@@ -14,6 +14,15 @@ module.exports = {
   generateIndexSitemap: false,
   changefreq: "weekly",
   priority: 0.7,
+  // Add dynamic routes that aren't auto-discovered
+  additionalPaths: async (_config) => [
+    {
+      loc: "/play",
+      changefreq: "weekly",
+      priority: 0.9,
+      lastmod: new Date().toISOString(),
+    },
+  ],
   transform: async (config, path) => {
     // Custom priority for important pages
     let priority = 0.7;
