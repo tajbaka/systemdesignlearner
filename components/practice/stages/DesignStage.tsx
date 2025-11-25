@@ -12,6 +12,67 @@ import { track } from "@/lib/analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 
+// Safe deep clone that avoids JSON.stringify stack overflow on iOS
+function safeDeepClone<T>(obj: T): T {
+  if (obj === null || typeof obj !== "object") {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => safeDeepClone(item)) as T;
+  }
+
+  const cloned = {} as T;
+  for (const key of Object.keys(obj)) {
+    const value = (obj as Record<string, unknown>)[key];
+    // Skip functions and undefined values
+    if (typeof value === "function" || value === undefined) {
+      continue;
+    }
+    (cloned as Record<string, unknown>)[key] = safeDeepClone(value);
+  }
+  return cloned;
+}
+
+// Shallow comparison for nodes array (avoids JSON.stringify stack overflow)
+function nodesEqual(a: PlacedNode[], b: PlacedNode[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const nodeA = a[i];
+    const nodeB = b[i];
+    if (
+      nodeA.id !== nodeB.id ||
+      nodeA.x !== nodeB.x ||
+      nodeA.y !== nodeB.y ||
+      nodeA.replicas !== nodeB.replicas ||
+      nodeA.customLabel !== nodeB.customLabel ||
+      nodeA.spec.kind !== nodeB.spec.kind
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Shallow comparison for edges array (avoids JSON.stringify stack overflow)
+function edgesEqual(a: Edge[], b: Edge[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    const edgeA = a[i];
+    const edgeB = b[i];
+    if (
+      edgeA.id !== edgeB.id ||
+      edgeA.from !== edgeB.from ||
+      edgeA.to !== edgeB.to ||
+      edgeA.sourceHandle !== edgeB.sourceHandle ||
+      edgeA.targetHandle !== edgeB.targetHandle
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 type UpdateDesignFn = (updater: (prev: PracticeDesignState) => PracticeDesignState) => void;
 
 type DesignStageProps = {
@@ -226,8 +287,8 @@ export default function DesignStage({
     }
 
     const newState = {
-      nodes: JSON.parse(JSON.stringify(nodes)),
-      edges: JSON.parse(JSON.stringify(edges)),
+      nodes: safeDeepClone(nodes),
+      edges: safeDeepClone(edges),
     };
 
     // Remove any states after current index (when user makes new change after undo)
@@ -261,8 +322,8 @@ export default function DesignStage({
     isUndoRedoActionRef.current = true;
     updateDesign((prev) => ({
       ...prev,
-      nodes: JSON.parse(JSON.stringify(prevState.nodes)),
-      edges: JSON.parse(JSON.stringify(prevState.edges)),
+      nodes: safeDeepClone(prevState.nodes),
+      edges: safeDeepClone(prevState.edges),
     }));
 
     // Clear simulation state
@@ -291,8 +352,8 @@ export default function DesignStage({
     isUndoRedoActionRef.current = true;
     updateDesign((prev) => ({
       ...prev,
-      nodes: JSON.parse(JSON.stringify(nextState.nodes)),
-      edges: JSON.parse(JSON.stringify(nextState.edges)),
+      nodes: safeDeepClone(nextState.nodes),
+      edges: safeDeepClone(nextState.edges),
     }));
 
     // Clear simulation state
@@ -325,8 +386,8 @@ export default function DesignStage({
     );
 
     setClipboard({
-      nodes: JSON.parse(JSON.stringify(nodesToCopy)),
-      edges: JSON.parse(JSON.stringify(edgesToCopy)),
+      nodes: safeDeepClone(nodesToCopy),
+      edges: safeDeepClone(edgesToCopy),
     });
 
     track("practice_design_copy", { slug: session.state.slug, nodeCount: nodesToCopy.length });
@@ -628,8 +689,8 @@ export default function DesignStage({
       let didChange = false;
 
       updateDesign((prev) => {
-        // Check if nodes actually changed
-        if (JSON.stringify(prev.nodes) === JSON.stringify(nextNodes)) {
+        // Check if nodes actually changed (using safe comparison to avoid stack overflow on iOS)
+        if (nodesEqual(prev.nodes, nextNodes)) {
           return prev; // No change, don't update
         }
 
@@ -678,8 +739,8 @@ export default function DesignStage({
       let didChange = false;
 
       updateDesign((prev) => {
-        // Check if edges actually changed
-        if (JSON.stringify(prev.edges) === JSON.stringify(nextEdges)) {
+        // Check if edges actually changed (using safe comparison to avoid stack overflow on iOS)
+        if (edgesEqual(prev.edges, nextEdges)) {
           return prev; // No change, don't update
         }
 
