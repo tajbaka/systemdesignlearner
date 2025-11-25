@@ -330,7 +330,7 @@ export default function DesignStage({
     });
 
     track("practice_design_copy", { slug: session.state.slug, nodeCount: nodesToCopy.length });
-  }, [editingLocked, selectedNodeId, design.nodes, design.edges]);
+  }, [editingLocked, selectedNodeId, design.nodes, design.edges, session.state.slug]);
 
   // Paste function
   const handlePaste = useCallback(() => {
@@ -475,7 +475,15 @@ export default function DesignStage({
         };
       });
     }
-  }, [currentStep, requirements, design.nodes, design.edges, stepCount, updateDesign]);
+  }, [
+    currentStep,
+    requirements,
+    design.nodes,
+    design.edges,
+    stepCount,
+    updateDesign,
+    session.state.slug,
+  ]);
 
   const handleAdvanceManualStep = useCallback(() => {
     updateDesign((prev) => {
@@ -506,7 +514,7 @@ export default function DesignStage({
       slug: session.state.slug,
       step: currentStep?.id ?? "unknown",
     });
-  }, [design.guidedDismissed, updateDesign, currentStep?.id, editingLocked]);
+  }, [design.guidedDismissed, updateDesign, currentStep?.id, editingLocked, session.state.slug]);
 
   const addNode = useCallback(
     (kind: ComponentKind, position?: { x: number; y: number }) => {
@@ -792,7 +800,7 @@ export default function DesignStage({
 
       track("practice_design_node_renamed", { slug: session.state.slug, nodeId, newLabel });
     },
-    [editingLocked, updateDesign]
+    [editingLocked, updateDesign, session.state.slug]
   );
 
   const handleEdgeSelect = useCallback((edgeId: string | null) => {

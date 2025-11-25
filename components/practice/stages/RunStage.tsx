@@ -167,7 +167,7 @@ export default function RunStage({
       chaosMode: !prev.chaosMode,
     }));
     track("practice_run_chaos_toggled", { slug });
-  }, [locked, readOnly, run.isRunning, updateRun]);
+  }, [locked, readOnly, run.isRunning, updateRun, slug]);
 
   const handleRun = useCallback(async () => {
     if (locked || readOnly || run.isRunning) return;
@@ -365,6 +365,8 @@ export default function RunStage({
     run.isRunning,
     setStepScore,
     updateRun,
+    scenario,
+    slug,
   ]);
 
   // Expose handleRun globally so PracticeFlow can trigger it

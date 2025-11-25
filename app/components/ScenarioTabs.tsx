@@ -2,6 +2,13 @@
 import React, { useState } from "react";
 import type { Scenario } from "@/lib/scenarios";
 import { lintApi } from "@/lib/apiLint";
+import { COMPONENT_LIBRARY } from "./data";
+
+// Map kind to display label
+const kindToLabel = (kind: string): string => {
+  const component = COMPONENT_LIBRARY.find((c) => c.kind === kind);
+  return component?.label ?? kind;
+};
 
 export interface ScenarioTabsProps {
   scenario: Scenario;
@@ -55,7 +62,7 @@ export default function ScenarioTabs({ scenario }: ScenarioTabsProps) {
               <div key={i} className="flex items-center gap-2">
                 <span className="w-4 text-center text-zinc-500">{i + 1}.</span>
                 <span className={step.optional ? "text-zinc-500" : "text-zinc-300"}>
-                  {step.kind}
+                  {kindToLabel(step.kind)}
                   {step.optional && <span className="ml-1 text-zinc-500">(optional)</span>}
                 </span>
               </div>

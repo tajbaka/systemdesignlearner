@@ -534,7 +534,7 @@ export function PracticeSessionProvider({
       });
       track("practice_iterative_feedback_reset", { slug: state.slug, step: step || "all" });
     },
-    [setStateWithTimestamp]
+    [setStateWithTimestamp, state.slug]
   );
 
   const flushToStorage = useCallback(() => {
