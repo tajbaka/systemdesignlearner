@@ -139,6 +139,12 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
 
       recognition.onerror = (event) => {
         logger.error("Speech recognition error:", event.error);
+        // Ignore "aborted" errors - these are intentional cancellations
+        if (event.error === "aborted") {
+          cleanup();
+          return;
+        }
+
         if (event.error === "no-speech") {
           setError("No speech detected");
         } else if (event.error === "not-allowed") {
@@ -247,6 +253,9 @@ export function useWebSpeechStt(options: SttHookOptions): SttHookState {
 
   const cancel = useCallback(() => {
     if (!isRecording || !recognitionRef.current) return;
+
+    // Clear any errors when canceling intentionally
+    setError(null);
 
     try {
       // Use abort() to cancel without triggering final results

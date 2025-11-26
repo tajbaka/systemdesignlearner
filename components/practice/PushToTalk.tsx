@@ -158,7 +158,7 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
   }, [isRecording, onRecordingChange]);
 
   return (
-    <div className="flex flex-col items-end gap-2">
+    <div className="relative flex flex-col items-end gap-2">
       {!isRecording ? (
         // Single microphone button when not recording
         <div className="relative group">
@@ -243,15 +243,18 @@ export function PushToTalk({ onFinal, disabled, stepId, onRecordingChange }: Pus
         </div>
       )}
 
-      {isRecording && interimText && (
-        <div className="max-w-xs rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-2 text-xs text-zinc-300 shadow-lg">
-          {interimText}
+      {/* Error message - positioned absolutely above the record button */}
+      {error && (
+        <div className="absolute bottom-full right-0 mb-2 animate-in fade-in slide-in-from-bottom-1 duration-200">
+          <div className="w-32 rounded-lg border border-red-700/50 bg-red-950/80 backdrop-blur-sm px-3 py-2 text-xs text-red-200 shadow-lg">
+            {error}
+          </div>
         </div>
       )}
 
-      {error && (
-        <div className="max-w-xs rounded-lg border border-red-700/50 bg-red-950/50 px-3 py-2 text-xs text-red-200">
-          {error}
+      {isRecording && interimText && (
+        <div className="max-w-xs rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-2 text-xs text-zinc-300 shadow-lg">
+          {interimText}
         </div>
       )}
     </div>

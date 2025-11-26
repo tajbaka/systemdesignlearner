@@ -48,9 +48,9 @@ export default function PracticeStepClient({
   }, []);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-zinc-950">
+    <div className="flex h-full flex-col overflow-hidden bg-zinc-950">
       <PracticeSidebar />
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 min-h-0 overflow-hidden">
         <PracticeSessionProvider slug={scenario} initialStep={step}>
           <PracticeFlow />
         </PracticeSessionProvider>

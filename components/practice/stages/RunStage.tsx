@@ -367,8 +367,6 @@ export default function RunStage({
     setStepScore,
     slug,
     updateRun,
-    scenario,
-    slug,
   ]);
 
   // Expose handleRun globally so PracticeFlow can trigger it
