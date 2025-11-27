@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { PracticeStep } from "@/lib/practice/types";
 import type { FeedbackResult } from "@/lib/scoring/types";
@@ -91,7 +90,6 @@ const getPrevStep = (currentStep: PracticeStep): PracticeStep | null => {
 export function usePracticeNavigation(session: PracticeSessionValue, options: NavigationOptions) {
   const router = useRouter();
   const scenario = SCENARIOS.find((item) => item.id === session.state.slug) ?? SCENARIOS[0];
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const {
     verification,
     setVerification,
@@ -123,43 +121,10 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
       }, 50);
     };
 
-    // After completing sandbox (step 4), check if user needs to authenticate
-    if (session.currentStep === "sandbox") {
-      // If user has already authenticated, proceed normally
-      if (session.state.auth.isAuthed) {
-        advance();
-      }
-      // If user is signed in via Clerk but hasn't been marked as authenticated yet
-      // This handles the case where they signed in from navbar
-      else if (isSignedIn) {
-        session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
-        advance();
-      }
-      // Otherwise, advance to score step first, then show auth modal
-      // This ensures the user lands on the correct step after authentication
-      else {
-        // Close the feedback modal before showing auth modal
-        setScoringFeedback(null);
-
-        // Mark sandbox as complete before advancing
-        session.markStep("sandbox", true);
-
-        // Advance to score step
-        const config = STEP_CONFIGS[session.currentStep];
-        config?.onNext?.(session);
-
-        // CRITICAL: Flush synchronously to localStorage BEFORE opening auth modal
-        // This ensures the state is saved before Clerk redirects the page
-        session.flushToStorage();
-
-        // Navigate to score step via URL
-        const scoreUrl = `/practice/${session.state.slug}/score?auth_flow=true`;
-        router.push(scoreUrl);
-
-        // Show auth modal immediately after navigation
-        setShowAuthModal(true);
-      }
-      return;
+    // After completing sandbox (step 4), check if user is signed in via Clerk
+    // If so, mark them as authenticated before advancing
+    if (session.currentStep === "sandbox" && isSignedIn && !session.state.auth.isAuthed) {
+      session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
     }
 
     advance();
@@ -528,30 +493,9 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
     }
   };
 
-  const handleAuthModalAuthenticated = () => {
-    // Mark as authenticated first
-    session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
-    // Delay closing modal to ensure state update is processed
-    // This prevents race condition where modal closes before auth state propagates
-    setTimeout(() => {
-      setShowAuthModal(false);
-    }, 100);
-  };
-
-  const handleAuthModalClose = () => {
-    // Allow user to close the modal and return to sandbox
-    setShowAuthModal(false);
-    // Mark auth as skipped so they can try again later
-    session.setAuth((prev) => ({ ...prev, skipped: true }));
-  };
-
   return {
     handleNext,
     handleBack,
     proceedToNext,
-    showAuthModal,
-    setShowAuthModal,
-    handleAuthModalAuthenticated,
-    handleAuthModalClose,
   };
 }

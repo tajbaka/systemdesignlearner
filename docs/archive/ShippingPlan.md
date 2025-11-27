@@ -409,7 +409,9 @@ Copia codice
 {
   id: "url-shortener",
   title: "URL Shortener",
-  description: "Redirect within 100ms P95 at 5k RPS.",
+  description: "Design a scalable URL shortening service that converts long URLs into short, shareable links. The system should support a large number of users using the redirect service. Consider storage design, ensuring uniqueness, fault tolerance, and high-performance operation at large scale. Extra points for considering custom aliases, link expiration, and analytics.
+
+",
   category: "Caching",
   difficulty: "easy",
   requiredRps: 5000,

@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
+import { SCENARIOS } from "@/lib/scenarios";
 
 export function URLShortenerIntroClient() {
   const router = useRouter();
+  const scenario = SCENARIOS.find((s) => s.id === "url-shortener")!;
 
   const handleStartPractice = () => {
     track("practice_intro_start", {
@@ -35,7 +37,25 @@ export function URLShortenerIntroClient() {
             {/* Problem */}
             <div className="space-y-3">
               <p className="text-sm font-medium text-zinc-500 uppercase tracking-wide">Problem</p>
-              <h1 className="text-4xl font-bold text-white sm:text-5xl">URL Shortener</h1>
+              <h1 className="text-4xl font-bold text-white sm:text-5xl">{scenario.title}</h1>
+            </div>
+
+            {/* Metadata Badges */}
+            <div className="flex flex-wrap gap-2">
+              <span className="px-3 py-1 text-sm font-medium rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                {scenario.category}
+              </span>
+              <span
+                className={`px-3 py-1 text-sm font-medium rounded-md border ${
+                  scenario.difficulty === "easy"
+                    ? "bg-green-500/10 text-green-300 border-green-500/20"
+                    : scenario.difficulty === "medium"
+                      ? "bg-yellow-500/10 text-yellow-300 border-yellow-500/20"
+                      : "bg-red-500/10 text-red-300 border-red-500/20"
+                }`}
+              >
+                {scenario.difficulty}
+              </span>
             </div>
 
             {/* Description */}
@@ -44,18 +64,16 @@ export function URLShortenerIntroClient() {
                 Description
               </p>
               <p className="text-lg text-zinc-300 leading-relaxed sm:text-xl">
-                Design a scalable URL shortening service that converts long URLs into short,
-                shareable links. The system should support a large number of users using the
-                redirect service. Consider storage design, ensuring uniqueness, fault tolerance, and
-                high-performance operation at large scale. Extra points for considering custom
-                aliases, link expiration, and analytics.
+                {scenario.description}
               </p>
             </div>
           </div>
 
           {/* Start Practice Button - Right aligned */}
           <div className="flex justify-end items-center gap-4 pt-4">
-            <p className="text-sm text-zinc-500">15-20 minutes</p>
+            {scenario.estimatedTime && (
+              <p className="text-sm text-zinc-500">{scenario.estimatedTime}</p>
+            )}
             <Button
               size="lg"
               onClick={handleStartPractice}

@@ -11,6 +11,7 @@ import { getGradeDescription, getGradeColor, calculateCumulativeScore } from "@/
 import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import { useUser } from "@clerk/nextjs";
 import { IconLinkedIn, IconX } from "@/app/components/icons";
+import { AuthModal } from "@/components/practice/AuthModal";
 
 type ShareStatus = "idle" | "copied" | "error";
 
@@ -80,15 +81,39 @@ const buildSharePayload = (state: ReturnType<typeof usePracticeSession>["state"]
 
 export function ScoreShareStep() {
   const router = useRouter();
-  const { state, isReadOnly: _isReadOnly } = usePracticeSession();
+  const { state, isReadOnly: _isReadOnly, setAuth } = usePracticeSession();
   const { isSignedIn } = useUser();
   const lastResult = state.run.lastResult;
   const scores = state.scores;
   const score = lastResult?.scoreBreakdown;
   const [shareStatus, setShareStatus] = useState<ShareStatus>("idle");
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Check if user is authenticated
   const isAuthenticated = state.auth.isAuthed || isSignedIn;
+
+  // Show auth modal on mount if not authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+    }
+  }, [isAuthenticated]);
+
+  const handleAuthModalAuthenticated = () => {
+    // Mark as authenticated first
+    setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
+    // Delay closing modal to ensure state update is processed
+    setTimeout(() => {
+      setShowAuthModal(false);
+    }, 100);
+  };
+
+  const handleAuthModalClose = () => {
+    // Allow user to close the modal and return to sandbox
+    setShowAuthModal(false);
+    // Mark auth as skipped so they can try again later
+    setAuth((prev) => ({ ...prev, skipped: true }));
+  };
 
   const cumulativeScore: CumulativeScore | null = useMemo(() => {
     if (!scores?.functional || !scores?.nonFunctional || !scores?.api) {
@@ -226,30 +251,38 @@ export function ScoreShareStep() {
 
   const hints = score?.hints ?? [];
 
-  // Show authentication required message if not authenticated
+  // Show authentication modal if not authenticated
   if (!isAuthenticated) {
     return (
-      <div className="space-y-6 pb-40 sm:pb-8 px-4 lg:pl-20 lg:pr-4">
-        <section className="space-y-6 rounded-3xl border border-blue-800 bg-blue-900/20 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
-          <div className="text-center space-y-4">
-            <div className="text-6xl">🔒</div>
-            <h3 className="text-xl font-semibold text-blue-200">Authentication Required</h3>
-            <p className="text-sm text-blue-100">
-              You need to sign in to view your final score and share your design. Your progress is
-              saved and will be available after authentication.
-            </p>
-            <div className="flex gap-2 justify-center">
-              <button
-                type="button"
-                onClick={() => router.push(`/practice/${state.slug}/sandbox`)}
-                className="inline-flex h-10 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/10 px-4 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-              >
-                Back to Sandbox
-              </button>
+      <>
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={handleAuthModalClose}
+          onAuthenticated={handleAuthModalAuthenticated}
+          slug={state.slug}
+        />
+        <div className="space-y-6 pb-40 sm:pb-8 px-4 lg:pl-20 lg:pr-4">
+          <section className="space-y-6 rounded-3xl border border-blue-800 bg-blue-900/20 p-4 sm:p-6 lg:mx-auto lg:max-w-3xl">
+            <div className="text-center space-y-4">
+              <div className="text-6xl">🔒</div>
+              <h3 className="text-xl font-semibold text-blue-200">Authentication Required</h3>
+              <p className="text-sm text-blue-100">
+                You need to sign in to view your final score and share your design. Your progress is
+                saved and will be available after authentication.
+              </p>
+              <div className="flex gap-2 justify-center pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAuthModal(true)}
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 px-6 text-sm font-semibold text-blue-100 transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                >
+                  Sign in
+                </button>
+              </div>
             </div>
-          </div>
-        </section>
-      </div>
+          </section>
+        </div>
+      </>
     );
   }
 

@@ -188,7 +188,9 @@ export default function ExamplesPage() {
                       asChild
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white"
                     >
-                      <Link href={example.href}>Start Practice</Link>
+                      <Link style={{ cursor: "pointer" }} href={example.href}>
+                        Start Practice
+                      </Link>
                     </Button>
                   )}
                 </div>
