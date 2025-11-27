@@ -12,60 +12,60 @@
 
 ### Key Traction Metrics
 
-| Metric                      | Nov 27, 2025 | Target (Day 90) | Target (Day 180) | Status              |
-|-----------------------------|--------------|-----------------|------------------|---------------------|
-| Weekly Active Users (Peak)  | 80           | 150             | 500              | 53% to Day 90       |
-| Unique Visitors (30d)       | 297          | 500             | 2,000            | 59% to Day 90       |
-| Practice Sessions (30d)     | 675          | 1,000           | 5,000            | **67% to Day 90**   |
-| Simulations Completed (30d) | 240          | 400             | 2,000            | 60% to Day 90       |
-| Organic Shares (30d)        | 17           | 50              | 200              | 34% to Day 90       |
-| Start-to-Score Conversion   | 13%          | 20%             | 30%              | 65% to Day 90       |
-| Email Signups               | TBD          | 100             | 500              | —                   |
+| Metric                      | Nov 27, 2025 | Target (Day 90) | Target (Day 180) | Status            |
+| --------------------------- | ------------ | --------------- | ---------------- | ----------------- |
+| Weekly Active Users (Peak)  | 80           | 150             | 500              | 53% to Day 90     |
+| Unique Visitors (30d)       | 297          | 500             | 2,000            | 59% to Day 90     |
+| Practice Sessions (30d)     | 675          | 1,000           | 5,000            | **67% to Day 90** |
+| Simulations Completed (30d) | 240          | 400             | 2,000            | 60% to Day 90     |
+| Organic Shares (30d)        | 17           | 50              | 200              | 34% to Day 90     |
+| Start-to-Score Conversion   | 13%          | 20%             | 30%              | 65% to Day 90     |
+| Email Signups               | TBD          | 100             | 500              | —                 |
 
 ### Growth Trajectory (WAU by Week)
 
-| Week                | WAU  | WoW Change | Cumulative Growth |
-|---------------------|------|------------|-------------------|
-| Oct 5-11 (Baseline) | 7    | —          | —                 |
-| Oct 12-18           | 31   | +343%      | +343%             |
-| Oct 19-25           | 24   | -23%       | +243%             |
-| Oct 26-Nov 1        | 41   | +71%       | +486%             |
-| Nov 2-8             | 31   | -24%       | +343%             |
-| Nov 9-15 (Peak)     | 80   | +158%      | **+1043%**        |
-| Nov 16-22           | 43   | -46%       | +514%             |
-| Nov 23-27 (partial) | 39   | -9%        | +457%             |
+| Week                | WAU | WoW Change | Cumulative Growth |
+| ------------------- | --- | ---------- | ----------------- |
+| Oct 5-11 (Baseline) | 7   | —          | —                 |
+| Oct 12-18           | 31  | +343%      | +343%             |
+| Oct 19-25           | 24  | -23%       | +243%             |
+| Oct 26-Nov 1        | 41  | +71%       | +486%             |
+| Nov 2-8             | 31  | -24%       | +343%             |
+| Nov 9-15 (Peak)     | 80  | +158%      | **+1043%**        |
+| Nov 16-22           | 43  | -46%       | +514%             |
+| Nov 23-27 (partial) | 39  | -9%        | +457%             |
 
 ### Traffic Sources (Oct 28 - Nov 27, 2025)
 
-| Source            | Users | % of Total | Target (Day 90) | Target (Day 180) |
-|-------------------|-------|------------|-----------------|------------------|
-| Direct            | 147   | 50%        | 200             | 800              |
-| Google Search     | 23    | 8%         | 75              | 400              |
-| ChatGPT           | 12    | 4%         | 30              | 150              |
-| Bing              | 5     | 2%         | 15              | 75               |
-| LinkedIn          | 3     | 1%         | 25              | 150              |
-| Facebook          | 3     | 1%         | 15              | 75               |
-| Instagram         | 2     | <1%        | 10              | 50               |
-| MS Copilot        | 2     | <1%        | 15              | 75               |
-| Other             | 3     | 1%         | 15              | 75               |
+| Source        | Users | % of Total | Target (Day 90) | Target (Day 180) |
+| ------------- | ----- | ---------- | --------------- | ---------------- |
+| Direct        | 147   | 50%        | 200             | 800              |
+| Google Search | 23    | 8%         | 75              | 400              |
+| ChatGPT       | 12    | 4%         | 30              | 150              |
+| Bing          | 5     | 2%         | 15              | 75               |
+| LinkedIn      | 3     | 1%         | 25              | 150              |
+| Facebook      | 3     | 1%         | 15              | 75               |
+| Instagram     | 2     | <1%        | 10              | 50               |
+| MS Copilot    | 2     | <1%        | 15              | 75               |
+| Other         | 3     | 1%         | 15              | 75               |
 
 ### Product-Market Fit Signals
 
-| Signal                   | Nov 27, 2025                        | Status |
-|--------------------------|-------------------------------------|--------|
-| High intent              | 675 practice sessions started       | ✅     |
-| Engaged users            | 240 simulations completed (36%)     | ✅     |
-| Organic virality         | 17 shares without prompting         | ✅     |
-| AI-driven discovery      | ChatGPT/Copilot referrals (6%)      | ✅     |
-| Funnel first-step        | 10% conversion (needs optimization) | ⚠️     |
+| Signal              | Nov 27, 2025                        | Status |
+| ------------------- | ----------------------------------- | ------ |
+| High intent         | 675 practice sessions started       | ✅     |
+| Engaged users       | 240 simulations completed (36%)     | ✅     |
+| Organic virality    | 17 shares without prompting         | ✅     |
+| AI-driven discovery | ChatGPT/Copilot referrals (6%)      | ✅     |
+| Funnel first-step   | 10% conversion (needs optimization) | ⚠️     |
 
 ### Current Phase Status
 
-| Phase                    | Status         | Dates              |
-|--------------------------|----------------|--------------------|
-| Phase 1 (Validation)     | ✅ COMPLETE    | Oct 11 - Nov 8     |
-| Phase 2 (Retention)      | 🔄 IN PROGRESS | Nov 9 - Dec 8      |
-| Phase 3 (Monetization)   | ⏳ PENDING     | Dec 9 - Jan 9      |
+| Phase                  | Status         | Dates          |
+| ---------------------- | -------------- | -------------- |
+| Phase 1 (Validation)   | ✅ COMPLETE    | Oct 11 - Nov 8 |
+| Phase 2 (Retention)    | 🔄 IN PROGRESS | Nov 9 - Dec 8  |
+| Phase 3 (Monetization) | ⏳ PENDING     | Dec 9 - Jan 9  |
 
 ---
 
@@ -132,7 +132,7 @@ Confirm that developers _want_ to practice system design visually.
 **Data Period:** Oct 28 - Nov 27, 2025 (30 days)
 
 | Metric          | PostHog Event              | Phase 1 Target | Nov 27 Actual | Day 90 Target | Day 180 Target |
-|-----------------|----------------------------|----------------|---------------|---------------|----------------|
+| --------------- | -------------------------- | -------------- | ------------- | ------------- | -------------- |
 | Unique visitors | `$pageview` (unique users) | 500            | **297**       | 500           | 2,000          |
 | Practice starts | `practice_start`           | 100            | **675**       | 1,000         | 5,000          |
 | Email signups   | `email_capture_success`    | 30 (6%)        | TBD           | 100           | 500            |
@@ -142,32 +142,32 @@ Confirm that developers _want_ to practice system design visually.
 
 ### Daily Active Users (DAU) - Oct 28 - Nov 27, 2025
 
-| Metric      | Value           | Day 90 Target | Day 180 Target |
-|-------------|-----------------|---------------|----------------|
-| Average DAU | 10 users        | 20            | 75             |
-| Peak DAU    | 22 (Nov 11)     | 40            | 150            |
-| Low DAU     | 2 (Nov 1)       | 5             | 20             |
+| Metric      | Value       | Day 90 Target | Day 180 Target |
+| ----------- | ----------- | ------------- | -------------- |
+| Average DAU | 10 users    | 20            | 75             |
+| Peak DAU    | 22 (Nov 11) | 40            | 150            |
+| Low DAU     | 2 (Nov 1)   | 5             | 20             |
 
 **Trend:** Consistent engagement with spikes correlating to content/social posts.
 
 ### Funnel Analysis (Oct 28 - Nov 27, 2025)
 
-| Step                 | Count | Conversion | Day 90 Target | Day 180 Target |
-|----------------------|-------|------------|---------------|----------------|
-| practice_start       | 675   | 100%       | 100%          | 100%           |
-| functional reqs      | 68    | 10%        | 25%           | 40%            |
-| nonFunctional reqs   | 62    | 9%         | 22%           | 35%            |
-| api definition       | 53    | 8%         | 20%           | 32%            |
-| design sandbox       | 98    | 15%        | 25%           | 40%            |
-| score viewed         | 89    | 13%        | 20%           | 35%            |
-| shared results       | 17    | 2.5%       | 5%            | 10%            |
+| Step               | Count | Conversion | Day 90 Target | Day 180 Target |
+| ------------------ | ----- | ---------- | ------------- | -------------- |
+| practice_start     | 675   | 100%       | 100%          | 100%           |
+| functional reqs    | 68    | 10%        | 25%           | 40%            |
+| nonFunctional reqs | 62    | 9%         | 22%           | 35%            |
+| api definition     | 53    | 8%         | 20%           | 32%            |
+| design sandbox     | 98    | 15%        | 25%           | 40%            |
+| score viewed       | 89    | 13%        | 20%           | 35%            |
+| shared results     | 17    | 2.5%       | 5%            | 10%            |
 
 **Key Insight:** Major drop-off at first step (100% → 10%). Priority: Improve onboarding flow.
 
 ### Review Checkpoint Results (Nov 27, 2025)
 
 | Check                 | Threshold          | Nov 27 Result                   | Status |
-|-----------------------|--------------------|---------------------------------|--------|
+| --------------------- | ------------------ | ------------------------------- | ------ |
 | Visitors              | >200               | 297 unique visitors             | ✅     |
 | Practice starts       | >50                | 675 practice starts             | ✅     |
 | Organic growth        | Any positive trend | 10x WAU in 8 weeks              | ✅     |
@@ -206,7 +206,7 @@ Check if users come back and finish multiple challenges.
 ### Success Metrics
 
 | Metric                    | Nov 27 Actual | Phase 2 Target | Day 90 Target | Day 180 Target |
-|---------------------------|---------------|----------------|---------------|----------------|
+| ------------------------- | ------------- | -------------- | ------------- | -------------- |
 | Returning within 48h      | TBD           | ≥25%           | ≥30%          | ≥40%           |
 | Share pass card           | 2.5%          | ≥10%           | ≥15%          | ≥20%           |
 | User interviews completed | 0             | ≥3             | ≥10           | ≥25            |
@@ -253,12 +253,12 @@ Test willingness to pay — _do users value the upgrade?_
 
 ### Success Metrics
 
-| Metric                    | Nov 27 Actual | Phase 3 Target | Day 90 Target | Day 180 Target |
-|---------------------------|---------------|----------------|---------------|----------------|
-| Free→Pro conversion       | 0% (free)     | ≥3%            | ≥5%           | ≥8%            |
-| Revenue (30d)             | $0            | $500           | $1,000        | $5,000         |
-| Paying customers          | 0             | 17             | 35            | 170            |
-| Public mentions           | TBD           | ≥5             | ≥15           | ≥50            |
+| Metric              | Nov 27 Actual | Phase 3 Target | Day 90 Target | Day 180 Target |
+| ------------------- | ------------- | -------------- | ------------- | -------------- |
+| Free→Pro conversion | 0% (free)     | ≥3%            | ≥5%           | ≥8%            |
+| Revenue (30d)       | $0            | $500           | $1,000        | $5,000         |
+| Paying customers    | 0             | 17             | 35            | 170            |
+| Public mentions     | TBD           | ≥5             | ≥15           | ≥50            |
 
 ### Review Checkpoint (Jan 9, 2026)
 
@@ -269,37 +269,37 @@ If conversion <1% but traffic healthy → pivot to mentor/bootcamp B2B or AI fee
 ## ⚖️ Decision Framework
 
 | Evidence                                | Interpretation  | Next Step                           |
-|----------------------------------------|-----------------|-------------------------------------|
+| --------------------------------------- | --------------- | ----------------------------------- |
 | Strong activation + retention + payment | Business ✅     | Expand scenarios, add Supabase Auth |
 | Good activation, poor conversion        | Interest only   | Add more value before paywall       |
 | Weak activation (<3%)                   | No clear demand | Pivot or pause idea                 |
 
 ### Current Assessment (Nov 27, 2025)
 
-| Criteria                     | Target   | Nov 27 Actual        | Day 90 Target | Day 180 Target | Status              |
-|------------------------------|----------|----------------------|---------------|----------------|---------------------|
-| Activation (practice starts) | 100      | 675                  | 1,000         | 5,000          | ✅ **6.75x target** |
-| Engagement (completions)     | —        | 240 (36%)            | 400 (40%)     | 2,000 (40%)    | ✅ Strong           |
-| Virality (shares)            | 10       | 17                   | 50            | 200            | ✅ **170% target**  |
-| Growth (WAU peak)            | —        | 80 (10x in 8 weeks)  | 150           | 500            | ✅ Exceptional      |
-| Retention (48h return)       | 25%      | TBD                  | 30%           | 40%            | ⏳ Phase 2          |
-| Conversion (free→paid)       | 3%       | 0% (free product)    | 5%            | 8%             | ⏳ Phase 3          |
-| Revenue                      | $500     | $0                   | $1,000        | $5,000         | ⏳ Phase 3          |
+| Criteria                     | Target | Nov 27 Actual       | Day 90 Target | Day 180 Target | Status              |
+| ---------------------------- | ------ | ------------------- | ------------- | -------------- | ------------------- |
+| Activation (practice starts) | 100    | 675                 | 1,000         | 5,000          | ✅ **6.75x target** |
+| Engagement (completions)     | —      | 240 (36%)           | 400 (40%)     | 2,000 (40%)    | ✅ Strong           |
+| Virality (shares)            | 10     | 17                  | 50            | 200            | ✅ **170% target**  |
+| Growth (WAU peak)            | —      | 80 (10x in 8 weeks) | 150           | 500            | ✅ Exceptional      |
+| Retention (48h return)       | 25%    | TBD                 | 30%           | 40%            | ⏳ Phase 2          |
+| Conversion (free→paid)       | 3%     | 0% (free product)   | 5%            | 8%             | ⏳ Phase 3          |
+| Revenue                      | $500   | $0                  | $1,000        | $5,000         | ⏳ Phase 3          |
 
 **Current Interpretation (Nov 27, 2025):** Strong activation signals. Product is 100% free with Clerk auth. Proceed with confidence to retention & monetization phases.
 
 ### Investor-Ready Metrics (Nov 27, 2025)
 
-| Metric                      | Nov 27 Value   | Day 90 Target | Day 180 Target | Benchmark            |
-|-----------------------------|----------------|---------------|----------------|----------------------|
-| Practice sessions (30d)     | 675            | 1,000         | 5,000          | High intent          |
-| Completion rate             | 36%            | 40%           | 45%            | Above avg for tools  |
-| Share rate                  | 2.5%           | 5%            | 10%            | Viral potential      |
-| CAC                         | $0             | $0            | <$5            | Organic only         |
-| WAU growth                  | 10x in 8 weeks | 15x           | 50x            | Strong trajectory    |
-| Traffic diversification     | 6+ channels    | 8+ channels   | 10+ channels   | Healthy mix          |
-| Revenue                     | $0             | $1,000        | $5,000         | Pre-monetization     |
-| Paying customers            | 0              | 35            | 170            | Pre-monetization     |
+| Metric                  | Nov 27 Value   | Day 90 Target | Day 180 Target | Benchmark           |
+| ----------------------- | -------------- | ------------- | -------------- | ------------------- |
+| Practice sessions (30d) | 675            | 1,000         | 5,000          | High intent         |
+| Completion rate         | 36%            | 40%           | 45%            | Above avg for tools |
+| Share rate              | 2.5%           | 5%            | 10%            | Viral potential     |
+| CAC                     | $0             | $0            | <$5            | Organic only        |
+| WAU growth              | 10x in 8 weeks | 15x           | 50x            | Strong trajectory   |
+| Traffic diversification | 6+ channels    | 8+ channels   | 10+ channels   | Healthy mix         |
+| Revenue                 | $0             | $1,000        | $5,000         | Pre-monetization    |
+| Paying customers        | 0              | 35            | 170            | Pre-monetization    |
 
 ---
 
@@ -338,15 +338,16 @@ Otherwise → proceed to Supabase Auth + 5 more scenarios → **v1 launch.**
 
 ### Progress Check (Day ~47 of 90 — Nov 27, 2025)
 
-| Kill Criteria      | Threshold | Nov 27 Actual          | Day 90 Target | Status              |
-|--------------------|-----------|------------------------|---------------|---------------------|
-| Total signups      | ≥50       | 297 unique visitors    | 500           | ✅ **5.9x threshold** |
-| Clerk signups      | ≥50       | TBD                    | 100           | ⏳ Measuring        |
-| Returning users    | ≥25%      | TBD                    | ≥30%          | ⏳ Phase 2          |
-| Upgrade conversion | ≥3%       | 0% (free product)      | ≥5%           | ⏳ Phase 3          |
-| Revenue            | —         | $0                     | $1,000        | ⏳ Phase 3          |
+| Kill Criteria      | Threshold | Nov 27 Actual       | Day 90 Target | Status                |
+| ------------------ | --------- | ------------------- | ------------- | --------------------- |
+| Total signups      | ≥50       | 297 unique visitors | 500           | ✅ **5.9x threshold** |
+| Clerk signups      | ≥50       | TBD                 | 100           | ⏳ Measuring          |
+| Returning users    | ≥25%      | TBD                 | ≥30%          | ⏳ Phase 2            |
+| Upgrade conversion | ≥3%       | 0% (free product)   | ≥5%           | ⏳ Phase 3            |
+| Revenue            | —         | $0                  | $1,000        | ⏳ Phase 3            |
 
 **Current State (Nov 27, 2025):**
+
 - Product is 100% free
 - Auth via Clerk (free signups only)
 - No paying customers yet
@@ -356,19 +357,20 @@ Otherwise → proceed to Supabase Auth + 5 more scenarios → **v1 launch.**
 ### Recommendation (Nov 27, 2025)
 
 Based on current data:
+
 - ✅ **COMMIT** — Strong product-market fit signals
 - Focus on: Improving funnel conversion (10% → 25% at first step)
 - Next milestone: Launch monetization experiment in Phase 3 (Dec 9, 2025)
 
 ### Milestones Timeline
 
-| Milestone                  | Date           | Status         |
-|----------------------------|----------------|----------------|
-| Phase 1 Complete           | Nov 8, 2025    | ✅ DONE        |
-| Phase 2 Complete           | Dec 8, 2025    | 🔄 IN PROGRESS |
-| Monetization Launch        | Dec 9, 2025    | ⏳ PENDING     |
-| Day 90 Decision            | Jan 9, 2026    | ⏳ PENDING     |
-| Day 180 Review             | Apr 9, 2026    | ⏳ PENDING     |
+| Milestone           | Date        | Status         |
+| ------------------- | ----------- | -------------- |
+| Phase 1 Complete    | Nov 8, 2025 | ✅ DONE        |
+| Phase 2 Complete    | Dec 8, 2025 | 🔄 IN PROGRESS |
+| Monetization Launch | Dec 9, 2025 | ⏳ PENDING     |
+| Day 90 Decision     | Jan 9, 2026 | ⏳ PENDING     |
+| Day 180 Review      | Apr 9, 2026 | ⏳ PENDING     |
 
 ---
 
