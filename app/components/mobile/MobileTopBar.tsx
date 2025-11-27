@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import type { Scenario } from "@/lib/scenarios";
 
 interface MobileTopBarProps {
@@ -7,7 +7,7 @@ interface MobileTopBarProps {
   isReadOnly: boolean;
   selectedNode: string | null;
   selectedScenario?: Scenario;
-  onAddComponent: () => void;
+  onAddComponent?: () => void;
   onResetView?: () => void;
   onShare?: () => void;
   onFork?: () => void;
@@ -16,7 +16,7 @@ interface MobileTopBarProps {
 }
 
 export default function MobileTopBar({
-  componentCount: _componentCount,
+  componentCount,
   isReadOnly,
   selectedNode: _selectedNode,
   selectedScenario,
@@ -27,33 +27,53 @@ export default function MobileTopBar({
   canDelete = false,
   onDelete,
 }: MobileTopBarProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const toggleExpand = () => {
+    setIsExpanded(!isExpanded);
+    if ("vibrate" in navigator) navigator.vibrate(30);
+  };
+
   return (
     <div
-      id="mobile-top-bar"
-      className="sticky top-0 z-50 flex-shrink-0 px-3 py-2 bg-zinc-900/90 border-b border-white/10 backdrop-blur-sm lg:hidden"
+      id="mobile-bottom-bar"
+      className="z-50 bg-zinc-900 border-t-2 border-white/30 absolute bottom-0 left-0 right-0 flex flex-col-reverse"
     >
-      <div className="flex items-center justify-center md:justify-between gap-2">
-        {/* Left: Title + Count */}
-        <div className="flex md:hidden flex-col min-w-0 flex-1">
-          <h1 className="text-sm font-semibold text-zinc-100 truncate">
-            {selectedScenario?.title || "System Designer"}
-          </h1>
-          <p className="text-xs text-zinc-400">
-            {_componentCount} component{_componentCount !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <div className="hidden md:flex flex-col min-w-0 flex-1">
-          <h1 className="text-base font-semibold text-zinc-100 truncate">System Designer</h1>
-          <p className="text-xs text-zinc-400">
-            {_componentCount} component{_componentCount !== 1 ? "s" : ""}
-          </p>
-        </div>
-        <div className="hidden md:flex flex-1" aria-hidden="true" />
+      {/* Collapsed Header Bar */}
+      <div className="px-3 py-3 min-h-[64px] flex items-center">
+        <div className="flex items-center justify-between gap-2">
+          {/* Left: Title + Expand Button */}
+          <button
+            onClick={toggleExpand}
+            className="flex items-center gap-2 min-w-0 flex-1 text-left touch-manipulation"
+          >
+            <div className="flex flex-col min-w-0 flex-1">
+              <h1 className="text-sm font-semibold text-zinc-100 truncate">
+                {selectedScenario?.title}
+              </h1>
+              <p className="text-xs text-zinc-400">
+                {componentCount} component{componentCount !== 1 ? "s" : ""}
+              </p>
+            </div>
+            <svg
+              className={`w-5 h-5 text-zinc-400 transition-transform flex-shrink-0 ${
+                isExpanded ? "" : "rotate-180"
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </button>
 
-        {/* Right: Action Buttons */}
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {/* Left buttons (centered on mobile) */}
-          <div className="flex flex-wrap items-center justify-center gap-2 flex-1 md:flex-none">
+          {/* Right: Action Buttons */}
+          <div className="flex items-center gap-2 flex-shrink-0">
             {/* Delete Button */}
             {onDelete && (
               <button
@@ -63,16 +83,11 @@ export default function MobileTopBar({
                   if ("vibrate" in navigator) navigator.vibrate(30);
                 }}
                 disabled={isReadOnly || !canDelete}
-                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-red-500/15 border border-red-400/40 text-red-200 flex items-center justify-center hover:bg-red-500/25 transition touch-manipulation disabled:opacity-40"
+                className="w-9 h-9 rounded-full bg-red-500/15 border border-red-400/40 text-red-200 flex items-center justify-center hover:bg-red-500/25 transition touch-manipulation disabled:opacity-40"
                 aria-label="Delete selected"
                 title="Delete selected"
               >
-                <svg
-                  className="w-4 h-4 md:w-5 md:h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -90,16 +105,11 @@ export default function MobileTopBar({
                   onResetView();
                   if ("vibrate" in navigator) navigator.vibrate(50);
                 }}
-                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/10 border border-white/15 text-zinc-300 flex items-center justify-center hover:bg-white/20 transition touch-manipulation"
+                className="w-9 h-9 rounded-full bg-white/10 border border-white/15 text-zinc-300 flex items-center justify-center hover:bg-white/20 transition touch-manipulation"
                 aria-label="Reset view"
                 title="Reset view"
               >
-                <svg
-                  className="w-4 h-4 md:w-5 md:h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -117,16 +127,11 @@ export default function MobileTopBar({
                   onShare();
                   if ("vibrate" in navigator) navigator.vibrate(50);
                 }}
-                className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-white/10 border border-white/15 text-zinc-300 flex items-center justify-center hover:bg-white/20 transition touch-manipulation"
+                className="w-9 h-9 rounded-full bg-white/10 border border-white/15 text-zinc-300 flex items-center justify-center hover:bg-white/20 transition touch-manipulation"
                 aria-label="Share design"
                 title="Share design"
               >
-                <svg
-                  className="w-4 h-4 md:w-5 md:h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -144,11 +149,11 @@ export default function MobileTopBar({
                   onFork();
                   if ("vibrate" in navigator) navigator.vibrate(50);
                 }}
-                className="w-11 h-11 rounded-full bg-emerald-400/10 border border-emerald-400/40 text-emerald-300 flex items-center justify-center hover:bg-emerald-400/20 transition touch-manipulation"
+                className="w-9 h-9 rounded-full bg-emerald-400/10 border border-emerald-400/40 text-emerald-300 flex items-center justify-center hover:bg-emerald-400/20 transition touch-manipulation"
                 aria-label="Fork design"
                 title="Fork design"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -158,33 +163,81 @@ export default function MobileTopBar({
                 </svg>
               </button>
             )}
-          </div>
 
-          {/* Right-aligned Add Component Button */}
-          <div className="flex-shrink-0 ml-auto">
-            <button
-              onClick={onAddComponent}
-              disabled={isReadOnly}
-              className="w-10 h-10 md:w-11 md:h-11 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 flex items-center justify-center hover:bg-blue-500/30 transition touch-manipulation disabled:opacity-40"
-              aria-label="Add component"
-              title="Add component"
-            >
-              <svg
-                className="w-5 h-5 md:w-6 md:h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            {/* Add Component Button */}
+            {onAddComponent && !isReadOnly && (
+              <button
+                onClick={onAddComponent}
+                className="w-9 h-9 rounded-full bg-blue-500/20 border border-blue-400/40 text-blue-300 flex items-center justify-center hover:bg-blue-500/30 transition touch-manipulation"
+                aria-label="Add component"
+                title="Add component"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-            </button>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
+      </div>
+
+      {/* Expandable Content */}
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isExpanded ? "max-h-[70vh]" : "max-h-0"
+        }`}
+      >
+        {selectedScenario && (
+          <div className="px-4 pt-4 border-b border-white/10 overflow-y-auto max-h-[calc(70vh-4rem)]">
+            <div className="flex flex-col gap-4 pb-4">
+              {/* Metadata */}
+              <div className="flex flex-wrap gap-2">
+                <span className="px-2 py-1 text-xs font-medium rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                  {selectedScenario.category}
+                </span>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-md border ${
+                    selectedScenario.difficulty === "easy"
+                      ? "bg-green-500/10 text-green-300 border-green-500/20"
+                      : selectedScenario.difficulty === "medium"
+                        ? "bg-yellow-500/10 text-yellow-300 border-yellow-500/20"
+                        : "bg-red-500/10 text-red-300 border-red-500/20"
+                  }`}
+                >
+                  {selectedScenario.difficulty}
+                </span>
+              </div>
+
+              {/* Description */}
+              <div className="flex flex-col gap-2">
+                <h2 className="text-sm font-semibold text-zinc-300">Description</h2>
+                <p className="text-sm text-zinc-400 leading-relaxed">
+                  {selectedScenario.description}
+                </p>
+              </div>
+
+              {/* Hints if available */}
+              {selectedScenario.hints && selectedScenario.hints.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <h2 className="text-sm font-semibold text-zinc-300">Hints</h2>
+                  <ul className="flex flex-col gap-1.5 text-sm text-zinc-400">
+                    {selectedScenario.hints.map((hint, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-blue-400 mt-0.5">💡</span>
+                        <span>{hint}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

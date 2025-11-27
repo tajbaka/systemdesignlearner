@@ -2,23 +2,15 @@
 import React, { ReactNode } from "react";
 
 interface MobileLayoutProps {
-  topBar: ReactNode;
   canvas: ReactNode;
-  bottomPanel: ReactNode;
-  addSheet: ReactNode;
+  bottomBar: ReactNode;
 }
 
-export default function MobileLayout({ topBar, canvas, bottomPanel, addSheet }: MobileLayoutProps) {
+export default function MobileLayout({ bottomBar, canvas }: MobileLayoutProps) {
   return (
-    <div className="w-full h-screen flex flex-col bg-zinc-950 overflow-hidden lg:hidden">
-      {topBar}
-      {canvas}
-
-      {/* Bottom Panel - Collapsible */}
-      {bottomPanel}
-
-      {/* Add Component Bottom Sheet */}
-      {addSheet}
+    <div className="w-full h-screen flex flex-col bg-zinc-950 lg:hidden">
+      <div className="flex-1 overflow-hidden">{canvas}</div>
+      <div className="flex-shrink-0 z-100">{bottomBar}</div>
     </div>
   );
 }

@@ -1,10 +1,8 @@
 import { Metadata } from "next";
 import { decodeDesign } from "@/lib/shareLink";
+import { getBaseUrl } from "@/lib/utils";
+import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/lib/constants/ogImages";
 import PlayPageClient from "./PlayPageClient";
-
-const SANDBOX_IMAGE_URLS = {
-  "url-shortener": "/desktop-url-shortener-practice.gif",
-} as const;
 
 type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -30,6 +28,7 @@ type SharePayload = {
   }>;
 };
 
+// cannot do this in layout as we dont have access to the share param
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const search = await searchParams;
   const shareParam = search?.s as string | undefined;
@@ -54,8 +53,18 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     }
   }
 
-  // Get the appropriate image URL based on scenario
-  const ogImage = SANDBOX_IMAGE_URLS[scenarioId as keyof typeof SANDBOX_IMAGE_URLS];
+  // Get absolute URL for OG image (required for social media)
+  // Check if scenarioId contains any of the scenario identifiers
+  let relativeImagePath: string | undefined;
+  for (const validSlug of Object.values(VALID_SLUGS)) {
+    if (scenarioId.includes(validSlug)) {
+      relativeImagePath = PRACTICE_IMAGE_URLS[validSlug as keyof typeof PRACTICE_IMAGE_URLS];
+      break;
+    }
+  }
+
+  const baseUrl = getBaseUrl();
+  const ogImage = relativeImagePath ? `${baseUrl}${relativeImagePath}` : `${baseUrl}/og-image.png`;
 
   return {
     title: shareParam

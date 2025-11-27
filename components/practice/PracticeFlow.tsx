@@ -8,7 +8,6 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { OnboardingProvider, useOnboarding } from "@/components/practice/PracticeOnboarding";
 import { OnboardingTooltip } from "@/components/practice/OnboardingTooltip";
 import { useUser } from "@clerk/nextjs";
-import { AuthModal } from "@/components/practice/AuthModal";
 import { PRACTICE_STEPS } from "@/lib/practice/types";
 import { STEP_CONFIGS, getHelperText, completeStep } from "@/lib/practice/step-configs";
 import { usePracticeScoring } from "@/hooks/usePracticeScoring";
@@ -114,14 +113,7 @@ function PracticeFlowInner() {
     useSandboxEvaluation(session, currentStep, setScoringFeedback, setVerification);
 
   // Navigation hook
-  const {
-    handleNext,
-    handleBack,
-    proceedToNext,
-    showAuthModal,
-    handleAuthModalAuthenticated,
-    handleAuthModalClose,
-  } = usePracticeNavigation(session, {
+  const { handleNext, handleBack, proceedToNext } = usePracticeNavigation(session, {
     verification,
     setVerification,
     setScoringFeedback,
@@ -177,12 +169,6 @@ function PracticeFlowInner() {
       return;
     }
 
-    // If not authenticated and on score step with auth modal showing, allow it
-    // This is the normal flow when user clicks Continue on sandbox
-    if (!state.auth.isAuthed && currentStep === "score" && showAuthModal) {
-      return;
-    }
-
     // Check if we're in the middle of an auth flow (user clicked sign in, being redirected)
     const inAuthFlow =
       typeof window !== "undefined" && new URL(window.location.href).searchParams.has("auth_flow");
@@ -203,10 +189,6 @@ function PracticeFlowInner() {
       if (state.completed.sandbox) {
         markStep("sandbox", false);
       }
-      // Only redirect if not in the auth flow (modal not showing)
-      if (currentStep === "score" && !showAuthModal) {
-        router.push(`/practice/${state.slug}/sandbox`);
-      }
     }
   }, [
     currentStep,
@@ -221,7 +203,6 @@ function PracticeFlowInner() {
     state.completed.sandbox,
     state.completed.score,
     state.updatedAt,
-    showAuthModal,
   ]);
 
   useEffect(() => {
@@ -475,12 +456,6 @@ function PracticeFlowInner() {
   return (
     <TooltipProvider>
       {renderOnboardingTooltip()}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={handleAuthModalClose}
-        onAuthenticated={handleAuthModalAuthenticated}
-        slug={session.state.slug}
-      />
       <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
         <PracticeStepper
           scenario={session.state.slug}

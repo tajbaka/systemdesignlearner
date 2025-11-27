@@ -1,15 +1,10 @@
 import { Metadata } from "next";
-
-const VALID_SLUGS = {
-  URL_SHORTENER: "url-shortener",
-};
-
-const PRACTICE_IMAGE_URLS = {
-  [VALID_SLUGS.URL_SHORTENER]: "/desktop-url-shortener-practice.gif",
-} as const;
+import { getBaseUrl } from "@/lib/utils";
+import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/lib/constants/ogImages";
 
 type Props = {
   params: Promise<{ slug: string }>;
+  children: React.ReactNode;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -21,20 +16,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  // Use GIF for URL Shortener, static image for others (relative URLs work with tunnel)
-  const defaultOgImage = PRACTICE_IMAGE_URLS[slug as keyof typeof PRACTICE_IMAGE_URLS];
+  // Get absolute URL for OG image (required for social media)
+  // Check if slug contains any of the scenario identifiers
+  let relativeImagePath: string | undefined;
+  for (const validSlug of Object.values(VALID_SLUGS)) {
+    if (slug.includes(validSlug)) {
+      relativeImagePath = PRACTICE_IMAGE_URLS[validSlug as keyof typeof PRACTICE_IMAGE_URLS];
+      break;
+    }
+  }
 
-  // Default metadata
-  const defaultMetadata: Metadata = {
-    title: `Practice: ${scenarioName} - System Design Interview`,
-    description: `Practice system design interview for ${scenarioName}. Complete all steps: functional requirements, non-functional requirements, API design, and high-level architecture.`,
+  const baseUrl = getBaseUrl();
+  const ogImage = relativeImagePath ? `${baseUrl}${relativeImagePath}` : `${baseUrl}/og-image.png`;
+
+  return {
     openGraph: {
-      title: `Practice: ${scenarioName}`,
-      description: `Complete system design practice session for ${scenarioName}. Interactive learning with instant feedback.`,
-      type: "website",
       images: [
         {
-          url: defaultOgImage,
+          url: ogImage,
           width: 1200,
           height: 630,
           alt: `System Design Practice: ${scenarioName}`,
@@ -43,13 +42,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: `Practice: ${scenarioName}`,
-      description: `Complete system design practice session for ${scenarioName}. Interactive learning with instant feedback.`,
-      images: [defaultOgImage],
+      images: [ogImage],
     },
   };
-
-  return defaultMetadata;
 }
 
 export default function PracticeSlugLayout({ children }: { children: React.ReactNode }) {

@@ -64,15 +64,18 @@ export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalP
     setError("");
 
     try {
-      // Get the current URL with auth_flow parameter preserved
-      // This ensures we come back to the same page after OAuth and stay on step 5
-      const currentUrl = typeof window !== "undefined" ? window.location.href : "/";
-      console.log("[AuthModal] Starting Google OAuth, will return to:", currentUrl);
+      // Get the current URL, removing any auth_flow parameter
+      let returnUrl = window.location.href;
+      const url = new URL(returnUrl);
+      url.searchParams.delete("auth_flow");
+      returnUrl = url.toString();
+
+      console.log("[AuthModal] Starting Google OAuth, will return to:", returnUrl);
 
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
-        redirectUrlComplete: currentUrl,
+        redirectUrlComplete: returnUrl,
       });
       // Note: page will redirect before this line executes
     } catch (err: unknown) {
