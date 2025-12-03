@@ -34,7 +34,7 @@ module.exports = {
     } else if (path.startsWith("/practice/url-shortener") || path === "/practice") {
       priority = 0.9;
       changefreq = "daily";
-    } else if (path === "/interview-guide" || path === "/examples") {
+    } else if (path === "/interview-guide") {
       priority = 0.9;
       changefreq = "weekly";
     } else if (path === "/docs") {

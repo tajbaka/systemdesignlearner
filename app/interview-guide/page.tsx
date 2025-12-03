@@ -297,7 +297,7 @@ export default function InterviewGuidePage() {
               variant="outline"
               className="px-8 py-6 border-2 border-zinc-600 hover:border-blue-500/50 text-zinc-300 hover:text-white font-semibold text-lg"
             >
-              <Link href="/examples">View Example Solutions</Link>
+              <Link href="/play">Try the Sandbox</Link>
             </Button>
           </div>
         </div>

@@ -15,7 +15,7 @@ const STEP_CONFIG_CACHE: Partial<Record<SupportedIterativeStep, StepConfig>> = {
 
 function buildFunctionalStepConfig(): StepConfig {
   const functional = scoringConfig.steps.functional;
-  const topics: Topic[] = [
+  const topics: (Topic & { examplePhrases?: string[] })[] = [
     ...functional.coreRequirements.map((req) => ({
       id: req.id,
       label: req.label,
@@ -23,6 +23,7 @@ function buildFunctionalStepConfig(): StepConfig {
       keywords: req.keywords,
       required: true,
       weight: req.weight, // Use weight from config (core=5pts)
+      examplePhrases: req.examplePhrases, // Include example phrases for answer hints
     })),
     ...functional.optionalRequirements.map((req) => ({
       id: req.id,
@@ -31,6 +32,7 @@ function buildFunctionalStepConfig(): StepConfig {
       keywords: req.keywords,
       required: false,
       weight: req.weight, // Use weight from config (optional=1pt)
+      examplePhrases: req.examplePhrases, // Include example phrases for answer hints
     })),
   ];
 
@@ -43,7 +45,7 @@ function buildFunctionalStepConfig(): StepConfig {
 
 function buildNonFunctionalStepConfig(): StepConfig {
   const nonFunctional = scoringConfig.steps.nonFunctional;
-  const topics: Topic[] = [
+  const topics: (Topic & { examplePhrases?: string[] })[] = [
     ...nonFunctional.coreRequirements.map((req) => ({
       id: req.id,
       label: req.label,
@@ -51,6 +53,7 @@ function buildNonFunctionalStepConfig(): StepConfig {
       keywords: req.keywords,
       required: true,
       weight: req.weight, // Use weight from config
+      examplePhrases: req.examplePhrases, // Include example phrases for answer hints
     })),
     ...nonFunctional.optionalRequirements.map((req) => ({
       id: req.id,
@@ -59,6 +62,7 @@ function buildNonFunctionalStepConfig(): StepConfig {
       keywords: req.keywords,
       required: false,
       weight: req.weight, // Use weight from config
+      examplePhrases: req.examplePhrases, // Include example phrases for answer hints
     })),
   ];
 
@@ -73,7 +77,7 @@ function buildApiStepConfig(): StepConfig {
   const api = scoringConfig.steps.api;
 
   // Build topics from core and optional requirements
-  const topics: Topic[] = [
+  const topics: (Topic & { examplePhrases?: string[] })[] = [
     ...api.coreRequirements.map((req) => ({
       id: req.id,
       label: req.label,
@@ -81,6 +85,7 @@ function buildApiStepConfig(): StepConfig {
       keywords: req.keywords,
       required: true,
       weight: req.weight,
+      examplePhrases: req.examplePhrases, // Include example phrases for answer hints
     })),
     ...api.optionalRequirements.map((req) => ({
       id: req.id,
@@ -89,6 +94,7 @@ function buildApiStepConfig(): StepConfig {
       keywords: req.keywords,
       required: false,
       weight: req.weight,
+      examplePhrases: req.examplePhrases, // Include example phrases for answer hints
     })),
   ];
 
@@ -181,12 +187,22 @@ export async function POST(request: NextRequest) {
 
     if (body.action === "get_feedback") {
       const stepConfig = getStepConfig(body.stepId);
+      logger.info("[API iterative-feedback] get_feedback request", {
+        stepId: body.stepId,
+        attemptCount: body.attemptCount,
+        contentLength: body.userContent?.length ?? 0,
+      });
       const result = await getIterativeFeedback(
         stepConfig,
         body.userContent,
         body.previousQuestion,
         body.attemptCount
       );
+      logger.info("[API iterative-feedback] get_feedback response", {
+        blocking: result.ui.blocking,
+        hasExampleHint: !!result.ui.exampleHint,
+        attemptCount: body.attemptCount,
+      });
       return NextResponse.json(result);
     }
 

@@ -443,7 +443,7 @@ function ReactFlowBoardInner({
               backgroundColor: "rgba(0, 0, 0, 0.5)",
               border: "1px solid rgba(255, 255, 255, 0.2)",
               width: 140,
-              height: 105,
+              height: 140,
               bottom: miniMapBottomOffset,
               left: 80,
             }}

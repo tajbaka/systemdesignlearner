@@ -3,24 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { UserButton, SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { UserButton, SignedIn } from "@clerk/nextjs";
 
 export function Navbar() {
   const pathname = usePathname();
-  const isOnSandbox = pathname === "/play";
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // Determine redirect URL based on current page
-  const getRedirectUrl = () => {
-    // If on landing page, redirect to /play
-    if (pathname === "/") {
-      return "/play";
-    }
-    // Otherwise, stay on current page (e.g., practice pages)
-    return pathname;
-  };
-
-  const redirectUrl = getRedirectUrl();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
@@ -48,58 +35,51 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               href="/practice"
-              className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
+              className={`px-3 py-2 transition-colors text-sm font-medium rounded-lg ${
+                pathname.startsWith("/practice")
+                  ? "text-emerald-400 bg-zinc-800"
+                  : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+              }`}
             >
               Practice
             </Link>
             <Link
-              href="/examples"
-              className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
-            >
-              Examples
-            </Link>
-            <Link
               href="/interview-guide"
-              className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
+              className={`px-3 py-2 transition-colors text-sm font-medium rounded-lg ${
+                pathname === "/interview-guide"
+                  ? "text-emerald-400 bg-zinc-800"
+                  : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+              }`}
             >
               Interview Guide
             </Link>
             <Link
               href="/docs"
-              className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
+              className={`px-3 py-2 transition-colors text-sm font-medium rounded-lg ${
+                pathname === "/docs"
+                  ? "text-emerald-400 bg-zinc-800"
+                  : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+              }`}
             >
               Docs
             </Link>
             <Link
               href="/feedback"
-              className="px-3 py-2 text-zinc-300 hover:text-white transition-colors text-sm font-medium rounded-lg hover:bg-zinc-800"
+              className={`px-3 py-2 transition-colors text-sm font-medium rounded-lg ${
+                pathname === "/feedback"
+                  ? "text-emerald-400 bg-zinc-800"
+                  : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+              }`}
             >
               Feedback
             </Link>
 
-            {isOnSandbox ? (
-              <div className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium">
-                Sandbox Active
-              </div>
-            ) : (
-              <>
-                <SignedOut>
-                  <SignInButton mode="modal" forceRedirectUrl={redirectUrl}>
-                    <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm shadow-lg hover:shadow-emerald-500/50 transition-all duration-300">
-                      Try Sandbox
-                    </button>
-                  </SignInButton>
-                </SignedOut>
-                <SignedIn>
-                  <Link
-                    href="/play"
-                    className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
-                  >
-                    Try Sandbox
-                  </Link>
-                </SignedIn>
-              </>
-            )}
+            <Link
+              href="/practice/url-shortener/intro"
+              className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-9 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
+            >
+              Start Practicing
+            </Link>
 
             {/* User Button */}
             <SignedIn>
@@ -146,65 +126,57 @@ export function Navbar() {
             <div className="px-4 py-4 space-y-3">
               <Link
                 href="/practice"
-                className="block px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors text-base font-medium"
+                className={`block px-3 py-3 rounded-lg transition-colors text-base font-medium ${
+                  pathname.startsWith("/practice")
+                    ? "text-emerald-400 bg-zinc-800"
+                    : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+                }`}
                 onClick={closeMenu}
               >
                 Practice
               </Link>
               <Link
-                href="/examples"
-                className="block px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors text-base font-medium"
-                onClick={closeMenu}
-              >
-                Examples
-              </Link>
-              <Link
                 href="/interview-guide"
-                className="block px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors text-base font-medium"
+                className={`block px-3 py-3 rounded-lg transition-colors text-base font-medium ${
+                  pathname === "/interview-guide"
+                    ? "text-emerald-400 bg-zinc-800"
+                    : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+                }`}
                 onClick={closeMenu}
               >
                 Interview Guide
               </Link>
               <Link
                 href="/docs"
-                className="block px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors text-base font-medium"
+                className={`block px-3 py-3 rounded-lg transition-colors text-base font-medium ${
+                  pathname === "/docs"
+                    ? "text-emerald-400 bg-zinc-800"
+                    : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+                }`}
                 onClick={closeMenu}
               >
                 Docs
               </Link>
               <Link
                 href="/feedback"
-                className="block px-3 py-3 text-zinc-300 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors text-base font-medium"
+                className={`block px-3 py-3 rounded-lg transition-colors text-base font-medium ${
+                  pathname === "/feedback"
+                    ? "text-emerald-400 bg-zinc-800"
+                    : "text-zinc-300 hover:text-white hover:bg-zinc-800"
+                }`}
                 onClick={closeMenu}
               >
                 Feedback
               </Link>
 
               <div className="pt-2 space-y-3">
-                {isOnSandbox ? (
-                  <div className="px-3 py-3 bg-emerald-600 text-white rounded-lg text-base font-medium text-center">
-                    Sandbox Active
-                  </div>
-                ) : (
-                  <>
-                    <SignedOut>
-                      <SignInButton mode="modal" forceRedirectUrl={redirectUrl}>
-                        <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 w-full">
-                          Try Sandbox
-                        </button>
-                      </SignInButton>
-                    </SignedOut>
-                    <SignedIn>
-                      <Link
-                        href="/play"
-                        className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 w-full"
-                        onClick={closeMenu}
-                      >
-                        Try Sandbox
-                      </Link>
-                    </SignedIn>
-                  </>
-                )}
+                <Link
+                  href="/practice/url-shortener/intro"
+                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 w-full"
+                  onClick={closeMenu}
+                >
+                  Start Practicing
+                </Link>
 
                 {/* Mobile User Button */}
                 <SignedIn>

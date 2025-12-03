@@ -90,10 +90,15 @@ export function useIterativeFeedback() {
           return stepFeedback.cachedResult;
         }
 
-        // Track attempt count: increment if content changed but still working on same topic
+        // Track attempt count: increment on every submission (global per step, not per topic)
         const currentAttemptCount = stepFeedback.attemptCount ?? 0;
-        const isSameTopic = stepFeedback.lastContent && stepFeedback.currentQuestion;
-        const newAttemptCount = isSameTopic ? currentAttemptCount + 1 : 1;
+        const newAttemptCount = currentAttemptCount + 1;
+
+        logger.info("[useIterativeFeedback] Attempt count", {
+          currentAttemptCount,
+          newAttemptCount,
+          stepKey,
+        });
 
         // Get fresh feedback from API
         const feedbackResponse = await fetch("/api/iterative-feedback", {

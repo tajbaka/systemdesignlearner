@@ -19,11 +19,21 @@ import { PracticeStepContent } from "@/components/practice/PracticeStepContent";
 import { PracticeFeedbackPanel } from "@/components/practice/PracticeFeedbackPanel";
 import { IterativeFeedbackModal } from "@/components/practice/IterativeFeedbackModal";
 import { SCENARIOS } from "@/lib/scenarios";
+import type { ApiEndpoint } from "@/lib/practice/types";
 
 function PracticeFlowInner() {
   const router = useRouter();
   const session = usePracticeSession();
-  const { hydrated, currentStep, isReadOnly, state, markStep, setAuth, setRequirements } = session;
+  const {
+    hydrated,
+    currentStep,
+    isReadOnly,
+    state,
+    markStep,
+    setAuth,
+    setRequirements,
+    setApiDefinition,
+  } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
@@ -538,6 +548,94 @@ function PracticeFlowInner() {
               ? proceedToNext
               : undefined
           }
+          onInsertAnswer={(text) => {
+            if (currentStep === "functional") {
+              // REPLACE the content entirely with the correct answer
+              setRequirements({
+                ...state.requirements,
+                functionalSummary: text,
+              });
+            } else if (currentStep === "nonFunctional") {
+              // REPLACE the content entirely with the correct answer
+              setRequirements({
+                ...state.requirements,
+                nonFunctional: {
+                  ...state.requirements.nonFunctional,
+                  notes: text,
+                },
+              });
+            } else if (currentStep === "api") {
+              // For API step, parse the answer and update both path and notes
+              // Answer format: "POST /api/v1/urls\nRequest: {...}\nResponse: {...}"
+              setApiDefinition((prev) => {
+                if (prev.endpoints.length === 0) return prev;
+
+                // Split the answer into parts (one per endpoint, separated by double newlines)
+                const answerParts = text.split("\n\n").filter((part) => part.trim());
+
+                // Track which endpoints have been updated
+                const updatedEndpoints = prev.endpoints.map((ep) => ({ ...ep }));
+
+                const normalizePath = (value: string) => value.replace(/^\/+/, "").toLowerCase();
+                const assignedIndices = new Set<number>();
+
+                for (const answerPart of answerParts) {
+                  // Parse: "METHOD /path\nrest of documentation..."
+                  // Match first line as "METHOD /path" and rest as notes
+                  const lines = answerPart.split("\n");
+                  const firstLine = lines[0] || "";
+                  const match = firstLine.match(/^(GET|POST|PUT|PATCH|DELETE)\s+(\/\S+)/i);
+
+                  if (match) {
+                    const method = match[1].toUpperCase() as ApiEndpoint["method"];
+                    const path = match[2]; // e.g., "/api/v1/urls" or "/:code"
+                    // Everything after the first line is the documentation
+                    const documentation = lines.slice(1).join("\n").trim();
+                    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+
+                    const findMatchingIndex = () =>
+                      updatedEndpoints.findIndex(
+                        (ep, idx) => !assignedIndices.has(idx) && ep.method.toUpperCase() === method
+                      );
+
+                    const findPathMatchIndex = () =>
+                      updatedEndpoints.findIndex(
+                        (ep, idx) =>
+                          !assignedIndices.has(idx) &&
+                          normalizePath(ep.path) === normalizePath(cleanPath)
+                      );
+
+                    let idx = findMatchingIndex();
+
+                    // If HTTP method was wrong, fall back to matching by path (and eventually by position)
+                    if (idx === -1) {
+                      idx = findPathMatchIndex();
+                    }
+                    if (idx === -1) {
+                      idx = updatedEndpoints.findIndex((_, i) => !assignedIndices.has(i));
+                    }
+
+                    if (idx !== -1) {
+                      assignedIndices.add(idx);
+
+                      // Update method and path (remove leading slash since UI adds it)
+                      updatedEndpoints[idx].method = method;
+                      updatedEndpoints[idx].path = cleanPath;
+
+                      // REPLACE the notes with the documentation (not append)
+                      if (documentation) {
+                        updatedEndpoints[idx].notes = documentation;
+                      }
+                    }
+                  }
+                }
+
+                return { ...prev, endpoints: updatedEndpoints };
+              });
+            }
+            // Clear cached feedback since content changed
+            clearIterativeFeedback();
+          }}
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
 

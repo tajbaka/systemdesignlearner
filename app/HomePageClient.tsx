@@ -127,16 +127,16 @@ export function HomePageClient() {
             </div>
           </div>
 
-          {/* Step 1: Pick a Scenario */}
+          {/* Step 1: Functional Requirements */}
           <div className="border-b border-zinc-800">
             <div className="grid lg:grid-cols-2">
               <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
                 <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 01</p>
-                <h3 className="mb-4 text-3xl font-bold tracking-tight">Pick a Scenario</h3>
+                <h3 className="mb-4 text-3xl font-bold tracking-tight">Functional Requirements</h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
-                  Choose from real-world challenges with clear requirements: target latency, RPS
-                  capacity, and success criteria. Each scenario is designed to teach specific system
-                  design patterns.
+                  Start by defining what your system must do. Describe the core features and user
+                  capabilities. An AI interviewer guides you with follow-up questions to ensure you
+                  cover all essential requirements.
                 </p>
                 <ul className="space-y-3 text-zinc-400">
                   <li className="flex items-start">
@@ -153,7 +153,7 @@ export function HomePageClient() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Production-scale requirements (P95 latency, RPS targets)
+                    Define core user actions and system behavior
                   </li>
                   <li className="flex items-start">
                     <svg
@@ -169,7 +169,7 @@ export function HomePageClient() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Real-world patterns (CDN, caching, load balancing)
+                    AI feedback highlights missing requirements
                   </li>
                   <li className="flex items-start">
                     <svg
@@ -185,303 +185,26 @@ export function HomePageClient() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Clear success criteria for validation
+                    Iterate until you reach 100% coverage
                   </li>
                 </ul>
               </div>
               <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
                 <div className="w-full max-w-md space-y-4">
-                  <Card className="bg-zinc-800/80 border-zinc-600 hover:border-emerald-500/50 transition-colors cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="text-lg text-white">URL Shortener</CardTitle>
-                      <CardDescription className="text-sm text-zinc-300">
-                        P95 Latency: 100ms | Target RPS: 5k
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                  <Card className="bg-zinc-800/80 border-zinc-600 hover:border-emerald-500/50 transition-colors cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="text-lg text-white">Spotify Play</CardTitle>
-                      <CardDescription className="text-sm text-zinc-300">
-                        P95 Latency: 200ms | Target RPS: 2k
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                  <Card className="bg-zinc-800/80 border-zinc-600 hover:border-emerald-500/50 transition-colors cursor-pointer">
-                    <CardHeader>
-                      <CardTitle className="text-lg text-white">CDN Design</CardTitle>
-                      <CardDescription className="text-sm text-zinc-300">
-                        P95 Latency: 80ms | Target RPS: 8k
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Step 2: Design Your Architecture */}
-          <div className="border-b border-zinc-800">
-            <div className="grid lg:grid-cols-2">
-              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
-                <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 02</p>
-                <h3 className="mb-4 text-3xl font-bold tracking-tight">Design Your Architecture</h3>
-                <p className="text-lg text-zinc-400 leading-relaxed mb-6">
-                  Drag components onto an infinite canvas and connect them to build your system.
-                  Each component has realistic performance characteristics based on industry
-                  standards.
-                </p>
-                <ul className="space-y-3 text-zinc-400">
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    9 component types: Web, CDN, API Gateway, Service, Redis, Postgres, S3, Kafka,
-                    Load Balancer
-                  </li>
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Directional connections show data flow
-                  </li>
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Pan and zoom to manage complex designs
-                  </li>
-                </ul>
-              </div>
-              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
-                <div className="w-full max-w-2xl">
-                  <Image
-                    src="/Screen Recording 2025-11-03 at 11.36.04-fast.gif"
-                    alt="Drag-and-drop interface with visual feedback"
-                    width={800}
-                    height={600}
-                    className="w-full h-auto rounded-lg shadow-2xl border border-zinc-700"
-                    unoptimized
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Step 3: Run Simulation */}
-          <div className="border-b border-zinc-800">
-            <div className="grid lg:grid-cols-2">
-              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
-                <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 03</p>
-                <h3 className="mb-4 text-3xl font-bold tracking-tight">
-                  Run Simulation & Get Feedback
-                </h3>
-                <p className="text-lg text-zinc-400 leading-relaxed mb-6">
-                  Our simulation engine analyzes your architecture in real-time. Get instant
-                  feedback on performance, capacity, and bottlenecks without writing a single line
-                  of code.
-                </p>
-                <ul className="space-y-3 text-zinc-400">
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
-                    P95 latency calculations with component-level breakdown
-                  </li>
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
-                    Capacity analysis and bottleneck identification
-                  </li>
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
-                    SLO compliance validation
-                  </li>
-                </ul>
-              </div>
-              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
-                <div className="w-full max-w-md">
-                  <Card className="bg-zinc-900/50 border-emerald-500/50">
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center justify-between">
-                        Simulation Results
-                        <span className="text-emerald-400 text-sm">✓ Passed</span>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3 text-sm">
-                        <div className="flex justify-between items-center pb-2 border-b border-zinc-700">
-                          <span className="text-zinc-400">P95 Latency</span>
-                          <span className="text-white font-mono">98ms</span>
-                        </div>
-                        <div className="flex justify-between items-center pb-2 border-b border-zinc-700">
-                          <span className="text-zinc-400">Capacity</span>
-                          <span className="text-white font-mono">5.2k RPS</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-zinc-400">SLO Status</span>
-                          <span className="text-emerald-400 font-mono">Compliant</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Step 4: Learn & Iterate */}
-          <div>
-            <div className="grid lg:grid-cols-2">
-              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
-                <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 04</p>
-                <h3 className="mb-4 text-3xl font-bold tracking-tight">Learn & Iterate</h3>
-                <p className="text-lg text-zinc-400 leading-relaxed mb-6">
-                  Understand why your design works (or doesn&apos;t). Share your solutions with
-                  others or fork existing designs to learn different approaches to the same problem.
-                </p>
-                <ul className="space-y-3 text-zinc-400">
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                      />
-                    </svg>
-                    Share via URL with compressed Base64 encoding
-                  </li>
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                      />
-                    </svg>
-                    Fork and modify existing solutions
-                  </li>
-                  <li className="flex items-start">
-                    <svg
-                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                      />
-                    </svg>
-                    Compare different architectural approaches
-                  </li>
-                </ul>
-              </div>
-              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
-                <div className="w-full max-w-md space-y-4">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="flex-1 h-px bg-zinc-700"></div>
-                    <span className="text-xs text-zinc-500 font-mono">ITERATIONS</span>
-                    <div className="flex-1 h-px bg-zinc-700"></div>
-                  </div>
-
-                  <Card className="bg-zinc-900/50 border-zinc-700">
+                  <Card className="bg-zinc-900/50 border-blue-500/50">
                     <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm text-white">Version 1: Basic Setup</CardTitle>
-                        <span className="text-xs text-red-400">Failed</span>
-                      </div>
+                      <CardTitle className="text-lg text-white">Your Answer</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2 text-xs">
-                        <div className="flex justify-between text-zinc-400">
-                          <span>P95 Latency</span>
-                          <span className="text-red-400 font-mono">145ms</span>
-                        </div>
-                      </div>
+                      <p className="text-sm text-zinc-400 italic">
+                        &quot;Users can shorten long URLs and get redirected when visiting short
+                        links...&quot;
+                      </p>
                     </CardContent>
                   </Card>
-
                   <div className="flex justify-center">
                     <svg
-                      className="w-4 h-4 text-emerald-400"
+                      className="w-4 h-4 text-blue-400"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -494,21 +217,450 @@ export function HomePageClient() {
                       />
                     </svg>
                   </div>
-
-                  <Card className="bg-zinc-900/50 border-emerald-500/50">
+                  <Card className="bg-blue-950/40 border-blue-400/30">
                     <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-sm text-white">
-                          Version 2: With Caching
-                        </CardTitle>
-                        <span className="text-xs text-emerald-400">Passed</span>
+                      <CardTitle className="text-sm text-blue-300 flex items-center gap-2">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
+                          />
+                        </svg>
+                        AI Interviewer
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-blue-100">
+                        &quot;What about link expiration? Should users be able to set custom
+                        aliases?&quot;
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 2: Non-Functional Requirements */}
+          <div className="border-b border-zinc-800">
+            <div className="grid lg:grid-cols-2">
+              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
+                <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 02</p>
+                <h3 className="mb-4 text-3xl font-bold tracking-tight">
+                  Non-Functional Requirements
+                </h3>
+                <p className="text-lg text-zinc-400 leading-relaxed mb-6">
+                  Define performance constraints: latency targets, throughput goals, and
+                  availability requirements. The AI interviewer ensures you think about scalability,
+                  consistency, and reliability.
+                </p>
+                <ul className="space-y-3 text-zinc-400">
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Set P95 latency and RPS targets
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Define availability and consistency needs
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Consider read/write ratios and data retention
+                  </li>
+                </ul>
+              </div>
+              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
+                <div className="w-full max-w-md">
+                  <Card className="bg-zinc-900/50 border-emerald-500/50">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center justify-between">
+                        Score: 5/5 (100%)
+                        <span className="text-emerald-400 text-sm">Perfect!</span>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex items-start gap-2 text-emerald-100">
+                          <svg
+                            className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          <span>Latency target specified (100ms P95)</span>
+                        </div>
+                        <div className="flex items-start gap-2 text-emerald-100">
+                          <svg
+                            className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          <span>Throughput defined (5k RPS)</span>
+                        </div>
+                        <div className="flex items-start gap-2 text-emerald-100">
+                          <svg
+                            className="w-4 h-4 text-emerald-400 mt-0.5 flex-shrink-0"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          <span>High availability requirement (99.9%)</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3: API Design */}
+          <div className="border-b border-zinc-800">
+            <div className="grid lg:grid-cols-2">
+              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
+                <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 03</p>
+                <h3 className="mb-4 text-3xl font-bold tracking-tight">API Design</h3>
+                <p className="text-lg text-zinc-400 leading-relaxed mb-6">
+                  Design the HTTP endpoints your service exposes. Define request/response formats,
+                  HTTP methods, and paths. The AI ensures you cover all necessary endpoints with
+                  proper documentation.
+                </p>
+                <ul className="space-y-3 text-zinc-400">
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Define endpoints with HTTP methods
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Document request/response payloads
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    AI validates completeness and best practices
+                  </li>
+                </ul>
+              </div>
+              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
+                <div className="w-full max-w-md space-y-3">
+                  <Card className="bg-zinc-900/50 border-zinc-700">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-emerald-500/20 text-emerald-400 text-xs font-mono rounded">
+                          POST
+                        </span>
+                        <span className="text-sm text-white font-mono">/api/v1/urls</span>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-2 text-xs">
-                        <div className="flex justify-between text-zinc-400">
-                          <span>P95 Latency</span>
-                          <span className="text-emerald-400 font-mono">82ms</span>
+                      <p className="text-xs text-zinc-400">Create a new short URL</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-zinc-900/50 border-zinc-700">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">
+                          GET
+                        </span>
+                        <span className="text-sm text-white font-mono">/r/:code</span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xs text-zinc-400">Redirect to original URL</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="bg-zinc-900/50 border-zinc-700">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 bg-blue-500/20 text-blue-400 text-xs font-mono rounded">
+                          GET
+                        </span>
+                        <span className="text-sm text-white font-mono">
+                          /api/v1/urls/:code/stats
+                        </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xs text-zinc-400">Get click analytics</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 4: Design Sandbox */}
+          <div className="border-b border-zinc-800">
+            <div className="grid lg:grid-cols-2">
+              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
+                <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 04</p>
+                <h3 className="mb-4 text-3xl font-bold tracking-tight">Design Sandbox</h3>
+                <p className="text-lg text-zinc-400 leading-relaxed mb-6">
+                  Build your architecture visually with drag-and-drop components. Connect services,
+                  databases, caches, and load balancers. Run simulations to validate your design
+                  meets the requirements.
+                </p>
+                <ul className="space-y-3 text-zinc-400">
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Drag-and-drop architecture components
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Real-time simulation with P95 latency
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Iterate until SLO targets are met
+                  </li>
+                </ul>
+              </div>
+              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
+                <div className="w-full max-w-2xl">
+                  <Image
+                    src="/SandboxStep_3x.gif"
+                    alt="Drag-and-drop architecture sandbox"
+                    width={800}
+                    height={600}
+                    className="w-full h-auto rounded-lg shadow-2xl border border-zinc-700"
+                    unoptimized
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 5: Score & Share */}
+          <div>
+            <div className="grid lg:grid-cols-2">
+              <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
+                <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 05</p>
+                <h3 className="mb-4 text-3xl font-bold tracking-tight">Score & Share</h3>
+                <p className="text-lg text-zinc-400 leading-relaxed mb-6">
+                  Get your final scorecard with detailed feedback on each step. Share your solution
+                  via URL or continue practicing to improve your score. Bonus points are available
+                  for going beyond the basics.
+                </p>
+                <ul className="space-y-3 text-zinc-400">
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Detailed scorecard for each step
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Bonus points for advanced features
+                  </li>
+                  <li className="flex items-start">
+                    <svg
+                      className="w-5 h-5 text-emerald-400 mr-3 flex-shrink-0 mt-0.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Share your solution via URL
+                  </li>
+                </ul>
+              </div>
+              <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
+                <div className="w-full max-w-md">
+                  <Card className="bg-zinc-900/50 border-emerald-500/50">
+                    <CardHeader>
+                      <CardTitle className="text-2xl flex items-center justify-between">
+                        Final Score
+                        <span className="text-emerald-400">112%</span>
+                      </CardTitle>
+                      <CardDescription className="text-zinc-400">
+                        You exceeded expectations!
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-700">
+                          <span className="text-zinc-400">Functional Requirements</span>
+                          <span className="text-emerald-400 font-mono">100%</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-700">
+                          <span className="text-zinc-400">Non-Functional Requirements</span>
+                          <span className="text-emerald-400 font-mono">100%</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-700">
+                          <span className="text-zinc-400">API Design</span>
+                          <span className="text-emerald-400 font-mono">100%</span>
+                        </div>
+                        <div className="flex justify-between items-center pb-2 border-b border-zinc-700">
+                          <span className="text-zinc-400">High Level Design</span>
+                          <span className="text-emerald-400 font-mono">100%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-blue-400">Bonus Points</span>
+                          <span className="text-blue-400 font-mono">+12%</span>
                         </div>
                       </div>
                     </CardContent>
@@ -520,208 +672,73 @@ export function HomePageClient() {
         </div>
       </section>
 
-      {/* Key Features Section */}
-      <section className="border-b border-zinc-800 relative">
+      {/* Post How It Works CTA */}
+      <section className="relative border-b border-zinc-800 overflow-hidden">
         <div
-          className="absolute inset-0 opacity-[0.03]"
+          className="absolute inset-0 opacity-80"
           style={{
             backgroundImage:
-              "linear-gradient(#10b981 1px, transparent 1px), linear-gradient(90deg, #10b981 1px, transparent 1px)",
-            backgroundSize: "50px 50px",
+              "radial-gradient(circle at 20% 20%, rgba(59,130,246,0.14), transparent 36%), radial-gradient(circle at 80% 80%, rgba(16,185,129,0.14), transparent 42%)",
           }}
-        ></div>
-        <div className="max-w-7xl mx-auto relative">
-          {/* Section Header */}
-          <div className="border-b border-zinc-800 px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
-              <span className="text-sm font-mono text-zinc-500 tracking-wider">
-                [02] KEY FEATURES
-              </span>
-            </div>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-2 border-zinc-800">
-            {/* Feature 1 */}
-            <div className="border-b md:border-r border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg
-                    className="w-6 h-6 text-emerald-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Drag-and-Drop Canvas</h3>
-                  <p className="text-zinc-400 leading-relaxed">
-                    Build architectures visually on an infinite grid. Place components and connect
-                    them with directional edges. Pan and zoom to manage complex designs.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 2 */}
-            <div className="border-b border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg
-                    className="w-6 h-6 text-emerald-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 10V3L4 14h7v7l9-11h-7z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Real-Time Simulation</h3>
-                  <p className="text-zinc-400 leading-relaxed">
-                    Get instant feedback on P95 latency, capacity, and bottlenecks. Our simulation
-                    engine analyzes your design without requiring any code.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 3 */}
-            <div className="border-b md:border-r border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg
-                    className="w-6 h-6 text-emerald-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Production-Scale Scenarios</h3>
-                  <p className="text-zinc-400 leading-relaxed">
-                    Practice with real-world requirements like Spotify Play (200ms P95, 2k RPS), URL
-                    Shortener (100ms, 5k RPS), and CDN Design (80ms, 8k RPS).
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 4 */}
-            <div className="border-b border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg
-                    className="w-6 h-6 text-emerald-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Share & Collaborate</h3>
-                  <p className="text-zinc-400 leading-relaxed">
-                    One-click URL sharing with Base64 encoding. Fork existing designs to learn
-                    different approaches and compare solutions.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 5 */}
-            <div className="md:border-r border-zinc-800 p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg
-                    className="w-6 h-6 text-emerald-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">9 Component Types</h3>
-                  <p className="text-zinc-400 leading-relaxed">
-                    Web, CDN, API Gateway, Service, Redis, Postgres, S3, Kafka, and Load Balancer.
-                    Each with realistic performance characteristics.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Feature 6 */}
-            <div className="p-8 lg:p-12 hover:bg-zinc-800/20 transition-colors">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center flex-shrink-0 border border-emerald-500/20">
-                  <svg
-                    className="w-6 h-6 text-emerald-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">Mobile-Friendly</h3>
-                  <p className="text-zinc-400 leading-relaxed">
-                    Touch gestures, bottom sheets, and responsive design. Practice system design
-                    anywhere, anytime on any device.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
+          aria-hidden="true"
+        />
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 lg:py-12 relative">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          >
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                asChild
+                size="lg"
+                className="bg-emerald-500 hover:bg-emerald-400 text-white px-8 py-6 shadow-lg hover:shadow-emerald-500/50 transition-all"
+              >
+                <Link
+                  href="/practice/url-shortener/intro"
+                  onClick={() => track("cta_after_how_it_works_start_practicing_clicked")}
+                >
+                  Start practicing
+                </Link>
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                asChild
+                variant="outline"
+                size="lg"
+                className="border-zinc-600 text-emerald-300 hover:text-white hover:border-emerald-400 px-6 py-6"
+              >
+                <Link
+                  href="/practice"
+                  onClick={() => track("cta_after_how_it_works_see_all_scenarios_clicked")}
+                >
+                  See all scenarios
+                </Link>
+              </Button>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* Popular Scenarios Section - Internal Linking */}
-      <section className="border-b border-zinc-800 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+      <section id="scenarios" className="border-b border-zinc-800 relative overflow-hidden">
+        <div
+          className="absolute inset-0 opacity-[0.08] pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.06) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.06) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+          aria-hidden="true"
+        />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20 relative">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4">
-              System Design Interview Practice Scenarios
-            </h2>
-            <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              Master real-world system design patterns with our interactive tutorials and examples
+            <h2 className="text-3xl sm:text-4xl font-bold mb-4">Practice Scenarios</h2>
+            <p className="text-lg text-zinc-400 max-w-3xl mx-auto">
+              Start with URL Shortener and get ready for Twitter, Instagram, and Netflix-style
+              drills from the practice page that mirror real interview asks.
             </p>
           </div>
 
@@ -734,14 +751,20 @@ export function HomePageClient() {
                 <CardHeader>
                   <CardTitle className="text-xl">URL Shortener System</CardTitle>
                   <CardDescription>
-                    Learn distributed systems, caching, and scalability patterns
+                    The same flow as the practice page: design, APIs, data model, and scaling.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 text-sm text-zinc-400">
-                    <p>• Handle millions of requests per second</p>
-                    <p>• Design efficient hashing algorithms</p>
-                    <p>• Implement caching strategies</p>
+                    <p>
+                      • Endpoints: shorten and redirect links, custom domains, link expiry,
+                      analytics
+                    </p>
+                    <p>• Data: keys to targets, storage choices, abuse controls, rate limits</p>
+                    <p>
+                      • Scale: hashing or sharding, caching and edge delivery, retries, availability
+                      targets
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -750,16 +773,16 @@ export function HomePageClient() {
             <Link href="/practice" onClick={() => track("homepage_all_scenarios_clicked")}>
               <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
                 <CardHeader>
-                  <CardTitle className="text-xl">More Coming Soon</CardTitle>
+                  <CardTitle className="text-xl">Upcoming Scenarios</CardTitle>
                   <CardDescription>
-                    Twitter, Instagram, Netflix & more system design examples
+                    Twitter timelines, Instagram stories, Netflix-style streaming, and more to ship.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 text-sm text-zinc-400">
-                    <p>• Social media feed design</p>
-                    <p>• Video streaming architecture</p>
-                    <p>• Real-time messaging systems</p>
+                    <p>• Feeds: fan-out vs fan-in, ranking, caching</p>
+                    <p>• Real-time chat and notifications: websockets, delivery guarantees</p>
+                    <p>• Streaming: edge delivery, segmenting, prefetch, content protection</p>
                   </div>
                 </CardContent>
               </Card>
@@ -768,16 +791,16 @@ export function HomePageClient() {
             <Link href="/docs" onClick={() => track("homepage_docs_clicked")}>
               <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
                 <CardHeader>
-                  <CardTitle className="text-xl">System Design Tutorial</CardTitle>
+                  <CardTitle className="text-xl">System Design Playbook</CardTitle>
                   <CardDescription>
-                    Complete guide to architecture patterns and best practices
+                    Patterns and trade-offs to reuse across every scenario.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 text-sm text-zinc-400">
-                    <p>• Architecture fundamentals</p>
-                    <p>• Scalability techniques</p>
-                    <p>• Interview preparation tips</p>
+                    <p>• Architecture blueprints, availability targets, capacity planning</p>
+                    <p>• Data, cache, queue, and storage patterns with pitfalls</p>
+                    <p>• Interview structures and example answers</p>
                   </div>
                 </CardContent>
               </Card>
@@ -957,7 +980,7 @@ export function HomePageClient() {
                 className="px-10 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
               >
                 <Link
-                  href="/practice/url-shortener"
+                  href="/practice/url-shortener/intro"
                   aria-label="Start Practicing Now"
                   onClick={() => track("homepage_cta_practice_clicked")}
                 >

@@ -131,11 +131,11 @@ export const SCENARIOS: Scenario[] = [
     api: [
       {
         method: "POST",
-        path: "/urls",
+        path: "urls",
         bodyShape: "{ long_url: string }",
         responseShape: "{ short: string }",
       },
-      { method: "GET", path: "/:slug", notes: "302 to long URL" },
+      { method: "GET", path: ":slug", notes: "302 to long URL" },
     ],
     suggestedComponents: ["CDN", "Cache (Redis)", "DB (Postgres)"],
     estimatedTime: "15-20 minutes",

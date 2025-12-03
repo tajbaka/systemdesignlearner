@@ -168,14 +168,6 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/examples"
-                  className="text-zinc-400 hover:text-white transition-colors text-sm"
-                >
-                  Examples
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/interview-guide"
                   className="text-zinc-400 hover:text-white transition-colors text-sm"
                 >

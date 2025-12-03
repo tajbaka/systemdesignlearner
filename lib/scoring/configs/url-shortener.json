@@ -386,8 +386,7 @@
           "weight": 25,
           "required": true,
           "examplePhrases": [
-            "POST /api/v1/urls with body containing url and optional customAlias",
-            "Returns shortUrl and code on success"
+            "POST /api/v1/urls\nRequest: { url: string, customAlias?: string, expiresAt?: string }\nResponse: { shortUrl: string, code: string, createdAt: string }\nErrors: 400 (invalid URL), 409 (alias taken), 429 (rate limit)"
           ]
         },
         {
@@ -398,8 +397,7 @@
           "weight": 25,
           "required": true,
           "examplePhrases": [
-            "GET /:code redirects (302) to original URL",
-            "Returns 404 if not found, 410 if expired"
+            "GET /:code\nResponse: HTTP 302 redirect to original URL\nErrors: 404 (not found), 410 (expired)\nBehavior: Looks up code in database, returns redirect to stored long URL"
           ]
         }
       ],

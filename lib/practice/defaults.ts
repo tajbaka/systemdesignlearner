@@ -77,17 +77,17 @@ export const makeDefaultLowLevel = (): LowLevel => ({
   apis: [
     {
       method: "POST",
-      path: "/urls",
+      path: "urls",
       notes: "Body: { long_url, custom? } → returns { short }",
     },
     {
       method: "GET",
-      path: "/:slug",
+      path: ":slug",
       notes: "Redirect 302 to long URL; hit cache first",
     },
     {
       method: "GET",
-      path: "/urls/:slug/stats",
+      path: "urls/:slug/stats",
       notes: "Optional analytics view; guard behind auth",
     },
   ],

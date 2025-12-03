@@ -296,48 +296,27 @@ ${previousQuestion ? `"${previousQuestion}"` : "null"}
 
 /**
  * 4) Compute score
- *    Core requirements = 100% of score
- *    Optional requirements = bonus points on top
+ *    Simple scoring: max = sum of all core topic weights
+ *    obtained = sum of covered core topic weights
+ *    percentage = obtained / max * 100
+ *    (Optional topics don't affect the score - they're just bonus feedback)
  */
 function computeScore(step: StepConfig, coveredIds: Set<string>) {
   const coreTopics = step.topics.filter((t) => t.required);
-  const optionalTopics = step.topics.filter((t) => !t.required);
 
-  // Calculate max score based on core topics only (this represents 100%)
-  const maxCoreWeight = coreTopics.reduce((acc, t) => acc + (t.weight ?? 1), 0);
-  const maxOptionalWeight = optionalTopics.reduce((acc, t) => acc + (t.weight ?? 1), 0);
+  // Max score = sum of all core topic weights
+  const max = coreTopics.reduce((acc, t) => acc + (t.weight ?? 1), 0);
 
-  // For display, max score is the maxCoreWeight (represents 100%)
-  const max = maxCoreWeight;
-
-  // Calculate actual core score
-  const coreScore = coreTopics.reduce((acc, t) => {
+  // Obtained = sum of covered core topic weights
+  const obtained = coreTopics.reduce((acc, t) => {
     if (coveredIds.has(t.id)) {
       return acc + (t.weight ?? 1);
     }
     return acc;
   }, 0);
 
-  // Calculate optional score (bonus)
-  const optionalScore = optionalTopics.reduce((acc, t) => {
-    if (coveredIds.has(t.id)) {
-      return acc + (t.weight ?? 1);
-    }
-    return acc;
-  }, 0);
-
-  // Scale core to max, scale optional as bonus
-  const corePercentage = maxCoreWeight > 0 ? coreScore / maxCoreWeight : 0;
-  const scaledCoreScore = corePercentage * max;
-
-  const optionalPercentage = maxOptionalWeight > 0 ? optionalScore / maxOptionalWeight : 0;
-  const scaledOptionalScore = optionalPercentage * max;
-
-  // Total obtained = core + optional bonus
-  const obtained = scaledCoreScore + scaledOptionalScore;
-
-  // Percentage is based on core only (so 100% = all core covered)
-  const percentage = max === 0 ? 100 : Math.round((scaledCoreScore / max) * 100);
+  // Percentage = obtained / max
+  const percentage = max === 0 ? 100 : Math.round((obtained / max) * 100);
 
   return { obtained, max, percentage };
 }
@@ -404,29 +383,23 @@ export async function getIterativeFeedback(
 
   const blocking = !coverage.requiredCovered;
 
-  // After 3 attempts on the same topic, provide an example hint
+  // After 3 attempts (global per step), provide the complete answer for ALL required topics
+  // This gives users a full correct answer they can use to pass the step
   let exampleHint: string | null = null;
-  if (attemptCount && attemptCount >= 3 && nextQuestion && blocking) {
-    const topic = step.topics.find((t) => t.id === nextQuestion.topicId);
+  if (attemptCount && attemptCount >= 3 && blocking) {
+    const requiredTopics = step.topics.filter((t) => t.required);
+    const answerParts: string[] = [];
 
-    // For API step, get example from endpoint requirements
-    if (step.stepId === "api" && step.endpointRequirements) {
-      const endpoint = step.endpointRequirements.find(
-        (ep) =>
-          nextQuestion.topicId.includes(ep.id) ||
-          ep.purpose.toLowerCase().includes(topic?.label.toLowerCase() || "")
-      );
-      if (endpoint?.exampleNotes) {
-        exampleHint = `Method: ${endpoint.method}\nPath: ${endpoint.examplePath}\n\n${endpoint.exampleNotes}`;
+    for (const topic of requiredTopics) {
+      const examplePhrases = (topic as Topic & { examplePhrases?: string[] }).examplePhrases;
+      if (examplePhrases && examplePhrases.length > 0) {
+        // Add the first example phrase for this topic
+        answerParts.push(examplePhrases[0]);
       }
     }
 
-    // For other steps, provide generic hint
-    if (!exampleHint && topic) {
-      const examplePhrases = (topic as Topic & { examplePhrases?: string[] }).examplePhrases;
-      if (examplePhrases && examplePhrases.length > 0) {
-        exampleHint = examplePhrases[0];
-      }
+    if (answerParts.length > 0) {
+      exampleHint = answerParts.join("\n\n");
     }
   }
 

@@ -1,6 +1,6 @@
 import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import type { PracticeStep } from "@/lib/practice/types";
-import { CheckCircle2, AlertCircle, X } from "lucide-react";
+import { CheckCircle2, AlertCircle, X, ClipboardPaste } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 type IterativeFeedbackModalProps = {
@@ -9,6 +9,7 @@ type IterativeFeedbackModalProps = {
   result: IterativeFeedbackResult;
   onClose: () => void;
   onContinue?: () => void;
+  onInsertAnswer?: (text: string) => void;
   durationMs?: number | null;
 };
 
@@ -18,6 +19,7 @@ export function IterativeFeedbackModal({
   result,
   onClose,
   onContinue,
+  onInsertAnswer,
   durationMs: _durationMs,
 }: IterativeFeedbackModalProps) {
   // Early return if no result
@@ -34,13 +36,8 @@ export function IterativeFeedbackModal({
     return "Great Progress!";
   };
 
-  const displayedPercentage =
-    result.score.max > 0
-      ? Math.round((result.score.obtained / result.score.max) * 100)
-      : result.score.percentage;
-
-  // Format score display
-  const scoreDisplay = `Score: ${Math.round(result.score.obtained)}/${result.score.max} (${displayedPercentage}%)`;
+  // Simple score display: obtained/max (percentage%)
+  const scoreDisplay = `Score: ${result.score.obtained}/${result.score.max} (${result.score.percentage}%)`;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -127,15 +124,44 @@ export function IterativeFeedbackModal({
             </div>
           )}
 
-          {/* Example hint after 3 attempts */}
+          {/* Actual answer after 3 attempts */}
           {result.ui.exampleHint && (
             <div className="rounded-xl border border-emerald-400/30 bg-emerald-950/40 p-4">
-              <h3 className="mb-2 text-sm font-semibold text-emerald-300">
-                💡 Hint: Here&apos;s an example
-              </h3>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <h3 className="text-sm font-semibold text-emerald-300">
+                  Answer: Add this to your response
+                </h3>
+                {onInsertAnswer && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onInsertAnswer(result.ui.exampleHint!);
+                      onClose();
+                    }}
+                    className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-500 active:bg-emerald-700"
+                  >
+                    <ClipboardPaste className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">Insert</span>
+                  </button>
+                )}
+              </div>
               <div className="text-sm text-emerald-100 whitespace-pre-line font-mono">
                 {result.ui.exampleHint}
               </div>
+              {/* Mobile-first: larger insert button at bottom for easier thumb access */}
+              {onInsertAnswer && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onInsertAnswer(result.ui.exampleHint!);
+                    onClose();
+                  }}
+                  className="mt-3 w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 active:bg-emerald-700 sm:hidden"
+                >
+                  <ClipboardPaste className="h-4 w-4" />
+                  Insert Answer
+                </button>
+              )}
             </div>
           )}
         </div>
