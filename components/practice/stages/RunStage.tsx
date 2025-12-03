@@ -460,7 +460,10 @@ export default function RunStage({
         </div>
 
         {error ? (
-          <div className="mt-4 rounded-2xl border border-rose-400/40 bg-rose-500/15 p-4 text-sm text-rose-100">
+          <div
+            data-frustration-event="simulation-error"
+            className="mt-4 rounded-2xl border border-rose-400/40 bg-rose-500/15 p-4 text-sm text-rose-100"
+          >
             {error}
           </div>
         ) : null}
@@ -528,7 +531,10 @@ export default function RunStage({
         )}
 
         {hints.length > 0 ? (
-          <div className="mt-6 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+          <div
+            data-frustration-event={run.attempts >= 3 ? "multiple-failed-attempts" : undefined}
+            className="mt-6 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4 text-sm text-amber-100"
+          >
             <h4 className="font-semibold uppercase tracking-wide text-xs text-amber-200">
               Try next
             </h4>
