@@ -87,10 +87,28 @@ export function Footer() {
               </div>
               <span className="text-xl font-bold text-white">System Design Sandbox</span>
             </div>
-            <p className="text-zinc-400 text-sm leading-relaxed max-w-md mb-6">
+            <p className="text-zinc-400 text-sm leading-relaxed max-w-md mb-4">
               Interactive system design playground — drag, connect, and simulate realistic
               architectures. Master system design through hands-on practice.
             </p>
+
+            {/* Contact Info */}
+            <div className="mb-6">
+              <a
+                href="mailto:hello@systemdesignsandbox.com"
+                className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-emerald-400 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                hello@systemdesignsandbox.com
+              </a>
+            </div>
 
             {/* Social Links */}
             <div className="flex items-center gap-4">
@@ -333,31 +351,9 @@ export function Footer() {
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-zinc-800">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-zinc-500 text-sm">
-              © {new Date().getFullYear()} System Design Sandbox. Built by Antonio Coppe.
-            </p>
-            <div className="flex items-center gap-6">
-              <Link
-                href="/privacy"
-                className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
-              >
-                Privacy
-              </Link>
-              <Link
-                href="/terms"
-                className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
-              >
-                Terms
-              </Link>
-              <Link
-                href="/cookies"
-                className="text-zinc-500 hover:text-zinc-300 text-sm transition-colors"
-              >
-                Cookies
-              </Link>
-            </div>
-          </div>
+          <p className="text-zinc-500 text-sm text-center sm:text-left">
+            © {new Date().getFullYear()} System Design Sandbox. Built by Antonio Coppe.
+          </p>
         </div>
       </div>
     </footer>

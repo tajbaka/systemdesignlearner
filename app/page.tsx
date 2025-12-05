@@ -2,13 +2,13 @@ import { Metadata } from "next";
 import { HomePageClient } from "./HomePageClient";
 
 export const metadata: Metadata = {
-  title: "System Design Interview Practice & Tutorial - Interactive Sandbox 2025",
+  title: "System Design Interview Practice - Interactive Sandbox",
   description:
-    "Ace your system design interview in 2025! Practice with interactive scenarios, learn distributed systems & scalability patterns. Get instant feedback on your architecture designs. Free tutorials & real-world examples.",
+    "Practice system design interviews with interactive scenarios. AI-powered feedback on distributed systems, scalability & architecture design.",
   openGraph: {
-    title: "System Design Interview Practice & Tutorial - Interactive Sandbox",
+    title: "System Design Interview Practice - Interactive Sandbox",
     description:
-      "Master system design interviews with hands-on practice. Interactive scenarios for distributed systems, scalability, and architecture patterns. Start learning now!",
+      "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
     images: [
       {
         url: "/og-image.png", // You'll need to add this image
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "System Design Interview Practice & Tutorial - Interactive Sandbox",
+    title: "System Design Interview Practice - Interactive Sandbox",
     description:
-      "Master system design interviews with hands-on practice. Interactive scenarios, instant feedback, real-world examples.",
+      "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
     images: ["/og-image.png"],
   },
   keywords: [
@@ -122,6 +122,45 @@ export default function HomePage() {
     },
   };
 
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "System Design Sandbox",
+    url: "https://www.systemdesignsandbox.com",
+    description:
+      "Interactive system design interview practice platform with hands-on tutorials and real-world examples",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://www.systemdesignsandbox.com/practice?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: "https://www.systemdesignsandbox.com",
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Practice",
+        item: "https://www.systemdesignsandbox.com/practice",
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: "Interview Guide",
+        item: "https://www.systemdesignsandbox.com/interview-guide",
+      },
+    ],
+  };
+
   return (
     <>
       <script
@@ -135,6 +174,14 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       <HomePageClient />
     </>

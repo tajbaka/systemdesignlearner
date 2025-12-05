@@ -22,11 +22,11 @@ const fbPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 export const metadata: Metadata = {
   metadataBase: new URL(`https://${process.env.NEXT_PUBLIC_VERCEL_URL}`),
   title: {
-    default: "System Design Interview Practice & Tutorial - Interactive Sandbox 2025",
+    default: "System Design Interview Practice - Interactive Sandbox",
     template: "%s | System Design Sandbox",
   },
   description:
-    "Ace your system design interview with hands-on practice! Interactive tutorials for distributed systems, scalability patterns & architecture design. Free practice scenarios with instant feedback. Master system design interviews in 2025.",
+    "Practice system design interviews with interactive scenarios. AI-powered feedback on distributed systems, scalability & architecture design.",
   keywords: [
     "system design interview",
     "system design practice",
@@ -64,16 +64,16 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://www.systemdesignsandbox.com",
     siteName: "System Design Sandbox",
-    title: "System Design Interview Practice & Tutorial - Interactive Sandbox",
+    title: "System Design Interview Practice - Interactive Sandbox",
     description:
-      "Master system design interviews with hands-on practice. Interactive scenarios for distributed systems, scalability, and architecture patterns. Free tutorials with instant feedback.",
+      "Practice system design interviews with interactive scenarios. AI-powered feedback on distributed systems, scalability & architecture design.",
     // images removed - child layouts will provide specific images
   },
   twitter: {
     card: "summary_large_image",
-    title: "System Design Interview Practice & Tutorial - Interactive Sandbox",
+    title: "System Design Interview Practice - Interactive Sandbox",
     description:
-      "Master system design interviews with hands-on practice. Interactive scenarios, instant feedback, real-world examples. Free tutorials for 2025!",
+      "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
     // images removed - child layouts will provide specific images
     creator: "@systemdesignsb",
   },

@@ -1,0 +1,51 @@
+# System Design Sandbox
+
+> Interactive system design interview practice platform with hands-on tutorials and real-world examples.
+
+## What is System Design Sandbox?
+
+System Design Sandbox is a free, interactive platform for practicing system design interviews. Engineers use it to master distributed systems, scalability patterns, and architecture design through hands-on practice scenarios with instant AI-powered feedback.
+
+## Key Features
+
+- Interactive Architecture Canvas: Drag-and-drop components to design systems visually
+- Practice Scenarios: Real interview questions (URL shortener, rate limiter, etc.)
+- AI-Powered Feedback: Get instant analysis of your system designs
+- Step-by-Step Tutorials: Learn system design concepts progressively
+- Requirements Analysis: Practice gathering and clarifying requirements
+- API Definition: Design REST APIs for your systems
+- Capacity Planning: Estimate traffic, storage, and compute needs
+
+## Use Cases
+
+- Prepare for FAANG system design interviews
+- Learn distributed systems architecture
+- Practice designing scalable systems
+- Understand trade-offs between different architectural patterns
+- Get hands-on experience with load balancers, databases, caches, and message queues
+
+## Available Practice Scenarios
+
+- URL Shortener (like bit.ly)
+- Rate Limiter
+- More scenarios coming soon
+
+## Target Audience
+
+- Software engineers preparing for technical interviews
+- Senior engineers learning system design
+- Engineering managers understanding architecture patterns
+- Students learning distributed systems
+
+## Links
+
+- Website: https://www.systemdesignsandbox.com
+- Practice: https://www.systemdesignsandbox.com/practice
+- Playground: https://www.systemdesignsandbox.com/play
+- Interview Guide: https://www.systemdesignsandbox.com/interview-guide
+- Documentation: https://www.systemdesignsandbox.com/docs
+
+## Contact
+
+- Email: hello@systemdesignsandbox.com
+- Support: support@systemdesignsandbox.com
