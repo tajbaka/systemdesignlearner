@@ -9,7 +9,7 @@ System Design Sandbox is a free, interactive platform for practicing system desi
 ## Key Features
 
 - Interactive Architecture Canvas: Drag-and-drop components to design systems visually
-- Practice Scenarios: Real interview questions (URL shortener, rate limiter, etc.)
+- Practice Scenarios: Real interview questions (URL shortener and more coming soon)
 - AI-Powered Feedback: Get instant analysis of your system designs
 - Step-by-Step Tutorials: Learn system design concepts progressively
 - Requirements Analysis: Practice gathering and clarifying requirements
@@ -27,7 +27,6 @@ System Design Sandbox is a free, interactive platform for practicing system desi
 ## Available Practice Scenarios
 
 - URL Shortener (like bit.ly)
-- Rate Limiter
 - More scenarios coming soon
 
 ## Target Audience
@@ -41,7 +40,6 @@ System Design Sandbox is a free, interactive platform for practicing system desi
 
 - Website: https://www.systemdesignsandbox.com
 - Practice: https://www.systemdesignsandbox.com/practice
-- Playground: https://www.systemdesignsandbox.com/play
 - Interview Guide: https://www.systemdesignsandbox.com/interview-guide
 - Documentation: https://www.systemdesignsandbox.com/docs
 
