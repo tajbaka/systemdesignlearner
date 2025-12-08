@@ -109,8 +109,7 @@ export function Footer() {
                 hello@systemdesignsandbox.com
               </a>
             </div>
-
-            </div>
+          </div>
 
           {/* Product Column */}
           <div className="lg:col-span-2">
