@@ -27,13 +27,13 @@
 
 ### Engagement & Quality Metrics
 
-| Metric                  | Today (Dec 8) | Week 3 Target | Week 6 Target | Why It Matters for B2B          |
-| ----------------------- | ------------- | ------------- | ------------- | ------------------------------- |
-| Start-to-Score Rate     | 78%           | 80%           | 85%           | Learning completion rate        |
-| Return within 7 days    | 10%           | 30%           | 40%           | Habit formation = training fit  |
-| Avg Sessions per User   | 2.4           | 2.5           | 4.0           | Stickiness for enterprise       |
-| Time on Site (avg)      | 10.5 min      | 10 min        | 12 min        | Engagement depth                |
-| NPS Score (if surveyed) | — (0 resp)    | 40+           | 50+           | Willingness to recommend        |
+| Metric                  | Today (Dec 8) | Week 3 Target | Week 6 Target | Why It Matters for B2B         |
+| ----------------------- | ------------- | ------------- | ------------- | ------------------------------ |
+| Start-to-Score Rate     | 78%           | 80%           | 85%           | Learning completion rate       |
+| Return within 7 days    | 10%           | 30%           | 40%           | Habit formation = training fit |
+| Avg Sessions per User   | 2.4           | 2.5           | 4.0           | Stickiness for enterprise      |
+| Time on Site (avg)      | 10.5 min      | 10 min        | 12 min        | Engagement depth               |
+| NPS Score (if surveyed) | — (0 resp)    | 40+           | 50+           | Willingness to recommend       |
 
 ### Traffic & Discovery
 
@@ -59,14 +59,14 @@
 
 ## 🗓️ 6-Week Timeline
 
-| Week  | Theme                  | Key Actions                                        | Success Criteria               |
-| ----- | ---------------------- | -------------------------------------------------- | ------------------------------ |
-| 1     | Baseline & Outreach    | Capture current metrics, reach out to bootcamps    | 3 bootcamp conversations       |
-| 2     | Content Push           | LinkedIn posts, Reddit threads, dev community      | 50% traffic increase           |
-| 3     | Checkpoint #1          | Analyze Week 1-2 data, adjust strategy             | On track to Week 6 targets     |
-| 4     | Enterprise Features    | Add team analytics stub, bulk invite concept       | Feature demo ready             |
-| 5     | B2B Validation         | Present to 5 potential B2B customers               | 2+ letters of intent           |
-| 6     | Decision Point         | Final metrics review, pivot or continue B2C        | Clear go/no-go on B2B          |
+| Week | Theme               | Key Actions                                     | Success Criteria           |
+| ---- | ------------------- | ----------------------------------------------- | -------------------------- |
+| 1    | Baseline & Outreach | Capture current metrics, reach out to bootcamps | 3 bootcamp conversations   |
+| 2    | Content Push        | LinkedIn posts, Reddit threads, dev community   | 50% traffic increase       |
+| 3    | Checkpoint #1       | Analyze Week 1-2 data, adjust strategy          | On track to Week 6 targets |
+| 4    | Enterprise Features | Add team analytics stub, bulk invite concept    | Feature demo ready         |
+| 5    | B2B Validation      | Present to 5 potential B2B customers            | 2+ letters of intent       |
+| 6    | Decision Point      | Final metrics review, pivot or continue B2C     | Clear go/no-go on B2B      |
 
 ---
 
@@ -85,12 +85,12 @@
 
 ### Week 6 Decision (Jan 19, 2026)
 
-| Outcome           | Criteria                                               | Next Step                     |
-| ----------------- | ------------------------------------------------------ | ----------------------------- |
-| **Pivot to B2B**  | ≥5 enterprise inquiries, ≥10 team signups, strong NPS  | Build enterprise tier, sales  |
-| **Hybrid Model**  | Strong B2C traction but <5 enterprise signals          | B2C monetization + B2B pilot  |
-| **Stay B2C**      | Weak B2B signals but good individual user metrics      | Focus on Pro tier, grow users |
-| **Reconsider**    | Below all targets                                      | Pivot product or pause        |
+| Outcome          | Criteria                                              | Next Step                     |
+| ---------------- | ----------------------------------------------------- | ----------------------------- |
+| **Pivot to B2B** | ≥5 enterprise inquiries, ≥10 team signups, strong NPS | Build enterprise tier, sales  |
+| **Hybrid Model** | Strong B2C traction but <5 enterprise signals         | B2C monetization + B2B pilot  |
+| **Stay B2C**     | Weak B2B signals but good individual user metrics     | Focus on Pro tier, grow users |
+| **Reconsider**   | Below all targets                                     | Pivot product or pause        |
 
 ---
 
@@ -151,6 +151,7 @@
 ### Green Light for B2B Pivot
 
 All of these:
+
 - [ ] ≥500 email signups total
 - [ ] ≥50 enterprise domain signups (.com, .io, .co)
 - [ ] ≥5 inbound B2B inquiries

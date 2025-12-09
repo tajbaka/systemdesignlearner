@@ -88,8 +88,8 @@ export function Footer() {
               <span className="text-xl font-bold text-white">System Design Sandbox</span>
             </div>
             <p className="text-zinc-400 text-sm leading-relaxed max-w-md mb-4">
-              Interactive system design playground — drag, connect, and simulate realistic
-              architectures. Master system design through hands-on practice.
+              Practice system design interviews with AI-powered feedback. Build realistic
+              architectures and get instant, actionable insights to improve your skills.
             </p>
 
             {/* Contact Info */}
@@ -115,14 +115,6 @@ export function Footer() {
           <div className="lg:col-span-2">
             <h3 className="text-white font-semibold text-sm mb-4">Product</h3>
             <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/play"
-                  className="text-zinc-400 hover:text-white transition-colors text-sm"
-                >
-                  Playground
-                </Link>
-              </li>
               <li>
                 <Link
                   href="/practice"
