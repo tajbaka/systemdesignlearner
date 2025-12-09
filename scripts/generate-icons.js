@@ -1,7 +1,7 @@
 const sharp = require("sharp");
 const fs = require("fs");
 const path = require("path");
-const toIco = require("to-ico");
+const pngToIco = require("png-to-ico");
 
 async function generateIcons() {
   const svgPath = path.join(__dirname, "public", "logo.svg");
@@ -57,7 +57,7 @@ async function generateIcons() {
   }
 
   // Create the ICO file
-  const icoBuffer = await toIco(icoBuffers);
+  const icoBuffer = await pngToIco(icoBuffers);
   fs.writeFileSync(faviconPath, icoBuffer);
 
   console.log("Icon generation complete!");
