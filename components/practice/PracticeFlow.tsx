@@ -142,7 +142,7 @@ function PracticeFlowInner() {
 
   // Check if it's the first time visiting sandbox (fallback for users who skip onboarding)
   useEffect(() => {
-    if (currentStep === "sandbox" && hydrated && !isActive) {
+    if (currentStep === "highLevelDesign" && hydrated && !isActive) {
       const hasSeenSandboxTips = localStorage.getItem("practice-sandbox-tips-seen");
       if (!hasSeenSandboxTips) {
         setShowTooltips(true);
@@ -196,8 +196,8 @@ function PracticeFlowInner() {
       if (state.completed.score) {
         markStep("score", false);
       }
-      if (state.completed.sandbox) {
-        markStep("sandbox", false);
+      if (state.completed.highLevelDesign) {
+        markStep("highLevelDesign", false);
       }
     }
   }, [
@@ -210,13 +210,13 @@ function PracticeFlowInner() {
     router,
     state.slug,
     state.auth.isAuthed,
-    state.completed.sandbox,
+    state.completed.highLevelDesign,
     state.completed.score,
     state.updatedAt,
   ]);
 
   useEffect(() => {
-    if (currentStep !== "sandbox") {
+    if (currentStep !== "highLevelDesign") {
       setMobilePaletteOpen(false);
       setRunPanelOpen(false);
     }
@@ -242,7 +242,7 @@ function PracticeFlowInner() {
   }, [setWaitingForSimulation]);
 
   const config = STEP_CONFIGS[currentStep];
-  const isSandboxStep = currentStep === "sandbox";
+  const isSandboxStep = currentStep === "highLevelDesign";
 
   const nextDisabled = useMemo(
     () => (config?.nextDisabled ? config.nextDisabled(session) : false),
@@ -480,8 +480,8 @@ function PracticeFlowInner() {
         <div
           className={
             isSandboxStep
-              ? "flex-1 min-h-0 overflow-hidden"
-              : "flex-1 min-h-0 overflow-y-auto sm:pt-[20px]"
+              ? "flex-1 min-h-0 overflow-hidden sm:pt-[40px]"
+              : "flex-1 min-h-0 overflow-y-auto sm:pt-[40px]"
           }
           style={{
             paddingBottom:
@@ -640,7 +640,7 @@ function PracticeFlowInner() {
         />
 
         <footer
-          // className="backdrop-blur"
+          className="bg-black border-t border-zinc-800"
           style={{
             transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
           }}
@@ -654,7 +654,7 @@ function PracticeFlowInner() {
             onRevise={() => {
               setScoringFeedback(null);
               clearIterativeFeedback(); // Also clear iterative feedback state
-              if (currentStep !== "sandbox") {
+              if (currentStep !== "highLevelDesign") {
                 session.setStepScore(
                   currentStep as "functional" | "nonFunctional" | "api",
                   undefined

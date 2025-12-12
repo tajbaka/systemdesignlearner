@@ -10,7 +10,7 @@ const STEP_COMPONENTS: Record<PracticeStep, (props?: Record<string, unknown>) =>
   functional: () => <FunctionalRequirementsStep />,
   nonFunctional: () => <NonFunctionalRequirementsStep />,
   api: () => <ApiDefinitionStep />,
-  sandbox: (props) => <SandboxStep {...(props as Parameters<typeof SandboxStep>[0])} />,
+  highLevelDesign: (props) => <SandboxStep {...(props as Parameters<typeof SandboxStep>[0])} />,
   score: () => <ScoreShareStep />,
 };
 
@@ -30,7 +30,7 @@ export function PracticeStepContent({
   onRunPanelChange,
 }: PracticeStepContentProps) {
   const StepComponent = STEP_COMPONENTS[currentStep];
-  const isSandboxStep = currentStep === "sandbox";
+  const isSandboxStep = currentStep === "highLevelDesign";
 
   const sandboxProps = isSandboxStep
     ? {
@@ -47,5 +47,5 @@ export function PracticeStepContent({
     return <div className="h-full w-full">{stepContent}</div>;
   }
 
-  return <div className="h-full w-full sm:h-auto sm:px-4 sm:py-6">{stepContent}</div>;
+  return <div className="h-full w-full sm:h-auto">{stepContent}</div>;
 }

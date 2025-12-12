@@ -1,0 +1,95 @@
+{
+  "categories": [
+    {
+      "id": "core-concepts",
+      "title": "Core Concepts",
+      "icon": "🎯",
+      "articles": [
+        {
+          "id": "1",
+          "slug": "introduction"
+        },
+        {
+          "id": "2",
+          "slug": "system-design-structure"
+        }
+      ]
+    }
+  ],
+  "articles": [
+    {
+      "slug": "introduction",
+      "title": "Introduction",
+      "subtitle": "Getting started with system design",
+      "description": "Learn what system design is, why it matters, and how to practice it effectively. This introduction covers the fundamentals you need to know before diving into system design interviews and real-world engineering challenges.",
+      "author": "System Design Sandbox",
+      "date": "2024-12-08",
+      "readTime": "8 min",
+      "markdownFile": "Introduction.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "system design introduction",
+        "what is system design",
+        "system design basics",
+        "learn system design",
+        "system design interview prep",
+        "system design tutorial",
+        "system design fundamentals",
+        "backend system design",
+        "system design for beginners"
+      ],
+      "tableOfContents": [
+        { "id": "what-is-system-design", "title": "What is system design?" },
+        {
+          "id": "what-kinds-of-system-design-questions-are-there",
+          "title": "What kinds of system design questions are there?"
+        },
+        {
+          "id": "why-should-i-learn-system-design",
+          "title": "Why should I learn system design?"
+        },
+        { "id": "why-should-i-use-this-tool", "title": "Why should I use this tool?" }
+      ]
+    },
+    {
+      "slug": "system-design-structure",
+      "title": "System Design Structure",
+      "subtitle": "The steps to follow when designing a system",
+      "description": "Learn the structured approach to system design interviews. This guide covers functional requirements, non-functional requirements (availability, latency, reliability, consistency), API design, database modeling, and high-level design.",
+      "author": "System Design Sandbox",
+      "date": "2024-12-08",
+      "readTime": "10 min",
+      "markdownFile": "SystemDesignStructure.md",
+      "removeFirstHeading": false,
+      "keywords": [
+        "system design structure",
+        "distributed systems",
+        "scalability patterns",
+        "load balancing",
+        "caching strategies",
+        "database sharding",
+        "CAP theorem",
+        "system architecture",
+        "scalable systems",
+        "reliable systems",
+        "horizontal scaling",
+        "vertical scaling",
+        "system design patterns"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "how-to-start-the-interview", "title": "How to Start the Interview" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "database-modelling", "title": "Database Modelling" },
+        { "id": "high-level-design-design-diagram", "title": "High-level Design (Design Diagram)" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        {
+          "id": "bottlenecks-tradeoffs-and-scaling",
+          "title": "Bottlenecks, Tradeoffs, and Scaling"
+        }
+      ]
+    }
+  ]
+}

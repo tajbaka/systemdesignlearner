@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import posthog from "posthog-js";
 import { logger } from "@/lib/logger";
+import PosthogTrackIdentity from "./PosthogTrackIdentity";
+import { UtmTracker } from "./UtmTracker";
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -20,7 +22,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       api_host: "/ingest",
       ui_host: "https://us.posthog.com",
       person_profiles: "identified_only",
-      capture_pageview: true,
+      capture_pageview: false, // Disable automatic pageview capture, as we capture manually
       capture_pageleave: true,
       autocapture: true,
       debug: process.env.NODE_ENV === "development",
@@ -39,5 +41,11 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  return <>{children}</>;
+  return (
+    <>
+      <PosthogTrackIdentity />
+      <UtmTracker />
+      {children}
+    </>
+  );
 }

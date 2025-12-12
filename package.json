@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "node scripts/fix-util.js next dev --turbopack",
     "build": "node scripts/fix-util.js next build",
-    "postbuild": "next-sitemap",
+    "postbuild": "node scripts/generate-sitemap.js",
     "start": "node scripts/fix-util.js next start",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
@@ -43,6 +43,7 @@
     "react": "^19.1.2",
     "react-dom": "^19.1.2",
     "react-email": "^4.3.0",
+    "react-markdown": "^10.1.0",
     "react-zoom-pan-pinch": "^3.7.0",
     "resend": "^6.1.2",
     "tailwind-merge": "^3.3.1",

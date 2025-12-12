@@ -125,18 +125,10 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/interview-guide"
+                  href="/learn"
                   className="text-zinc-400 hover:text-white transition-colors text-sm"
                 >
-                  Interview Guide
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/docs"
-                  className="text-zinc-400 hover:text-white transition-colors text-sm"
-                >
-                  Documentation
+                  Learn
                 </Link>
               </li>
             </ul>

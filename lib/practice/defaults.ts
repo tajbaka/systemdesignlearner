@@ -141,7 +141,7 @@ export const makeInitialPracticeState = (slug = "url-shortener"): PracticeState 
     functional: false,
     nonFunctional: false,
     api: false,
-    sandbox: false,
+    highLevelDesign: false,
     score: false,
   },
   iterativeFeedback: {

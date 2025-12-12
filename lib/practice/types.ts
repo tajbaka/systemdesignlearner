@@ -85,13 +85,13 @@ export type PracticeAuthState = {
   skipped: boolean;
 };
 
-export type PracticeStep = "functional" | "nonFunctional" | "api" | "sandbox" | "score";
+export type PracticeStep = "functional" | "nonFunctional" | "api" | "highLevelDesign" | "score";
 
 export const PRACTICE_STEPS: PracticeStep[] = [
   "functional",
   "nonFunctional",
   "api",
-  "sandbox",
+  "highLevelDesign",
   "score",
 ];
 

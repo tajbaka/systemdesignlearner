@@ -101,7 +101,7 @@ export function usePracticeScoring() {
           break;
         }
 
-        case "sandbox": {
+        case "highLevelDesign": {
           // For sandbox, we don't evaluate design here - we check simulation results
           // Design scoring happens during simulation
           return null;

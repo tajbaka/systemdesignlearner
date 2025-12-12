@@ -5,6 +5,24 @@ import { logger } from "@/lib/logger";
 
 const isClient = () => typeof window !== "undefined";
 
+/**
+ * Get the current environment (development, production, etc.)
+ */
+const getEnvironment = (): string => {
+  return process.env.NODE_ENV || "development";
+};
+
+/**
+ * Attach basic properties (like environment) to any properties object.
+ * This ensures consistent metadata across all analytics calls.
+ */
+const withBasicProperties = (properties?: Record<string, unknown>): Record<string, unknown> => {
+  return {
+    ...properties,
+    environment: getEnvironment(),
+  };
+};
+
 declare global {
   interface Window {
     posthog?: PostHog;
@@ -28,7 +46,76 @@ export const track = (event: string, properties: Record<string, unknown> = {}): 
     return;
   }
 
-  client.capture(event, properties);
+  client.capture(event, withBasicProperties(properties));
+};
+
+/**
+ * Identify a user in PostHog.
+ * Call this when a user authenticates to link events to their user profile.
+ */
+export const identify = (userId: string, properties?: Record<string, unknown>): void => {
+  if (!isClient()) {
+    return;
+  }
+
+  const client = window.posthog;
+  if (!client) {
+    if (process.env.NODE_ENV === "development") {
+      logger.warn("[analytics] PostHog not initialised yet – identify dropped", userId, properties);
+    }
+    return;
+  }
+
+  client.identify(userId, withBasicProperties(properties));
+};
+
+/**
+ * Register person properties in PostHog.
+ * These properties are attached to the person profile and persist across sessions.
+ */
+export const register = (properties: Record<string, unknown>): void => {
+  if (!isClient()) {
+    return;
+  }
+
+  const client = window.posthog;
+  if (!client) {
+    if (process.env.NODE_ENV === "development") {
+      logger.warn("[analytics] PostHog not initialised yet – register dropped", properties);
+    }
+    return;
+  }
+
+  client.register(withBasicProperties(properties));
+};
+
+/**
+ * Identify a user as part of a group in PostHog.
+ * Groups allow you to analyze users by organization, plan, or other shared attributes.
+ */
+export const group = (
+  groupType: string,
+  groupKey: string,
+  properties?: Record<string, unknown>
+): void => {
+  if (!isClient()) {
+    return;
+  }
+
+  const client = window.posthog;
+  if (!client) {
+    if (process.env.NODE_ENV === "development") {
+      logger.warn(
+        "[analytics] PostHog not initialised yet – group dropped",
+        groupType,
+        groupKey,
+        properties
+      );
+    }
+    return;
+  }
+
+  client.group(groupType, groupKey, withBasicProperties(properties));
 };
 
 /**

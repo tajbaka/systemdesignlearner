@@ -137,7 +137,7 @@ export function HomePageClient() {
               transition={{ duration: 0.4, delay: 0.5 }}
               className="max-w-6xl mx-auto"
             >
-              <div className="bg-zinc-800/60 border border-zinc-700 rounded-2xl p-6 sm:p-10 shadow-2xl">
+              <div className="bg-zinc-800/60 pointer-events-none border border-zinc-700 rounded-2xl p-6 sm:p-10 shadow-2xl">
                 <DemoBoard />
               </div>
             </motion.div>

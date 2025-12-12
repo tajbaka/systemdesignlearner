@@ -154,7 +154,7 @@ const ensureProgress = (value?: PracticeProgress): PracticeProgress => ({
   functional: Boolean(value?.functional),
   nonFunctional: Boolean(value?.nonFunctional),
   api: Boolean(value?.api),
-  sandbox: Boolean(value?.sandbox),
+  highLevelDesign: Boolean(value?.highLevelDesign),
   score: Boolean(value?.score),
 });
 
@@ -162,7 +162,7 @@ const migrateLegacyProgress = (locked?: LegacyLocked): PracticeProgress => ({
   functional: Boolean(locked?.brief),
   nonFunctional: Boolean(locked?.brief),
   api: false,
-  sandbox: Boolean(locked?.design),
+  highLevelDesign: Boolean(locked?.design),
   score: Boolean(locked?.run),
 });
 
@@ -265,7 +265,7 @@ const ensureAuthProgressConsistency = (state: PracticeState): PracticeState => {
   }
 
   // If both sandbox and score are incomplete, no need to modify
-  if (!state.completed.sandbox && !state.completed.score) {
+  if (!state.completed.highLevelDesign && !state.completed.score) {
     return state;
   }
 

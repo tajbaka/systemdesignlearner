@@ -123,7 +123,7 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
 
     // After completing sandbox (step 4), check if user is signed in via Clerk
     // If so, mark them as authenticated before advancing
-    if (session.currentStep === "sandbox" && isSignedIn && !session.state.auth.isAuthed) {
+    if (session.currentStep === "highLevelDesign" && isSignedIn && !session.state.auth.isAuthed) {
       session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
     }
 
@@ -140,7 +140,12 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
       }
 
       // Steps that need scoring evaluation (including sandbox for design scoring)
-      const stepsNeedingScoring: PracticeStep[] = ["functional", "nonFunctional", "api", "sandbox"];
+      const stepsNeedingScoring: PracticeStep[] = [
+        "functional",
+        "nonFunctional",
+        "api",
+        "highLevelDesign",
+      ];
 
       let iterativeCoverage: IterativeFeedbackResult | null = null;
 
@@ -160,7 +165,7 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
         );
 
         // If we have a cached score, use it immediately (skip re-evaluation)
-        if (cachedScore && session.currentStep !== "sandbox") {
+        if (cachedScore && session.currentStep !== "highLevelDesign") {
           logger.info(
             `[handleNext] Using cached score for ${session.currentStep}, skipping evaluation`
           );
@@ -242,7 +247,7 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
 
           setVerification({ isVerifying: false, result: null, error: null });
         }
-        if (session.currentStep === "sandbox") {
+        if (session.currentStep === "highLevelDesign") {
           const guidance = evaluateDesignGuidance(session.state.design);
           if (guidance && guidance.level === "core") {
             setScoringFeedback({
@@ -391,7 +396,7 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
 
         const persistFeedback = (feedback: FeedbackResult) => {
           setScoringFeedback(feedback);
-          if (session.currentStep !== "sandbox") {
+          if (session.currentStep !== "highLevelDesign") {
             const stepKey = session.currentStep as "functional" | "nonFunctional" | "api";
             session.setStepScore(stepKey, feedback);
           }

@@ -58,7 +58,7 @@ export function PracticeFeedbackPanel({
         isOpen={
           !!scoringFeedback &&
           !hasIterativeFeedback &&
-          (currentStep === "sandbox" ||
+          (currentStep === "highLevelDesign" ||
             (currentStep !== "functional" &&
               currentStep !== "nonFunctional" &&
               currentStep !== "api" &&

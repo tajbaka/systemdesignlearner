@@ -27,6 +27,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalP
   useEffect(() => {
     if (isSignedIn && user && isOpen) {
       console.log("[AuthModal] User authenticated, calling onAuthenticated");
+
       track("practice_auth_completed", {
         slug,
         provider: "clerk",

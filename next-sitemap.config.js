@@ -20,7 +20,6 @@ module.exports = {
       loc: "/play",
       changefreq: "weekly",
       priority: 0.9,
-      lastmod: new Date().toISOString(),
     },
   ],
   transform: async (config, path) => {
@@ -57,7 +56,8 @@ module.exports = {
       loc: path,
       changefreq,
       priority,
-      lastmod: new Date().toISOString(),
+      // Omit lastmod to prevent sitemap from changing on every build
+      // next-sitemap will use file modification dates if available
     };
   },
 };

@@ -124,29 +124,31 @@ export function SandboxStep({
 
   return (
     <>
-      <div className="relative flex h-full w-full overflow-hidden">
-        <DesignStage
-          design={state.design}
-          requirements={state.requirements}
-          locked={isReadOnly}
-          readOnly={isReadOnly}
-          simulationLocked={state.run.isRunning}
-          designComplete={state.completed.sandbox}
-          updateDesign={setDesign}
-          onContinue={() => {}}
-          allowedComponentKinds={allowedComponents}
-          showFooterControls={false}
-          layout="immersive"
-          onOpenPalette={() => {
-            if (isReadOnly) return;
-            onMobilePaletteChange(true);
-          }}
-          onOpenSimulation={() => {
-            if (isReadOnly) return;
-            onRunPanelChange(true);
-          }}
-          showPaletteTrigger={false}
-        />
+      <div className="relative flex h-full w-full flex-col overflow-hidden pt-4 sm:pt-0">
+        <div className="relative flex flex-1 w-full overflow-hidden">
+          <DesignStage
+            design={state.design}
+            requirements={state.requirements}
+            locked={isReadOnly}
+            readOnly={isReadOnly}
+            simulationLocked={state.run.isRunning}
+            designComplete={state.completed.highLevelDesign}
+            updateDesign={setDesign}
+            onContinue={() => {}}
+            allowedComponentKinds={allowedComponents}
+            showFooterControls={false}
+            layout="immersive"
+            onOpenPalette={() => {
+              if (isReadOnly) return;
+              onMobilePaletteChange(true);
+            }}
+            onOpenSimulation={() => {
+              if (isReadOnly) return;
+              onRunPanelChange(true);
+            }}
+            showPaletteTrigger={false}
+          />
+        </div>
       </div>
 
       {/* Component Palette - Slides up from bottom with narrower width */}

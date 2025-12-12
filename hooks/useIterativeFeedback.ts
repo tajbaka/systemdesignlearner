@@ -172,7 +172,7 @@ export function useIterativeFeedback() {
    */
   const resetFeedback = useCallback((session: PracticeSessionValue, step?: PracticeStep) => {
     if (step && ["functional", "nonFunctional", "api", "sandbox"].includes(step)) {
-      const stepKey = step === "sandbox" ? "design" : step;
+      const stepKey = step === "highLevelDesign" ? "design" : step;
       session.resetIterativeFeedback(stepKey as "functional" | "nonFunctional" | "api" | "design");
     } else {
       session.resetIterativeFeedback();

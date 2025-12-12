@@ -72,12 +72,12 @@ export const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
     },
     onNext: (session) => completeStep(session, "api"),
   },
-  sandbox: {
-    id: "sandbox",
+  highLevelDesign: {
+    id: "highLevelDesign",
     showBack: true,
     nextLabel: "Run & Continue",
     nextDisabled: () => false, // Always enabled - will trigger run if needed
-    onNext: (session) => completeStep(session, "sandbox"),
+    onNext: (session) => completeStep(session, "highLevelDesign"),
   },
   score: {
     id: "score",
@@ -95,8 +95,8 @@ export const getHelperText = (
   if (currentStep === "functional" && nextDisabled) {
     return "Please provide a detailed description (at least 50 characters) of what the system should do.";
   }
-  if (currentStep === "sandbox" && nextDisabled) {
-    return "Run the simulation and achieve a passing score to continue.";
+  if (currentStep === "highLevelDesign" && nextDisabled) {
+    return "Design your system architecture visually with drag-and-drop components.";
   }
   if (currentStep === "nonFunctional" && nextDisabled) {
     return "Please provide a detailed description (at least 50 characters) of the performance constraints.";
