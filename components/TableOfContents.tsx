@@ -16,7 +16,7 @@ const scrollToElement = (id: string, animate = false, retries = 3) => {
 
   if (element) {
     // Calculate the position with offset for better visual spacing
-    const offset = 20;
+    const offset = 100;
 
     // Use getBoundingClientRect with scrollY for accurate position calculation
     // This works reliably regardless of current scroll position

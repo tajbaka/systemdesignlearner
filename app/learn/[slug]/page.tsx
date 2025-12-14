@@ -7,6 +7,7 @@ import fs from "fs";
 import path from "path";
 import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/utils";
+import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/lib/constants/ogImages";
 import type { ArticleCategory } from "@/components/ArticleSidebar";
 
 // Types
@@ -90,7 +91,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/learn/${slug}`;
-  const imageUrl = `${baseUrl}/og-image.png`;
+  const ogImage = `${baseUrl}${PRACTICE_IMAGE_URLS[VALID_SLUGS.URL_SHORTENER]}`;
 
   // Use article-specific keywords, fallback to generic ones
   const keywords = config.keywords || [
@@ -118,7 +119,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: config.description,
       images: [
         {
-          url: imageUrl,
+          url: ogImage,
           width: 1200,
           height: 630,
           alt: config.title,
@@ -133,7 +134,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title: config.title,
       description: config.description,
-      images: [imageUrl],
+      images: [ogImage],
       creator: "@systemdesignsb",
     },
     alternates: {

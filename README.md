@@ -1,6 +1,6 @@
 # 🧠 System Design Sandbox
 
-> Interactive system design playground — drag, connect, and simulate realistic architectures 
+> Interactive system design playground — drag, connect, and simulate realistic architectures
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black.svg)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.0-61dafb.svg)](https://react.dev/)

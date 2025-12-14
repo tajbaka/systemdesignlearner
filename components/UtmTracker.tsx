@@ -12,15 +12,35 @@ export function UtmTracker() {
     // Only run on client side
     if (typeof window === "undefined") return;
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const ref = urlParams.get("utm_source") || urlParams.get("ref");
+    // Get URL params - handle double ampersands by normalizing the search string
+    const searchString = window.location.search.replace(/&&+/g, "&");
+    const urlParams = new URLSearchParams(searchString);
 
-    if (ref) {
-      // Attach to the person (persistent)
-      register({ traffic_source: ref });
+    // Standard UTM parameters
+    const utmParams: Record<string, string> = {};
+    const utmKeys = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"];
 
-      // Capture an event with the property
-      track("landing_page_view", { traffic_source: ref });
+    utmKeys.forEach((key) => {
+      const value = urlParams.get(key);
+      if (value) {
+        utmParams[key] = value;
+      }
+    });
+
+    // Also check for legacy 'ref' parameter
+    const ref = urlParams.get("ref");
+    if (ref && !utmParams.utm_source) {
+      utmParams.utm_source = ref;
+      utmParams.traffic_source = ref; // Keep backward compatibility
+    }
+
+    // If we have any UTM parameters, track them
+    if (Object.keys(utmParams).length > 0) {
+      // Attach to the person (persistent) - store all UTM params
+      register(utmParams);
+
+      // Capture an event with all UTM properties
+      track("landing_page_view", utmParams);
     }
   }, []);
 

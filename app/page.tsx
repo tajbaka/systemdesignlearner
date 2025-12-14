@@ -1,5 +1,9 @@
 import { Metadata } from "next";
 import { HomePageClient } from "./HomePageClient";
+import { getBaseUrl } from "@/lib/utils";
+
+const baseUrl = getBaseUrl();
+const ogImage = `${baseUrl}/desktop-url-shortener-practice.gif`;
 
 export const metadata: Metadata = {
   title: "System Design Interview Practice - Interactive Sandbox",
@@ -11,7 +15,7 @@ export const metadata: Metadata = {
       "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
     images: [
       {
-        url: "/og-image.png", // You'll need to add this image
+        url: ogImage,
         width: 1200,
         height: 630,
         alt: "System Design Sandbox - Interactive Architecture Playground",
@@ -24,7 +28,7 @@ export const metadata: Metadata = {
     title: "System Design Interview Practice - Interactive Sandbox",
     description:
       "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
-    images: ["/og-image.png"],
+    images: [ogImage],
   },
   keywords: [
     "system design interview",
