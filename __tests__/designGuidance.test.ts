@@ -169,7 +169,14 @@ describe("evaluateDesignGuidance", () => {
       { id: "web", spec: specFor("Web"), x: 0, y: 0, replicas: 1 },
       { id: "api", spec: specFor("API Gateway"), x: 100, y: 0, replicas: 1 },
       { id: "svc1", spec: specFor("Service"), x: 200, y: 0, replicas: 1, customLabel: "Shorten" },
-      { id: "svc2", spec: specFor("Service"), x: 200, y: 100, replicas: 1, customLabel: "Redirect" },
+      {
+        id: "svc2",
+        spec: specFor("Service"),
+        x: 200,
+        y: 100,
+        replicas: 1,
+        customLabel: "Redirect",
+      },
       { id: "cache", spec: specFor("Cache (Redis)"), x: 300, y: 50, replicas: 1 },
       { id: "db", spec: specFor("DB (Postgres)"), x: 400, y: 0, replicas: 1 },
     ];

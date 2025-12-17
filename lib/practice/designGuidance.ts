@@ -193,7 +193,8 @@ function evaluateLegacyGuidance(design: PracticeDesignState): DesignGuidance | n
       id: "connect-web-api",
       level: "core",
       question: "How does traffic flow from the Web client into the API Gateway at the moment?",
-      summary: "Connect the Web client to the API Gateway so requests can actually reach your backend.",
+      summary:
+        "Connect the Web client to the API Gateway so requests can actually reach your backend.",
     };
   }
 
@@ -229,7 +230,8 @@ function evaluateLegacyGuidance(design: PracticeDesignState): DesignGuidance | n
     return {
       id: "connect-service-db",
       level: "core",
-      question: "How does the Service reach the database for reads and writes in the current layout?",
+      question:
+        "How does the Service reach the database for reads and writes in the current layout?",
       summary: "Connect the Service to the database so it can store and fetch URL records.",
     };
   }
@@ -261,8 +263,10 @@ function evaluateLegacyGuidance(design: PracticeDesignState): DesignGuidance | n
     return {
       id: "connect-service-cache",
       level: "bonus",
-      question: "If cache is present, how does the Service reach it before falling back to the database?",
-      summary: "Remember to connect the Service to cache first and fall back to the database on a miss.",
+      question:
+        "If cache is present, how does the Service reach it before falling back to the database?",
+      summary:
+        "Remember to connect the Service to cache first and fall back to the database on a miss.",
     };
   }
 
@@ -272,7 +276,8 @@ function evaluateLegacyGuidance(design: PracticeDesignState): DesignGuidance | n
       level: "bonus",
       question:
         "The Service feeding cache still needs a fallback—can it also reach the database when a slug is missing?",
-      summary: "The Service that talks to cache also needs a direct path to the database for cache misses.",
+      summary:
+        "The Service that talks to cache also needs a direct path to the database for cache misses.",
     };
   }
 
@@ -282,7 +287,8 @@ function evaluateLegacyGuidance(design: PracticeDesignState): DesignGuidance | n
       level: "bonus",
       question:
         "Can you rename the Services so it's obvious which one handles shortening and which one handles redirects?",
-      summary: "Naming each Service after its role (e.g., Shorten vs Redirect) makes the diagram clearer.",
+      summary:
+        "Naming each Service after its role (e.g., Shorten vs Redirect) makes the diagram clearer.",
     };
   }
 
