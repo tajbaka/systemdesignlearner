@@ -92,10 +92,14 @@ export type ApiConfig = {
 // Design Guidance
 // ============================================================================
 
+export type GuidanceLevel = "core" | "bonus";
+
 export type GuidanceQuestion = {
   id: string;
   question: string;
   hints?: string[];
+  /** Whether this is a core requirement or bonus improvement */
+  level?: GuidanceLevel;
   /** Component kinds that should be present to answer this question */
   requiredKinds?: string[];
 };

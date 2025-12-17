@@ -248,7 +248,7 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
           setVerification({ isVerifying: false, result: null, error: null });
         }
         if (session.currentStep === "highLevelDesign") {
-          const guidance = evaluateDesignGuidance(session.state.design);
+          const guidance = evaluateDesignGuidance(session.state.design, session.state.slug);
           if (guidance && guidance.level === "core") {
             setScoringFeedback({
               score: 0,

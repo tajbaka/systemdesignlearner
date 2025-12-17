@@ -26,8 +26,8 @@ export async function loadScenarioReference(slug: string): Promise<ScenarioRefer
 
   try {
     // Dynamic import of the scenario reference JSON
-    const module = await import(`./reference/${slug}.json`);
-    const reference = module.default as ScenarioReference;
+    const importedModule = await import(`./reference/${slug}.json`);
+    const reference = importedModule.default as ScenarioReference;
 
     // Cache for future use
     cache.set(slug, reference);

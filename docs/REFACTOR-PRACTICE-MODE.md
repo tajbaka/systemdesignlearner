@@ -483,22 +483,22 @@ Each requires:
 - [x] Update `hooks/usePracticeScoring.ts` to use dynamic slug
 - [x] Test with existing URL shortener to ensure no regression
 
-### Phase 3-5 (Core Refactor) - PARTIALLY COMPLETED
+### Phase 3-5 (Core Refactor) - COMPLETED
 
 - [x] Create `lib/practice/loader.ts`
 - [x] Refactor `verification.ts` to use loader
-- [ ] Refactor `brief.ts` to use loader
-- [x] Update all callers for async changes (verify-step route updated)
+- [x] Refactor `brief.ts` to use loader (now async with toMarkdown())
+- [x] Update all callers for async changes (verify-step route, tests updated)
 
-### Phase 6-8 (Complete Migration)
+### Phase 6-8 (Complete Migration) - MOSTLY COMPLETED
 
-- [ ] Refactor `designGuidance.ts`
-- [ ] Update UI components with dynamic text
-- [ ] Migrate `scenario-configs.ts` to generate from JSON
+- [x] Refactor `designGuidance.ts` (loads question text from JSON)
+- [ ] Update UI components with dynamic text (Phase 7 deferred - onboarding text)
+- [x] Migrate `scenario-configs.ts` to generate from JSON
 
 ### Phase 9-10 (New Content) - PARTIALLY COMPLETED
 
-- [x] Expand `url-shortener.json` with all sections
+- [x] Expand `url-shortener.json` with all sections (functional, design guidance, brief, onboarding)
 - [ ] Create `rate-limiter.json`
 - [ ] Create corresponding scoring config
 - [ ] Test new scenario end-to-end

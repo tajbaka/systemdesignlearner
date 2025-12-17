@@ -38,7 +38,7 @@ describe("practice storage", () => {
 });
 
 describe("practice brief markdown", () => {
-  it("includes requirements and simulation summary", () => {
+  it("includes requirements and simulation summary", async () => {
     const design = makeDefaultDesignState();
     const run = makeDefaultRunState();
     const state: PracticeState = {
@@ -101,7 +101,7 @@ describe("practice brief markdown", () => {
       updatedAt: Date.now(),
     };
 
-    const markdown = toMarkdown(state);
+    const markdown = await toMarkdown(state);
     expect(markdown).toContain("Summary: Shorten URLs, redirect fast, allow optional analytics.");
     expect(markdown).toContain("Create short URLs: Enabled");
     expect(markdown).toContain("Read throughput target: 5,000 rps");
