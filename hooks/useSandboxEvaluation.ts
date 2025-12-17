@@ -216,7 +216,7 @@ export function useSandboxEvaluation(
       designScore: session.state.scores?.design,
     });
 
-    if (!waitingForSimulation || currentStep !== "sandbox") return;
+    if (!waitingForSimulation || currentStep !== "highLevelDesign") return;
 
     const hasRun = Boolean(lastResult);
     const hasDesignScore = session.state.scores?.design !== undefined;
