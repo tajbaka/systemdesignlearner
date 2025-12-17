@@ -1,7 +1,7 @@
 import type { Requirements } from "./types";
 import type { ApiEndpoint } from "./types";
-import reference from "./reference/url-shortener.json";
-import scoringConfig from "@/lib/scoring/configs/url-shortener.json";
+import type { ScenarioReference } from "./reference/schema";
+import type { ProblemScoringConfig } from "@/lib/scoring/types";
 import { logger } from "@/lib/logger";
 
 export type VerificationResult = {
@@ -11,18 +11,30 @@ export type VerificationResult = {
 };
 
 /**
+ * Context needed for verification prompts.
+ * Load these dynamically using loadScenarioReference() and loadScoringConfig().
+ */
+export type VerificationContext = {
+  scenarioTitle: string;
+  reference: ScenarioReference;
+  scoringConfig: ProblemScoringConfig;
+};
+
+/**
  * Build prompt for functional requirements verification
  */
 export function buildFunctionalPrompt(
   summary: string,
-  selectedFeatures: Requirements["functional"]
+  selectedFeatures: Requirements["functional"],
+  context: VerificationContext
 ) {
+  const { scenarioTitle, scoringConfig } = context;
   const required = scoringConfig.steps.functional.coreRequirements;
   const optional = scoringConfig.steps.functional.optionalRequirements.filter(
     (opt: { id: string }) => selectedFeatures[opt.id as keyof typeof selectedFeatures]
   );
 
-  return `You are verifying functional requirements for a URL Shortener system design practice exercise.
+  return `You are verifying functional requirements for a ${scenarioTitle} system design practice exercise.
 
 **Reference Requirements:**
 
@@ -57,8 +69,10 @@ export function buildNonFunctionalPrompt(
   readRps: number,
   writeRps: number,
   p95RedirectMs: number,
-  availability: string
+  availability: string,
+  context: VerificationContext
 ) {
+  const { scenarioTitle, reference } = context;
   const nf = reference.nonFunctional;
 
   // Extract categories from the JSON structure
@@ -67,13 +81,31 @@ export function buildNonFunctionalPrompt(
   const latency = nf.categories.find((c) => c.id === "latency");
   const availabilityCategory = nf.categories.find((c) => c.id === "availability");
 
-  return `You are verifying non-functional requirements for a URL Shortener system design.
+  // Build acceptable ranges string, handling optional categories
+  const ranges: string[] = [];
+  if (readThroughput?.quantitative && "min" in readThroughput.quantitative) {
+    ranges.push(
+      `- Read throughput: ${readThroughput.quantitative.min}-${readThroughput.quantitative.max} rps (recommended: ${readThroughput.quantitative.recommended})`
+    );
+  }
+  if (writeThroughput?.quantitative && "min" in writeThroughput.quantitative) {
+    ranges.push(
+      `- Write throughput: ${writeThroughput.quantitative.min}-${writeThroughput.quantitative.max} rps (recommended: ${writeThroughput.quantitative.recommended})`
+    );
+  }
+  if (latency?.quantitative && "min" in latency.quantitative) {
+    ranges.push(
+      `- P95 latency: ${latency.quantitative.min}-${latency.quantitative.max} ms (recommended: ${latency.quantitative.recommended})`
+    );
+  }
+  if (availabilityCategory?.quantitative && "acceptable" in availabilityCategory.quantitative) {
+    ranges.push(`- Availability: ${availabilityCategory.quantitative.acceptable.join(", ")}`);
+  }
+
+  return `You are verifying non-functional requirements for a ${scenarioTitle} system design.
 
 **Acceptable Ranges:**
-- Read throughput: ${readThroughput?.quantitative?.min}-${readThroughput?.quantitative?.max} rps (recommended: ${readThroughput?.quantitative?.recommended})
-- Write throughput: ${writeThroughput?.quantitative?.min}-${writeThroughput?.quantitative?.max} rps (recommended: ${writeThroughput?.quantitative?.recommended})
-- P95 latency: ${latency?.quantitative?.min}-${latency?.quantitative?.max} ms (recommended: ${latency?.quantitative?.recommended})
-- Availability: ${availabilityCategory?.quantitative?.acceptable?.join(", ")}
+${ranges.length > 0 ? ranges.join("\n") : "No specific ranges defined"}
 
 **User's Input:**
 Text: ${notes}
@@ -100,16 +132,22 @@ Return ONLY valid JSON:
  */
 export function buildApiPrompt(
   endpoints: ApiEndpoint[],
-  selectedFeatures: Requirements["functional"]
+  selectedFeatures: Requirements["functional"],
+  context: VerificationContext
 ) {
-  const requiredEndpoints = reference.apiEndpoints.filter((e) => e.required);
-  const optionalEndpoints = reference.apiEndpoints.filter(
+  const { scenarioTitle, reference } = context;
+
+  // Support both apiEndpoints (legacy) and api.endpoints (new schema)
+  const apiEndpoints = reference.apiEndpoints ?? reference.api?.endpoints ?? [];
+
+  const requiredEndpoints = apiEndpoints.filter((e) => e.required);
+  const optionalEndpoints = apiEndpoints.filter(
     (e) =>
       !e.required &&
       (!e.requiresFeature || selectedFeatures[e.requiresFeature as keyof typeof selectedFeatures])
   );
 
-  return `You are verifying API design for a URL Shortener system.
+  return `You are verifying API design for a ${scenarioTitle} system.
 
 **Required Endpoints:**
 ${requiredEndpoints.map((e) => `- ${e.method} ${e.path}: ${e.purpose}`).join("\n")}

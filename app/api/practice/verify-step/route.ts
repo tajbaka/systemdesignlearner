@@ -7,41 +7,73 @@ import {
   buildApiPrompt,
   parseVerificationResponse,
   type VerificationResult,
+  type VerificationContext,
 } from "@/lib/practice/verification";
+import { loadScenarioReference } from "@/lib/practice/loader";
+import { loadScoringConfig } from "@/lib/scoring/index";
+import { SCENARIOS } from "@/lib/scenarios";
 import type { Requirements, ApiEndpoint } from "@/lib/practice/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type VerifyRequestBody =
-  | {
-      step: "functional";
-      summary: string;
-      selectedFeatures: Requirements["functional"];
-    }
-  | {
-      step: "nonFunctional";
-      notes: string;
-      readRps: number;
-      writeRps: number;
-      p95RedirectMs: number;
-      availability: string;
-    }
-  | {
-      step: "api";
-      endpoints: ApiEndpoint[];
-      selectedFeatures: Requirements["functional"];
-    };
+type BaseRequestBody = {
+  slug: string;
+};
+
+type VerifyRequestBody = BaseRequestBody &
+  (
+    | {
+        step: "functional";
+        summary: string;
+        selectedFeatures: Requirements["functional"];
+      }
+    | {
+        step: "nonFunctional";
+        notes: string;
+        readRps: number;
+        writeRps: number;
+        p95RedirectMs: number;
+        availability: string;
+      }
+    | {
+        step: "api";
+        endpoints: ApiEndpoint[];
+        selectedFeatures: Requirements["functional"];
+      }
+  );
 
 export async function POST(request: NextRequest) {
   try {
     const body: VerifyRequestBody = await request.json();
+    const { slug } = body;
+
+    // Validate slug
+    const scenario = SCENARIOS.find((s) => s.id === slug && s.hasPractice);
+    if (!scenario) {
+      return NextResponse.json(
+        { error: `Invalid or unsupported scenario: ${slug}` },
+        { status: 400 }
+      );
+    }
+
+    // Load scenario reference and scoring config dynamically
+    const [reference, scoringConfig] = await Promise.all([
+      loadScenarioReference(slug),
+      loadScoringConfig(slug),
+    ]);
+
+    const context: VerificationContext = {
+      scenarioTitle: scenario.title,
+      reference,
+      scoringConfig,
+    };
 
     let prompt: string;
 
     switch (body.step) {
       case "functional":
-        prompt = buildFunctionalPrompt(body.summary, body.selectedFeatures);
+        prompt = buildFunctionalPrompt(body.summary, body.selectedFeatures, context);
         break;
 
       case "nonFunctional":
@@ -50,12 +82,13 @@ export async function POST(request: NextRequest) {
           body.readRps,
           body.writeRps,
           body.p95RedirectMs,
-          body.availability
+          body.availability,
+          context
         );
         break;
 
       case "api":
-        prompt = buildApiPrompt(body.endpoints, body.selectedFeatures);
+        prompt = buildApiPrompt(body.endpoints, body.selectedFeatures, context);
         break;
 
       default:

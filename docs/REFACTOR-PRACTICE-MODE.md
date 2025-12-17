@@ -12,48 +12,48 @@ The current practice mode is tightly coupled to the URL Shortener scenario. Addi
 
 ### What Works Well (Data-Driven)
 
-| Component | File | How It Works |
-|-----------|------|--------------|
-| Scenario metadata | `lib/scenarios.ts` | `SCENARIOS` array already supports 9 scenarios |
-| Functional toggles | `lib/practice/scenario-configs.ts` | Registry pattern with `getScenarioConfig(slug)` |
-| Default state factories | `lib/practice/scenario-configs.ts` | Per-scenario default state generation |
-| Scoring config loading | `lib/scoring/index.ts` | Dynamic import: `import(\`./configs/${problemId}.json\`)` |
-| Step navigation | `lib/practice/step-configs.ts` | Generic validation rules |
-| Component library | `app/components/data.ts` | Shared across all scenarios |
+| Component               | File                               | How It Works                                              |
+| ----------------------- | ---------------------------------- | --------------------------------------------------------- |
+| Scenario metadata       | `lib/scenarios.ts`                 | `SCENARIOS` array already supports 9 scenarios            |
+| Functional toggles      | `lib/practice/scenario-configs.ts` | Registry pattern with `getScenarioConfig(slug)`           |
+| Default state factories | `lib/practice/scenario-configs.ts` | Per-scenario default state generation                     |
+| Scoring config loading  | `lib/scoring/index.ts`             | Dynamic import: `import(\`./configs/${problemId}.json\`)` |
+| Step navigation         | `lib/practice/step-configs.ts`     | Generic validation rules                                  |
+| Component library       | `app/components/data.ts`           | Shared across all scenarios                               |
 
 ### What's Broken (Hardcoded for URL Shortener)
 
 #### Critical — Blocks Other Scenarios
 
-| File | Issue | Line(s) |
-|------|-------|---------|
-| `app/practice/[slug]/page.tsx` | `VALID_SLUG = "url-shortener"` — returns 404 for any other scenario | ~10-15 |
-| `hooks/usePracticeScoring.ts` | `loadScoringConfig("url-shortener")` — ignores `state.slug` | ~35 |
-| `lib/practice/verification.ts` | Direct imports: `import reference from "./reference/url-shortener.json"` | ~1-5 |
+| File                           | Issue                                                                    | Line(s) |
+| ------------------------------ | ------------------------------------------------------------------------ | ------- |
+| `app/practice/[slug]/page.tsx` | `VALID_SLUG = "url-shortener"` — returns 404 for any other scenario      | ~10-15  |
+| `hooks/usePracticeScoring.ts`  | `loadScoringConfig("url-shortener")` — ignores `state.slug`              | ~35     |
+| `lib/practice/verification.ts` | Direct imports: `import reference from "./reference/url-shortener.json"` | ~1-5    |
 
 #### High Priority — Core Functionality
 
-| File | Issue |
-|------|-------|
-| `lib/practice/brief.ts` | Hardcoded `URL_SHORTENER` scenario lookup, functional order, markdown title |
-| `lib/practice/designGuidance.ts` | All 15+ guidance questions are URL shortener specific |
-| `lib/practice/verification.ts` | AI prompts hardcode "URL Shortener" text |
+| File                             | Issue                                                                       |
+| -------------------------------- | --------------------------------------------------------------------------- |
+| `lib/practice/brief.ts`          | Hardcoded `URL_SHORTENER` scenario lookup, functional order, markdown title |
+| `lib/practice/designGuidance.ts` | All 15+ guidance questions are URL shortener specific                       |
+| `lib/practice/verification.ts`   | AI prompts hardcode "URL Shortener" text                                    |
 
 #### Medium Priority — User Experience
 
-| File | Issue |
-|------|-------|
-| `components/practice/stages/DesignStage.tsx` | Uses `evaluateDesignGuidance()` which is URL shortener specific |
-| `components/practice/PracticeFlow.tsx` | Onboarding text: "Let's walk through building a URL shortener together" |
-| `lib/practice/defaults.ts` | `PRESET_CHOICES`, `URL_SCHEMA`, `CLICK_SCHEMA` all URL shortener specific |
+| File                                         | Issue                                                                     |
+| -------------------------------------------- | ------------------------------------------------------------------------- |
+| `components/practice/stages/DesignStage.tsx` | Uses `evaluateDesignGuidance()` which is URL shortener specific           |
+| `components/practice/PracticeFlow.tsx`       | Onboarding text: "Let's walk through building a URL shortener together"   |
+| `lib/practice/defaults.ts`                   | `PRESET_CHOICES`, `URL_SCHEMA`, `CLICK_SCHEMA` all URL shortener specific |
 
 #### Low Priority — Polish
 
-| File | Issue |
-|------|-------|
-| `lib/practice/apiPlaceholders.ts` | Specific placeholders for URL shortener endpoints |
-| `components/practice/steps/NonFunctionalRequirementsStep.tsx` | Placeholder text mentions "redirect latency" |
-| `components/practice/session/PracticeSessionProvider.tsx` | Default slug fallbacks to "url-shortener" |
+| File                                                          | Issue                                             |
+| ------------------------------------------------------------- | ------------------------------------------------- |
+| `lib/practice/apiPlaceholders.ts`                             | Specific placeholders for URL shortener endpoints |
+| `components/practice/steps/NonFunctionalRequirementsStep.tsx` | Placeholder text mentions "redirect latency"      |
+| `components/practice/session/PracticeSessionProvider.tsx`     | Default slug fallbacks to "url-shortener"         |
 
 ---
 
@@ -215,6 +215,7 @@ lib/practice/
 **Goal:** Allow navigation to any valid scenario in practice mode.
 
 **Files to modify:**
+
 1. `app/practice/[slug]/page.tsx`
    - Remove `VALID_SLUG = "url-shortener"` constant
    - Check against `SCENARIOS` array for valid practice-enabled scenarios
@@ -228,7 +229,7 @@ const VALID_SLUG = "url-shortener";
 if (slug !== VALID_SLUG) notFound();
 
 // After
-const scenario = SCENARIOS.find(s => s.slug === slug && s.hasPractice);
+const scenario = SCENARIOS.find((s) => s.slug === slug && s.hasPractice);
 if (!scenario) notFound();
 ```
 
@@ -239,6 +240,7 @@ if (!scenario) notFound();
 **Goal:** Load correct scoring config based on current scenario.
 
 **Files to modify:**
+
 1. `hooks/usePracticeScoring.ts`
    - Pass `state.slug` to `loadScoringConfig()` instead of hardcoded string
 
@@ -261,7 +263,7 @@ const config = await loadScoringConfig(state.slug);
 **New file:** `lib/practice/loader.ts`
 
 ```typescript
-import type { ScenarioReference } from './reference/schema';
+import type { ScenarioReference } from "./reference/schema";
 
 const cache = new Map<string, ScenarioReference>();
 
@@ -279,6 +281,7 @@ export function getScenarioReferenceSync(slug: string): ScenarioReference | null
 ```
 
 **New file:** `lib/practice/reference/schema.ts`
+
 - Define TypeScript types matching the JSON schema
 - Export validation utilities
 
@@ -291,14 +294,16 @@ export function getScenarioReferenceSync(slug: string): ScenarioReference | null
 **File:** `lib/practice/verification.ts`
 
 **Current (problematic):**
+
 ```typescript
 import reference from "./reference/url-shortener.json";
 import scoringConfig from "@/lib/scoring/configs/url-shortener.json";
 ```
 
 **Proposed:**
+
 ```typescript
-import { loadScenarioReference } from './loader';
+import { loadScenarioReference } from "./loader";
 
 export async function verifyRequirements(state: PracticeState) {
   const reference = await loadScenarioReference(state.slug);
@@ -308,6 +313,7 @@ export async function verifyRequirements(state: PracticeState) {
 ```
 
 **Changes needed:**
+
 - Make verification functions async
 - Update all callers to await
 - Parameterize AI prompts using `reference.verification.systemPrompt`
@@ -321,11 +327,13 @@ export async function verifyRequirements(state: PracticeState) {
 **File:** `lib/practice/brief.ts`
 
 **Current issues:**
+
 - Hardcoded `URL_SHORTENER` scenario lookup
 - Hardcoded functional requirement order and labels
 - Hardcoded markdown title "# URL Shortener Review"
 
 **Proposed:**
+
 ```typescript
 export async function generateBrief(state: PracticeState): Promise<string> {
   const reference = await loadScenarioReference(state.slug);
@@ -348,10 +356,12 @@ export async function generateBrief(state: PracticeState): Promise<string> {
 **File:** `lib/practice/designGuidance.ts`
 
 **Current:** 15+ hardcoded URL shortener specific questions like:
+
 - "What happens when a user submits a URL?"
 - "How will you generate unique short codes?"
 
 **Proposed:**
+
 - Move questions to JSON: `reference.design.guidance.questions`
 - Keep evaluation logic generic
 - Load dynamically based on scenario
@@ -396,6 +406,7 @@ export async function evaluateDesignGuidance(
 **File:** `lib/practice/scenario-configs.ts`
 
 **Current:**
+
 ```typescript
 const SCENARIO_CONFIGS: Record<string, ScenarioConfig> = {
   "url-shortener": URL_SHORTENER_CONFIG,
@@ -403,6 +414,7 @@ const SCENARIO_CONFIGS: Record<string, ScenarioConfig> = {
 ```
 
 **Proposed:**
+
 ```typescript
 export async function getScenarioConfig(slug: string): Promise<ScenarioConfig> {
   const reference = await loadScenarioReference(slug);
@@ -424,11 +436,13 @@ export async function getScenarioConfig(slug: string): Promise<ScenarioConfig> {
 **Goal:** Add missing sections to existing JSON to match new schema.
 
 **Current JSON has:**
+
 - `nonFunctional.categories`
 - `apiEndpoints`
 - `components`
 
 **Need to add:**
+
 - `functional.toggles` (move from scenario-configs.ts)
 - `functional.order` and `labels` (move from brief.ts)
 - `design.guidance.questions` (move from designGuidance.ts)
@@ -443,11 +457,13 @@ export async function getScenarioConfig(slug: string): Promise<ScenarioConfig> {
 **Goal:** Add JSON files for additional scenarios.
 
 **Recommended first additions:**
+
 1. `rate-limiter.json` — Good second scenario, well-defined scope
 2. `cdn.json` — Different architecture pattern
 3. `spotify-play.json` — More complex, streaming focus
 
 Each requires:
+
 - Reference JSON file in `lib/practice/reference/`
 - Scoring config in `lib/scoring/configs/`
 
@@ -456,28 +472,33 @@ Each requires:
 ## Migration Checklist
 
 ### Before Starting
-- [ ] Create `lib/practice/reference/schema.ts` with TypeScript types
+
+- [x] Create `lib/practice/reference/schema.ts` with TypeScript types
 - [ ] Add tests for scenario loader
-- [ ] Document JSON schema in this file or separate doc
+- [x] Document JSON schema in this file or separate doc
 
-### Phase 1-2 (Critical Path)
-- [ ] Update `app/practice/[slug]/page.tsx` routing
-- [ ] Update `hooks/usePracticeScoring.ts` to use dynamic slug
-- [ ] Test with existing URL shortener to ensure no regression
+### Phase 1-2 (Critical Path) - COMPLETED
 
-### Phase 3-5 (Core Refactor)
-- [ ] Create `lib/practice/loader.ts`
-- [ ] Refactor `verification.ts` to use loader
+- [x] Update `app/practice/[slug]/page.tsx` routing
+- [x] Update `hooks/usePracticeScoring.ts` to use dynamic slug
+- [x] Test with existing URL shortener to ensure no regression
+
+### Phase 3-5 (Core Refactor) - PARTIALLY COMPLETED
+
+- [x] Create `lib/practice/loader.ts`
+- [x] Refactor `verification.ts` to use loader
 - [ ] Refactor `brief.ts` to use loader
-- [ ] Update all callers for async changes
+- [x] Update all callers for async changes (verify-step route updated)
 
 ### Phase 6-8 (Complete Migration)
+
 - [ ] Refactor `designGuidance.ts`
 - [ ] Update UI components with dynamic text
 - [ ] Migrate `scenario-configs.ts` to generate from JSON
 
-### Phase 9-10 (New Content)
-- [ ] Expand `url-shortener.json` with all sections
+### Phase 9-10 (New Content) - PARTIALLY COMPLETED
+
+- [x] Expand `url-shortener.json` with all sections
 - [ ] Create `rate-limiter.json`
 - [ ] Create corresponding scoring config
 - [ ] Test new scenario end-to-end
@@ -487,14 +508,17 @@ Each requires:
 ## Risk Mitigation
 
 ### Breaking Changes
+
 - All verification/brief functions becoming async is a significant change
 - Mitigation: Do Phase 1-2 first, ship, then continue with async refactor
 
 ### Performance
+
 - Dynamic imports add latency
 - Mitigation: Eager loading + caching in loader module
 
 ### Type Safety
+
 - JSON files don't have TypeScript checking
 - Mitigation:
   - Create Zod schema for runtime validation
@@ -502,6 +526,7 @@ Each requires:
   - Generate types from JSON schema
 
 ### Backwards Compatibility
+
 - Existing URL shortener sessions should continue to work
 - Mitigation: Keep fallbacks during migration, remove after stable
 

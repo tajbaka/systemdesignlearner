@@ -38,7 +38,7 @@ export function usePracticeScoring() {
     setScoringFeedback(null);
 
     try {
-      const config = await loadScoringConfig("url-shortener");
+      const config = await loadScoringConfig(session.state.slug);
       let result: FeedbackResult;
 
       switch (currentStep) {

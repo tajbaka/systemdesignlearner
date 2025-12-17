@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import { decodeDesign } from "@/lib/shareLink";
 import type { PracticeState } from "@/lib/practice/types";
+import { SCENARIOS } from "@/lib/scenarios";
 import PracticeSlugClient from "./PracticeSlugClient";
-
-const VALID_SLUG = "url-shortener";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -14,7 +13,9 @@ export default async function PracticeSlugPage({ params, searchParams }: Props) 
   const { slug } = await params;
   const search = await searchParams;
 
-  if (slug !== VALID_SLUG) {
+  // Check if this scenario has practice mode enabled
+  const scenario = SCENARIOS.find((s) => s.id === slug && s.hasPractice);
+  if (!scenario) {
     notFound();
   }
 
