@@ -5,7 +5,6 @@ import type {
   GuidanceLevel,
   GuidanceRule,
   GuidanceRuleCheck,
-  ScenarioReference,
 } from "./reference/schema";
 import { getScenarioReferenceSync } from "./loader";
 
