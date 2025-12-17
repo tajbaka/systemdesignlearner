@@ -474,7 +474,7 @@ Each requires:
 ### Before Starting
 
 - [x] Create `lib/practice/reference/schema.ts` with TypeScript types
-- [ ] Add tests for scenario loader
+- [x] Add tests for scenario loader (via `__tests__/designGuidance.test.ts`)
 - [x] Document JSON schema in this file or separate doc
 
 ### Phase 1-2 (Critical Path) - COMPLETED
@@ -495,6 +495,15 @@ Each requires:
 - [x] Refactor `designGuidance.ts` (loads question text from JSON)
 - [x] Update UI components with dynamic text (PracticeFlow.tsx onboarding tooltips)
 - [x] Migrate `scenario-configs.ts` to generate from JSON
+
+### Design Guidance Rule System - COMPLETED
+
+- [x] Design JSON schema for `GuidanceRule` with check types (`hasKind`, `hasConnection`, etc.)
+- [x] Add `rules` array to `url-shortener.json` with declarative evaluation rules
+- [x] Create generic `evaluateRuleCheck()` function in `designGuidance.ts`
+- [x] Add `evaluateRulesFromReference()` for rule-based evaluation
+- [x] Keep legacy fallback `evaluateLegacyGuidance()` for scenarios without rules
+- [x] Add comprehensive tests in `__tests__/designGuidance.test.ts`
 
 ### Phase 9-10 (New Content) - PARTIALLY COMPLETED
 

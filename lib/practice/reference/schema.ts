@@ -94,6 +94,66 @@ export type ApiConfig = {
 
 export type GuidanceLevel = "core" | "bonus";
 
+/**
+ * Rule check types for design guidance evaluation.
+ * These define the conditions that trigger guidance prompts.
+ */
+
+/** Check if a component kind exists in the design */
+export type HasKindCheck = {
+  type: "hasKind";
+  kind: string;
+  /** Minimum number of this kind required (default: 1) */
+  minCount?: number;
+};
+
+/** Check if two component kinds are connected */
+export type HasConnectionCheck = {
+  type: "hasConnection";
+  from: string;
+  to: string;
+};
+
+/**
+ * Check if any node of `kind` is connected to `connectedTo` but NOT to `missingConnection`.
+ * Used for: "Service connected to Cache but missing connection to DB"
+ */
+export type KindConnectedMissingCheck = {
+  type: "kindConnectedToFirstMissingSecond";
+  kind: string;
+  connectedTo: string;
+  missingConnection: string;
+};
+
+/**
+ * Check if services have unique custom labels.
+ * Used for: "Rename services so it's clear which handles what"
+ */
+export type ServicesLabeledCheck = {
+  type: "servicesHaveUniqueLabels";
+  minServices: number;
+};
+
+/** Union of all possible rule check types */
+export type GuidanceRuleCheck =
+  | HasKindCheck
+  | HasConnectionCheck
+  | KindConnectedMissingCheck
+  | ServicesLabeledCheck;
+
+/**
+ * A guidance rule that triggers when its check condition is NOT met.
+ * Rules are evaluated in order; first failing rule triggers guidance.
+ */
+export type GuidanceRule = {
+  id: string;
+  level: GuidanceLevel;
+  /** The condition to check - guidance triggers when this is FALSE */
+  check: GuidanceRuleCheck;
+  question: string;
+  hint: string;
+};
+
 export type GuidanceQuestion = {
   id: string;
   question: string;
@@ -110,8 +170,11 @@ export type EvaluationCriterion = {
 };
 
 export type DesignGuidanceConfig = {
-  questions: GuidanceQuestion[];
-  evaluationCriteria: Record<string, EvaluationCriterion>;
+  /** Legacy: question text lookup (still supported) */
+  questions?: GuidanceQuestion[];
+  /** New: declarative rules for guidance evaluation */
+  rules?: GuidanceRule[];
+  evaluationCriteria?: Record<string, EvaluationCriterion>;
 };
 
 export type DesignConfig = {

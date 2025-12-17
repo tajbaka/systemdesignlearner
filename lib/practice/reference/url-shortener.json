@@ -341,90 +341,95 @@
 
   "design": {
     "guidance": {
-      "questions": [
+      "rules": [
         {
           "id": "add-web",
           "level": "core",
+          "check": { "type": "hasKind", "kind": "Web" },
           "question": "Where do requests originate from in the current diagram?",
-          "hints": ["Start with a client/Web node so requests have an entry point."]
+          "hint": "Start with a client/Web node so requests have an entry point."
         },
         {
           "id": "add-api-gateway",
           "level": "core",
+          "check": { "type": "hasKind", "kind": "API Gateway" },
           "question": "What component sits between users and backend services to terminate HTTP, enforce auth, and route traffic?",
-          "hints": ["Clients need an API Gateway to handle routing, auth, and rate limiting."]
+          "hint": "Clients need an API Gateway to handle routing, auth, and rate limiting."
         },
         {
           "id": "connect-web-api",
           "level": "core",
+          "check": { "type": "hasConnection", "from": "Web", "to": "API Gateway" },
           "question": "How does traffic flow from the Web client into the API Gateway at the moment?",
-          "hints": [
-            "Connect the Web client to the API Gateway so requests can actually reach your backend."
-          ]
+          "hint": "Connect the Web client to the API Gateway so requests can actually reach your backend."
         },
         {
           "id": "add-service",
           "level": "core",
+          "check": { "type": "hasKind", "kind": "Service" },
           "question": "After the API Gateway, which component should execute the URL creation and redirect logic?",
-          "hints": ["A Service layer is required to handle URL creation and redirect logic."]
+          "hint": "A Service layer is required to handle URL creation and redirect logic."
         },
         {
           "id": "connect-api-service",
           "level": "core",
+          "check": { "type": "hasConnection", "from": "API Gateway", "to": "Service" },
           "question": "How are requests moving from the API Gateway into the Service layer right now?",
-          "hints": ["Wire the API Gateway to your Service so requests continue through the stack."]
+          "hint": "Wire the API Gateway to your Service so requests continue through the stack."
         },
         {
           "id": "add-database",
           "level": "core",
+          "check": { "type": "hasKind", "kind": "DB (Postgres)" },
           "question": "Where will the platform persist the short-to-long URL mappings for durability?",
-          "hints": ["URL mappings need durable storage. Add a primary database (Postgres is fine)."]
+          "hint": "URL mappings need durable storage. Add a primary database (Postgres is fine)."
         },
         {
           "id": "connect-service-db",
           "level": "core",
+          "check": { "type": "hasConnection", "from": "Service", "to": "DB (Postgres)" },
           "question": "How does the Service reach the database for reads and writes in the current layout?",
-          "hints": ["Connect the Service to the database so it can store and fetch URL records."]
+          "hint": "Connect the Service to the database so it can store and fetch URL records."
         },
         {
           "id": "add-second-service",
           "level": "bonus",
+          "check": { "type": "hasKind", "kind": "Service", "minCount": 2 },
           "question": "Right now one Service handles both shortening URLs and redirecting clicks. How could adding a separate redirect Service lighten the work on the write Service?",
-          "hints": [
-            "Split read-heavy redirects from write operations so you can scale each path independently."
-          ]
+          "hint": "Split read-heavy redirects from write operations so you can scale each path independently."
         },
         {
           "id": "add-cache",
           "level": "bonus",
+          "check": { "type": "hasKind", "kind": "Cache (Redis)" },
           "question": "What in-memory cache would reduce database load for hot redirects while keeping latency low?",
-          "hints": [
-            "A Redis/Memcached layer offloads hot redirects from the database and keeps p95 < 100ms."
-          ]
+          "hint": "A Redis/Memcached layer offloads hot redirects from the database and keeps p95 < 100ms."
         },
         {
           "id": "connect-service-cache",
           "level": "bonus",
+          "check": { "type": "hasConnection", "from": "Service", "to": "Cache (Redis)" },
           "question": "If cache is present, how does the Service reach it before falling back to the database?",
-          "hints": [
-            "Remember to connect the Service to cache first and fall back to the database on a miss."
-          ]
+          "hint": "Remember to connect the Service to cache first and fall back to the database on a miss."
         },
         {
           "id": "cache-service-db",
           "level": "bonus",
+          "check": {
+            "type": "kindConnectedToFirstMissingSecond",
+            "kind": "Service",
+            "connectedTo": "Cache (Redis)",
+            "missingConnection": "DB (Postgres)"
+          },
           "question": "The Service feeding cache still needs a fallback—can it also reach the database when a slug is missing?",
-          "hints": [
-            "The Service that talks to cache also needs a direct path to the database for cache misses."
-          ]
+          "hint": "The Service that talks to cache also needs a direct path to the database for cache misses."
         },
         {
           "id": "rename-services",
           "level": "bonus",
+          "check": { "type": "servicesHaveUniqueLabels", "minServices": 2 },
           "question": "Can you rename the Services so it's obvious which one handles shortening and which one handles redirects?",
-          "hints": [
-            "Naming each Service after its role (e.g., Shorten vs Redirect) makes the diagram clearer."
-          ]
+          "hint": "Naming each Service after its role (e.g., Shorten vs Redirect) makes the diagram clearer."
         }
       ],
       "evaluationCriteria": {
