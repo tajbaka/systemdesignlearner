@@ -1,11 +1,7 @@
 import type { PracticeDesignState } from "./types";
 import type { ComponentKind } from "@/app/components/types";
 import { hasConnectionBetweenKinds } from "@/app/components/utils";
-import type {
-  GuidanceLevel,
-  GuidanceRule,
-  GuidanceRuleCheck,
-} from "./reference/schema";
+import type { GuidanceLevel, GuidanceRule, GuidanceRuleCheck } from "./reference/schema";
 import { getScenarioReferenceSync } from "./loader";
 
 export type DesignGuidance = {
