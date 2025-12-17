@@ -31,8 +31,7 @@ const formatFunctional = (
     ...order
       .filter((key) => key in requirements.functional)
       .map(
-        (key) =>
-          `- ${labels[key] ?? key}: ${requirements.functional[key] ? "Enabled" : "Deferred"}`
+        (key) => `- ${labels[key] ?? key}: ${requirements.functional[key] ? "Enabled" : "Deferred"}`
       )
   );
   return lines;

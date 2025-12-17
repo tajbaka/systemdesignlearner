@@ -16,6 +16,7 @@ npm run format:check  # Prettier check
 ```
 
 Run a single test file:
+
 ```bash
 npm test -- __tests__/simulate.test.ts
 ```
@@ -30,15 +31,18 @@ npm test -- __tests__/simulate.test.ts
 ### App Structure (Next.js 15 App Router)
 
 **Two Main User Flows:**
+
 1. **Play Mode** (`/play`) - Free-form system design sandbox with scenario selection
 2. **Practice Mode** (`/practice/[slug]`) - Guided multi-step practice sessions for specific scenarios (e.g., URL shortener)
 
 **Practice Flow Steps** (defined in `lib/practice/types.ts`):
+
 - `functional` → `nonFunctional` → `api` → `highLevelDesign` → `score`
 
 ### Core Domains
 
 **System Design Editor** (`app/components/`):
+
 - `ReactFlowBoard.tsx` - Main canvas using @xyflow/react for node-based diagram editing
 - `SystemDesignNode.tsx` - Custom React Flow node component
 - `simulation.ts` - Lightweight simulation engine (bottleneck + latency sum model)
@@ -46,15 +50,18 @@ npm test -- __tests__/simulate.test.ts
 - `data.ts` - Component library with specs (latency, capacity, failure rates)
 
 **Scenario System** (`lib/scenarios.ts`):
+
 - `Scenario` type defines RPS/latency targets, acceptance criteria, flow steps
 - Scenarios: URL Shortener, Spotify Play/Search, Rate Limiter, CDN, etc.
 
 **Scoring Engine** (`lib/scoring/`):
+
 - Multi-engine scoring: API, design, functional, non-functional requirements
 - AI-powered feedback via Gemini (`lib/scoring/ai/`)
 - Iterative feedback system with topic coverage tracking
 
 **Practice Session** (`lib/practice/`):
+
 - `types.ts` - Practice state machine types
 - `storage.ts` - Session persistence
 - `validation.ts`, `verification.ts` - Step validation logic

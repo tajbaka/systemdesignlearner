@@ -490,10 +490,10 @@ Each requires:
 - [x] Refactor `brief.ts` to use loader (now async with toMarkdown())
 - [x] Update all callers for async changes (verify-step route, tests updated)
 
-### Phase 6-8 (Complete Migration) - MOSTLY COMPLETED
+### Phase 6-8 (Complete Migration) - COMPLETED
 
 - [x] Refactor `designGuidance.ts` (loads question text from JSON)
-- [ ] Update UI components with dynamic text (Phase 7 deferred - onboarding text)
+- [x] Update UI components with dynamic text (PracticeFlow.tsx onboarding tooltips)
 - [x] Migrate `scenario-configs.ts` to generate from JSON
 
 ### Phase 9-10 (New Content) - PARTIALLY COMPLETED
