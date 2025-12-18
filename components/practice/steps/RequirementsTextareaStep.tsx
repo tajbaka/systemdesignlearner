@@ -2,6 +2,7 @@
 
 import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 import { useEffect, useRef } from "react";
+import { isDesktop, BREAKPOINTS } from "@/hooks/useIsMobile";
 
 interface RequirementsTextareaStepProps {
   value: string;
@@ -41,7 +42,7 @@ export function RequirementsTextareaStep({
   // Auto-resize textarea based on content (desktop only)
   const adjustTextareaHeight = () => {
     const textarea = textareaRef.current;
-    if (textarea && window.innerWidth >= 640) {
+    if (textarea && isDesktop(BREAKPOINTS.sm)) {
       // sm breakpoint
       textarea.style.height = "auto";
       textarea.style.height = `${Math.max(220, textarea.scrollHeight)}px`;
@@ -51,13 +52,16 @@ export function RequirementsTextareaStep({
     }
   };
 
-  // Auto-focus on load and adjust height for pre-filled content
+  // Auto-focus on load and adjust height for pre-filled content (desktop only)
   useEffect(() => {
     if (textareaRef.current) {
       adjustTextareaHeight();
       if (!isReadOnly) {
         const timer = setTimeout(() => {
-          textareaRef.current?.focus();
+          // Only auto-focus on desktop (sm breakpoint and above) to prevent keyboard opening on mobile
+          if (isDesktop(BREAKPOINTS.sm)) {
+            textareaRef.current?.focus();
+          }
         }, 400);
         return () => clearTimeout(timer);
       }

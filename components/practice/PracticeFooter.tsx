@@ -76,7 +76,7 @@ export function PracticeFooter({
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 lg:pl-20 py-4">
+    <div className="mx-auto relative flex w-full max-w-5xl items-center justify-between gap-3 px-4 lg:pl-20 py-4">
       {showBack ? (
         <button
           type="button"
@@ -99,6 +99,13 @@ export function PracticeFooter({
         <span className="h-11 w-11" />
       )}
 
+      {process.env.NODE_ENV !== "production" && (
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+          <span className="text-s text-white-500/40 select-none italic font-serif font-light tracking-wide">
+            systemdesignsandbox.com
+          </span>
+        </div>
+      )}
       <div className="flex items-center gap-2">
         {/* Voice Dictation Button - Only show on mobile when voiceCaptureValue is provided */}
         {voiceCaptureValue !== undefined && voiceCaptureOnChange && (

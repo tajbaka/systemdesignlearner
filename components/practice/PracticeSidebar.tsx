@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useUser, UserButton } from "@clerk/nextjs";
 
 export function PracticeSidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isSignedIn } = useUser();
+  const pathname = usePathname();
 
   return (
     <>
@@ -78,7 +80,11 @@ export function PracticeSidebar() {
           <nav className="flex-1 space-y-1 p-2">
             <Link
               href="/practice"
-              className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                pathname?.startsWith("/practice")
+                  ? "bg-emerald-500/20 text-emerald-400"
+                  : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              }`}
               onClick={() => setMobileMenuOpen(false)}
             >
               <svg
@@ -95,46 +101,6 @@ export function PracticeSidebar() {
                 />
               </svg>
               <span>Practice</span>
-            </Link>
-            <Link
-              href="/docs"
-              className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <svg
-                className="h-5 w-5 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <span>Docs</span>
-            </Link>
-            <Link
-              href="/feedback"
-              className="group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 hover:text-white"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <svg
-                className="h-5 w-5 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                />
-              </svg>
-              <span>Feedback</span>
             </Link>
             <Link
               href="/play"
@@ -223,9 +189,11 @@ export function PracticeSidebar() {
           <nav className="flex-1 space-y-1 p-2">
             <Link
               href="/practice"
-              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 hover:text-white ${
-                isExpanded ? "" : "justify-center"
-              }`}
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                pathname?.startsWith("/practice")
+                  ? "bg-emerald-500/20 text-emerald-400"
+                  : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              } ${isExpanded ? "" : "justify-center"}`}
               title={!isExpanded ? "Practice" : undefined}
             >
               <svg
@@ -244,11 +212,13 @@ export function PracticeSidebar() {
               {isExpanded && <span>Practice</span>}
             </Link>
             <Link
-              href="/docs"
-              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 hover:text-white ${
-                isExpanded ? "" : "justify-center"
-              }`}
-              title={!isExpanded ? "Docs" : undefined}
+              href="/learn"
+              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
+                pathname?.startsWith("/learn")
+                  ? "bg-emerald-500/20 text-emerald-400"
+                  : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+              } ${isExpanded ? "" : "justify-center"}`}
+              title={!isExpanded ? "Learn" : undefined}
             >
               <svg
                 className="h-5 w-5 flex-shrink-0"
@@ -263,57 +233,7 @@ export function PracticeSidebar() {
                   d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                 />
               </svg>
-              {isExpanded && <span>Docs</span>}
-            </Link>
-            <Link
-              href="/feedback"
-              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-300 transition hover:bg-zinc-800 hover:text-white ${
-                isExpanded ? "" : "justify-center"
-              }`}
-              title={!isExpanded ? "Feedback" : undefined}
-            >
-              <svg
-                className="h-5 w-5 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                />
-              </svg>
-              {isExpanded && <span>Feedback</span>}
-            </Link>
-            <Link
-              href="/play"
-              className={`mt-4 flex h-9 items-center gap-2 rounded-lg bg-emerald-500 px-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
-                isExpanded ? "" : "justify-center"
-              }`}
-              title={!isExpanded ? "Try Sandbox" : undefined}
-            >
-              <svg
-                className="h-5 w-5 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              {isExpanded && <span className="whitespace-nowrap">Try Sandbox</span>}
+              {isExpanded && <span>Learn</span>}
             </Link>
           </nav>
 

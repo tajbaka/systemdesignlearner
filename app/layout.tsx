@@ -6,7 +6,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { PostHogProvider } from "@/components/PostHogProvider";
 import { ScrollToTop } from "@/components/ScrollToTop";
-import { getBaseUrl } from "@/lib/utils";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

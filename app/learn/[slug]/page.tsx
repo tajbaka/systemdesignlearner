@@ -6,7 +6,7 @@ import type { Components } from "react-markdown";
 import fs from "fs";
 import path from "path";
 import type { Metadata } from "next";
-import { getBaseUrl } from "@/lib/utils";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/lib/constants/ogImages";
 import type { ArticleCategory } from "@/components/ArticleSidebar";
 

@@ -1,21 +1,32 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { SCENARIOS } from "@/lib/scenarios";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
-import { SCENARIOS } from "@/lib/scenarios";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-export function URLShortenerIntroClient() {
+type IntroPageProps = {
+  slug: string;
+};
+
+export function IntroPage({ slug }: IntroPageProps) {
   const router = useRouter();
-  const scenario = SCENARIOS.find((s) => s.id === "url-shortener")!;
+  const scenario = SCENARIOS.find((s) => s.id === slug);
+
+  if (!scenario) {
+    return null;
+  }
 
   const handleStartPractice = () => {
+    // Track analytics
     track("practice_intro_start", {
-      slug: "url-shortener",
+      slug: slug,
     });
-    router.push("/practice/url-shortener");
+
+    // Navigate to functional step (first actual practice step)
+    router.push(`/practice/${slug}/functional`);
   };
 
   return (

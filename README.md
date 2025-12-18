@@ -11,7 +11,7 @@
 
 **Problem**: System design is abstract and hard to practice without real feedback loops.
 
-**Solution**: A visual, hands-on editor where you place components (Web, CDN, API Gateway, Service, Redis, Postgres, S3, Kafka, Load Balancer), wire them up, and run a lightweight simulation against real-world scenarios (Spotify search/play, URL shortener, rate limiter, CDN). 
+**Solution**: A visual, hands-on editor where you place components (Web, CDN, API Gateway, Service, Redis, Postgres, S3, Kafka, Load Balancer), wire them up, and run a lightweight simulation against real-world scenarios (Spotify search/play, URL shortener, rate limiter, CDN).
 
 ### 🎯 Core Ideas
 

@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { HomePageClient } from "./HomePageClient";
-import { getBaseUrl } from "@/lib/utils";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 const baseUrl = getBaseUrl();
 const ogImage = `${baseUrl}/desktop-url-shortener-practice.gif`;
