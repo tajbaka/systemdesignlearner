@@ -23,6 +23,17 @@ const PROBLEMS = [
     available: true,
   },
   {
+    slug: "pastebin",
+    name: "Pastebin",
+    difficulty: "Easy",
+    topic: "Storage & CDN",
+    description: "Design a text paste sharing service for creating, storing, and sharing text snippets",
+    estimatedTime: "15-20 min",
+    keyTopics: ["Object storage", "CDN caching", "Unique ID generation", "TTL expiration"],
+    learnings: "Learn blob storage patterns, CDN for static content, and metadata vs content separation",
+    available: true,
+  },
+  {
     slug: "twitter-feed",
     name: "Twitter Feed",
     difficulty: "Medium",
