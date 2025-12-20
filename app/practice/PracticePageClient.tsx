@@ -27,10 +27,12 @@ const PROBLEMS = [
     name: "Pastebin",
     difficulty: "Easy",
     topic: "Storage & CDN",
-    description: "Design a text paste sharing service for creating, storing, and sharing text snippets",
+    description:
+      "Design a text paste sharing service for creating, storing, and sharing text snippets",
     estimatedTime: "15-20 min",
     keyTopics: ["Object storage", "CDN caching", "Unique ID generation", "TTL expiration"],
-    learnings: "Learn blob storage patterns, CDN for static content, and metadata vs content separation",
+    learnings:
+      "Learn blob storage patterns, CDN for static content, and metadata vs content separation",
     available: true,
   },
   {

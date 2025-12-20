@@ -36,16 +36,7 @@
           "id": "view-paste",
           "label": "Paste Retrieval",
           "description": "Access paste content via the unique URL or ID.",
-          "keywords": [
-            "view",
-            "read",
-            "retrieve",
-            "access",
-            "get",
-            "fetch",
-            "display",
-            "show"
-          ],
+          "keywords": ["view", "read", "retrieve", "access", "get", "fetch", "display", "show"],
           "weight": 20,
           "required": true,
           "category": "core",
@@ -58,15 +49,7 @@
           "id": "unique-ids",
           "label": "Unique Identifiers",
           "description": "Each paste has a unique ID that maps to exactly one piece of content.",
-          "keywords": [
-            "unique",
-            "id",
-            "identifier",
-            "hash",
-            "uuid",
-            "distinct",
-            "collision"
-          ],
+          "keywords": ["unique", "id", "identifier", "hash", "uuid", "distinct", "collision"],
           "weight": 10,
           "required": true,
           "category": "core",
@@ -81,7 +64,15 @@
           "id": "paste-expiration",
           "label": "Paste Expiration",
           "description": "Support optional expiration dates or TTL after which pastes are deleted.",
-          "keywords": ["expire", "ttl", "temporary", "time-limited", "timeout", "lifetime", "delete"],
+          "keywords": [
+            "expire",
+            "ttl",
+            "temporary",
+            "time-limited",
+            "timeout",
+            "lifetime",
+            "delete"
+          ],
           "weight": 2,
           "required": false,
           "category": "optional",
@@ -107,7 +98,15 @@
           "id": "paste-visibility",
           "label": "Visibility Options",
           "description": "Control paste visibility (public, unlisted, private).",
-          "keywords": ["visibility", "public", "private", "unlisted", "hidden", "access", "permission"],
+          "keywords": [
+            "visibility",
+            "public",
+            "private",
+            "unlisted",
+            "hidden",
+            "access",
+            "permission"
+          ],
           "weight": 1,
           "required": false,
           "category": "optional",
@@ -172,15 +171,7 @@
           "id": "scalability",
           "label": "Scalability and Throughput",
           "description": "Handle growing traffic and content volume.",
-          "keywords": [
-            "scale",
-            "traffic",
-            "load",
-            "growth",
-            "volume",
-            "requests",
-            "throughput"
-          ],
+          "keywords": ["scale", "traffic", "load", "growth", "volume", "requests", "throughput"],
           "weight": 5,
           "required": true,
           "examplePhrases": [
@@ -192,19 +183,10 @@
           "id": "availability",
           "label": "Availability",
           "description": "Service should be highly available.",
-          "keywords": [
-            "available",
-            "uptime",
-            "reliable",
-            "fault tolerant",
-            "99.9"
-          ],
+          "keywords": ["available", "uptime", "reliable", "fault tolerant", "99.9"],
           "weight": 5,
           "required": true,
-          "examplePhrases": [
-            "Target 99.9% availability.",
-            "Avoid single points of failure."
-          ]
+          "examplePhrases": ["Target 99.9% availability.", "Avoid single points of failure."]
         }
       ],
       "optionalRequirements": [
@@ -239,10 +221,7 @@
           "keywords": ["security", "abuse", "rate limit", "spam", "malware", "scan"],
           "weight": 1,
           "required": false,
-          "examplePhrases": [
-            "Rate limit paste creation.",
-            "Scan content for malicious patterns."
-          ]
+          "examplePhrases": ["Rate limit paste creation.", "Scan content for malicious patterns."]
         }
       ]
     },
@@ -254,15 +233,7 @@
           "id": "create-paste-endpoint",
           "label": "Paste Creation Endpoint",
           "description": "POST endpoint to create new pastes with documented request/response",
-          "keywords": [
-            "POST",
-            "create",
-            "paste",
-            "content",
-            "body",
-            "request",
-            "api/v1"
-          ],
+          "keywords": ["POST", "create", "paste", "content", "body", "request", "api/v1"],
           "weight": 25,
           "required": true,
           "examplePhrases": [
@@ -289,9 +260,7 @@
           "keywords": ["raw", "plain", "text", "GET"],
           "weight": 2,
           "required": false,
-          "examplePhrases": [
-            "GET /raw/:id returns plain text content"
-          ]
+          "examplePhrases": ["GET /raw/:id returns plain text content"]
         },
         {
           "id": "delete-endpoint",
@@ -300,9 +269,7 @@
           "keywords": ["DELETE", "remove", "delete"],
           "weight": 2,
           "required": false,
-          "examplePhrases": [
-            "DELETE /api/v1/pastes/:id requires authentication"
-          ]
+          "examplePhrases": ["DELETE /api/v1/pastes/:id requires authentication"]
         },
         {
           "id": "error-handling",
@@ -311,9 +278,7 @@
           "keywords": ["error", "400", "404", "410", "429", "expired", "not found"],
           "weight": 2,
           "required": false,
-          "examplePhrases": [
-            "404 for not found, 410 for expired pastes"
-          ]
+          "examplePhrases": ["404 for not found, 410 for expired pastes"]
         }
       ],
       "requiredEndpoints": [
@@ -464,9 +429,7 @@
           "id": "api-gateway-to-services",
           "name": "API Gateway Routes to Services",
           "requiredComponents": ["API Gateway", "Service"],
-          "requiredConnections": [
-            { "from": "API Gateway", "to": "Service" }
-          ],
+          "requiredConnections": [{ "from": "API Gateway", "to": "Service" }],
           "forbiddenConnections": [
             { "from": "API Gateway", "to": "Object Store (S3)" },
             { "from": "API Gateway", "to": "DB (Postgres)" }
@@ -483,9 +446,7 @@
           "id": "service-to-storage",
           "name": "Service Stores Content",
           "requiredComponents": ["Service", "Object Store (S3)"],
-          "requiredConnections": [
-            { "from": "Service", "to": "Object Store (S3)" }
-          ],
+          "requiredConnections": [{ "from": "Service", "to": "Object Store (S3)" }],
           "forbiddenConnections": [],
           "weight": 0,
           "required": true,
@@ -498,9 +459,7 @@
           "id": "cdn-caching",
           "name": "CDN Caches Content",
           "requiredComponents": ["CDN", "Object Store (S3)"],
-          "requiredConnections": [
-            { "from": "CDN", "to": "Object Store (S3)" }
-          ],
+          "requiredConnections": [{ "from": "CDN", "to": "Object Store (S3)" }],
           "forbiddenConnections": [],
           "weight": 1,
           "required": false,

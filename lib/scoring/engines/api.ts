@@ -338,39 +338,47 @@ export class ApiScoringEngine implements IScoringEngine<ApiScoringInput, ApiScor
     let methodIssue = false;
     let documentationIssue = false;
 
+    // Use defaults if criteria not provided
+    const effectiveCriteria = criteria ?? {
+      hasCorrectMethods: 5,
+      pathDesignQuality: 5,
+      documentationQuality: 5,
+      alignsWithRequirements: 5,
+    };
+
     const totalCriteriaWeight =
-      criteria.hasCorrectMethods +
-      criteria.pathDesignQuality +
-      criteria.documentationQuality +
-      criteria.alignsWithRequirements;
+      effectiveCriteria.hasCorrectMethods +
+      effectiveCriteria.pathDesignQuality +
+      effectiveCriteria.documentationQuality +
+      effectiveCriteria.alignsWithRequirements;
 
     const endpointMaxScore = config.weight;
     const criteriaToScoreRatio = endpointMaxScore / totalCriteriaWeight;
 
     // 1. Correct method
     if (endpoint.method === config.method) {
-      score += criteria.hasCorrectMethods * criteriaToScoreRatio;
+      score += effectiveCriteria.hasCorrectMethods * criteriaToScoreRatio;
     } else {
       methodIssue = true;
       perfect = false;
-      score += criteria.hasCorrectMethods * criteriaToScoreRatio * 0.5; // Partial credit
+      score += effectiveCriteria.hasCorrectMethods * criteriaToScoreRatio * 0.5; // Partial credit
     }
 
     // 2. Path design quality (assuming match found, give full credit)
-    score += criteria.pathDesignQuality * criteriaToScoreRatio;
+    score += effectiveCriteria.pathDesignQuality * criteriaToScoreRatio;
 
     // 3. Documentation quality
     const docQuality = this.assessDocumentationQuality(endpoint, config);
     if (docQuality >= 0.8) {
-      score += criteria.documentationQuality * criteriaToScoreRatio;
+      score += effectiveCriteria.documentationQuality * criteriaToScoreRatio;
     } else {
       documentationIssue = true;
       perfect = false;
-      score += criteria.documentationQuality * criteriaToScoreRatio * docQuality;
+      score += effectiveCriteria.documentationQuality * criteriaToScoreRatio * docQuality;
     }
 
     // 4. Aligns with requirements (assuming it was matched, give full credit)
-    score += criteria.alignsWithRequirements * criteriaToScoreRatio;
+    score += effectiveCriteria.alignsWithRequirements * criteriaToScoreRatio;
 
     return { score, perfect, methodIssue, documentationIssue };
   }
