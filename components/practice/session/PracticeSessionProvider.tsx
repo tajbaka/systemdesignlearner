@@ -104,7 +104,8 @@ const ensureApiDefinition = (
 
   const endpoints = value.endpoints.map((endpoint, index) => {
     const method = endpoint.method ?? "GET";
-    const path = endpoint.path ?? "/";
+    // Strip leading slashes - the UI displays a visual "/" prefix
+    const path = (endpoint.path ?? "").replace(/^\/+/, "");
     const rawNotes = typeof endpoint.notes === "string" ? endpoint.notes : "";
     const notes = isLegacyPlaceholderContent(rawNotes, method, path) ? "" : rawNotes;
 

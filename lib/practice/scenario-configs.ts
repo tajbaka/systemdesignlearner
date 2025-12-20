@@ -127,7 +127,7 @@ function buildConfigFromReference(
           endpoints: scenario.api.map((endpoint, index) => ({
             id: `endpoint-${index}`,
             method: endpoint.method,
-            path: endpoint.path,
+            path: endpoint.path.replace(/^\/+/, ""), // Remove leading slashes
             notes: endpoint.notes || "",
             suggested: true,
           })),
