@@ -77,7 +77,7 @@ export function RequirementsTextareaStep({
     <div className="relative h-full animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* Desktop layout */}
       <div className="hidden sm:block space-y-8">
-        <section className="rounded-3xl border border-zinc-800/60 bg-zinc-900/50 shadow-xl shadow-black/20 p-6 sm:p-8 lg:mx-auto lg:max-w-3xl">
+        <section className="rounded-3xl border border-zinc-800/60 bg-zinc-900/50 shadow-xl shadow-black/20 p-6 sm:p-8 mx-4 pb-8 sm:mx-6 lg:mx-auto lg:max-w-3xl">
           <div className="space-y-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between">

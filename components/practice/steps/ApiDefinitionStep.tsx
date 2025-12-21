@@ -332,7 +332,7 @@ export function ApiDefinitionStep() {
     <div className="relative h-full sm:h-auto">
       {/* Desktop layout - unchanged */}
       <div className="hidden sm:block space-y-6">
-        <section className="space-y-4 lg:mx-auto lg:max-w-3xl">
+        <section className="space-y-4 mx-4 pb-8 sm:mx-6 lg:mx-auto lg:max-w-3xl">
           {(hasNoEndpoints || hasNoValidEndpoints) && !isReadOnly && (
             <div className="rounded-lg border border-red-500/30 bg-red-950/20 p-3">
               <p className="text-xs text-red-400">
@@ -362,23 +362,40 @@ export function ApiDefinitionStep() {
               >
                 <div className="flex w-full flex-wrap items-center justify-center gap-2 p-4 sm:flex-nowrap sm:justify-between sm:gap-3 sm:p-6">
                   <div className="flex flex-1 flex-wrap items-center gap-2 sm:flex-nowrap sm:gap-3">
-                    <select
-                      value={endpoint.method}
-                      onChange={(event) =>
-                        updateEndpoint(endpoint.id, (current) => ({
-                          ...current,
-                          method: event.target.value as ApiEndpoint["method"],
-                        }))
-                      }
-                      disabled={isReadOnly}
-                      className="h-10 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs font-semibold uppercase tracking-wide text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {METHOD_OPTIONS.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={endpoint.method}
+                        onChange={(event) =>
+                          updateEndpoint(endpoint.id, (current) => ({
+                            ...current,
+                            method: event.target.value as ApiEndpoint["method"],
+                          }))
+                        }
+                        disabled={isReadOnly}
+                        className="h-10 w-full rounded-full border border-zinc-700 bg-zinc-900 pl-3 pr-10 text-xs font-semibold uppercase tracking-wide text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 appearance-none"
+                      >
+                        {METHOD_OPTIONS.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                        <svg
+                          className="h-4 w-4 text-zinc-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
                     <div className="relative h-10 min-w-[160px] flex-1">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-zinc-100 pointer-events-none">
                         /
@@ -455,12 +472,12 @@ export function ApiDefinitionStep() {
                 </div>
 
                 {isOpen ? (
-                  <div className="px-4 pb-4 sm:px-6">
+                  <div className="px-6 pb-4 sm:px-8">
                     <div
                       className={`relative mt-2 rounded-2xl border transition-colors duration-300 ${
                         shouldHighlightNotes
                           ? "border-amber-400/50 bg-amber-950/20 ring-2 ring-amber-400/30"
-                          : "border-zinc-700 bg-zinc-950/60"
+                          : "border-zinc-700/60 bg-zinc-950/40 focus-within:border-blue-400/50 focus-within:bg-zinc-950/60 focus-within:shadow-lg focus-within:shadow-blue-500/10"
                       }`}
                     >
                       <textarea
@@ -614,23 +631,40 @@ export function ApiDefinitionStep() {
               {/* Header */}
               <div className="flex items-center gap-3 p-4 border-b border-zinc-800">
                 <div className="flex-1 flex items-center gap-2">
-                  <select
-                    value={mobileEditingEndpoint.method}
-                    onChange={(event) =>
-                      updateEndpoint(mobileEditingEndpoint.id, (current) => ({
-                        ...current,
-                        method: event.target.value as ApiEndpoint["method"],
-                      }))
-                    }
-                    disabled={isReadOnly}
-                    className="h-9 rounded-full border border-zinc-700 bg-zinc-900 px-3 text-xs font-semibold uppercase tracking-wide text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-                  >
-                    {METHOD_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={mobileEditingEndpoint.method}
+                      onChange={(event) =>
+                        updateEndpoint(mobileEditingEndpoint.id, (current) => ({
+                          ...current,
+                          method: event.target.value as ApiEndpoint["method"],
+                        }))
+                      }
+                      disabled={isReadOnly}
+                      className="h-9 w-full rounded-full border border-zinc-700 bg-zinc-900 pl-3 pr-10 text-xs font-semibold uppercase tracking-wide text-zinc-100 focus:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 appearance-none"
+                    >
+                      {METHOD_OPTIONS.map((option) => (
+                        <option key={option} value={option}>
+                          {option}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                      <svg
+                        className="h-4 w-4 text-zinc-400"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
+                      </svg>
+                    </div>
+                  </div>
                   <div className="relative flex-1">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-zinc-100 pointer-events-none">
                       /
