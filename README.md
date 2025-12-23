@@ -64,7 +64,7 @@
 ## 🛠️ Technology Stack
 
 ```text
-Framework:   Next.js 15 (App Router)
+Framework:   Next.js 15 (App Router) 
 Language:    TypeScript 5
 UI:          React 19, Tailwind CSS 4, framer-motion (foundation), react-zoom-pan-pinch
 Logic:       Lightweight simulation engine, deterministic RNG
