@@ -1,4 +1,4 @@
-import { getBaseUrl } from "@/lib/utils";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 interface ArticleStructuredDataProps {
   title: string;

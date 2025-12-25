@@ -16,7 +16,7 @@
 ### 🎯 Core Ideas
 
 - **Drag‑and‑Design**: Place nodes on an infinite grid and connect them with edges
-- **Scenario‑Driven**: Pick a scenario with RPS and latency SLOs and get instant feedback
+- **Scenario‑Driven**: Pick a scenario with RPS and latency SLOs and get instant feedback 
 - **Fast Simulation**: Simple bottleneck + latency model to surface constraints quickly
 - **Share & Fork**: One‑click shareable links encode your design; recipients can fork
 - **Deterministic Chaos**: Optional chaos mode with seeded RNG for reproducible runs
@@ -64,7 +64,7 @@
 ## 🛠️ Technology Stack
 
 ```text
-Framework:   Next.js 15 (App Router)
+Framework:   Next.js 15 (App Router) 
 Language:    TypeScript 5
 UI:          React 19, Tailwind CSS 4, framer-motion (foundation), react-zoom-pan-pinch
 Logic:       Lightweight simulation engine, deterministic RNG

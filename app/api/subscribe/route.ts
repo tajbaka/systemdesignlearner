@@ -45,13 +45,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Send newsletter confirmation email
-    // Note: This runs asynchronously and won't block the response
-    // If email fails, the subscription is still saved successfully
-    sendNewsletterConfirmation({
-      to: email,
-    }).catch((error) => {
-      logger.error("Failed to send newsletter confirmation email:", error);
-    });
+    // We await this to prevent the serverless function from freezing/terminating
+    // before the email request is sent. We catch errors so the subscription
+    // succeeds even if the email service is down.
+    try {
+      await sendNewsletterConfirmation({
+        to: email,
+      });
+    } catch (emailError) {
+      logger.error("Failed to send newsletter confirmation email:", emailError);
+      // We don't fail the request if email fails, as the subscription is saved
+    }
 
     return NextResponse.json({ message: "Successfully subscribed!" }, { status: 200 });
   } catch (error) {

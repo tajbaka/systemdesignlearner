@@ -1,21 +1,32 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { SCENARIOS } from "@/lib/scenarios";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
-import { SCENARIOS } from "@/lib/scenarios";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
-export function URLShortenerIntroClient() {
+type IntroPageProps = {
+  slug: string;
+};
+
+export function IntroPage({ slug }: IntroPageProps) {
   const router = useRouter();
-  const scenario = SCENARIOS.find((s) => s.id === "url-shortener")!;
+  const scenario = SCENARIOS.find((s) => s.id === slug);
+
+  if (!scenario) {
+    return null;
+  }
 
   const handleStartPractice = () => {
+    // Track analytics
     track("practice_intro_start", {
-      slug: "url-shortener",
+      slug: slug,
     });
-    router.push("/practice/url-shortener");
+
+    // Navigate to functional step (first actual practice step)
+    router.push(`/practice/${slug}/functional`);
   };
 
   return (
@@ -42,11 +53,11 @@ export function URLShortenerIntroClient() {
 
             {/* Metadata Badges */}
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 text-sm font-medium rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20">
+              <span className="px-3 py-1 text-sm capitalize font-medium rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20">
                 {scenario.category}
               </span>
               <span
-                className={`px-3 py-1 text-sm font-medium rounded-md border ${
+                className={`px-3 py-1 capitalize text-sm font-medium rounded-md border ${
                   scenario.difficulty === "easy"
                     ? "bg-green-500/10 text-green-300 border-green-500/20"
                     : scenario.difficulty === "medium"

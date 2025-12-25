@@ -8,6 +8,11 @@ import { UtmTracker } from "./UtmTracker";
 
 export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+    // Skip PostHog initialization in development
+    if (process.env.NODE_ENV === "development") {
+      return;
+    }
+
     // Only initialize PostHog on the client side
     if (typeof window === "undefined") return;
 
@@ -26,13 +31,10 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       capture_pageleave: true,
       autocapture: true,
       disable_surveys: true, // Disable surveys to prevent script loading errors
-      debug: process.env.NODE_ENV === "development",
+      debug: (process.env.NODE_ENV as string) === "development",
       loaded: (posthog) => {
         // Expose PostHog to window for analytics.ts to use
         window.posthog = posthog;
-        if (process.env.NODE_ENV === "development") {
-          logger.log("[PostHog] Initialized successfully");
-        }
       },
     });
 

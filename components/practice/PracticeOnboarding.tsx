@@ -42,7 +42,6 @@ type OnboardingProviderProps = {
 };
 
 const STAGE_BY_STEP: Record<PracticeStep, OnboardingStage[]> = {
-  intro: [],
   functional: ["welcome", "functional-description", "functional-next"],
   nonFunctional: ["nonfunctional-description", "nonfunctional-targets", "nonfunctional-next"],
   api: ["api-description", "api-next"],

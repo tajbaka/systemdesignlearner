@@ -1,7 +1,6 @@
 "use client";
 
 import type { PostHog } from "posthog-js";
-import { logger } from "@/lib/logger";
 
 const isClient = () => typeof window !== "undefined";
 
@@ -34,15 +33,17 @@ declare global {
  * All client components call this helper so we can swap implementations if needed.
  */
 export const track = (event: string, properties: Record<string, unknown> = {}): void => {
+  // Skip tracking in development
+  if (process.env.NODE_ENV === "development") {
+    return;
+  }
+
   if (!isClient()) {
     return;
   }
 
   const client = window.posthog;
   if (!client) {
-    if (process.env.NODE_ENV === "development") {
-      logger.warn("[analytics] PostHog not initialised yet – event dropped", event, properties);
-    }
     return;
   }
 
@@ -54,15 +55,17 @@ export const track = (event: string, properties: Record<string, unknown> = {}): 
  * Call this when a user authenticates to link events to their user profile.
  */
 export const identify = (userId: string, properties?: Record<string, unknown>): void => {
+  // Skip tracking in development
+  if (process.env.NODE_ENV === "development") {
+    return;
+  }
+
   if (!isClient()) {
     return;
   }
 
   const client = window.posthog;
   if (!client) {
-    if (process.env.NODE_ENV === "development") {
-      logger.warn("[analytics] PostHog not initialised yet – identify dropped", userId, properties);
-    }
     return;
   }
 
@@ -74,15 +77,17 @@ export const identify = (userId: string, properties?: Record<string, unknown>): 
  * These properties are attached to the person profile and persist across sessions.
  */
 export const register = (properties: Record<string, unknown>): void => {
+  // Skip tracking in development
+  if (process.env.NODE_ENV === "development") {
+    return;
+  }
+
   if (!isClient()) {
     return;
   }
 
   const client = window.posthog;
   if (!client) {
-    if (process.env.NODE_ENV === "development") {
-      logger.warn("[analytics] PostHog not initialised yet – register dropped", properties);
-    }
     return;
   }
 
@@ -98,20 +103,17 @@ export const group = (
   groupKey: string,
   properties?: Record<string, unknown>
 ): void => {
+  // Skip tracking in development
+  if (process.env.NODE_ENV === "development") {
+    return;
+  }
+
   if (!isClient()) {
     return;
   }
 
   const client = window.posthog;
   if (!client) {
-    if (process.env.NODE_ENV === "development") {
-      logger.warn(
-        "[analytics] PostHog not initialised yet – group dropped",
-        groupType,
-        groupKey,
-        properties
-      );
-    }
     return;
   }
 

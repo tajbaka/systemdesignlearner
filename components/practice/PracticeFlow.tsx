@@ -486,31 +486,28 @@ function PracticeFlowInner() {
   return (
     <TooltipProvider>
       {renderOnboardingTooltip()}
-      <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
-        {currentStep !== "intro" && (
-          <PracticeStepper
-            scenario={session.state.slug}
-            current={currentStep}
-            progress={session.state.completed}
-            scenarioTitle={scenarioTitle}
-            isAuthenticated={state.auth.isAuthed || Boolean(isSignedIn)}
-            readOnly={isReadOnly}
-            hideMobileStepper={false}
-          />
-        )}
-        <div
-          className={
-            isSandboxStep || currentStep === "intro"
-              ? "flex-1 min-h-0 overflow-hidden sm:pt-[40px]"
-              : "flex-1 min-h-0 overflow-y-auto sm:pt-[40px]"
-          }
-          style={{
-            paddingBottom:
-              !isSandboxStep && currentStep !== "intro" && keyboardOffset > 0
-                ? `${keyboardOffset + 80}px`
-                : undefined,
-          }}
-        >
+            <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
+              <PracticeStepper
+                scenario={session.state.slug}
+                current={currentStep}
+                progress={session.state.completed}
+                scenarioTitle={scenarioTitle}
+                isAuthenticated={state.auth.isAuthed || Boolean(isSignedIn)}
+                readOnly={isReadOnly}
+                hideMobileStepper={false}
+              />
+      
+              <div
+                className={
+                  isSandboxStep
+                    ? "flex-1 min-h-0 overflow-hidden sm:pt-[40px]"
+                    : "flex-1 min-h-0 overflow-y-auto sm:pt-[40px]"
+                }
+                style={{
+                  paddingBottom:
+                    !isSandboxStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
+                }}
+              >
           <PracticeStepContent
             currentStep={currentStep}
             mobilePaletteOpen={mobilePaletteOpen}
@@ -520,37 +517,50 @@ function PracticeFlowInner() {
           />
         </div>
         {isSandboxStep ? (
-          <Tooltip open={showTooltips} onOpenChange={setShowTooltips}>
-            <TooltipTrigger asChild>
-              <button
-                type="button"
-                onClick={() => setMobilePaletteOpen(true)}
-                disabled={isReadOnly}
-                className="fixed bottom-[100px] right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-blue-100 transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-36 sm:right-6 lg:bottom-[120px] lg:right-6"
-                aria-label="Open component palette"
+          <>
+            <Tooltip open={showTooltips} onOpenChange={setShowTooltips}>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={() => setMobilePaletteOpen(true)}
+                  disabled={isReadOnly}
+                  className="fixed bottom-[100px] right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-blue-400/40 bg-blue-500/20 text-blue-100 transition hover:bg-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-36 sm:right-6 lg:bottom-[120px] lg:right-6"
+                  aria-label="Open component palette"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden>
+                    <path
+                      d="M10 4v12M4 10h12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="left"
+                className="bg-blue-600 text-white border-blue-500 max-w-[160px] sm:max-w-xs p-2 sm:p-3"
+                sideOffset={8}
               >
-                <svg className="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden>
-                  <path
-                    d="M10 4v12M4 10h12"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent
-              side="left"
-              className="bg-blue-600 text-white border-blue-500 max-w-[160px] sm:max-w-xs p-2 sm:p-3"
-              sideOffset={8}
+                <p className="text-xs sm:text-sm font-semibold">Add Components</p>
+                <p className="text-[10px] sm:text-xs mt-0.5 sm:mt-1">
+                  Click here to add services, databases, caches, and more to your architecture
+                </p>
+              </TooltipContent>
+            </Tooltip>
+            <button
+              type="button"
+              onClick={() => setRunPanelOpen(true)}
+              disabled={isReadOnly}
+              className="fixed bottom-[180px] right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-500/20 text-emerald-100 transition hover:bg-emerald-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-[100px] sm:right-6 lg:bottom-[180px] lg:right-6"
+              aria-label="Open simulation panel"
             >
-              <p className="text-xs sm:text-sm font-semibold">Add Components</p>
-              <p className="text-[10px] sm:text-xs mt-0.5 sm:mt-1">
-                Click here to add services, databases, caches, and more to your architecture
-              </p>
-            </TooltipContent>
-          </Tooltip>
+              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </button>
+          </>
         ) : null}
         {/* Iterative Feedback Modal - Shows in center of screen */}
         {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api/sandbox steps */}
@@ -659,86 +669,84 @@ function PracticeFlowInner() {
           }}
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
-        {currentStep !== "intro" && (
-          <footer
-            className="bg-black border-t border-zinc-800"
-            style={{
-              transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
-            }}
-          >
-            <PracticeFeedbackPanel
-              currentStep={currentStep}
-              verification={verification}
-              scoringProgressSteps={scoringProgressSteps}
-              scoringFeedback={scoringFeedback}
-              helperText={helperText}
-              onRevise={() => {
-                setScoringFeedback(null);
-                clearIterativeFeedback(); // Also clear iterative feedback state
-                if (currentStep !== "highLevelDesign") {
-                  session.setStepScore(
-                    currentStep as "functional" | "nonFunctional" | "api",
-                    undefined
-                  );
-                }
-              }}
-              onContinue={proceedToNext}
-              onClearVerification={clearVerification}
-              hasIterativeFeedback={!!iterativeFeedbackState.result}
-            />
-
-            <PracticeFooter
-              currentStep={currentStep}
-              showBack={showBack}
-              showNext={showNext}
-              nextLabel={nextLabel}
-              nextDisabled={nextDisabled}
-              isReadOnly={isReadOnly}
-              isVerifying={verification.isVerifying}
-              onBack={handleBack}
-              onNext={handleNext}
-              onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
-              apiMobileEditing={apiMobileEditing}
-              voiceCaptureValue={
-                currentStep === "functional"
-                  ? state.requirements.functionalSummary
-                  : currentStep === "nonFunctional"
-                    ? state.requirements.nonFunctional.notes
-                    : currentStep === "api" &&
-                        apiMobileEditing &&
-                        typeof window !== "undefined" &&
-                        window._apiMobileEditorVoiceValue !== undefined
-                      ? window._apiMobileEditorVoiceValue
-                      : undefined
+        <footer
+          className="bg-black border-t border-zinc-800"
+          style={{
+            transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
+          }}
+        >
+          <PracticeFeedbackPanel
+            currentStep={currentStep}
+            verification={verification}
+            scoringProgressSteps={scoringProgressSteps}
+            scoringFeedback={scoringFeedback}
+            helperText={helperText}
+            onRevise={() => {
+              setScoringFeedback(null);
+              clearIterativeFeedback(); // Also clear iterative feedback state
+              if (currentStep !== "highLevelDesign") {
+                session.setStepScore(
+                  currentStep as "functional" | "nonFunctional" | "api",
+                  undefined
+                );
               }
-              voiceCaptureOnChange={
-                currentStep === "functional"
+            }}
+            onContinue={proceedToNext}
+            onClearVerification={clearVerification}
+            hasIterativeFeedback={!!iterativeFeedbackState.result}
+          />
+
+          <PracticeFooter
+            currentStep={currentStep}
+            showBack={showBack}
+            showNext={showNext}
+            nextLabel={nextLabel}
+            nextDisabled={nextDisabled}
+            isReadOnly={isReadOnly}
+            isVerifying={verification.isVerifying}
+            onBack={handleBack}
+            onNext={handleNext}
+            onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
+            apiMobileEditing={apiMobileEditing}
+            voiceCaptureValue={
+              currentStep === "functional"
+                ? state.requirements.functionalSummary
+                : currentStep === "nonFunctional"
+                  ? state.requirements.nonFunctional.notes
+                  : currentStep === "api" &&
+                      apiMobileEditing &&
+                      typeof window !== "undefined" &&
+                      window._apiMobileEditorVoiceValue !== undefined
+                    ? window._apiMobileEditorVoiceValue
+                    : undefined
+            }
+            voiceCaptureOnChange={
+              currentStep === "functional"
+                ? (value: string) => {
+                    setRequirements({
+                      ...state.requirements,
+                      functionalSummary: value,
+                    });
+                  }
+                : currentStep === "nonFunctional"
                   ? (value: string) => {
                       setRequirements({
                         ...state.requirements,
-                        functionalSummary: value,
+                        nonFunctional: {
+                          ...state.requirements.nonFunctional,
+                          notes: value,
+                        },
                       });
                     }
-                  : currentStep === "nonFunctional"
-                    ? (value: string) => {
-                        setRequirements({
-                          ...state.requirements,
-                          nonFunctional: {
-                            ...state.requirements.nonFunctional,
-                            notes: value,
-                          },
-                        });
-                      }
-                    : currentStep === "api" &&
-                        apiMobileEditing &&
-                        typeof window !== "undefined" &&
-                        window._apiMobileEditorVoiceOnChange
-                      ? window._apiMobileEditorVoiceOnChange
-                      : undefined
-              }
-            />
-          </footer>
-        )}{" "}
+                  : currentStep === "api" &&
+                      apiMobileEditing &&
+                      typeof window !== "undefined" &&
+                      window._apiMobileEditorVoiceOnChange
+                    ? window._apiMobileEditorVoiceOnChange
+                    : undefined
+            }
+          />
+        </footer>{" "}
       </div>
     </TooltipProvider>
   );

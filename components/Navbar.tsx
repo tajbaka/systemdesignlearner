@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { UserButton, SignedIn } from "@clerk/nextjs";
+import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { AuthModal } from "@/components/practice/AuthModal";
 
 interface NavbarProps {
   variant?: "dark" | "light";
@@ -12,6 +13,7 @@ interface NavbarProps {
 export function Navbar({ variant = "dark" }: NavbarProps) {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const isLight = variant === "light";
 
   // Navigation link styles - can be changed in one place
@@ -79,7 +81,7 @@ export function Navbar({ variant = "dark" }: NavbarProps) {
               Feedback
             </Link> */}
 
-            {/* User Button */}
+            {/* User Button / Sign In */}
             <SignedIn>
               <UserButton
                 appearance={{
@@ -89,6 +91,18 @@ export function Navbar({ variant = "dark" }: NavbarProps) {
                 }}
               />
             </SignedIn>
+            <SignedOut>
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  isLight
+                    ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                    : "text-emerald-400 hover:text-emerald-300 hover:bg-zinc-800"
+                }`}
+              >
+                Sign In
+              </button>
+            </SignedOut>
           </div>
 
           {/* Mobile Menu Button */}
@@ -162,7 +176,7 @@ export function Navbar({ variant = "dark" }: NavbarProps) {
                   Start Practicing
                 </Link>
 
-                {/* Mobile User Button */}
+                {/* Mobile User Button / Sign In */}
                 <SignedIn>
                   <div
                     className={`flex items-center justify-center gap-3 px-3 py-3 rounded-lg ${isLight ? "bg-zinc-100" : "bg-zinc-800"}`}
@@ -181,11 +195,34 @@ export function Navbar({ variant = "dark" }: NavbarProps) {
                     </span>
                   </div>
                 </SignedIn>
+                <SignedOut>
+                  <button
+                    onClick={() => {
+                      setIsAuthModalOpen(true);
+                      closeMenu();
+                    }}
+                    className={`w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                      isLight
+                        ? "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 border border-emerald-200"
+                        : "text-emerald-400 hover:text-emerald-300 hover:bg-zinc-800 border border-emerald-500/30"
+                    }`}
+                  >
+                    Sign In
+                  </button>
+                </SignedOut>
               </div>
             </div>
           </div>
         )}
       </nav>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthenticated={() => setIsAuthModalOpen(false)}
+        slug="homepage"
+      />
     </>
   );
 }

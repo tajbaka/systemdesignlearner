@@ -152,7 +152,6 @@ const ensureAuthState = (value?: PracticeAuthState): PracticeAuthState => ({
 });
 
 const ensureProgress = (value?: PracticeProgress): PracticeProgress => ({
-  intro: Boolean(value?.intro),
   functional: Boolean(value?.functional),
   nonFunctional: Boolean(value?.nonFunctional),
   api: Boolean(value?.api),
@@ -161,7 +160,6 @@ const ensureProgress = (value?: PracticeProgress): PracticeProgress => ({
 });
 
 const migrateLegacyProgress = (locked?: LegacyLocked): PracticeProgress => ({
-  intro: true, // Legacy progress assumes intro is seen
   functional: Boolean(locked?.brief),
   nonFunctional: Boolean(locked?.brief),
   api: false,

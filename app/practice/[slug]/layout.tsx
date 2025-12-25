@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { getBaseUrl } from "@/lib/utils";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/lib/constants/ogImages";
 
 type Props = {

@@ -34,11 +34,6 @@ export function getStepConfig(step: PracticeStep, slug: string): StepConfig {
 }
 
 export const STEP_CONFIGS: Record<PracticeStep, StepConfig> = {
-  intro: {
-    id: "intro",
-    showBack: false,
-    showNext: false,
-  },
   functional: {
     id: "functional",
     showBack: true,

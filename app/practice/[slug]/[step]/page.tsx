@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { SCENARIOS } from "@/lib/scenarios";
 import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
 import PracticeStepClient from "./PracticeStepClient";
+import { IntroPage } from "@/components/practice/steps/IntroPage";
 
 type Props = {
   params: Promise<{ slug: string; step: string }>;
@@ -42,6 +43,11 @@ export default async function PracticeStepPage({ params, searchParams }: Props) 
 
   // Normalize step name (convert kebab-case to camelCase for nonFunctional)
   const normalizedStep = step === "non-functional" ? "nonFunctional" : step;
+
+  // If this is the intro step, render it as a standalone page
+  if (normalizedStep === "intro") {
+    return <IntroPage slug={slug} />;
+  }
 
   // Check if the step is valid
   if (!PRACTICE_STEPS.includes(normalizedStep as PracticeStep)) {

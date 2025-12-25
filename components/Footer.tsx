@@ -62,7 +62,8 @@ export function Footer() {
         setNewsletterStatus("idle");
         setNewsletterMessage("");
       }, 3000);
-    } catch {
+    } catch (error) {
+      console.error("Newsletter subscription error:", error);
       setNewsletterStatus("error");
       setNewsletterMessage("An error occurred. Please try again.");
       track("email_capture_error", { source: "footer" });
