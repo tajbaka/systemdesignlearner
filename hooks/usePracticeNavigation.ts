@@ -482,14 +482,6 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
       return;
     }
 
-    // If on functional step (first step), navigate back to intro page
-    if (session.currentStep === "functional") {
-      if (typeof window !== "undefined") {
-        window.location.href = `/practice/${session.state.slug}/intro`;
-      }
-      return;
-    }
-
     // Navigate to previous step
     const prevStep = getPrevStep(session.currentStep);
     if (prevStep) {

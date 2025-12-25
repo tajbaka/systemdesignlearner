@@ -32,48 +32,6 @@ export type ScenarioConfig = {
   defaultRunState: () => PracticeRunState;
 };
 
-/**
- * Default functional toggles as fallback when JSON not loaded.
- * These should match the URL shortener JSON configuration.
- */
-const DEFAULT_FUNCTIONAL_TOGGLES: FunctionalToggle[] = [
-  {
-    id: "create-short-url",
-    label: "Create short URL",
-    description: "Generate short links via API/UI",
-    default: true,
-  },
-  {
-    id: "redirect-by-slug",
-    label: "Redirect by slug",
-    description: "Resolve slug to destination",
-    default: true,
-  },
-  {
-    id: "custom-alias",
-    label: "Custom alias",
-    description: "Allow requester to choose slug",
-    default: false,
-  },
-  {
-    id: "basic-analytics",
-    label: "Basic click analytics",
-    description: "Track total clicks and last seen",
-    default: false,
-  },
-  {
-    id: "rate-limiting",
-    label: "Rate limiting",
-    description: "Throttle abusive clients",
-    default: false,
-  },
-  {
-    id: "admin-delete",
-    label: "Admin delete",
-    description: "Admin can revoke short links",
-    default: false,
-  },
-];
 
 /**
  * Generate a ScenarioConfig from a reference JSON.
@@ -84,7 +42,7 @@ function buildConfigFromReference(
   slug: string
 ): ScenarioConfig {
   // Get functional toggles from reference or use defaults
-  const functionalToggles = reference?.functional?.toggles ?? DEFAULT_FUNCTIONAL_TOGGLES;
+  const functionalToggles = reference?.functional?.toggles ?? [];
 
   return {
     functionalToggles,
@@ -136,10 +94,7 @@ function buildConfigFromReference(
 
       // Default API definition
       return {
-        endpoints: [
-          { id: "post-shorten", method: "POST", path: "api/v1/urls", notes: "", suggested: true },
-          { id: "get-slug", method: "GET", path: "{slug}", notes: "", suggested: true },
-        ],
+        endpoints: [],
       };
     },
     defaultDesignState: () => ({

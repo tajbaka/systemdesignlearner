@@ -487,25 +487,29 @@ function PracticeFlowInner() {
     <TooltipProvider>
       {renderOnboardingTooltip()}
       <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
-        <PracticeStepper
-          scenario={session.state.slug}
-          current={currentStep}
-          progress={session.state.completed}
-          scenarioTitle={scenarioTitle}
-          isAuthenticated={state.auth.isAuthed || Boolean(isSignedIn)}
-          readOnly={isReadOnly}
-          hideMobileStepper={false}
-        />
+        {currentStep !== "intro" && (
+          <PracticeStepper
+            scenario={session.state.slug}
+            current={currentStep}
+            progress={session.state.completed}
+            scenarioTitle={scenarioTitle}
+            isAuthenticated={state.auth.isAuthed || Boolean(isSignedIn)}
+            readOnly={isReadOnly}
+            hideMobileStepper={false}
+          />
+        )}
 
         <div
           className={
-            isSandboxStep
+            isSandboxStep || currentStep === "intro"
               ? "flex-1 min-h-0 overflow-hidden sm:pt-[40px]"
               : "flex-1 min-h-0 overflow-y-auto sm:pt-[40px]"
           }
           style={{
             paddingBottom:
-              !isSandboxStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
+              !isSandboxStep && currentStep !== "intro" && keyboardOffset > 0
+                ? `${keyboardOffset + 80}px`
+                : undefined,
           }}
         >
           <PracticeStepContent
@@ -659,85 +663,86 @@ function PracticeFlowInner() {
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
 
-        <footer
-          className="bg-black border-t border-zinc-800"
-          style={{
-            transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
-          }}
-        >
-          <PracticeFeedbackPanel
-            currentStep={currentStep}
-            verification={verification}
-            scoringProgressSteps={scoringProgressSteps}
-            scoringFeedback={scoringFeedback}
-            helperText={helperText}
-            onRevise={() => {
-              setScoringFeedback(null);
-              clearIterativeFeedback(); // Also clear iterative feedback state
-              if (currentStep !== "highLevelDesign") {
-                session.setStepScore(
-                  currentStep as "functional" | "nonFunctional" | "api",
-                  undefined
-                );
-              }
-            }}
-            onContinue={proceedToNext}
-            onClearVerification={clearVerification}
-            hasIterativeFeedback={!!iterativeFeedbackState.result}
-          />
-
-          <PracticeFooter
-            currentStep={currentStep}
-            showBack={showBack}
-            showNext={showNext}
-            nextLabel={nextLabel}
-            nextDisabled={nextDisabled}
-            isReadOnly={isReadOnly}
-            isVerifying={verification.isVerifying}
-            onBack={handleBack}
-            onNext={handleNext}
-            onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
-            apiMobileEditing={apiMobileEditing}
-            voiceCaptureValue={
-              currentStep === "functional"
-                ? state.requirements.functionalSummary
-                : currentStep === "nonFunctional"
-                  ? state.requirements.nonFunctional.notes
-                  : currentStep === "api" &&
-                      apiMobileEditing &&
-                      typeof window !== "undefined" &&
-                      window._apiMobileEditorVoiceValue !== undefined
-                    ? window._apiMobileEditorVoiceValue
-                    : undefined
-            }
-            voiceCaptureOnChange={
-              currentStep === "functional"
-                ? (value: string) => {
-                    setRequirements({
-                      ...state.requirements,
-                      functionalSummary: value,
-                    });
-                  }
-                : currentStep === "nonFunctional"
-                  ? (value: string) => {
-                      setRequirements({
-                        ...state.requirements,
-                        nonFunctional: {
-                          ...state.requirements.nonFunctional,
-                          notes: value,
-                        },
-                      });
-                    }
-                  : currentStep === "api" &&
-                      apiMobileEditing &&
-                      typeof window !== "undefined" &&
-                      window._apiMobileEditorVoiceOnChange
-                    ? window._apiMobileEditorVoiceOnChange
-                    : undefined
-            }
-          />
-        </footer>
-      </div>
+                {currentStep !== "intro" && (
+                  <footer
+                    className="bg-black border-t border-zinc-800"
+                    style={{
+                      transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
+                    }}
+                  >
+                    <PracticeFeedbackPanel
+                      currentStep={currentStep}
+                      verification={verification}
+                      scoringProgressSteps={scoringProgressSteps}
+                      scoringFeedback={scoringFeedback}
+                      helperText={helperText}
+                      onRevise={() => {
+                        setScoringFeedback(null);
+                        clearIterativeFeedback(); // Also clear iterative feedback state
+                        if (currentStep !== "highLevelDesign") {
+                          session.setStepScore(
+                            currentStep as "functional" | "nonFunctional" | "api",
+                            undefined
+                          );
+                        }
+                      }}
+                      onContinue={proceedToNext}
+                      onClearVerification={clearVerification}
+                      hasIterativeFeedback={!!iterativeFeedbackState.result}
+                    />
+        
+                    <PracticeFooter
+                      currentStep={currentStep}
+                      showBack={showBack}
+                      showNext={showNext}
+                      nextLabel={nextLabel}
+                      nextDisabled={nextDisabled}
+                      isReadOnly={isReadOnly}
+                      isVerifying={verification.isVerifying}
+                      onBack={handleBack}
+                      onNext={handleNext}
+                      onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
+                      apiMobileEditing={apiMobileEditing}
+                      voiceCaptureValue={
+                        currentStep === "functional"
+                          ? state.requirements.functionalSummary
+                          : currentStep === "nonFunctional"
+                            ? state.requirements.nonFunctional.notes
+                            : currentStep === "api" &&
+                                apiMobileEditing &&
+                                typeof window !== "undefined" &&
+                                window._apiMobileEditorVoiceValue !== undefined
+                              ? window._apiMobileEditorVoiceValue
+                              : undefined
+                      }
+                      voiceCaptureOnChange={
+                        currentStep === "functional"
+                          ? (value: string) => {
+                              setRequirements({
+                                ...state.requirements,
+                                functionalSummary: value,
+                              });
+                            }
+                          : currentStep === "nonFunctional"
+                            ? (value: string) => {
+                                setRequirements({
+                                  ...state.requirements,
+                                  nonFunctional: {
+                                    ...state.requirements.nonFunctional,
+                                    notes: value,
+                                  },
+                                });
+                              }
+                            : currentStep === "api" &&
+                                apiMobileEditing &&
+                                typeof window !== "undefined" &&
+                                window._apiMobileEditorVoiceOnChange
+                              ? window._apiMobileEditorVoiceOnChange
+                              : undefined
+                      }
+                    />
+                  </footer>
+                )}      </div>
     </TooltipProvider>
   );
 }

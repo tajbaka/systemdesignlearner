@@ -46,7 +46,7 @@ export default function PracticeSlugClient({ slug, sharedState }: PracticeSlugCl
     <div className="flex h-full flex-col overflow-hidden bg-zinc-950">
       <PracticeSidebar />
       <main className="flex-1 min-h-0 overflow-hidden">
-        <PracticeSessionProvider slug={slug} initialStep="functional" sharedState={sharedState}>
+        <PracticeSessionProvider slug={slug} initialStep="intro" sharedState={sharedState}>
           <PracticeFlow />
         </PracticeSessionProvider>
       </main>

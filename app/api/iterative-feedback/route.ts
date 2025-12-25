@@ -16,10 +16,9 @@ type SupportedIterativeStep = "functional" | "nonFunctional" | "api";
 const SCORING_CONFIG_CACHE: Record<string, ProblemScoringConfig> = {};
 const STEP_CONFIG_CACHE: Record<string, Partial<Record<SupportedIterativeStep, StepConfig>>> = {};
 
-function buildFunctionalStepConfig(scoringConfig: ProblemScoringConfig): StepConfig {
-  const functional = scoringConfig.steps.functional;
-  const topics: (Topic & { examplePhrases?: string[] })[] = [
-    ...functional.coreRequirements.map((req) => ({
+function buildTopics(stepConfig: { coreRequirements: any[]; optionalRequirements: any[] }) {
+  return [
+    ...stepConfig.coreRequirements.map((req) => ({
       id: req.id,
       label: req.label,
       description: req.description,
@@ -28,7 +27,7 @@ function buildFunctionalStepConfig(scoringConfig: ProblemScoringConfig): StepCon
       weight: req.weight,
       examplePhrases: req.examplePhrases,
     })),
-    ...functional.optionalRequirements.map((req) => ({
+    ...stepConfig.optionalRequirements.map((req) => ({
       id: req.id,
       label: req.label,
       description: req.description,
@@ -38,103 +37,57 @@ function buildFunctionalStepConfig(scoringConfig: ProblemScoringConfig): StepCon
       examplePhrases: req.examplePhrases,
     })),
   ];
+}
 
-  return {
+const STEP_BUILDERS: Record<
+  SupportedIterativeStep,
+  (scoringConfig: ProblemScoringConfig) => StepConfig
+> = {
+  functional: (scoringConfig) => ({
     stepId: "functional",
     stepName: "Functional Requirements",
-    topics,
-  };
-}
-
-function buildNonFunctionalStepConfig(scoringConfig: ProblemScoringConfig): StepConfig {
-  const nonFunctional = scoringConfig.steps.nonFunctional;
-  const coreReqs = nonFunctional.coreRequirements ?? [];
-  const optionalReqs = nonFunctional.optionalRequirements ?? [];
-
-  const topics: (Topic & { examplePhrases?: string[] })[] = [
-    ...coreReqs.map((req) => ({
-      id: req.id,
-      label: req.label,
-      description: req.description,
-      keywords: req.keywords,
-      required: true,
-      weight: req.weight,
-      examplePhrases: req.examplePhrases,
-    })),
-    ...optionalReqs.map((req) => ({
-      id: req.id,
-      label: req.label,
-      description: req.description,
-      keywords: req.keywords,
-      required: false,
-      weight: req.weight,
-      examplePhrases: req.examplePhrases,
-    })),
-  ];
-
-  return {
+    topics: buildTopics(scoringConfig.steps.functional),
+  }),
+  nonFunctional: (scoringConfig) => ({
     stepId: "nonFunctional",
     stepName: "Non-Functional Requirements",
-    topics,
-  };
-}
+    topics: buildTopics(scoringConfig.steps.nonFunctional),
+  }),
+  api: (scoringConfig) => {
+    const api = scoringConfig.steps.api;
+    const endpointRequirements = [
+      ...api.requiredEndpoints.map(
+        (ep: (typeof api.requiredEndpoints)[number] & { exampleNotes?: string }) => ({
+          id: ep.id,
+          method: ep.method,
+          examplePath: ep.examplePath,
+          purpose: ep.purpose,
+          documentationHints: ep.documentationHints,
+          required: true,
+          exampleNotes: ep.exampleNotes,
+        })
+      ),
+      ...api.optionalEndpoints.map(
+        (ep: (typeof api.optionalEndpoints)[number] & { exampleNotes?: string }) => ({
+          id: ep.id,
+          method: ep.method,
+          examplePath: ep.examplePath,
+          purpose: ep.purpose,
+          documentationHints: ep.documentationHints,
+          required: false,
+          exampleNotes: ep.exampleNotes,
+        })
+      ),
+    ];
 
-function buildApiStepConfig(scoringConfig: ProblemScoringConfig): StepConfig {
-  const api = scoringConfig.steps.api;
-
-  const topics: (Topic & { examplePhrases?: string[] })[] = [
-    ...api.coreRequirements.map((req) => ({
-      id: req.id,
-      label: req.label,
-      description: req.description,
-      keywords: req.keywords,
-      required: true,
-      weight: req.weight,
-      examplePhrases: req.examplePhrases,
-    })),
-    ...api.optionalRequirements.map((req) => ({
-      id: req.id,
-      label: req.label,
-      description: req.description,
-      keywords: req.keywords,
-      required: false,
-      weight: req.weight,
-      examplePhrases: req.examplePhrases,
-    })),
-  ];
-
-  const endpointRequirements = [
-    ...api.requiredEndpoints.map(
-      (ep: (typeof api.requiredEndpoints)[number] & { exampleNotes?: string }) => ({
-        id: ep.id,
-        method: ep.method,
-        examplePath: ep.examplePath,
-        purpose: ep.purpose,
-        documentationHints: ep.documentationHints,
-        required: true,
-        exampleNotes: ep.exampleNotes,
-      })
-    ),
-    ...api.optionalEndpoints.map(
-      (ep: (typeof api.optionalEndpoints)[number] & { exampleNotes?: string }) => ({
-        id: ep.id,
-        method: ep.method,
-        examplePath: ep.examplePath,
-        purpose: ep.purpose,
-        documentationHints: ep.documentationHints,
-        required: false,
-        exampleNotes: ep.exampleNotes,
-      })
-    ),
-  ];
-
-  return {
-    stepId: "api",
-    stepName: "API Design",
-    topics,
-    endpointRequirements,
-  };
-}
+    return {
+      stepId: "api",
+      stepName: "API Design",
+      topics: buildTopics(api),
+      endpointRequirements,
+    };
+  },
+};
 
 async function getStepConfig(slug: string, stepId: SupportedIterativeStep): Promise<StepConfig> {
   // Load and cache the scoring config for this slug
@@ -150,18 +103,16 @@ async function getStepConfig(slug: string, stepId: SupportedIterativeStep): Prom
 
   // Build and cache step config
   if (!STEP_CONFIG_CACHE[slug][stepId]) {
-    if (stepId === "functional") {
-      STEP_CONFIG_CACHE[slug].functional = buildFunctionalStepConfig(scoringConfig);
-    } else if (stepId === "nonFunctional") {
-      STEP_CONFIG_CACHE[slug].nonFunctional = buildNonFunctionalStepConfig(scoringConfig);
-    } else if (stepId === "api") {
-      STEP_CONFIG_CACHE[slug].api = buildApiStepConfig(scoringConfig);
+    const builder = STEP_BUILDERS[stepId];
+    if (!builder) {
+      throw new Error(`Unsupported iterative feedback step: ${stepId}`);
     }
+    STEP_CONFIG_CACHE[slug][stepId] = builder(scoringConfig);
   }
 
   const config = STEP_CONFIG_CACHE[slug][stepId];
   if (!config) {
-    throw new Error(`Unsupported iterative feedback step: ${stepId}`);
+    throw new Error(`Failed to build config for step: ${stepId}`);
   }
   return config;
 }

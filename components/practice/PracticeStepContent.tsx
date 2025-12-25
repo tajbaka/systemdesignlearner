@@ -5,8 +5,10 @@ import NonFunctionalRequirementsStep from "@/components/practice/steps/NonFuncti
 import ApiDefinitionStep from "@/components/practice/steps/ApiDefinitionStep";
 import SandboxStep from "@/components/practice/steps/SandboxStep";
 import ScoreShareStep from "@/components/practice/steps/ScoreShareStep";
+import IntroStep from "@/components/practice/steps/IntroStep";
 
 const STEP_COMPONENTS: Record<PracticeStep, (props?: Record<string, unknown>) => ReactElement> = {
+  intro: () => <IntroStep />,
   functional: () => <FunctionalRequirementsStep />,
   nonFunctional: () => <NonFunctionalRequirementsStep />,
   api: () => <ApiDefinitionStep />,

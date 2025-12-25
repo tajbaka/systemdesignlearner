@@ -1,25 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { SCENARIOS } from "@/lib/scenarios";
+import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
+import { usePracticeNavigation } from "@/hooks/usePracticeNavigation";
 
-export function PastebinIntroClient() {
-  const router = useRouter();
-  const scenario = SCENARIOS.find((s) => s.id === "pastebin")!;
+export default function IntroStep() {
+  const { state } = usePracticeSession();
+  const { handleNext } = usePracticeNavigation();
+  const scenario = SCENARIOS.find((s) => s.id === state.slug);
+
+  if (!scenario) return null;
 
   const handleStartPractice = () => {
     track("practice_intro_start", {
-      slug: "pastebin",
+      slug: state.slug,
     });
-    router.push("/practice/pastebin");
+    handleNext();
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-950">
+    <div className="flex h-full flex-col bg-zinc-950 overflow-y-auto">
       {/* Header */}
       <header className="border-b border-zinc-800 px-4 py-3 sm:px-6">
         <Link
