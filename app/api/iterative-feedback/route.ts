@@ -63,7 +63,10 @@ const STEP_BUILDERS: Record<
   nonFunctional: (scoringConfig) => ({
     stepId: "nonFunctional",
     stepName: "Non-Functional Requirements",
-    topics: buildTopics(scoringConfig.steps.nonFunctional),
+    topics: buildTopics({
+      coreRequirements: scoringConfig.steps.nonFunctional.coreRequirements ?? [],
+      optionalRequirements: scoringConfig.steps.nonFunctional.optionalRequirements ?? [],
+    }),
   }),
   api: (scoringConfig) => {
     const api = scoringConfig.steps.api;

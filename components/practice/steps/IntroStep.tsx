@@ -6,11 +6,11 @@ import { ArrowRight } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { SCENARIOS } from "@/lib/scenarios";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
-import { usePracticeNavigation } from "@/hooks/usePracticeNavigation";
+import { useRouter } from "next/navigation";
 
 export default function IntroStep() {
   const { state } = usePracticeSession();
-  const { handleNext } = usePracticeNavigation();
+  const router = useRouter();
   const scenario = SCENARIOS.find((s) => s.id === state.slug);
 
   if (!scenario) return null;
@@ -19,7 +19,7 @@ export default function IntroStep() {
     track("practice_intro_start", {
       slug: state.slug,
     });
-    handleNext();
+    router.push(`/practice/${state.slug}/functional`);
   };
 
   return (

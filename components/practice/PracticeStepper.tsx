@@ -24,6 +24,12 @@ type StepMeta = {
 };
 
 const STEP_META: Record<PracticeStep, StepMeta> = {
+  intro: {
+    id: "intro",
+    label: "Intro",
+    description: "Introduction",
+    learnMoreLink: "/learn/introduction",
+  },
   functional: {
     id: "functional",
     label: "Functional Requirements",
@@ -84,6 +90,11 @@ const STEP_TOOLTIP_INFO: Record<
   PracticeStep,
   { title: string; description: string; learnMoreLink: string }
 > = {
+  intro: {
+    title: "Introduction",
+    description: "Overview of the practice scenario and problem statement.",
+    learnMoreLink: "/learn/introduction",
+  },
   functional: {
     title: "Functional Requirements",
     description: "Describe what users can do and the core capabilities the system must provide.",

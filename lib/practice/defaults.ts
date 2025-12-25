@@ -138,6 +138,7 @@ export const makeInitialPracticeState = (slug = "url-shortener"): PracticeState 
     skipped: false,
   },
   completed: {
+    intro: false,
     functional: false,
     nonFunctional: false,
     api: false,
