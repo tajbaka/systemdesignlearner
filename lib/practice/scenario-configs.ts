@@ -7,7 +7,7 @@ import type {
 } from "./types";
 import type { ComponentKind } from "@/app/components/types";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
-import type { ScenarioReference, FunctionalToggle } from "./reference/schema";
+import type { ScenarioReference } from "./reference/schema";
 import { getScenarioReferenceSync } from "./loader";
 
 const specFor = (kind: ComponentKind) => {
@@ -31,7 +31,6 @@ export type ScenarioConfig = {
   defaultDesignState: () => PracticeDesignState;
   defaultRunState: () => PracticeRunState;
 };
-
 
 /**
  * Generate a ScenarioConfig from a reference JSON.

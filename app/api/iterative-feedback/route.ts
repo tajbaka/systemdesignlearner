@@ -16,7 +16,19 @@ type SupportedIterativeStep = "functional" | "nonFunctional" | "api";
 const SCORING_CONFIG_CACHE: Record<string, ProblemScoringConfig> = {};
 const STEP_CONFIG_CACHE: Record<string, Partial<Record<SupportedIterativeStep, StepConfig>>> = {};
 
-function buildTopics(stepConfig: { coreRequirements: any[]; optionalRequirements: any[] }) {
+interface BaseRequirement {
+  id: string;
+  label: string;
+  description: string;
+  keywords: string[];
+  weight: number;
+  examplePhrases?: string[];
+}
+
+function buildTopics(stepConfig: {
+  coreRequirements: BaseRequirement[];
+  optionalRequirements: BaseRequirement[];
+}) {
   return [
     ...stepConfig.coreRequirements.map((req) => ({
       id: req.id,

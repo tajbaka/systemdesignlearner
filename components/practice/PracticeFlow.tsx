@@ -498,7 +498,6 @@ function PracticeFlowInner() {
             hideMobileStepper={false}
           />
         )}
-
         <div
           className={
             isSandboxStep || currentStep === "intro"
@@ -520,7 +519,6 @@ function PracticeFlowInner() {
             onRunPanelChange={setRunPanelOpen}
           />
         </div>
-
         {isSandboxStep ? (
           <Tooltip open={showTooltips} onOpenChange={setShowTooltips}>
             <TooltipTrigger asChild>
@@ -554,7 +552,6 @@ function PracticeFlowInner() {
             </TooltipContent>
           </Tooltip>
         ) : null}
-
         {/* Iterative Feedback Modal - Shows in center of screen */}
         {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api/sandbox steps */}
         <IterativeFeedbackModal
@@ -662,87 +659,87 @@ function PracticeFlowInner() {
           }}
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
+        {currentStep !== "intro" && (
+          <footer
+            className="bg-black border-t border-zinc-800"
+            style={{
+              transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
+            }}
+          >
+            <PracticeFeedbackPanel
+              currentStep={currentStep}
+              verification={verification}
+              scoringProgressSteps={scoringProgressSteps}
+              scoringFeedback={scoringFeedback}
+              helperText={helperText}
+              onRevise={() => {
+                setScoringFeedback(null);
+                clearIterativeFeedback(); // Also clear iterative feedback state
+                if (currentStep !== "highLevelDesign") {
+                  session.setStepScore(
+                    currentStep as "functional" | "nonFunctional" | "api",
+                    undefined
+                  );
+                }
+              }}
+              onContinue={proceedToNext}
+              onClearVerification={clearVerification}
+              hasIterativeFeedback={!!iterativeFeedbackState.result}
+            />
 
-                {currentStep !== "intro" && (
-                  <footer
-                    className="bg-black border-t border-zinc-800"
-                    style={{
-                      transform: keyboardOffset > 0 ? `translateY(-${keyboardOffset}px)` : "none",
-                    }}
-                  >
-                    <PracticeFeedbackPanel
-                      currentStep={currentStep}
-                      verification={verification}
-                      scoringProgressSteps={scoringProgressSteps}
-                      scoringFeedback={scoringFeedback}
-                      helperText={helperText}
-                      onRevise={() => {
-                        setScoringFeedback(null);
-                        clearIterativeFeedback(); // Also clear iterative feedback state
-                        if (currentStep !== "highLevelDesign") {
-                          session.setStepScore(
-                            currentStep as "functional" | "nonFunctional" | "api",
-                            undefined
-                          );
-                        }
-                      }}
-                      onContinue={proceedToNext}
-                      onClearVerification={clearVerification}
-                      hasIterativeFeedback={!!iterativeFeedbackState.result}
-                    />
-        
-                    <PracticeFooter
-                      currentStep={currentStep}
-                      showBack={showBack}
-                      showNext={showNext}
-                      nextLabel={nextLabel}
-                      nextDisabled={nextDisabled}
-                      isReadOnly={isReadOnly}
-                      isVerifying={verification.isVerifying}
-                      onBack={handleBack}
-                      onNext={handleNext}
-                      onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
-                      apiMobileEditing={apiMobileEditing}
-                      voiceCaptureValue={
-                        currentStep === "functional"
-                          ? state.requirements.functionalSummary
-                          : currentStep === "nonFunctional"
-                            ? state.requirements.nonFunctional.notes
-                            : currentStep === "api" &&
-                                apiMobileEditing &&
-                                typeof window !== "undefined" &&
-                                window._apiMobileEditorVoiceValue !== undefined
-                              ? window._apiMobileEditorVoiceValue
-                              : undefined
+            <PracticeFooter
+              currentStep={currentStep}
+              showBack={showBack}
+              showNext={showNext}
+              nextLabel={nextLabel}
+              nextDisabled={nextDisabled}
+              isReadOnly={isReadOnly}
+              isVerifying={verification.isVerifying}
+              onBack={handleBack}
+              onNext={handleNext}
+              onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
+              apiMobileEditing={apiMobileEditing}
+              voiceCaptureValue={
+                currentStep === "functional"
+                  ? state.requirements.functionalSummary
+                  : currentStep === "nonFunctional"
+                    ? state.requirements.nonFunctional.notes
+                    : currentStep === "api" &&
+                        apiMobileEditing &&
+                        typeof window !== "undefined" &&
+                        window._apiMobileEditorVoiceValue !== undefined
+                      ? window._apiMobileEditorVoiceValue
+                      : undefined
+              }
+              voiceCaptureOnChange={
+                currentStep === "functional"
+                  ? (value: string) => {
+                      setRequirements({
+                        ...state.requirements,
+                        functionalSummary: value,
+                      });
+                    }
+                  : currentStep === "nonFunctional"
+                    ? (value: string) => {
+                        setRequirements({
+                          ...state.requirements,
+                          nonFunctional: {
+                            ...state.requirements.nonFunctional,
+                            notes: value,
+                          },
+                        });
                       }
-                      voiceCaptureOnChange={
-                        currentStep === "functional"
-                          ? (value: string) => {
-                              setRequirements({
-                                ...state.requirements,
-                                functionalSummary: value,
-                              });
-                            }
-                          : currentStep === "nonFunctional"
-                            ? (value: string) => {
-                                setRequirements({
-                                  ...state.requirements,
-                                  nonFunctional: {
-                                    ...state.requirements.nonFunctional,
-                                    notes: value,
-                                  },
-                                });
-                              }
-                            : currentStep === "api" &&
-                                apiMobileEditing &&
-                                typeof window !== "undefined" &&
-                                window._apiMobileEditorVoiceOnChange
-                              ? window._apiMobileEditorVoiceOnChange
-                              : undefined
-                      }
-                    />
-                  </footer>
-                )}      </div>
+                    : currentStep === "api" &&
+                        apiMobileEditing &&
+                        typeof window !== "undefined" &&
+                        window._apiMobileEditorVoiceOnChange
+                      ? window._apiMobileEditorVoiceOnChange
+                      : undefined
+              }
+            />
+          </footer>
+        )}{" "}
+      </div>
     </TooltipProvider>
   );
 }

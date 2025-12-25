@@ -54,8 +54,7 @@ const PROMPT_BUILDERS = {
     const { scenarioTitle, scoringConfig } = context;
     const required = scoringConfig.steps.functional.coreRequirements;
     const optional = scoringConfig.steps.functional.optionalRequirements.filter(
-      (opt: { id: string }) =>
-        input.selectedFeatures[opt.id as keyof typeof input.selectedFeatures]
+      (opt: { id: string }) => input.selectedFeatures[opt.id as keyof typeof input.selectedFeatures]
     );
 
     return `You are verifying functional requirements for a ${scenarioTitle} system design practice exercise.
@@ -206,10 +205,7 @@ export function buildFunctionalPrompt(
   selectedFeatures: Requirements["functional"],
   context: VerificationContext
 ) {
-  return buildVerificationPrompt(
-    { step: "functional", summary, selectedFeatures },
-    context
-  );
+  return buildVerificationPrompt({ step: "functional", summary, selectedFeatures }, context);
 }
 
 /**
