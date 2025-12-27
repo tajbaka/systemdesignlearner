@@ -486,28 +486,27 @@ function PracticeFlowInner() {
   return (
     <TooltipProvider>
       {renderOnboardingTooltip()}
-            <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
-              <PracticeStepper
-                scenario={session.state.slug}
-                current={currentStep}
-                progress={session.state.completed}
-                scenarioTitle={scenarioTitle}
-                isAuthenticated={state.auth.isAuthed || Boolean(isSignedIn)}
-                readOnly={isReadOnly}
-                hideMobileStepper={false}
-              />
-      
-              <div
-                className={
-                  isSandboxStep
-                    ? "flex-1 min-h-0 overflow-hidden sm:pt-[40px]"
-                    : "flex-1 min-h-0 overflow-y-auto sm:pt-[40px]"
-                }
-                style={{
-                  paddingBottom:
-                    !isSandboxStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
-                }}
-              >
+      <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
+        <PracticeStepper
+          scenario={session.state.slug}
+          current={currentStep}
+          progress={session.state.completed}
+          scenarioTitle={scenarioTitle}
+          isAuthenticated={state.auth.isAuthed || Boolean(isSignedIn)}
+          readOnly={isReadOnly}
+          hideMobileStepper={false}
+        />
+        <div
+          className={
+            isSandboxStep
+              ? "flex-1 min-h-0 overflow-hidden sm:pt-[40px]"
+              : "flex-1 min-h-0 overflow-y-auto sm:pt-[40px]"
+          }
+          style={{
+            paddingBottom:
+              !isSandboxStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
+          }}
+        >
           <PracticeStepContent
             currentStep={currentStep}
             mobilePaletteOpen={mobilePaletteOpen}
