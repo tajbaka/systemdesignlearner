@@ -1,12 +1,72 @@
 {
   "slug": "url-shortener",
   "title": "URL Shortener",
+  "description": "Design a scalable URL shortening service that converts long URLs into short, shareable links.",
+
+  "functional": {
+    "toggles": [
+      {
+        "id": "create-short-url",
+        "label": "Create short URL",
+        "description": "Generate short links via API/UI",
+        "default": true
+      },
+      {
+        "id": "redirect-by-slug",
+        "label": "Redirect by slug",
+        "description": "Resolve slug to destination",
+        "default": true
+      },
+      {
+        "id": "custom-alias",
+        "label": "Custom alias",
+        "description": "Allow requester to choose slug",
+        "default": false
+      },
+      {
+        "id": "basic-analytics",
+        "label": "Basic click analytics",
+        "description": "Track total clicks and last seen",
+        "default": false
+      },
+      {
+        "id": "rate-limiting",
+        "label": "Rate limiting",
+        "description": "Throttle abusive clients",
+        "default": false
+      },
+      {
+        "id": "admin-delete",
+        "label": "Admin delete",
+        "description": "Admin can revoke short links",
+        "default": false
+      }
+    ],
+    "order": [
+      "create-short-url",
+      "redirect-by-slug",
+      "custom-alias",
+      "basic-analytics",
+      "rate-limiting",
+      "admin-delete"
+    ],
+    "labels": {
+      "create-short-url": "Create short URLs",
+      "redirect-by-slug": "Redirect by slug",
+      "custom-alias": "Custom aliases",
+      "basic-analytics": "Click analytics",
+      "rate-limiting": "Client rate limiting",
+      "admin-delete": "Admin delete"
+    }
+  },
+
   "nonFunctional": {
     "categories": [
       {
         "id": "latency",
         "label": "Latency",
         "description": "How quickly should the system respond to redirect requests?",
+        "placeholder": "Example: Target p95 redirect latency under 100ms for good user experience...",
         "examples": [
           "Redirects should be fast (under 100ms)",
           "Sub-second response time for URL lookups",
@@ -24,6 +84,7 @@
         "id": "readThroughput",
         "label": "Read Throughput",
         "description": "How many redirect requests should the system handle per second?",
+        "placeholder": "Example: Support thousands of redirects per second for viral content...",
         "examples": [
           "Support high read volume (thousands of redirects per second)",
           "Handle viral content spikes",
@@ -41,6 +102,7 @@
         "id": "writeThroughput",
         "label": "Write Throughput",
         "description": "How many URL creation requests should the system handle per second?",
+        "placeholder": "Example: Support moderate write volume for URL creation...",
         "examples": [
           "Support moderate write volume",
           "100+ URL creations per second",
@@ -58,6 +120,7 @@
         "id": "availability",
         "label": "Availability",
         "description": "How reliable should the system be? What level of downtime is acceptable?",
+        "placeholder": "Example: High availability with 99.9% uptime target...",
         "examples": [
           "High availability with minimal downtime",
           "99.9% uptime (about 8 hours downtime per year)",
@@ -72,6 +135,7 @@
         "id": "scalability",
         "label": "Scalability",
         "description": "How should the system scale as traffic grows?",
+        "placeholder": "Example: Horizontal scaling for 10x traffic spikes...",
         "examples": [
           "Horizontal scaling for increased load",
           "Auto-scale based on traffic patterns",
@@ -82,6 +146,7 @@
         "id": "consistency",
         "label": "Consistency",
         "description": "What are the consistency requirements?",
+        "placeholder": "Example: Strong consistency for URL creation, eventual for analytics...",
         "examples": [
           "Eventual consistency acceptable for analytics",
           "Strong consistency for URL creation to prevent duplicates",
@@ -90,12 +155,14 @@
       }
     ]
   },
+
   "apiEndpoints": [
     {
       "method": "POST",
       "path": "/api/v1/urls",
       "purpose": "Create a new shortened URL",
       "required": true,
+      "placeholder": "Create a short URL from a long URL. Include request body with URL, optional custom alias, and expiration. Response returns the short URL, code, and metadata.",
       "requestBody": {
         "url": {
           "type": "string",
@@ -134,6 +201,7 @@
       "path": "/:code",
       "purpose": "Redirect to the original URL",
       "required": true,
+      "placeholder": "Redirect endpoint that takes a short code and returns a 302 redirect to the original URL. Handle 404 for not found and 410 for expired links.",
       "responses": {
         "302": "Redirect to original URL",
         "404": "Code not found",
@@ -146,6 +214,7 @@
       "purpose": "Get analytics for a shortened URL",
       "required": false,
       "requiresFeature": "basic-analytics",
+      "placeholder": "Get click statistics for a short URL. Returns click count, creation time, and last accessed time.",
       "responses": {
         "200": {
           "description": "Analytics data",
@@ -165,6 +234,7 @@
       "purpose": "Update link metadata",
       "required": false,
       "requiresFeature": "link-metadata",
+      "placeholder": "Update an existing short URL's destination, expiration, or active status. Requires authentication.",
       "requestBody": {
         "url": {
           "type": "string",
@@ -204,6 +274,7 @@
       "purpose": "Delete a shortened URL",
       "required": false,
       "requiresFeature": "admin-delete",
+      "placeholder": "Delete a short URL. Requires admin authentication. Returns 204 on success.",
       "responses": {
         "204": "URL deleted successfully",
         "401": "Unauthorized",
@@ -216,6 +287,7 @@
       "purpose": "Record a click for analytics in a decoupled service",
       "required": false,
       "requiresFeature": "analytics-pipeline",
+      "placeholder": "Internal endpoint to record click events asynchronously. Used by analytics workers.",
       "requestBody": {
         "code": {
           "type": "string",
@@ -249,6 +321,7 @@
       "path": "/health",
       "purpose": "Liveness probe",
       "required": false,
+      "placeholder": "Health check endpoint for load balancers and orchestrators.",
       "responses": {
         "200": "Service is up"
       }
@@ -258,12 +331,154 @@
       "path": "/ready",
       "purpose": "Readiness probe",
       "required": false,
+      "placeholder": "Readiness check that verifies all dependencies (database, cache) are accessible.",
       "responses": {
         "200": "Service is ready",
         "503": "Dependencies not ready"
       }
     }
   ],
+
+  "design": {
+    "guidance": {
+      "rules": [
+        {
+          "id": "add-web",
+          "level": "core",
+          "check": { "type": "hasKind", "kind": "Web" },
+          "question": "Where do requests originate from in the current diagram?",
+          "hint": "Start with a client/Web node so requests have an entry point."
+        },
+        {
+          "id": "add-api-gateway",
+          "level": "core",
+          "check": { "type": "hasKind", "kind": "API Gateway" },
+          "question": "What component sits between users and backend services to terminate HTTP, enforce auth, and route traffic?",
+          "hint": "Clients need an API Gateway to handle routing, auth, and rate limiting."
+        },
+        {
+          "id": "connect-web-api",
+          "level": "core",
+          "check": { "type": "hasConnection", "from": "Web", "to": "API Gateway" },
+          "question": "How does traffic flow from the Web client into the API Gateway at the moment?",
+          "hint": "Connect the Web client to the API Gateway so requests can actually reach your backend."
+        },
+        {
+          "id": "add-service",
+          "level": "core",
+          "check": { "type": "hasKind", "kind": "Service" },
+          "question": "After the API Gateway, which component should execute the URL creation and redirect logic?",
+          "hint": "A Service layer is required to handle URL creation and redirect logic."
+        },
+        {
+          "id": "connect-api-service",
+          "level": "core",
+          "check": { "type": "hasConnection", "from": "API Gateway", "to": "Service" },
+          "question": "How are requests moving from the API Gateway into the Service layer right now?",
+          "hint": "Wire the API Gateway to your Service so requests continue through the stack."
+        },
+        {
+          "id": "add-database",
+          "level": "core",
+          "check": { "type": "hasKind", "kind": "DB (Postgres)" },
+          "question": "Where will the platform persist the short-to-long URL mappings for durability?",
+          "hint": "URL mappings need durable storage. Add a primary database (Postgres is fine)."
+        },
+        {
+          "id": "connect-service-db",
+          "level": "core",
+          "check": { "type": "hasConnection", "from": "Service", "to": "DB (Postgres)" },
+          "question": "How does the Service reach the database for reads and writes in the current layout?",
+          "hint": "Connect the Service to the database so it can store and fetch URL records."
+        },
+        {
+          "id": "add-second-service",
+          "level": "bonus",
+          "check": { "type": "hasKind", "kind": "Service", "minCount": 2 },
+          "question": "Right now one Service handles both shortening URLs and redirecting clicks. How could adding a separate redirect Service lighten the work on the write Service?",
+          "hint": "Split read-heavy redirects from write operations so you can scale each path independently."
+        },
+        {
+          "id": "add-cache",
+          "level": "bonus",
+          "check": { "type": "hasKind", "kind": "Cache (Redis)" },
+          "question": "What in-memory cache would reduce database load for hot redirects while keeping latency low?",
+          "hint": "A Redis/Memcached layer offloads hot redirects from the database and keeps p95 < 100ms."
+        },
+        {
+          "id": "connect-service-cache",
+          "level": "bonus",
+          "check": { "type": "hasConnection", "from": "Service", "to": "Cache (Redis)" },
+          "question": "If cache is present, how does the Service reach it before falling back to the database?",
+          "hint": "Remember to connect the Service to cache first and fall back to the database on a miss."
+        },
+        {
+          "id": "cache-service-db",
+          "level": "bonus",
+          "check": {
+            "type": "kindConnectedToFirstMissingSecond",
+            "kind": "Service",
+            "connectedTo": "Cache (Redis)",
+            "missingConnection": "DB (Postgres)"
+          },
+          "question": "The Service feeding cache still needs a fallback—can it also reach the database when a slug is missing?",
+          "hint": "The Service that talks to cache also needs a direct path to the database for cache misses."
+        },
+        {
+          "id": "rename-services",
+          "level": "bonus",
+          "check": { "type": "servicesHaveUniqueLabels", "minServices": 2 },
+          "question": "Can you rename the Services so it's obvious which one handles shortening and which one handles redirects?",
+          "hint": "Naming each Service after its role (e.g., Shorten vs Redirect) makes the diagram clearer."
+        }
+      ],
+      "evaluationCriteria": {
+        "hasWeb": { "kinds": ["Web"], "minCount": 1 },
+        "hasApiGateway": { "kinds": ["API Gateway"], "minCount": 1 },
+        "hasService": { "kinds": ["Service"], "minCount": 1 },
+        "hasDatabase": { "kinds": ["DB (Postgres)"], "minCount": 1 },
+        "hasCache": { "kinds": ["Cache (Redis)"], "minCount": 1 }
+      }
+    },
+    "components": {
+      "base": ["Web", "API Gateway", "Service", "DB (Postgres)", "Cache (Redis)"],
+      "analytics": ["Message Queue (Kafka Topic)", "Worker Pool"],
+      "rateLimit": ["Rate Limiter"],
+      "admin": ["Auth"],
+      "optional": ["Load Balancer", "CDN", "Object Store (S3)", "Tracing/Logging"]
+    }
+  },
+
+  "brief": {
+    "title": "URL Shortener Review",
+    "sections": {
+      "functional": "Requirements",
+      "nonFunctional": "Non-functional",
+      "api": "API Design",
+      "design": "Final Design"
+    }
+  },
+
+  "onboarding": {
+    "welcome": "Let's walk through building a URL shortener together. I'll guide you step by step through defining requirements, designing the architecture, and testing your solution.",
+    "steps": {
+      "functional": "Describe the core features of your URL shortener. What should users be able to do?",
+      "nonFunctional": "Describe performance requirements: latency targets, throughput (requests/sec), and availability goals.",
+      "api": "Define the HTTP endpoints your service exposes. Describe request/response formats for creating short URLs and redirecting.",
+      "highLevelDesign": "Drag components to move them, connect them by dragging from edges. Build your architecture visually.",
+      "score": "Review your complete design and get feedback on your system architecture."
+    }
+  },
+
+  "verification": {
+    "systemPrompt": "You are evaluating a URL Shortener system design practice exercise.",
+    "criteria": {
+      "functional": "Check for URL creation and redirect functionality, optional features like analytics and custom aliases",
+      "api": "Verify POST endpoint for URL creation, GET endpoint for redirect, proper REST conventions",
+      "design": "Ensure cache layer for hot paths, service behind gateway, optional analytics queue"
+    }
+  },
+
   "components": {
     "base": ["Web", "API Gateway", "Service", "DB (Postgres)", "Cache (Redis)"],
     "analytics": ["Message Queue (Kafka Topic)", "Worker Pool"],

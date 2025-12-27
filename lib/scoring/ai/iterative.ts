@@ -26,7 +26,7 @@ export type IterativeTopicState = Record<string, boolean>;
 export type EndpointRequirement = {
   id: string;
   method: string;
-  examplePath: string;
+  examplePath?: string;
   purpose: string;
   documentationHints: string[];
   required: boolean;

@@ -173,7 +173,7 @@ function buildSandboxFeedback(session: PracticeSessionValue): SandboxEvaluationR
       totalMaxScore: designScore.totalMaxScore,
     };
 
-    const bonusGuidance = evaluateDesignGuidance(session.state.design);
+    const bonusGuidance = evaluateDesignGuidance(session.state.design, session.state.slug);
     if (bonusGuidance && bonusGuidance.level === "bonus") {
       mergedFeedback.improvementQuestion = bonusGuidance.question;
       if (!mergedFeedback.warnings.some((warning) => warning.message === bonusGuidance.summary)) {
@@ -189,7 +189,7 @@ function buildSandboxFeedback(session: PracticeSessionValue): SandboxEvaluationR
   } else {
     // Passed - show design feedback and optional nudges
     const baseFeedback: FeedbackResult = { ...designScore };
-    const bonusGuidance = evaluateDesignGuidance(session.state.design);
+    const bonusGuidance = evaluateDesignGuidance(session.state.design, session.state.slug);
     if (bonusGuidance && bonusGuidance.level === "bonus") {
       baseFeedback.improvementQuestion = bonusGuidance.question;
     }
@@ -216,7 +216,7 @@ export function useSandboxEvaluation(
       designScore: session.state.scores?.design,
     });
 
-    if (!waitingForSimulation || currentStep !== "sandbox") return;
+    if (!waitingForSimulation || currentStep !== "highLevelDesign") return;
 
     const hasRun = Boolean(lastResult);
     const hasDesignScore = session.state.scores?.design !== undefined;

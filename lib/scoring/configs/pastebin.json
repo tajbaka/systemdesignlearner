@@ -1,0 +1,488 @@
+{
+  "problemId": "pastebin",
+  "title": "Pastebin",
+  "description": "Design a text paste sharing service that allows users to create, store, and share text snippets with unique URLs",
+  "totalScore": 100,
+  "steps": {
+    "functional": {
+      "maxScore": 20,
+      "minKeywordsMatch": 1,
+      "minTextLength": 50,
+      "coreRequirements": [
+        {
+          "id": "create-paste",
+          "label": "Paste Creation",
+          "description": "Users can submit text content and receive a unique shareable URL.",
+          "keywords": [
+            "create",
+            "upload",
+            "paste",
+            "submit",
+            "text",
+            "content",
+            "share",
+            "url",
+            "link"
+          ],
+          "weight": 20,
+          "required": true,
+          "category": "core",
+          "examplePhrases": [
+            "Submit text content to create a new paste.",
+            "System generates a unique URL for sharing."
+          ]
+        },
+        {
+          "id": "view-paste",
+          "label": "Paste Retrieval",
+          "description": "Access paste content via the unique URL or ID.",
+          "keywords": ["view", "read", "retrieve", "access", "get", "fetch", "display", "show"],
+          "weight": 20,
+          "required": true,
+          "category": "core",
+          "examplePhrases": [
+            "Anyone with the URL can view the paste.",
+            "Retrieve paste content by its unique ID."
+          ]
+        },
+        {
+          "id": "unique-ids",
+          "label": "Unique Identifiers",
+          "description": "Each paste has a unique ID that maps to exactly one piece of content.",
+          "keywords": ["unique", "id", "identifier", "hash", "uuid", "distinct", "collision"],
+          "weight": 10,
+          "required": true,
+          "category": "core",
+          "examplePhrases": [
+            "Every paste gets a unique identifier.",
+            "No two pastes share the same ID."
+          ]
+        }
+      ],
+      "optionalRequirements": [
+        {
+          "id": "paste-expiration",
+          "label": "Paste Expiration",
+          "description": "Support optional expiration dates or TTL after which pastes are deleted.",
+          "keywords": [
+            "expire",
+            "ttl",
+            "temporary",
+            "time-limited",
+            "timeout",
+            "lifetime",
+            "delete"
+          ],
+          "weight": 2,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Pastes can expire after a set period.",
+            "Support TTL for temporary pastes."
+          ]
+        },
+        {
+          "id": "syntax-highlighting",
+          "label": "Syntax Highlighting",
+          "description": "Detect programming language and apply syntax highlighting.",
+          "keywords": ["syntax", "highlight", "code", "language", "format", "color", "programming"],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Auto-detect language for syntax highlighting.",
+            "Support code formatting for various languages."
+          ]
+        },
+        {
+          "id": "paste-visibility",
+          "label": "Visibility Options",
+          "description": "Control paste visibility (public, unlisted, private).",
+          "keywords": [
+            "visibility",
+            "public",
+            "private",
+            "unlisted",
+            "hidden",
+            "access",
+            "permission"
+          ],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Users can set pastes as public, unlisted, or private.",
+            "Control who can access the paste."
+          ]
+        },
+        {
+          "id": "user-accounts",
+          "label": "User Accounts",
+          "description": "Support user accounts to manage owned pastes.",
+          "keywords": ["auth", "login", "account", "user", "register", "sign in", "ownership"],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Users can sign in to manage their pastes.",
+            "Track paste ownership for registered users."
+          ]
+        },
+        {
+          "id": "raw-access",
+          "label": "Raw Content Access",
+          "description": "Provide raw text endpoint for CLI tools and embedding.",
+          "keywords": ["raw", "plain", "text", "cli", "embed", "download"],
+          "weight": 1,
+          "required": false,
+          "category": "optional",
+          "examplePhrases": [
+            "Access raw content via /raw/:id endpoint.",
+            "Support curl and CLI tools for raw access."
+          ]
+        }
+      ]
+    },
+    "nonFunctional": {
+      "maxScore": 20,
+      "minTextLength": 50,
+      "coreRequirements": [
+        {
+          "id": "performance",
+          "label": "Performance and Latency",
+          "description": "Paste retrieval should be fast. Aim for sub 150ms p95 on reads.",
+          "keywords": [
+            "fast",
+            "quick",
+            "responsive",
+            "low latency",
+            "speed",
+            "milliseconds",
+            "p95"
+          ],
+          "weight": 5,
+          "required": true,
+          "examplePhrases": [
+            "Reads should target p95 under 150ms.",
+            "Keep response times low for good UX."
+          ]
+        },
+        {
+          "id": "scalability",
+          "label": "Scalability and Throughput",
+          "description": "Handle growing traffic and content volume.",
+          "keywords": ["scale", "traffic", "load", "growth", "volume", "requests", "throughput"],
+          "weight": 5,
+          "required": true,
+          "examplePhrases": [
+            "Support millions of pastes.",
+            "Handle thousands of requests per second."
+          ]
+        },
+        {
+          "id": "availability",
+          "label": "Availability",
+          "description": "Service should be highly available.",
+          "keywords": ["available", "uptime", "reliable", "fault tolerant", "99.9"],
+          "weight": 5,
+          "required": true,
+          "examplePhrases": ["Target 99.9% availability.", "Avoid single points of failure."]
+        }
+      ],
+      "optionalRequirements": [
+        {
+          "id": "storage-efficiency",
+          "label": "Storage Efficiency",
+          "description": "Optimize storage costs for large text content.",
+          "keywords": ["storage", "cost", "efficient", "compress", "s3", "object"],
+          "weight": 2,
+          "required": false,
+          "examplePhrases": [
+            "Use object storage for cost-effective content storage.",
+            "Compress content to reduce storage costs."
+          ]
+        },
+        {
+          "id": "caching",
+          "label": "Caching Strategy",
+          "description": "Cache frequently accessed pastes.",
+          "keywords": ["cache", "cdn", "edge", "hot", "popular", "ttl"],
+          "weight": 2,
+          "required": false,
+          "examplePhrases": [
+            "Cache popular pastes at the edge.",
+            "Use CDN for global distribution."
+          ]
+        },
+        {
+          "id": "security",
+          "label": "Security",
+          "description": "Protect against abuse and malicious content.",
+          "keywords": ["security", "abuse", "rate limit", "spam", "malware", "scan"],
+          "weight": 1,
+          "required": false,
+          "examplePhrases": ["Rate limit paste creation.", "Scan content for malicious patterns."]
+        }
+      ]
+    },
+    "api": {
+      "maxScore": 25,
+      "minKeywordsMatch": 1,
+      "coreRequirements": [
+        {
+          "id": "create-paste-endpoint",
+          "label": "Paste Creation Endpoint",
+          "description": "POST endpoint to create new pastes with documented request/response",
+          "keywords": ["POST", "create", "paste", "content", "body", "request", "api/v1"],
+          "weight": 25,
+          "required": true,
+          "examplePhrases": [
+            "POST /api/v1/pastes\nRequest: { content: string, title?: string, expiresAt?: string }\nResponse: { id: string, url: string, createdAt: string }"
+          ]
+        },
+        {
+          "id": "get-paste-endpoint",
+          "label": "Paste Retrieval Endpoint",
+          "description": "GET endpoint to retrieve paste content",
+          "keywords": ["GET", "retrieve", "paste", "content", "id", "404", "410"],
+          "weight": 25,
+          "required": true,
+          "examplePhrases": [
+            "GET /api/v1/pastes/:id\nResponse: { id, content, title, createdAt }\nErrors: 404 (not found), 410 (expired)"
+          ]
+        }
+      ],
+      "optionalRequirements": [
+        {
+          "id": "raw-endpoint",
+          "label": "Raw Content Endpoint",
+          "description": "GET endpoint for raw text content",
+          "keywords": ["raw", "plain", "text", "GET"],
+          "weight": 2,
+          "required": false,
+          "examplePhrases": ["GET /raw/:id returns plain text content"]
+        },
+        {
+          "id": "delete-endpoint",
+          "label": "Delete Endpoint",
+          "description": "DELETE endpoint to remove pastes",
+          "keywords": ["DELETE", "remove", "delete"],
+          "weight": 2,
+          "required": false,
+          "examplePhrases": ["DELETE /api/v1/pastes/:id requires authentication"]
+        },
+        {
+          "id": "error-handling",
+          "label": "Error Handling",
+          "description": "Document error codes (400, 404, 410, 429)",
+          "keywords": ["error", "400", "404", "410", "429", "expired", "not found"],
+          "weight": 2,
+          "required": false,
+          "examplePhrases": ["404 for not found, 410 for expired pastes"]
+        }
+      ],
+      "requiredEndpoints": [
+        {
+          "id": "create-paste",
+          "method": "POST",
+          "pathPattern": "/api/v1/pastes",
+          "pathPatternRegex": "^/api/v\\d+/pastes$",
+          "purpose": "Create a new paste from text content",
+          "requiredBy": ["create-paste"],
+          "weight": 25,
+          "required": true,
+          "documentationHints": ["request", "body", "response", "content", "error"],
+          "minDocumentationLength": 40,
+          "examplePath": "/api/v1/pastes",
+          "exampleNotes": "POST with body containing content, optional title, and expiresAt. Returns id and url."
+        },
+        {
+          "id": "get-paste",
+          "method": "GET",
+          "pathPattern": "/api/v1/pastes/:id",
+          "pathPatternRegex": "^/api/v\\d+/pastes/.*$",
+          "purpose": "Retrieve paste content by ID",
+          "requiredBy": ["view-paste"],
+          "weight": 25,
+          "required": true,
+          "documentationHints": ["response", "content", "404", "410"],
+          "minDocumentationLength": 30,
+          "examplePath": "/api/v1/pastes/:id",
+          "exampleNotes": "GET returns paste content and metadata. 404 if not found, 410 if expired."
+        }
+      ],
+      "optionalEndpoints": [
+        {
+          "id": "raw-paste",
+          "method": "GET",
+          "pathPattern": "/raw/:id",
+          "pathPatternRegex": "^/raw/.*$",
+          "purpose": "Get raw text content without formatting",
+          "requiredBy": ["raw-access"],
+          "weight": 2,
+          "required": false,
+          "documentationHints": ["raw", "text", "plain"],
+          "minDocumentationLength": 15,
+          "examplePath": "/raw/:id",
+          "exampleNotes": "Returns plain text content for CLI tools."
+        },
+        {
+          "id": "delete-paste",
+          "method": "DELETE",
+          "pathPattern": "/api/v1/pastes/:id",
+          "pathPatternRegex": "^/api/v\\d+/pastes/.*$",
+          "purpose": "Delete a paste",
+          "requiredBy": ["user-accounts"],
+          "weight": 2,
+          "required": false,
+          "documentationHints": ["delete", "auth"],
+          "minDocumentationLength": 15,
+          "examplePath": "/api/v1/pastes/:id",
+          "exampleNotes": "DELETE requires authentication. Returns 204 on success."
+        }
+      ]
+    },
+    "design": {
+      "maxScore": 35,
+      "scoreBreakdown": {
+        "coreArchitecture": 25,
+        "connections": 10
+      },
+      "componentRequirements": [
+        {
+          "kind": "API Gateway",
+          "required": true,
+          "requiredBy": ["create-paste", "view-paste"],
+          "weight": 7,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "How will HTTP requests from users reach your backend? What component handles routing and rate limiting?",
+            "present": "Good! Your API Gateway routes incoming requests."
+          }
+        },
+        {
+          "kind": "Service",
+          "required": true,
+          "requiredBy": ["create-paste", "view-paste"],
+          "weight": 8,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "What handles the core logic for creating and retrieving pastes?",
+            "present": "Good! Service component handles paste operations."
+          }
+        },
+        {
+          "kind": "Object Store (S3)",
+          "required": true,
+          "requiredBy": ["create-paste", "view-paste"],
+          "weight": 10,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "Where will you store large text content cost-effectively? Think about blob storage for unstructured data.",
+            "present": "Excellent! Object storage is ideal for paste content."
+          }
+        },
+        {
+          "kind": "CDN",
+          "required": false,
+          "requiredBy": [],
+          "weight": 0,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "",
+            "present": "Great! CDN caches popular pastes at the edge for low latency."
+          }
+        },
+        {
+          "kind": "DB (Postgres)",
+          "required": false,
+          "requiredBy": ["paste-expiration", "user-accounts"],
+          "alternativesAccepted": ["DB (MySQL)", "DB (MongoDB)"],
+          "weight": 0,
+          "minReplicas": 1,
+          "feedbackTemplates": {
+            "missing": "",
+            "present": "Good! Database stores paste metadata for efficient querying."
+          }
+        }
+      ],
+      "criticalPaths": [
+        {
+          "id": "basic-data-path",
+          "name": "Basic Data Flow",
+          "description": "Core path from API Gateway through Service to Object Store",
+          "startComponents": ["API Gateway"],
+          "endComponents": ["Object Store (S3)"],
+          "mustInclude": ["Service"],
+          "maxHops": 3,
+          "minHops": 3,
+          "weight": 10,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "Connect API Gateway → Service → Object Store to complete the data flow.",
+            "present": "Perfect! Your data flow is complete."
+          }
+        }
+      ],
+      "architecturePatterns": [
+        {
+          "id": "api-gateway-to-services",
+          "name": "API Gateway Routes to Services",
+          "requiredComponents": ["API Gateway", "Service"],
+          "requiredConnections": [{ "from": "API Gateway", "to": "Service" }],
+          "forbiddenConnections": [
+            { "from": "API Gateway", "to": "Object Store (S3)" },
+            { "from": "API Gateway", "to": "DB (Postgres)" }
+          ],
+          "weight": 0,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "How does API Gateway route to your Service?",
+            "present": "Good! API Gateway correctly routes to services.",
+            "incorrect": "API Gateway should route to Service, not directly to storage."
+          }
+        },
+        {
+          "id": "service-to-storage",
+          "name": "Service Stores Content",
+          "requiredComponents": ["Service", "Object Store (S3)"],
+          "requiredConnections": [{ "from": "Service", "to": "Object Store (S3)" }],
+          "forbiddenConnections": [],
+          "weight": 0,
+          "required": true,
+          "feedbackTemplates": {
+            "missing": "How does Service persist paste content?",
+            "present": "Great! Service can store content in Object Store."
+          }
+        },
+        {
+          "id": "cdn-caching",
+          "name": "CDN Caches Content",
+          "requiredComponents": ["CDN", "Object Store (S3)"],
+          "requiredConnections": [{ "from": "CDN", "to": "Object Store (S3)" }],
+          "forbiddenConnections": [],
+          "weight": 1,
+          "required": false,
+          "isBonus": true,
+          "feedbackTemplates": {
+            "missing": "",
+            "present": "Excellent! CDN caches content from Object Store for fast delivery."
+          }
+        }
+      ]
+    },
+    "simulation": {
+      "maxScore": 5,
+      "criteria": {
+        "meetsRps": 2,
+        "meetsLatency": 2,
+        "passesChaos": 1
+      }
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "author": "System Design Sandbox",
+    "lastUpdated": "2025-12-20"
+  }
+}

@@ -248,7 +248,7 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
           setVerification({ isVerifying: false, result: null, error: null });
         }
         if (session.currentStep === "highLevelDesign") {
-          const guidance = evaluateDesignGuidance(session.state.design);
+          const guidance = evaluateDesignGuidance(session.state.design, session.state.slug);
           if (guidance && guidance.level === "core") {
             setScoringFeedback({
               score: 0,
@@ -479,14 +479,6 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
     // Check if API step mobile editor is open
     if (typeof window !== "undefined" && window._apiMobileEditorClose) {
       window._apiMobileEditorClose();
-      return;
-    }
-
-    // If on functional step (first step), navigate back to intro page
-    if (session.currentStep === "functional") {
-      if (typeof window !== "undefined") {
-        window.location.href = `/practice/${session.state.slug}/intro`;
-      }
       return;
     }
 

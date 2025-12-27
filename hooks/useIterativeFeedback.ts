@@ -106,6 +106,7 @@ export function useIterativeFeedback() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             action: "get_feedback",
+            slug: session.state.slug,
             stepId: stepKey,
             userContent,
             previousQuestion: stepFeedback.currentQuestion,

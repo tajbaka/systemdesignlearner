@@ -11,6 +11,7 @@ import type { PracticeDesignState, Requirements } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
+import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
 
 // Safe deep clone that avoids JSON.stringify stack overflow on iOS
 function safeDeepClone<T>(obj: T): T {
@@ -1037,11 +1038,15 @@ export default function DesignStage({
     return hasEdge(design.edges, authNode.id, serviceNode.id);
   }, [authNode, design.edges, requiresAdminDelete, serviceNode]);
 
-  const designReady =
-    cacheOnPath &&
-    (!requiresAnalytics || analyticsReady) &&
-    (!requiresRateLimit || rateLimiterReady) &&
-    (!requiresAdminDelete || adminFlowReady);
+  // Use declarative guidance rules to determine if design is ready
+  // Design is ready when all "core" level rules pass (bonus rules can still fail)
+  const designReady = useMemo(() => {
+    const guidance = evaluateDesignGuidance(design, session.state.slug);
+    // If no guidance needed (all rules pass), design is ready
+    if (guidance === null) return true;
+    // If the next failing rule is only "bonus" level, core requirements are met
+    return guidance.level === "bonus";
+  }, [design, session.state.slug]);
 
   const pathPreview = useMemo(() => {
     const scenario = SCENARIOS.find((s) => s.id === session.state.slug);

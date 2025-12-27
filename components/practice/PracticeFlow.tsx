@@ -20,6 +20,8 @@ import { PracticeFeedbackPanel } from "@/components/practice/PracticeFeedbackPan
 import { IterativeFeedbackModal } from "@/components/practice/IterativeFeedbackModal";
 import { SCENARIOS } from "@/lib/scenarios";
 import type { ApiEndpoint } from "@/lib/practice/types";
+import { loadScenarioReference, getScenarioReferenceSync } from "@/lib/practice/loader";
+import { DEFAULT_ONBOARDING_CONFIG, type OnboardingConfig } from "@/lib/practice/reference/schema";
 
 function PracticeFlowInner() {
   const router = useRouter();
@@ -43,6 +45,24 @@ function PracticeFlowInner() {
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
   const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
   const { isSignedIn } = useUser();
+
+  // Load onboarding text from scenario reference
+  const [onboardingConfig, setOnboardingConfig] = useState<OnboardingConfig>(
+    () => getScenarioReferenceSync(state.slug)?.onboarding ?? DEFAULT_ONBOARDING_CONFIG
+  );
+
+  // Load scenario reference on mount (fires once per slug)
+  useEffect(() => {
+    let cancelled = false;
+    loadScenarioReference(state.slug).then((ref) => {
+      if (!cancelled && ref.onboarding) {
+        setOnboardingConfig(ref.onboarding);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [state.slug]);
 
   // Listen for API mobile editor state changes
   useEffect(() => {
@@ -293,7 +313,7 @@ function PracticeFlowInner() {
         return (
           <OnboardingTooltip
             title="Welcome to System Design Practice!"
-            description="Let's walk through building a URL shortener together. I'll guide you step by step through defining requirements, designing the architecture, and testing your solution."
+            description={onboardingConfig.welcome}
             position={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
             arrow="top"
             onNext={nextStage}
@@ -305,7 +325,7 @@ function PracticeFlowInner() {
         return (
           <OnboardingTooltip
             title="Step 1: Define Functionality"
-            description="Describe the core features of your URL shortener in the text area to the right. What should users be able to do?"
+            description={onboardingConfig.steps.functional}
             position={{ top: "200px", left: "20px" }}
             arrow="right"
             onNext={nextStage}
@@ -336,7 +356,7 @@ function PracticeFlowInner() {
         return (
           <OnboardingTooltip
             title="Step 2: Performance Constraints"
-            description="Describe performance requirements: latency targets, throughput (requests/sec), and availability goals."
+            description={onboardingConfig.steps.nonFunctional}
             position={{ top: "200px", left: "20px" }}
             arrow="right"
             onNext={nextStage}
@@ -380,7 +400,7 @@ function PracticeFlowInner() {
         return (
           <OnboardingTooltip
             title="Step 3: Define API Endpoints"
-            description="Define the HTTP endpoints your service exposes. Describe request/response formats for creating short URLs and redirecting."
+            description={onboardingConfig.steps.api}
             position={{ top: "200px", left: "20px" }}
             arrow="right"
             onNext={nextStage}
@@ -411,7 +431,7 @@ function PracticeFlowInner() {
         return (
           <OnboardingTooltip
             title="Step 4: Design Architecture"
-            description="Drag components to move them, connect them by dragging from edges. Build your architecture visually."
+            description={onboardingConfig.steps.highLevelDesign}
             position={{ top: "140px", left: "20px" }}
             arrow="right"
             onNext={nextStage}
@@ -476,7 +496,6 @@ function PracticeFlowInner() {
           readOnly={isReadOnly}
           hideMobileStepper={false}
         />
-
         <div
           className={
             isSandboxStep
@@ -496,7 +515,6 @@ function PracticeFlowInner() {
             onRunPanelChange={setRunPanelOpen}
           />
         </div>
-
         {isSandboxStep ? (
           <>
             <Tooltip open={showTooltips} onOpenChange={setShowTooltips}>
@@ -543,7 +561,6 @@ function PracticeFlowInner() {
             </button>
           </>
         ) : null}
-
         {/* Iterative Feedback Modal - Shows in center of screen */}
         {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api/sandbox steps */}
         <IterativeFeedbackModal
@@ -651,7 +668,6 @@ function PracticeFlowInner() {
           }}
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
         />
-
         <footer
           className="bg-black border-t border-zinc-800"
           style={{
@@ -729,7 +745,7 @@ function PracticeFlowInner() {
                     : undefined
             }
           />
-        </footer>
+        </footer>{" "}
       </div>
     </TooltipProvider>
   );

@@ -75,11 +75,11 @@ export type FunctionalRequirement = {
 };
 
 export type FunctionalScoringConfig = {
-  maxScore: 25;
+  maxScore: number;
   coreRequirements: FunctionalRequirement[];
   optionalRequirements: FunctionalRequirement[];
-  minKeywordsMatch: number; // Minimum keyword matches for credit
-  minTextLength?: number; // Minimum characters in functionalSummary
+  minKeywordsMatch: number;
+  minTextLength?: number;
 };
 
 export type FunctionalScoringInput = {
@@ -133,12 +133,10 @@ export type QualitativeAspect = {
 };
 
 export type NonFunctionalScoringConfig = {
-  maxScore: 20;
+  maxScore: number;
   minTextLength?: number;
-  // New structure with core and optional requirements
   coreRequirements?: QualitativeAspect[];
   optionalRequirements?: QualitativeAspect[];
-  // Legacy qualitative structure
   qualitativeAspects?: QualitativeAspect[];
   evaluationCriteria?: {
     mentionsPerformance?: number;
@@ -146,7 +144,6 @@ export type NonFunctionalScoringConfig = {
     mentionsAvailability?: number;
     mentionsReliability?: number;
   };
-  // Old quantitative structure (kept for backward compatibility)
   questions?: NFRQuestion[];
   decisionRules?: NFRDecisionRule[];
 };
@@ -180,15 +177,30 @@ export type ApiEndpointConfig = {
   exampleNotes?: string;
 };
 
+export type ApiRequirement = {
+  id: string;
+  label: string;
+  description: string;
+  keywords: string[];
+  weight: number;
+  required: boolean;
+  examplePhrases?: string[];
+};
+
 export type ApiScoringConfig = {
-  maxScore: 20;
+  maxScore: number;
+  minKeywordsMatch?: number;
+  // Topic-based requirements for iterative feedback
+  coreRequirements: ApiRequirement[];
+  optionalRequirements: ApiRequirement[];
+  // Endpoint-specific validation
   requiredEndpoints: ApiEndpointConfig[];
   optionalEndpoints: ApiEndpointConfig[];
-  evaluationCriteria: {
-    hasCorrectMethods: number; // Weight
-    pathDesignQuality: number; // Weight
-    documentationQuality: number; // Weight
-    alignsWithRequirements: number; // Weight
+  evaluationCriteria?: {
+    hasCorrectMethods: number;
+    pathDesignQuality: number;
+    documentationQuality: number;
+    alignsWithRequirements: number;
   };
 };
 
@@ -267,14 +279,14 @@ export type CriticalPath = {
 };
 
 export type DesignScoringConfig = {
-  maxScore: 30;
+  maxScore: number;
   architecturePatterns: ArchitecturePattern[];
   componentRequirements: ComponentRequirement[];
   criticalPaths: CriticalPath[];
   scoreBreakdown: {
-    coreArchitecture: number; // Weight
-    optionalComponents: number; // Weight
-    connections: number; // Weight
+    coreArchitecture: number;
+    optionalComponents?: number;
+    connections: number;
   };
 };
 
@@ -295,11 +307,11 @@ export type DesignScoringInput = {
 // ============================================================================
 
 export type SimulationScoringConfig = {
-  maxScore: 5;
+  maxScore: number;
   criteria: {
-    meetsRps: number; // Weight
-    meetsLatency: number; // Weight
-    passesChaos: number; // Weight
+    meetsRps: number;
+    meetsLatency: number;
+    passesChaos: number;
   };
 };
 
@@ -321,7 +333,7 @@ export type ProblemScoringConfig = {
   problemId: string;
   title: string;
   description: string;
-  totalScore: 100;
+  totalScore: number;
   steps: {
     functional: FunctionalScoringConfig;
     nonFunctional: NonFunctionalScoringConfig;

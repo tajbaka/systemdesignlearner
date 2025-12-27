@@ -45,6 +45,8 @@ export type Scenario = {
   updatedAt?: string;
   suggestedComponents?: string[];
   estimatedTime?: string;
+  /** Whether this scenario has a practice mode implementation */
+  hasPractice?: boolean;
 };
 
 export const SCENARIOS: Scenario[] = [
@@ -141,6 +143,7 @@ export const SCENARIOS: Scenario[] = [
     estimatedTime: "15-20 minutes",
     version: "1.0",
     updatedAt: "2025-09-10",
+    hasPractice: true,
   },
   {
     id: "rate-limiter",
@@ -292,7 +295,9 @@ export const SCENARIOS: Scenario[] = [
       { method: "GET", path: "/pastes/:id" },
     ],
     suggestedComponents: ["CDN", "Object Store (S3)"],
+    estimatedTime: "15-20 minutes",
     version: "1.0",
     updatedAt: "2025-09-10",
+    hasPractice: true,
   },
 ];

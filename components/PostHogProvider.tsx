@@ -30,7 +30,8 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       capture_pageview: false, // Disable automatic pageview capture, as we capture manually
       capture_pageleave: true,
       autocapture: true,
-      debug: false,
+      disable_surveys: true, // Disable surveys to prevent script loading errors
+      debug: (process.env.NODE_ENV as string) === "development",
       loaded: (posthog) => {
         // Expose PostHog to window for analytics.ts to use
         window.posthog = posthog;
