@@ -75,7 +75,7 @@ CREATE TABLE scenarios (
   title TEXT NOT NULL,
   difficulty TEXT CHECK (difficulty IN ('easy', 'medium', 'hard')),
   category TEXT NOT NULL,
-  
+
   -- Learning Path
   prerequisites UUID[] DEFAULT '{}', -- Array of scenario_ids that must be completed first
 
@@ -111,8 +111,8 @@ CREATE TABLE scenario_versions (
 
 #### Example Data: `scenario_versions`
 
-| id      | scenario_id | version_number | definition (JSONB)                                                                                                                                       |
-| :------ | :---------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id      | scenario_id | version_number | definition (JSONB)                                                                            |
+| :------ | :---------- | :------------- | :-------------------------------------------------------------------------------------------- |
 | `ver-1` | `scen-1`    | 1              | `{ "steps": [...], "hints": [{ "text": "Use Bloom Filter", "href": "/wiki/bloom-filter" }] }` |
 
 ### C. Practice Sessions (The "Run")
@@ -185,10 +185,9 @@ CREATE TABLE session_steps (
 
 ### E. AI Evaluation & Feedback (The Data)
 
-
-
 ### E. AI Evaluation & Feedback
-*Storing the expensive AI calls and their results.*
+
+_Storing the expensive AI calls and their results._
 
 ```sql
 CREATE TABLE step_evaluations (
@@ -210,7 +209,7 @@ CREATE TABLE step_evaluations (
   tokens_output INT,
   created_at TIMESTAMPTZ DEFAULT now()
 );
-````
+```
 
 #### Example Data: `step_evaluations`
 
@@ -228,14 +227,14 @@ CREATE TABLE solutions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   scenario_id UUID NOT NULL REFERENCES scenarios(id),
   user_id UUID NOT NULL REFERENCES profiles(id),
-  
+
   title TEXT NOT NULL,
   content_markdown TEXT NOT NULL, -- The user's explanation
   solution_snapshot JSONB,         -- Full snapshot of steps (Diagram, API design, Requirements)
-  
+
   upvotes INT DEFAULT 0,
   views INT DEFAULT 0,
-  
+
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -244,15 +243,15 @@ CREATE TABLE solutions (
 CREATE TABLE comments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES profiles(id),
-  
+
   -- Polymorphic-style association (comment on a Scenario OR a Solution)
   scenario_id UUID REFERENCES scenarios(id),
   solution_id UUID REFERENCES solutions(id),
   parent_comment_id UUID REFERENCES comments(id), -- For nested threads
-  
+
   content TEXT NOT NULL,
   upvotes INT DEFAULT 0,
-  
+
   created_at TIMESTAMPTZ DEFAULT now()
 );
 ```
