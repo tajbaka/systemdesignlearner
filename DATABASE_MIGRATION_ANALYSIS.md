@@ -75,6 +75,9 @@ CREATE TABLE scenarios (
   title TEXT NOT NULL,
   difficulty TEXT CHECK (difficulty IN ('easy', 'medium', 'hard')),
   category TEXT NOT NULL,
+  
+  -- Learning Path
+  prerequisites UUID[] DEFAULT '{}', -- Array of scenario_ids that must be completed first
 
   -- Metadata
   created_at TIMESTAMPTZ DEFAULT now(),
@@ -84,10 +87,10 @@ CREATE TABLE scenarios (
 
 #### Example Data: `scenarios`
 
-| id       | slug            | title                    | difficulty | category              |
-| :------- | :-------------- | :----------------------- | :--------- | :-------------------- |
-| `scen-1` | `url-shortener` | `Design a URL Shortener` | `easy`     | `distributed-systems` |
-| `scen-2` | `twitter-feed`  | `Design News Feed`       | `medium`   | `social-media`        |
+| id       | slug            | title                    | difficulty | prerequisites |
+| :------- | :-------------- | :----------------------- | :--------- | :------------ |
+| `scen-1` | `url-shortener` | `Design a URL Shortener` | `easy`     | `[]`          |
+| `scen-2` | `twitter-feed`  | `Design News Feed`       | `medium`   | `['scen-1']`  |
 
 ```sql
 CREATE TABLE scenario_versions (
@@ -96,7 +99,7 @@ CREATE TABLE scenario_versions (
   version_number INT NOT NULL, -- 1, 2, 3...
 
   -- Full JSON definition of the problem at this point in time
-  -- This ensures historical integrity of past attempts.
+  -- Hints are now structured objects: { "text": "...", "href": "https://..." }
   definition JSONB NOT NULL,
 
   is_current BOOLEAN DEFAULT FALSE,
@@ -108,9 +111,9 @@ CREATE TABLE scenario_versions (
 
 #### Example Data: `scenario_versions`
 
-| id      | scenario_id | version_number | definition (JSONB)                                                   |
-| :------ | :---------- | :------------- | :------------------------------------------------------------------- |
-| `ver-1` | `scen-1`    | 1              | `{ "steps": ["requirements", "api"], "constraints": {"rps": 1000} }` |
+| id      | scenario_id | version_number | definition (JSONB)                                                                                                                                       |
+| :------ | :---------- | :------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ver-1` | `scen-1`    | 1              | `{ "steps": [...], "hints": [{ "text": "Use Bloom Filter", "href": "/wiki/bloom-filter" }] }` |
 
 ### C. Practice Sessions (The "Run")
 
@@ -182,7 +185,7 @@ CREATE TABLE session_steps (
 
 ### E. AI Evaluation & Feedback (The Data)
 
-````
+
 
 ### E. AI Evaluation & Feedback
 *Storing the expensive AI calls and their results.*
@@ -214,6 +217,45 @@ CREATE TABLE step_evaluations (
 | id       | session_step_id | score | feedback_markdown                              | tokens_input | tokens_output |
 | :------- | :-------------- | :---- | :--------------------------------------------- | :----------- | :------------ |
 | `eval-1` | `step-1`        | 90    | `Great job identifying the functional reqs...` | 1024         | 256           |
+
+### F. Community & Social (LeetCode-style)
+
+_Enabling users to learn from each other via shared solutions and discussions._
+
+```sql
+-- 1. Shared Solutions (Publicly visible attempts)
+CREATE TABLE solutions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  scenario_id UUID NOT NULL REFERENCES scenarios(id),
+  user_id UUID NOT NULL REFERENCES profiles(id),
+  
+  title TEXT NOT NULL,
+  content_markdown TEXT NOT NULL, -- The user's explanation
+  solution_snapshot JSONB,         -- Full snapshot of steps (Diagram, API design, Requirements)
+  
+  upvotes INT DEFAULT 0,
+  views INT DEFAULT 0,
+  
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 2. Comments (Threaded discussions)
+CREATE TABLE comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES profiles(id),
+  
+  -- Polymorphic-style association (comment on a Scenario OR a Solution)
+  scenario_id UUID REFERENCES scenarios(id),
+  solution_id UUID REFERENCES solutions(id),
+  parent_comment_id UUID REFERENCES comments(id), -- For nested threads
+  
+  content TEXT NOT NULL,
+  upvotes INT DEFAULT 0,
+  
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
 ---
 
