@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import type { ArticleCategory } from "./ArticleSidebar";
+import { getCategoryIcon } from "./ArticleSidebar";
 
 interface ArticleSidebarMobileProps {
   categories: ArticleCategory[];
@@ -124,15 +125,16 @@ export function ArticleSidebarMobile({ categories }: ArticleSidebarMobileProps) 
                         hasActiveArticle ? "bg-emerald-50" : ""
                       }`}
                     >
-                      {category.icon && (
-                        <span
-                          className={`flex-shrink-0 text-lg ${
-                            hasActiveArticle ? "text-emerald-600" : "text-zinc-700"
-                          }`}
-                        >
-                          {category.icon}
-                        </span>
-                      )}
+                      {(() => {
+                        const IconComponent = getCategoryIcon(category.icon);
+                        return IconComponent ? (
+                          <IconComponent
+                            className={`flex-shrink-0 h-5 w-5 ${
+                              hasActiveArticle ? "text-emerald-600" : "text-zinc-700"
+                            }`}
+                          />
+                        ) : null;
+                      })()}
                       <h3 className="text-sm font-bold text-zinc-700">
                         <span className="whitespace-nowrap">
                           {categoryIndex + 1}. {category.title}

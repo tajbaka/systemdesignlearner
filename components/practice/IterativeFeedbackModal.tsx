@@ -1,7 +1,9 @@
 import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import type { PracticeStep } from "@/lib/practice/types";
-import { CheckCircle2, AlertCircle, X, ClipboardPaste } from "lucide-react";
+import { CheckCircle2, AlertCircle, X, ClipboardPaste, ExternalLink, Eye } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import Link from "next/link";
+import { useState } from "react";
 
 type IterativeFeedbackModalProps = {
   isOpen: boolean;
@@ -22,6 +24,8 @@ export function IterativeFeedbackModal({
   onInsertAnswer,
   durationMs: _durationMs,
 }: IterativeFeedbackModalProps) {
+  const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
+
   // Early return if no result
   if (!result) return null;
 
@@ -126,43 +130,76 @@ export function IterativeFeedbackModal({
 
           {/* Actual answer after 3 attempts */}
           {result.ui.exampleHint && (
-            <div className="rounded-xl border border-emerald-400/30 bg-emerald-950/40 p-4">
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <h3 className="text-sm font-semibold text-emerald-300">
-                  Answer: Add this to your response
-                </h3>
-                {onInsertAnswer && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onInsertAnswer(result.ui.exampleHint!);
-                      onClose();
-                    }}
-                    className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-500 active:bg-emerald-700"
-                  >
-                    <ClipboardPaste className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Insert</span>
-                  </button>
-                )}
-              </div>
-              <div className="text-sm text-emerald-100 whitespace-pre-line font-mono">
-                {result.ui.exampleHint}
-              </div>
-              {/* Mobile-first: larger insert button at bottom for easier thumb access */}
-              {onInsertAnswer && (
+            <>
+              {!isAnswerRevealed ? (
                 <button
                   type="button"
-                  onClick={() => {
-                    onInsertAnswer(result.ui.exampleHint!);
-                    onClose();
-                  }}
-                  className="mt-3 w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 active:bg-emerald-700 sm:hidden"
+                  onClick={() => setIsAnswerRevealed(true)}
+                  className="w-full rounded-xl border border-emerald-400/30 bg-emerald-950/40 p-4 text-left transition-all hover:bg-emerald-950/60 hover:border-emerald-400/50"
                 >
-                  <ClipboardPaste className="h-4 w-4" />
-                  Insert Answer
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <Eye className="h-5 w-5 text-emerald-400" />
+                      <span className="text-sm font-semibold text-emerald-300">Reveal Answer</span>
+                    </div>
+                    <span className="text-xs text-emerald-400/70">Click to reveal</span>
+                  </div>
                 </button>
+              ) : (
+                <div className="rounded-xl border border-emerald-400/30 bg-emerald-950/40 p-4">
+                  <div className="flex items-center justify-between gap-2 mb-3">
+                    <h3 className="text-sm font-semibold text-emerald-300">
+                      Answer to this section:
+                    </h3>
+                    {onInsertAnswer && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onInsertAnswer(result.ui.exampleHint!);
+                          onClose();
+                        }}
+                        className="flex items-center gap-1.5 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-emerald-500 active:bg-emerald-700"
+                      >
+                        <ClipboardPaste className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Insert</span>
+                      </button>
+                    )}
+                  </div>
+                  <div className="text-sm text-emerald-100 whitespace-pre-line font-mono">
+                    {result.ui.exampleHint}
+                  </div>
+                  {/* Mobile-first: larger insert button at bottom for easier thumb access */}
+                  {onInsertAnswer && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onInsertAnswer(result.ui.exampleHint!);
+                        onClose();
+                      }}
+                      className="mt-3 w-full flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-emerald-500 active:bg-emerald-700 sm:hidden"
+                    >
+                      <ClipboardPaste className="h-4 w-4" />
+                      Insert Answer
+                    </button>
+                  )}
+                </div>
               )}
-            </div>
+              {/* Learn more link */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-zinc-400">See Full Solution:</p>
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href="/learn/tinyurl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 hover:text-blue-300 hover:border-blue-500/50 transition-all cursor-pointer"
+                  >
+                    Design a URL Shortener
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+            </>
           )}
         </div>
 

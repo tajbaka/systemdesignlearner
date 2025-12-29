@@ -29,6 +29,11 @@ export type ApiEndpoint = {
   notes?: string;
 };
 
+export type Prerequisite = {
+  title: string;
+  href: string;
+};
+
 export type Scenario = {
   id: string;
   title: string;
@@ -45,6 +50,7 @@ export type Scenario = {
   updatedAt?: string;
   suggestedComponents?: string[];
   estimatedTime?: string;
+  Prerequisites?: Prerequisite[];
   /** Whether this scenario has a practice mode implementation */
   hasPractice?: boolean;
 };
@@ -141,6 +147,20 @@ export const SCENARIOS: Scenario[] = [
     ],
     suggestedComponents: ["CDN", "Cache (Redis)", "DB (Postgres)"],
     estimatedTime: "15-20 minutes",
+    Prerequisites: [
+      {
+        title: "Databases & Caching",
+        href: "/learn/database-caching",
+      },
+      {
+        title: "Scaling: Vertical vs Horizontal",
+        href: "/learn/scaling",
+      },
+      {
+        title: "How to Calculate Throughput & Database Size",
+        href: "/learn/size-calculation",
+      },
+    ],
     version: "1.0",
     updatedAt: "2025-09-10",
     hasPractice: true,

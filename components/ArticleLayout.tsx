@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import Link from "next/link";
 import { type ArticleCategory } from "./ArticleSidebar";
 import { ArticleSidebarWrapper } from "./ArticleSidebarWrapper";
 import { NavbarWrapper } from "./NavbarWrapper";
@@ -103,6 +104,15 @@ export function ArticleLayout({
 
             {/* Article Content */}
             <div className="article-content">{children}</div>
+            {/* Practice Button */}
+            <div className="flex pt-6">
+              <Link
+                href="/practice"
+                className="inline-flex items-center justify-center h-12 rounded-md px-6 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base transition-all no-underline hover:no-underline"
+              >
+                Practice Now
+              </Link>
+            </div>
           </article>
         </main>
 

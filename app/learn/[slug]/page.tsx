@@ -1,7 +1,9 @@
 import { ArticleLayout } from "@/components/ArticleLayout";
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
 import fs from "fs";
 import path from "path";
@@ -254,6 +256,23 @@ function createMarkdownComponents(): Components {
       }
       return <p {...props}>{children}</p>;
     },
+    img: ({ src, alt }) => {
+      if (!src || typeof src !== "string") return null;
+
+      return (
+        <div className="my-12 flex justify-center">
+          <div className="relative w-full max-w-4xl min-h-[300px] rounded-lg shadow-lg overflow-hidden">
+            <Image
+              src={src}
+              alt={alt || ""}
+              fill
+              className="object-contain"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+            />
+          </div>
+        </div>
+      );
+    },
   };
 }
 
@@ -289,7 +308,9 @@ export default async function LearnArticlePage({ params }: Props) {
       categories={categories}
       slug={slug}
     >
-      <ReactMarkdown components={components}>{markdownContent}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {markdownContent}
+      </ReactMarkdown>
     </ArticleLayout>
   );
 }

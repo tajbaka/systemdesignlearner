@@ -6,8 +6,7 @@ import { track } from "@/lib/analytics";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 
 const PROBLEMS = [
@@ -193,7 +192,7 @@ export function PracticePageClient() {
               </p>
             </div>
           </header>
-          <Card className="w-full max-w-md md:max-w-xs bg-zinc-900/70 border-zinc-800">
+          {/* <Card className="w-full max-w-md md:max-w-xs bg-zinc-900/70 border-zinc-800">
             <CardHeader className="space-y-2 pb-3">
               <CardTitle className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
                 Upcoming
@@ -215,7 +214,7 @@ export function PracticePageClient() {
                 .
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
 
         {/* Problems Grid */}

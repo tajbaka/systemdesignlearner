@@ -397,7 +397,7 @@
           "weight": 25,
           "required": true,
           "examplePhrases": [
-            "GET /:code\nResponse: HTTP 302 redirect to original URL\nErrors: 404 (not found), 410 (expired)\nBehavior: Looks up code in database, returns redirect to stored long URL"
+            "GET /:slug\nResponse: HTTP 301 or 302 redirect to original URL (302 recommended for analytics)\nErrors: 404 (not found), 410 (expired)\nBehavior: Looks up code in database, returns redirect to stored long URL"
           ]
         }
       ],

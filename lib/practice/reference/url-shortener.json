@@ -203,7 +203,8 @@
       "required": true,
       "placeholder": "Redirect endpoint that takes a short code and returns a 302 redirect to the original URL. Handle 404 for not found and 410 for expired links.",
       "responses": {
-        "302": "Redirect to original URL",
+        "301": "Permanent redirect to original URL (browser caches, faster but can't track analytics)",
+        "302": "Temporary redirect to original URL (every request hits server, slower but enables analytics tracking). Most URL shorteners use 302.",
         "404": "Code not found",
         "410": "Code expired"
       }

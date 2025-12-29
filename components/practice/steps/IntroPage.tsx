@@ -2,7 +2,7 @@
 
 import { SCENARIOS } from "@/lib/scenarios";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -78,6 +78,29 @@ export function IntroPage({ slug }: IntroPageProps) {
                 {scenario.description}
               </p>
             </div>
+
+            {/* Prerequisites */}
+            {scenario.Prerequisites && scenario.Prerequisites.length > 0 && (
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-zinc-500 uppercase tracking-wide">
+                  Prerequisites
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {scenario.Prerequisites.map((prerequisite, index) => (
+                    <Link
+                      key={index}
+                      href={prerequisite.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 hover:text-blue-300 hover:border-blue-500/50 transition-all cursor-pointer"
+                    >
+                      {prerequisite.title}
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Start Practice Button - Right aligned */}

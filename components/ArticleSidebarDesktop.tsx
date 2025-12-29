@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import type { ArticleCategory } from "./ArticleSidebar";
+import { getCategoryIcon } from "./ArticleSidebar";
 
 interface ArticleSidebarDesktopProps {
   categories: ArticleCategory[];
@@ -55,15 +56,16 @@ export function ArticleSidebarDesktop({ categories }: ArticleSidebarDesktopProps
                           : "py-2 justify-center hover:bg-zinc-50"
                     }`}
                   >
-                    {category.icon && (
-                      <span
-                        className={`flex-shrink-0 text-lg ${
-                          hasActiveArticle ? "text-emerald-600" : "text-zinc-700"
-                        }`}
-                      >
-                        {category.icon}
-                      </span>
-                    )}
+                    {(() => {
+                      const IconComponent = getCategoryIcon(category.icon);
+                      return IconComponent ? (
+                        <IconComponent
+                          className={`flex-shrink-0 h-8 w-5 ${
+                            hasActiveArticle ? "text-emerald-600" : "text-zinc-700"
+                          }`}
+                        />
+                      ) : null;
+                    })()}
                     {showContent && (
                       <h3 className="text-sm font-bold text-zinc-700">
                         <span className="whitespace-nowrap">

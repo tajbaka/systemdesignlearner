@@ -171,5 +171,3 @@ Here we dive deeper into any components that need further explaining. For exampl
 This section is less structured and more for you to identify any further scalability issues that need to be addressed. We should discuss multiple tradeoffs to solve problems here.
 
 ---
-
-[PRACTICE_BUTTON]
