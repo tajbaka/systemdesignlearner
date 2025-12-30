@@ -27,8 +27,8 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       api_host: "/ingest",
       ui_host: "https://us.posthog.com",
       person_profiles: "identified_only",
-      capture_pageview: false, // Disable automatic pageview capture, as we capture manually
-      capture_pageleave: true,
+      capture_pageview: true, // Disable automatic pageview capture, as we capture manually
+      capture_pageleave: false,
       autocapture: true,
       disable_surveys: true, // Disable surveys to prevent script loading errors
       debug: (process.env.NODE_ENV as string) === "development",
