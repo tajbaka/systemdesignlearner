@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useAuth } from "@clerk/nextjs";
 import {
   PRACTICE_STEPS,
   type PracticeApiDefinitionState,
@@ -30,6 +31,8 @@ import {
   makeInitialPracticeState,
 } from "@/lib/practice/defaults";
 import { loadPractice, savePractice } from "@/lib/practice/storage";
+import { getPracticeSession, savePracticeSession } from "@/lib/actions/practice";
+import { useLocalStorageMigration } from "@/hooks/useLocalStorageMigration";
 import { track } from "@/lib/analytics";
 import { isLegacyPlaceholderContent } from "@/lib/practice/apiPlaceholders";
 
@@ -316,6 +319,7 @@ export function PracticeSessionProvider({
   initialStep,
   sharedState,
 }: PracticeSessionProviderProps) {
+  const { isSignedIn, isLoaded: authLoaded } = useAuth();
   const [state, setState] = useState<PracticeState>(() => {
     const initial = makeInitialPracticeState(slug);
     // Use initialStep from URL instead of deriving from state
@@ -324,9 +328,17 @@ export function PracticeSessionProvider({
   const [hydrated, setHydrated] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const saveTimeout = useRef<number | null>(null);
+  const dbSaveTimeout = useRef<number | null>(null);
   const latestStateRef = useRef(state);
+  const isAuthenticated = isSignedIn ?? false;
+
+  // Handle localStorage to DB migration on sign-in
+  useLocalStorageMigration();
 
   useEffect(() => {
+    // Wait for auth to be loaded
+    if (!authLoaded) return;
+
     if (sharedState) {
       let merged = mergeState(sharedState, slug);
       // Use initialStep from URL for shared state too
@@ -338,21 +350,44 @@ export function PracticeSessionProvider({
       return;
     }
 
-    const stored = loadPractice(slug);
-    let merged = ensureAuthProgressConsistency(mergeState(stored, slug));
-    // Use initialStep from URL instead of deriving
-    merged = { ...merged, currentStep: initialStep };
-    setState(merged);
-    setIsReadOnly(false);
-    setHydrated(true);
+    const loadState = async () => {
+      let stored: PracticeState | Record<string, unknown> | null = null;
 
-    track("practice_start", {
-      slug,
-      step: initialStep,
-      isFirstVisit: !stored,
-      hasProgress: Boolean(stored),
-    });
-  }, [sharedState, slug, initialStep]);
+      if (isAuthenticated) {
+        // Try to load from DB first for authenticated users
+        try {
+          const dbState = await getPracticeSession(slug);
+          if (dbState) {
+            stored = dbState;
+          }
+        } catch (error) {
+          console.error("Failed to load from DB, falling back to localStorage", error);
+        }
+      }
+
+      // Fall back to localStorage (for anonymous users or if DB load failed)
+      if (!stored) {
+        stored = loadPractice(slug);
+      }
+
+      let merged = ensureAuthProgressConsistency(mergeState(stored, slug));
+      // Use initialStep from URL instead of deriving
+      merged = { ...merged, currentStep: initialStep };
+      setState(merged);
+      setIsReadOnly(false);
+      setHydrated(true);
+
+      track("practice_start", {
+        slug,
+        step: initialStep,
+        isFirstVisit: !stored,
+        hasProgress: Boolean(stored),
+        isAuthenticated,
+      });
+    };
+
+    loadState();
+  }, [sharedState, slug, initialStep, authLoaded, isAuthenticated]);
 
   useEffect(() => {
     latestStateRef.current = state;
@@ -362,6 +397,7 @@ export function PracticeSessionProvider({
     if (!hydrated || isReadOnly) return;
     if (typeof window === "undefined") return;
 
+    // Always save to localStorage (fast, serves as cache/backup)
     if (saveTimeout.current) {
       window.clearTimeout(saveTimeout.current);
     }
@@ -371,13 +407,34 @@ export function PracticeSessionProvider({
       saveTimeout.current = null;
     }, 400);
 
+    // Also save to DB for authenticated users (debounced separately)
+    if (isAuthenticated) {
+      if (dbSaveTimeout.current) {
+        window.clearTimeout(dbSaveTimeout.current);
+      }
+
+      dbSaveTimeout.current = window.setTimeout(async () => {
+        try {
+          await savePracticeSession(state);
+        } catch (error) {
+          console.error("Failed to save to DB", error);
+          // localStorage backup already done, so data is not lost
+        }
+        dbSaveTimeout.current = null;
+      }, 800); // Longer debounce for DB saves
+    }
+
     return () => {
       if (saveTimeout.current) {
         window.clearTimeout(saveTimeout.current);
         saveTimeout.current = null;
       }
+      if (dbSaveTimeout.current) {
+        window.clearTimeout(dbSaveTimeout.current);
+        dbSaveTimeout.current = null;
+      }
     };
-  }, [state, hydrated, isReadOnly]);
+  }, [state, hydrated, isReadOnly, isAuthenticated]);
 
   useEffect(() => {
     if (!hydrated || isReadOnly) return;

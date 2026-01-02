@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { useAuth } from "@clerk/nextjs";
 import { track } from "@/lib/analytics";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
+import { getCompletedScenarioSlugs } from "@/lib/actions/practice";
 
 const PROBLEMS = [
   {
@@ -136,9 +138,11 @@ const PROBLEMS = [
 ];
 
 export function PracticePageClient() {
+  const { isSignedIn, isLoaded } = useAuth();
   const [completedProblems, setCompletedProblems] = useState<Set<string>>(new Set());
 
-  const checkCompletionStatus = () => {
+  // Check localStorage for completion status (for anonymous users or as fallback)
+  const checkLocalStorageCompletions = useCallback(() => {
     const completed = new Set<string>();
     PROBLEMS.forEach((problem) => {
       const storageKey = `sds-practice-${problem.slug}`;
@@ -155,22 +159,56 @@ export function PracticePageClient() {
         // Ignore parsing errors
       }
     });
-    setCompletedProblems(completed);
-  };
+    return completed;
+  }, []);
+
+  // Check database for completion status (for authenticated users)
+  const checkDbCompletions = useCallback(async () => {
+    try {
+      const slugs = await getCompletedScenarioSlugs();
+      return new Set(slugs);
+    } catch (error) {
+      console.error("Failed to fetch completed scenarios from DB", error);
+      return new Set<string>();
+    }
+  }, []);
+
+  // Combined check that uses both sources
+  const checkCompletionStatus = useCallback(async () => {
+    // Always check localStorage first (fast)
+    const localCompleted = checkLocalStorageCompletions();
+
+    if (isSignedIn) {
+      // For authenticated users, also check DB and merge
+      const dbCompleted = await checkDbCompletions();
+      // Merge both sources (union)
+      const merged = new Set([...localCompleted, ...dbCompleted]);
+      setCompletedProblems(merged);
+    } else {
+      setCompletedProblems(localCompleted);
+    }
+  }, [isSignedIn, checkLocalStorageCompletions, checkDbCompletions]);
 
   useEffect(() => {
+    // Wait for auth to load before checking
+    if (!isLoaded) return;
+
     // Initial check
     checkCompletionStatus();
 
     // Listen for storage changes and focus events (when returning to the page)
-    window.addEventListener("storage", checkCompletionStatus);
-    window.addEventListener("focus", checkCompletionStatus);
+    const handleStorageOrFocus = () => {
+      checkCompletionStatus();
+    };
+
+    window.addEventListener("storage", handleStorageOrFocus);
+    window.addEventListener("focus", handleStorageOrFocus);
 
     return () => {
-      window.removeEventListener("storage", checkCompletionStatus);
-      window.removeEventListener("focus", checkCompletionStatus);
+      window.removeEventListener("storage", handleStorageOrFocus);
+      window.removeEventListener("focus", handleStorageOrFocus);
     };
-  }, []);
+  }, [isLoaded, checkCompletionStatus]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
