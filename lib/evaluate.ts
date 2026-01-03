@@ -8,26 +8,17 @@ export function evaluateScenario(
   nodes: PlacedNode[],
   edges: Edge[]
 ) {
-  // Build text representation of the path for pattern matching
-  const textPath = pathIds
-    .map((id) => {
-      const n = nodes.find((n) => n.id === id);
-      return n?.spec.kind || id;
-    })
-    .join(">");
+  // Pre-build lookup maps for O(1) access
+  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+  const edgeSet = new Set(edges.flatMap((e) => [`${e.from}->${e.to}`, `${e.to}->${e.from}`]));
 
-  console.log("[evaluateScenario] Path IDs:", pathIds);
-  console.log("[evaluateScenario] Text path:", textPath);
-  console.log(
-    "[evaluateScenario] Nodes:",
-    nodes.map((n) => ({ id: n.id, kind: n.spec.kind }))
-  );
-  console.log("[evaluateScenario] Edges:", edges);
+  // Build text representation of the path for pattern matching
+  const textPath = pathIds.map((id) => nodeMap.get(id)?.spec.kind || id).join(">");
 
   const results: Record<string, boolean> = {};
 
   const edgeConnects = (a: string, b: string) =>
-    edges.some((edge) => (edge.from === a && edge.to === b) || (edge.from === b && edge.to === a));
+    edgeSet.has(`${a}->${b}`) || edgeSet.has(`${b}->${a}`);
 
   // Evaluate each acceptance criterion
   for (const criterion of scenario.acceptance ?? []) {
@@ -46,12 +37,6 @@ export function evaluateScenario(
       case "cache-present":
         results[criterion.id] =
           textPath.includes("Cache (Redis)") || textPath.includes("Object Cache (Memcached)");
-        console.log("[evaluateScenario] cache-present check:", {
-          textPath,
-          includesRedis: textPath.includes("Cache (Redis)"),
-          includesMemcached: textPath.includes("Object Cache (Memcached)"),
-          result: results[criterion.id],
-        });
         break;
       case "lb-service":
         results[criterion.id] =
@@ -121,7 +106,6 @@ export function evaluateScenario(
     }
   }
 
-  console.log("[evaluateScenario] Final results:", results);
   return results;
 }
 

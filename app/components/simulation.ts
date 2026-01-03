@@ -1,6 +1,5 @@
 import { Edge, NodeId, PlacedNode } from "./types";
 import type { Scenario } from "@/lib/scenarios";
-import { findNode } from "./utils";
 import { evaluateScenario, calculateAcceptanceScore } from "@/lib/evaluate";
 import { calculateScore } from "@/lib/scoring";
 
@@ -13,13 +12,17 @@ export function simulate(
   chaos: boolean,
   rng: () => number = Math.random
 ) {
+  // Pre-build lookup maps for O(1) access instead of O(n) per lookup
+  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+  const edgeMap = new Map(edges.map((e) => [`${e.from}->${e.to}`, e]));
+
   // Sum intrinsic latencies + link latencies along the path
   let latency = 0;
   let capacity = Infinity;
   let failedByChaos = false;
 
   for (let i = 0; i < pathNodeIds.length; i++) {
-    const n = findNode(nodes, pathNodeIds[i]);
+    const n = nodeMap.get(pathNodeIds[i]);
     if (!n) continue;
     // chaos failure
     if (chaos && rng() < n.spec.failureRate) {
@@ -35,7 +38,7 @@ export function simulate(
     if (i < pathNodeIds.length - 1) {
       const from = pathNodeIds[i];
       const to = pathNodeIds[i + 1];
-      const link = edges.find((e) => e.from === from && e.to === to);
+      const link = edgeMap.get(`${from}->${to}`);
       latency += link ? link.linkLatencyMs : 12; // default WAN-ish hop if not explicitly wired
     }
   }

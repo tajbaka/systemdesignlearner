@@ -11,11 +11,23 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
+    "format": "prettier --cache --write .",
+    "format:check": "prettier --cache --check .",
     "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "generate-icons": "node scripts/generate-icons.js",
-    "prepare": "husky"
+    "prepare": "husky",
+    "pre-push:check": "concurrently --kill-others-on-fail \"npm:test\" \"npm:lint\" \"npm:typecheck\"",
+    "pre-push": "npm run pre-push:check && npm run build"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "prettier --cache --write",
+      "eslint --fix --max-warnings=0"
+    ],
+    "*.{json,md,css}": [
+      "prettier --cache --write"
+    ]
   },
   "dependencies": {
     "@clerk/nextjs": "^6.34.1",
@@ -63,6 +75,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.0.4",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "15.5.2",
     "husky": "^9.1.7",
