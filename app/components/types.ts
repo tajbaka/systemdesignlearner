@@ -128,7 +128,4 @@ export function reactFlowEdgeToEdge(edge: SystemDesignEdge): Edge {
   };
 }
 
-export interface FlowStep {
-  kind: string; // align with lib/scenarios schema
-  optional?: boolean; // e.g. CDN might be optional
-}
+// FlowStep type is defined in lib/scenarios.ts - use that as the canonical source
