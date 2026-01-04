@@ -123,7 +123,6 @@ export default function DesignStage({
 }: DesignStageProps) {
   // Access session to clear simulation state when design changes
   const session = usePracticeSession();
-  console.log("[DesignStage] Component rendered, design score:", session.state.scores?.design);
   const editingLocked = locked || readOnly || simulationLocked;
   const lockMessage = readOnly
     ? "Shared view · editing disabled"
@@ -307,7 +306,6 @@ export default function DesignStage({
       });
 
       if (didChange) {
-        console.log("[DesignStage] Nodes changed, clearing scores");
         saveToHistory(nextNodes, prunedEdges);
         clearSimulationState();
       }
@@ -341,7 +339,6 @@ export default function DesignStage({
       });
 
       if (didChange) {
-        console.log("[DesignStage] Edges changed, clearing scores");
         saveToHistory(design.nodes, nextEdges);
         clearSimulationState();
       }

@@ -1,18 +1,8 @@
 "use client";
 
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
-import { useEffect } from "react";
 
 export default function SSOCallbackPage() {
-  useEffect(() => {
-    // Track that user completed OAuth flow
-    console.log("[SSO Callback] Processing OAuth redirect...");
-    console.log(
-      "[SSO Callback] Current URL:",
-      typeof window !== "undefined" ? window.location.href : "N/A"
-    );
-  }, []);
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-950">
       <div className="text-center">

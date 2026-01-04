@@ -190,17 +190,6 @@ export default function RunStage({
       const validatedPath = validation.path;
       // FIX Issue #2: Add timeout wrapper to prevent hanging simulation
       const simulationPromise = (async () => {
-        console.log("[RunStage] Running simulation");
-        console.log(
-          "[RunStage] Nodes:",
-          design.nodes.map((n) => ({ id: n.id, kind: n.spec.kind }))
-        );
-        console.log(
-          "[RunStage] Edges:",
-          design.edges.map((e) => ({ id: e.id, from: e.from, to: e.to }))
-        );
-        console.log("[RunStage] Using validated path:", validatedPath);
-
         // Evaluate design architecture (in background, non-blocking)
         if (setStepScore) {
           try {

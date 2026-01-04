@@ -26,8 +26,6 @@ export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalP
   // Automatically call onAuthenticated when user signs in
   useEffect(() => {
     if (isSignedIn && user && isOpen) {
-      console.log("[AuthModal] User authenticated, calling onAuthenticated");
-
       track("practice_auth_completed", {
         slug,
         provider: "clerk",
@@ -70,8 +68,6 @@ export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalP
       const url = new URL(returnUrl);
       url.searchParams.delete("auth_flow");
       returnUrl = url.toString();
-
-      console.log("[AuthModal] Starting Google OAuth, will return to:", returnUrl);
 
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
@@ -117,7 +113,7 @@ export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalP
         }
       } catch (signInError: unknown) {
         // If user doesn't exist, try sign-up instead
-        console.log("[AuthModal] User not found, trying sign-up...", signInError);
+        void signInError; // Expected when user doesn't exist
         await signUp.create({
           emailAddress: email,
         });
@@ -148,46 +144,34 @@ export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalP
 
       if (isNewUser) {
         // Sign-up verification
-        console.log("[AuthModal] Attempting sign-up verification...");
         result = await signUp.attemptEmailAddressVerification({
           code,
         });
 
-        console.log("[AuthModal] Sign-up verification result:", result.status);
-
         // If successful, set the active session
         if (result.status === "complete") {
-          console.log("[AuthModal] Setting active session...");
           await setActive({ session: result.createdSessionId });
-          console.log("[AuthModal] Active session set, waiting for auth state update...");
           // onAuthenticated will be called by the useEffect watching isSignedIn
           // Keep the loading state, the useEffect will handle closing the modal
         } else {
           // If not complete, there might be more steps required
-          console.log("[AuthModal] Verification incomplete, status:", result.status);
           setError("Additional verification required. Please check your email.");
           setIsLoading(false);
         }
       } else {
         // Sign-in verification
-        console.log("[AuthModal] Attempting sign-in verification...");
         result = await signIn.attemptFirstFactor({
           strategy: "email_code",
           code,
         });
 
-        console.log("[AuthModal] Sign-in verification result:", result.status);
-
         // If successful, set the active session
         if (result.status === "complete") {
-          console.log("[AuthModal] Setting active session...");
           await setActive({ session: result.createdSessionId });
-          console.log("[AuthModal] Active session set, waiting for auth state update...");
           // onAuthenticated will be called by the useEffect watching isSignedIn
           // Keep the loading state, the useEffect will handle closing the modal
         } else {
           // If not complete, there might be more steps required
-          console.log("[AuthModal] Verification incomplete, status:", result.status);
           setError("Additional verification required. Please try again.");
           setIsLoading(false);
         }

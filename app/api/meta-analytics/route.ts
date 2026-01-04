@@ -96,9 +96,6 @@ export async function POST(request: NextRequest) {
       return { error: text };
     });
 
-    // Log the full response for debugging
-    console.log("Facebook Conversions API response:", JSON.stringify(responseData, null, 2));
-
     if (!response.ok) {
       console.error("Facebook Conversions API error:", responseData);
       return NextResponse.json(

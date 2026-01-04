@@ -32,6 +32,9 @@ import {
   mergeState,
 } from "@/lib/practice/migration";
 
+/** Debounce delay for auto-saving practice state to localStorage */
+const SAVE_DEBOUNCE_MS = 400;
+
 type PracticeSessionContextValue = {
   state: PracticeState;
   isReadOnly: boolean;
@@ -124,7 +127,7 @@ export function PracticeSessionProvider({
     saveTimeout.current = window.setTimeout(() => {
       savePractice(state);
       saveTimeout.current = null;
-    }, 400);
+    }, SAVE_DEBOUNCE_MS);
 
     return () => {
       if (saveTimeout.current) {
