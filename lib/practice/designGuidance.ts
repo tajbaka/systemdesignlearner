@@ -1,5 +1,5 @@
 import type { PracticeDesignState } from "./types";
-import type { ComponentKind } from "@/components/canvas/types";
+import type { ComponentKind } from "@/lib/types/domain";
 import { hasConnectionBetweenKinds } from "@/components/canvas/utils";
 import type { GuidanceLevel, GuidanceRule, GuidanceRuleCheck } from "./reference/schema";
 import { getScenarioReferenceSync } from "./loader";

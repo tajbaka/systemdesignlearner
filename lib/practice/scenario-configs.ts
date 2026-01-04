@@ -5,7 +5,7 @@ import type {
   PracticeDesignState,
   PracticeRunState,
 } from "./types";
-import type { ComponentKind } from "@/components/canvas/types";
+import type { ComponentKind } from "@/lib/types/domain";
 import { COMPONENT_LIBRARY } from "@/components/canvas/data";
 import type { ScenarioReference } from "./reference/schema";
 import { getScenarioReferenceSync } from "./loader";

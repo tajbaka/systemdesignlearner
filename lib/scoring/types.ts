@@ -5,7 +5,7 @@
  * reference solutions across all practice steps.
  */
 
-import type { ComponentKind, PlacedNode, Edge } from "@/components/canvas/types";
+import type { ComponentKind, PlacedNode, Edge } from "@/lib/types/domain";
 import type { ApiEndpoint } from "@/lib/practice/types";
 
 // ============================================================================
