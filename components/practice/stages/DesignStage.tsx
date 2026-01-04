@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
 import ReactFlowBoard from "@/app/components/ReactFlowBoard";
@@ -13,6 +13,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
 import { useDesignHistory } from "@/hooks/useDesignHistory";
+import { useTutorialManager, hasEdge } from "@/hooks/useTutorialManager";
 
 // Shallow comparison for nodes array (avoids JSON.stringify stack overflow)
 function nodesEqual(a: PlacedNode[], b: PlacedNode[]): boolean {
@@ -73,15 +74,6 @@ type DesignStageProps = {
   simulationLocked?: boolean;
 };
 
-type TutorialStep = {
-  id: string;
-  title: string;
-  body: string;
-  auto: boolean;
-  optional?: boolean;
-  check?: (ctx: { nodes: PlacedNode[]; edges: Edge[]; requirements: Requirements }) => boolean;
-};
-
 const RECOMMENDED_COMPONENTS: ComponentKind[] = [
   "Web",
   "API Gateway",
@@ -97,103 +89,6 @@ const componentSpecFor = (kind: ComponentKind) => {
   }
   return spec;
 };
-
-const tutorialStepsFor = (requirements: Requirements): TutorialStep[] => {
-  const steps: TutorialStep[] = [
-    {
-      id: "welcome",
-      title: "Tour the starter flow",
-      body: "We already dropped Web → API Gateway → Service → Postgres on the canvas. Click each block and drag it a little so you get comfortable with moving pieces, then hit next.",
-      auto: false,
-    },
-    {
-      id: "add-cache",
-      title: "Drop in Redis for speed",
-      body: "Open the Components list and drag “Cache (Redis)” onto the board. Place it beside the Service so we can route reads through it.",
-      auto: true,
-      check: ({ nodes }) => nodes.some((node) => node.spec.kind === "Cache (Redis)"),
-    },
-    {
-      id: "wire-cache",
-      title: "Route traffic through the cache",
-      body: "First, connect the Service to the Cache with an arrow. Then connect the Cache to the Database. Finally, delete the direct arrow from Service to Database. Now all requests will check the cache first, making redirects much faster!",
-      auto: true,
-      check: ({ nodes, edges }) => {
-        const service = nodes.find((node) => node.spec.kind === "Service");
-        const cache = nodes.find((node) => node.spec.kind === "Cache (Redis)");
-        const db = nodes.find((node) => node.spec.kind === "DB (Postgres)");
-        if (!service || !cache || !db) return false;
-        const serviceToCache = hasEdge(edges, service.id, cache.id);
-        const cacheToDb = hasEdge(edges, cache.id, db.id);
-        const serviceToDb = hasEdge(edges, service.id, db.id);
-        return serviceToCache && cacheToDb && !serviceToDb;
-      },
-    },
-  ];
-
-  if (requirements.functional["basic-analytics"]) {
-    steps.push({
-      id: "analytics",
-      title: "Add click tracking (without slowing redirects)",
-      body: "To track clicks without slowing down redirects, add analytics processing: First, drag a Kafka topic (or any message queue) onto the canvas and connect it to your Service (this is where click events get sent). Then add a worker pool and connect it to the queue. The worker will process clicks in the background, so your main redirect path stays fast!",
-      auto: true,
-      optional: true,
-      check: ({ nodes, edges }) => {
-        const queue = nodes.find((node) => node.spec.kind === "Message Queue (Kafka Topic)");
-        const worker = nodes.find((node) => node.spec.kind === "Worker Pool");
-        const service = nodes.find((node) => node.spec.kind === "Service");
-        if (!queue || !worker || !service) return false;
-
-        // Check if service sends events to queue AND queue connects to worker
-        const serviceToQueue = hasEdge(edges, service.id, queue.id);
-        const queueToWorker = hasEdge(edges, queue.id, worker.id);
-        return serviceToQueue && queueToWorker;
-      },
-    });
-  }
-
-  if (requirements.functional["rate-limiting"]) {
-    steps.push({
-      id: "rate-limiter",
-      title: "Throttle abusive clients",
-      body: "Drag a Rate Limiter onto the board and slot it between the API Gateway and Service. Wire API Gateway → Rate Limiter → Service so every redirect request is checked before it hits your core logic.",
-      auto: true,
-      check: ({ nodes, edges }) => {
-        const api = nodes.find((node) => node.spec.kind === "API Gateway");
-        const service = nodes.find((node) => node.spec.kind === "Service");
-        const limiter = nodes.find((node) => node.spec.kind === "Rate Limiter");
-        if (!limiter || !service) return false;
-        const limiterToService = hasEdge(edges, limiter.id, service.id);
-        if (!limiterToService) return false;
-        if (!api) return true;
-        return hasEdge(edges, api.id, limiter.id);
-      },
-    });
-  }
-
-  if (requirements.functional["admin-delete"]) {
-    steps.push({
-      id: "admin-delete",
-      title: "Guard admin deletes",
-      body: "Add an Auth service (or admin API) and connect it to the core Service so privileged delete requests flow through an authenticated path. Optionally branch the admin flow to a worker if you want deletes handled asynchronously.",
-      auto: true,
-      check: ({ nodes, edges }) => {
-        const auth = nodes.find((node) => node.spec.kind === "Auth");
-        const service = nodes.find((node) => node.spec.kind === "Service");
-        if (!auth || !service) return false;
-        return hasEdge(edges, auth.id, service.id);
-      },
-    });
-  }
-
-  return steps;
-};
-
-const hasEdge = (edges: Edge[], fromId: string, toId: string) =>
-  edges.some(
-    (edge) =>
-      (edge.from === fromId && edge.to === toId) || (edge.from === toId && edge.to === fromId)
-  );
 
 const pruneEdges = (edges: Edge[], nodes: PlacedNode[]): Edge[] => {
   const nodeIds = new Set(nodes.map((node) => node.id));
@@ -279,95 +174,22 @@ export default function DesignStage({
     [allowedKinds]
   );
 
-  const tutorialSteps = useMemo(() => tutorialStepsFor(requirements), [requirements]);
-  const stepCount = tutorialSteps.length;
-
-  const currentStep =
-    design.guidedDismissed || design.guidedCompleted
-      ? null
-      : (tutorialSteps[design.guidedStepIndex] ?? null);
-
-  // Clamp guided index if requirements changed and removed steps
-  useEffect(() => {
-    updateDesign((prev) => {
-      const maxIndex = Math.max(stepCount - 1, 0);
-      if (prev.guidedStepIndex > maxIndex) {
-        return {
-          ...prev,
-          guidedStepIndex: maxIndex,
-          guidedCompleted: stepCount === 0 ? true : prev.guidedCompleted,
-        };
-      }
-      if (stepCount === 0 && !prev.guidedCompleted) {
-        return { ...prev, guidedCompleted: true };
-      }
-      return prev;
-    });
-  }, [stepCount, updateDesign]);
-
-  // Auto advance tutorial steps when criteria satisfied
-  useEffect(() => {
-    if (!currentStep || !currentStep.auto || !currentStep.check) {
-      return;
-    }
-
-    if (currentStep.check({ nodes: design.nodes, edges: design.edges, requirements })) {
-      updateDesign((prev) => {
-        if (prev.guidedDismissed || prev.guidedCompleted) {
-          return prev;
-        }
-        const nextIndex = prev.guidedStepIndex + 1;
-        const isComplete = nextIndex >= stepCount;
-        if (isComplete && !prev.guidedCompleted) {
-          track("practice_design_tutorial_completed", { slug: session.state.slug });
-        }
-        return {
-          ...prev,
-          guidedStepIndex: Math.min(nextIndex, Math.max(stepCount - 1, 0)),
-          guidedCompleted: isComplete,
-        };
-      });
-    }
-  }, [
+  // Tutorial manager hook
+  const {
     currentStep,
-    requirements,
-    design.nodes,
-    design.edges,
     stepCount,
+    currentStepIndex,
+    isComplete: tutorialComplete,
+    isDismissed: tutorialDismissed,
+    advanceStep: handleAdvanceManualStep,
+    skipTutorial: handleSkipGuidance,
+  } = useTutorialManager({
+    design,
+    requirements,
+    editingLocked,
+    slug: session.state.slug,
     updateDesign,
-    session.state.slug,
-  ]);
-
-  const handleAdvanceManualStep = useCallback(() => {
-    updateDesign((prev) => {
-      if (prev.guidedDismissed || prev.guidedCompleted) {
-        return prev;
-      }
-      const nextIndex = prev.guidedStepIndex + 1;
-      const isComplete = nextIndex >= stepCount;
-      if (isComplete && !prev.guidedCompleted) {
-        track("practice_design_tutorial_completed", { slug: "url-shortener" });
-      }
-      return {
-        ...prev,
-        guidedStepIndex: Math.min(nextIndex, Math.max(stepCount - 1, 0)),
-        guidedCompleted: isComplete,
-      };
-    });
-  }, [stepCount, updateDesign]);
-
-  const handleSkipGuidance = useCallback(() => {
-    if (design.guidedDismissed || editingLocked) return;
-    updateDesign((prev) => ({
-      ...prev,
-      guidedDismissed: true,
-      freeModeUnlocked: true,
-    }));
-    track("practice_design_guided_skipped", {
-      slug: session.state.slug,
-      step: currentStep?.id ?? "unknown",
-    });
-  }, [design.guidedDismissed, updateDesign, currentStep?.id, editingLocked, session.state.slug]);
+  });
 
   const addNode = useCallback(
     (kind: ComponentKind, position?: { x: number; y: number }) => {
@@ -985,11 +807,11 @@ export default function DesignStage({
               </h3>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-zinc-500">
-                  {design.guidedCompleted
+                  {tutorialComplete
                     ? "Complete"
-                    : `${Math.min(design.guidedStepIndex + 1, stepCount)}/${stepCount}`}
+                    : `${Math.min(currentStepIndex + 1, stepCount)}/${stepCount}`}
                 </span>
-                {!design.guidedDismissed && !design.guidedCompleted ? (
+                {!tutorialDismissed && !tutorialComplete ? (
                   <button
                     type="button"
                     onClick={handleSkipGuidance}
@@ -1004,7 +826,7 @@ export default function DesignStage({
             {currentStep ? (
               <div className="rounded-2xl border border-blue-400/30 bg-blue-500/10 p-4 text-sm text-blue-50 space-y-2">
                 <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-blue-200">
-                  Step {design.guidedStepIndex + 1}
+                  Step {currentStepIndex + 1}
                   {currentStep.optional ? (
                     <span className="rounded-full border border-yellow-400/40 bg-yellow-500/20 px-2 py-0.5 text-[10px] font-semibold text-yellow-100 uppercase">
                       Optional
