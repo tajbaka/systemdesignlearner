@@ -10,18 +10,6 @@ import type {
 import * as ScenarioConfigs from "./scenario-configs";
 
 /**
- * Get functional toggles for a specific scenario.
- * Defaults to url-shortener if slug not provided.
- * @deprecated Use ScenarioConfigs.getFunctionalToggles(slug) instead
- */
-export const getFunctionalToggles = (slug = "url-shortener") => {
-  return ScenarioConfigs.getFunctionalToggles(slug);
-};
-
-// Keep legacy export for backwards compatibility
-export const FUNCTIONAL_TOGGLES = getFunctionalToggles("url-shortener");
-
-/**
  * Create default requirements for a specific scenario.
  * @param slug - The scenario slug (defaults to "url-shortener")
  */
