@@ -20,7 +20,8 @@ export type ScenarioChecklistItem = {
   required: boolean;
 };
 
-export type ApiEndpoint = {
+/** Reference API endpoints defined in scenarios (not user input) */
+export type ReferenceApiEndpoint = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   path: string;
   query?: string[];
@@ -45,7 +46,7 @@ export type Scenario = {
   flow: FlowStep[];
   hints?: string[];
   acceptance?: ScenarioChecklistItem[];
-  api?: ApiEndpoint[];
+  api?: ReferenceApiEndpoint[];
   version?: string;
   updatedAt?: string;
   suggestedComponents?: string[];
