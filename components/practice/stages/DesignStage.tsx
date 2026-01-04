@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { COMPONENT_LIBRARY } from "@/app/components/data";
 import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
 import ReactFlowBoard from "@/app/components/ReactFlowBoard";
@@ -12,28 +12,7 @@ import { track } from "@/lib/analytics";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
-
-// Safe deep clone that avoids JSON.stringify stack overflow on iOS
-function safeDeepClone<T>(obj: T): T {
-  if (obj === null || typeof obj !== "object") {
-    return obj;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => safeDeepClone(item)) as T;
-  }
-
-  const cloned = {} as T;
-  for (const key of Object.keys(obj)) {
-    const value = (obj as Record<string, unknown>)[key];
-    // Skip functions and undefined values
-    if (typeof value === "function" || value === undefined) {
-      continue;
-    }
-    (cloned as Record<string, unknown>)[key] = safeDeepClone(value);
-  }
-  return cloned;
-}
+import { useDesignHistory } from "@/hooks/useDesignHistory";
 
 // Shallow comparison for nodes array (avoids JSON.stringify stack overflow)
 function nodesEqual(a: PlacedNode[], b: PlacedNode[]): boolean {
@@ -261,13 +240,32 @@ export default function DesignStage({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
 
-  // Undo/Redo history
-  const historyRef = useRef<{ nodes: PlacedNode[]; edges: Edge[] }[]>([]);
-  const historyIndexRef = useRef<number>(-1);
-  const isUndoRedoActionRef = useRef<boolean>(false);
+  // Clear simulation state helper
+  const clearSimulationState = useCallback(() => {
+    session.setRun((prev) => ({
+      ...prev,
+      lastResult: null,
+      isRunning: false,
+    }));
+    session.setStepScore("design", undefined);
+    session.setStepScore("simulation", undefined);
+  }, [session]);
 
-  // Clipboard for copy/paste
-  const [clipboard, setClipboard] = useState<{ nodes: PlacedNode[]; edges: Edge[] } | null>(null);
+  // Undo/Redo/Copy/Paste via hook
+  const { saveToHistory } = useDesignHistory({
+    nodes: design.nodes,
+    edges: design.edges,
+    editingLocked,
+    selectedNodeId,
+    slug: session.state.slug,
+    onStateChange: useCallback(
+      (nodes: PlacedNode[], edges: Edge[]) => {
+        updateDesign((prev) => ({ ...prev, nodes, edges }));
+      },
+      [updateDesign]
+    ),
+    onDesignChange: clearSimulationState,
+  });
 
   const allowedKinds = useMemo<ComponentKind[]>(
     () =>
@@ -280,213 +278,6 @@ export default function DesignStage({
     () => COMPONENT_LIBRARY.filter((component) => allowedKinds.includes(component.kind)),
     [allowedKinds]
   );
-
-  // Save current state to history
-  const saveToHistory = useCallback((nodes: PlacedNode[], edges: Edge[]) => {
-    if (isUndoRedoActionRef.current) {
-      return; // Don't save history during undo/redo
-    }
-
-    const newState = {
-      nodes: safeDeepClone(nodes),
-      edges: safeDeepClone(edges),
-    };
-
-    // Remove any states after current index (when user makes new change after undo)
-    historyRef.current = historyRef.current.slice(0, historyIndexRef.current + 1);
-
-    // Add new state
-    historyRef.current.push(newState);
-    historyIndexRef.current = historyRef.current.length - 1;
-
-    // Limit history to 50 states
-    if (historyRef.current.length > 50) {
-      historyRef.current.shift();
-      historyIndexRef.current--;
-    }
-  }, []);
-
-  // Initialize history with current state
-  useEffect(() => {
-    if (historyRef.current.length === 0) {
-      saveToHistory(design.nodes, design.edges);
-    }
-  }, [design.nodes, design.edges, saveToHistory]);
-
-  // Undo function
-  const handleUndo = useCallback(() => {
-    if (editingLocked || historyIndexRef.current <= 0) return;
-
-    historyIndexRef.current--;
-    const prevState = historyRef.current[historyIndexRef.current];
-
-    isUndoRedoActionRef.current = true;
-    updateDesign((prev) => ({
-      ...prev,
-      nodes: safeDeepClone(prevState.nodes),
-      edges: safeDeepClone(prevState.edges),
-    }));
-
-    // Clear simulation state
-    session.setRun((prev) => ({
-      ...prev,
-      lastResult: null,
-      isRunning: false,
-    }));
-    session.setStepScore("design", undefined);
-    session.setStepScore("simulation", undefined);
-
-    setTimeout(() => {
-      isUndoRedoActionRef.current = false;
-    }, 100);
-
-    track("practice_design_undo", { slug: session.state.slug });
-  }, [editingLocked, updateDesign, session]);
-
-  // Redo function
-  const handleRedo = useCallback(() => {
-    if (editingLocked || historyIndexRef.current >= historyRef.current.length - 1) return;
-
-    historyIndexRef.current++;
-    const nextState = historyRef.current[historyIndexRef.current];
-
-    isUndoRedoActionRef.current = true;
-    updateDesign((prev) => ({
-      ...prev,
-      nodes: safeDeepClone(nextState.nodes),
-      edges: safeDeepClone(nextState.edges),
-    }));
-
-    // Clear simulation state
-    session.setRun((prev) => ({
-      ...prev,
-      lastResult: null,
-      isRunning: false,
-    }));
-    session.setStepScore("design", undefined);
-    session.setStepScore("simulation", undefined);
-
-    setTimeout(() => {
-      isUndoRedoActionRef.current = false;
-    }, 100);
-
-    track("practice_design_redo", { slug: session.state.slug });
-  }, [editingLocked, updateDesign, session]);
-
-  // Copy function
-  const handleCopy = useCallback(() => {
-    if (editingLocked) return;
-
-    const nodesToCopy = selectedNodeId
-      ? design.nodes.filter((node) => node.id === selectedNodeId)
-      : design.nodes;
-
-    const nodeIds = new Set(nodesToCopy.map((n) => n.id));
-    const edgesToCopy = design.edges.filter(
-      (edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to)
-    );
-
-    setClipboard({
-      nodes: safeDeepClone(nodesToCopy),
-      edges: safeDeepClone(edgesToCopy),
-    });
-
-    track("practice_design_copy", { slug: session.state.slug, nodeCount: nodesToCopy.length });
-  }, [editingLocked, selectedNodeId, design.nodes, design.edges, session.state.slug]);
-
-  // Paste function
-  const handlePaste = useCallback(() => {
-    if (editingLocked || !clipboard || clipboard.nodes.length === 0) return;
-
-    // Create ID mapping for pasted nodes
-    const idMapping = new Map<string, string>();
-    const pastedNodes: PlacedNode[] = clipboard.nodes.map((node) => {
-      const uniqueId =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const newId = `node-${node.spec.kind}-${uniqueId}`;
-      idMapping.set(node.id, newId);
-
-      return {
-        ...node,
-        id: newId,
-        x: node.x + 50, // Offset pasted nodes
-        y: node.y + 50,
-      };
-    });
-
-    // Update edges with new node IDs
-    const pastedEdges: Edge[] = clipboard.edges.map((edge) => {
-      const uniqueId =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-      return {
-        ...edge,
-        id: `edge-${uniqueId}`,
-        from: idMapping.get(edge.from) || edge.from,
-        to: idMapping.get(edge.to) || edge.to,
-      };
-    });
-
-    updateDesign((prev) => ({
-      ...prev,
-      nodes: [...prev.nodes, ...pastedNodes],
-      edges: [...prev.edges, ...pastedEdges],
-    }));
-
-    // Clear simulation state
-    session.setRun((prev) => ({
-      ...prev,
-      lastResult: null,
-      isRunning: false,
-    }));
-    session.setStepScore("design", undefined);
-    session.setStepScore("simulation", undefined);
-
-    track("practice_design_paste", { slug: session.state.slug, nodeCount: pastedNodes.length });
-  }, [editingLocked, clipboard, updateDesign, session]);
-
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Check for Ctrl (or Cmd on Mac)
-      const isMod = event.ctrlKey || event.metaKey;
-
-      // Undo: Ctrl+Z (without Shift)
-      if (isMod && event.key === "z" && !event.shiftKey) {
-        event.preventDefault();
-        handleUndo();
-        return;
-      }
-
-      // Redo: Ctrl+Shift+Z or Ctrl+Y
-      if (isMod && ((event.key === "z" && event.shiftKey) || event.key === "y")) {
-        event.preventDefault();
-        handleRedo();
-        return;
-      }
-
-      // Copy: Ctrl+C
-      if (isMod && event.key === "c") {
-        event.preventDefault();
-        handleCopy();
-        return;
-      }
-
-      // Paste: Ctrl+V
-      if (isMod && event.key === "v") {
-        event.preventDefault();
-        handlePaste();
-        return;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleUndo, handleRedo, handleCopy, handlePaste]);
 
   const tutorialSteps = useMemo(() => tutorialStepsFor(requirements), [requirements]);
   const stepCount = tutorialSteps.length;
@@ -607,21 +398,19 @@ export default function DesignStage({
 
       // Save to history
       saveToHistory(newNodes, design.edges);
-
-      // FIX Issue #1: Clear simulation state when design changes
-      session.setRun((prev) => ({
-        ...prev,
-        lastResult: null,
-        isRunning: false,
-      }));
-
-      // FIX Issue #1: Clear design score when design changes
-      session.setStepScore("design", undefined);
-      session.setStepScore("simulation", undefined);
+      clearSimulationState();
 
       track("practice_design_node_added", { slug: session.state.slug, kind });
     },
-    [design.nodes, design.edges, editingLocked, updateDesign, session, saveToHistory]
+    [
+      design.nodes,
+      design.edges,
+      editingLocked,
+      updateDesign,
+      saveToHistory,
+      clearSimulationState,
+      session.state.slug,
+    ]
   );
 
   const handleConnect = useCallback(
@@ -658,22 +447,12 @@ export default function DesignStage({
         };
       });
 
-      // FIX Issue #1: Clear simulation state when design changes (only if edge was actually added)
       if (didChange) {
-        // Save to history
         saveToHistory(design.nodes, newEdges);
-
-        session.setRun((prev) => ({
-          ...prev,
-          lastResult: null,
-        }));
-
-        // FIX Issue #1: Clear design score when design changes
-        session.setStepScore("design", undefined);
-        session.setStepScore("simulation", undefined);
+        clearSimulationState();
       }
     },
-    [editingLocked, updateDesign, session, design.nodes, saveToHistory]
+    [editingLocked, updateDesign, design.nodes, saveToHistory, clearSimulationState]
   );
 
   const handleDrop = useCallback(
@@ -705,23 +484,10 @@ export default function DesignStage({
         };
       });
 
-      // Only clear scores if there was an actual change
       if (didChange) {
         console.log("[DesignStage] Nodes changed, clearing scores");
-
-        // Save to history
         saveToHistory(nextNodes, prunedEdges);
-
-        // FIX Issue #1: Clear simulation state when design changes
-        session.setRun((prev) => ({
-          ...prev,
-          lastResult: null,
-          isRunning: false,
-        }));
-
-        // FIX Issue #1: Clear design score when design changes
-        session.setStepScore("design", undefined);
-        session.setStepScore("simulation", undefined);
+        clearSimulationState();
       }
 
       setSelectedNodeId((prev) =>
@@ -731,7 +497,7 @@ export default function DesignStage({
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [editingLocked, updateDesign, session, saveToHistory]
+    [editingLocked, updateDesign, saveToHistory, clearSimulationState]
   );
 
   const handleEdgesChange = useCallback(
@@ -752,30 +518,17 @@ export default function DesignStage({
         };
       });
 
-      // Only clear scores if there was an actual change
       if (didChange) {
         console.log("[DesignStage] Edges changed, clearing scores");
-
-        // Save to history
         saveToHistory(design.nodes, nextEdges);
-
-        // FIX Issue #1: Clear simulation state when design changes
-        session.setRun((prev) => ({
-          ...prev,
-          lastResult: null,
-          isRunning: false,
-        }));
-
-        // FIX Issue #1: Clear design score when design changes
-        session.setStepScore("design", undefined);
-        session.setStepScore("simulation", undefined);
+        clearSimulationState();
       }
 
       setSelectedEdgeId((prev) =>
         prev && nextEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [editingLocked, updateDesign, session, design.nodes, saveToHistory]
+    [editingLocked, updateDesign, design.nodes, saveToHistory, clearSimulationState]
   );
 
   const handleDeleteNode = useCallback(
@@ -792,26 +545,15 @@ export default function DesignStage({
         return { ...prev, nodes, edges };
       });
 
-      // Save to history
       saveToHistory(newNodes, prunedEdges);
-
-      // FIX Issue #1: Clear simulation state when design changes
-      session.setRun((prev) => ({
-        ...prev,
-        lastResult: null,
-        isRunning: false,
-      }));
-
-      // FIX Issue #1: Clear design score when design changes
-      session.setStepScore("design", undefined);
-      session.setStepScore("simulation", undefined);
+      clearSimulationState();
 
       setSelectedNodeId((prev) => (prev === nodeId ? null : prev));
       setSelectedEdgeId((prev) =>
         prev && prunedEdges.some((edge) => edge.id === prev) ? prev : null
       );
     },
-    [editingLocked, updateDesign, session, saveToHistory]
+    [editingLocked, updateDesign, saveToHistory, clearSimulationState]
   );
 
   const handleUpdateReplicas = useCallback(
@@ -827,19 +569,8 @@ export default function DesignStage({
         };
       });
 
-      // Save to history
       saveToHistory(newNodes, design.edges);
-
-      // FIX Issue #1: Clear simulation state when design changes (replicas affect capacity)
-      session.setRun((prev) => ({
-        ...prev,
-        lastResult: null,
-        isRunning: false,
-      }));
-
-      // FIX Issue #1: Clear design score when design changes
-      session.setStepScore("design", undefined);
-      session.setStepScore("simulation", undefined);
+      clearSimulationState();
 
       track("practice_design_node_replicas_changed", {
         slug: session.state.slug,
@@ -847,7 +578,14 @@ export default function DesignStage({
         replicas,
       });
     },
-    [editingLocked, updateDesign, session, design.edges, saveToHistory]
+    [
+      editingLocked,
+      updateDesign,
+      design.edges,
+      saveToHistory,
+      clearSimulationState,
+      session.state.slug,
+    ]
   );
 
   const handleRenameNode = useCallback(
@@ -905,20 +643,8 @@ export default function DesignStage({
         };
       });
 
-      // Save to history
       saveToHistory(design.nodes, newEdges);
-
-      // FIX Issue #1: Clear simulation state when design changes
-      session.setRun((prev) => ({
-        ...prev,
-        lastResult: null,
-        isRunning: false,
-      }));
-
-      // FIX Issue #1: Clear design score when design changes
-      session.setStepScore("design", undefined);
-      session.setStepScore("simulation", undefined);
-
+      clearSimulationState();
       setSelectedEdgeId(null);
       return;
     }
@@ -934,19 +660,8 @@ export default function DesignStage({
         return { ...prev, nodes, edges };
       });
 
-      // Save to history
       saveToHistory(newNodes, prunedEdges);
-
-      // FIX Issue #1: Clear simulation state when design changes
-      session.setRun((prev) => ({
-        ...prev,
-        lastResult: null,
-        isRunning: false,
-      }));
-
-      // FIX Issue #1: Clear design score when design changes
-      session.setStepScore("design", undefined);
-      session.setStepScore("simulation", undefined);
+      clearSimulationState();
 
       setSelectedNodeId(null);
       setSelectedEdgeId((prev) =>
@@ -958,9 +673,9 @@ export default function DesignStage({
     selectedEdgeId,
     selectedNodeId,
     updateDesign,
-    session,
     design.nodes,
     saveToHistory,
+    clearSimulationState,
   ]);
 
   const serviceNode = useMemo(
