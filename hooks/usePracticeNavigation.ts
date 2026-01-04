@@ -7,6 +7,7 @@ import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import { STEP_CONFIGS } from "@/lib/practice/step-configs";
 import { logger } from "@/lib/logger";
 import { PRACTICE_STEPS } from "@/lib/practice/types";
+import { emit } from "@/lib/events";
 
 const STEPS_WITH_ITERATIVE: PracticeStep[] = ["functional", "nonFunctional", "api"];
 
@@ -310,30 +311,16 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
               return;
             }
 
-            if (window._runSimulation) {
-              logger.info("Automatically running simulation from Next button");
-              setWaitingForSimulation(true);
-              if (typeof window.requestAnimationFrame === "function") {
-                window.requestAnimationFrame(() => {
-                  window._runSimulation?.();
-                });
-              } else {
-                setTimeout(() => window._runSimulation?.(), 0);
-              }
-              return;
-            } else {
-              // Fallback: Show message if function not available
-              setVerification({
-                isVerifying: false,
-                result: {
-                  canProceed: false,
-                  blocking: ["Unable to run simulation. Please refresh the page and try again."],
-                  warnings: [],
-                },
-                error: null,
+            logger.info("Automatically running simulation from Next button");
+            setWaitingForSimulation(true);
+            if (typeof window.requestAnimationFrame === "function") {
+              window.requestAnimationFrame(() => {
+                emit("simulation:run");
               });
-              return;
+            } else {
+              setTimeout(() => emit("simulation:run"), 0);
             }
+            return;
           }
 
           setVerification({ isVerifying: true, result: null, error: null });
@@ -476,11 +463,8 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
   const handleBack = () => {
     if (session.isReadOnly) return;
 
-    // Check if API step mobile editor is open
-    if (typeof window !== "undefined" && window._apiMobileEditorClose) {
-      window._apiMobileEditorClose();
-      return;
-    }
+    // Emit close event for API step mobile editor (if open, it will handle it)
+    emit("apiEditor:close");
 
     // Navigate to previous step
     const prevStep = getPrevStep(session.currentStep);

@@ -22,6 +22,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 import type { ApiEndpoint } from "@/lib/practice/types";
 import { loadScenarioReference, getScenarioReferenceSync } from "@/lib/practice/loader";
 import { DEFAULT_ONBOARDING_CONFIG, type OnboardingConfig } from "@/lib/practice/reference/schema";
+import { on, emit } from "@/lib/events";
 
 function PracticeFlowInner() {
   const router = useRouter();
@@ -40,6 +41,7 @@ function PracticeFlowInner() {
   const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
   const [apiMobileEditing, setApiMobileEditing] = useState(false);
+  const [apiMobileEditorValue, setApiMobileEditorValue] = useState<string | undefined>(undefined);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
@@ -64,16 +66,12 @@ function PracticeFlowInner() {
     };
   }, [state.slug]);
 
-  // Listen for API mobile editor state changes
+  // Listen for API mobile editor state changes via typed events
   useEffect(() => {
-    const handleEditorChange = (event: CustomEvent<{ editing: boolean }>) => {
-      setApiMobileEditing(event.detail.editing);
-    };
-
-    window.addEventListener("apiMobileEditorChange", handleEditorChange as EventListener);
-    return () => {
-      window.removeEventListener("apiMobileEditorChange", handleEditorChange as EventListener);
-    };
+    return on("apiEditor:stateChange", (data) => {
+      setApiMobileEditing(data.editing);
+      setApiMobileEditorValue(data.value);
+    });
   }, []);
 
   // Track keyboard position using Visual Viewport API
@@ -248,17 +246,11 @@ function PracticeFlowInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
-  // Expose callback to clear waiting state (called by RunStage on error)
+  // Listen for simulation clear waiting events (from RunStage on error)
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-    window._clearWaitingForSimulation = () => {
+    return on("simulation:clearWaiting", () => {
       setWaitingForSimulation(false);
-    };
-    return () => {
-      delete window._clearWaitingForSimulation;
-    };
+    });
   }, [setWaitingForSimulation]);
 
   const config = STEP_CONFIGS[currentStep];
@@ -712,11 +704,8 @@ function PracticeFlowInner() {
                 ? state.requirements.functionalSummary
                 : currentStep === "nonFunctional"
                   ? state.requirements.nonFunctional.notes
-                  : currentStep === "api" &&
-                      apiMobileEditing &&
-                      typeof window !== "undefined" &&
-                      window._apiMobileEditorVoiceValue !== undefined
-                    ? window._apiMobileEditorVoiceValue
+                  : currentStep === "api" && apiMobileEditing
+                    ? apiMobileEditorValue
                     : undefined
             }
             voiceCaptureOnChange={
@@ -737,11 +726,8 @@ function PracticeFlowInner() {
                         },
                       });
                     }
-                  : currentStep === "api" &&
-                      apiMobileEditing &&
-                      typeof window !== "undefined" &&
-                      window._apiMobileEditorVoiceOnChange
-                    ? window._apiMobileEditorVoiceOnChange
+                  : currentStep === "api" && apiMobileEditing
+                    ? (value: string) => emit("apiEditor:voiceChange", { value })
                     : undefined
             }
           />

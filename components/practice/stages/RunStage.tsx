@@ -16,6 +16,7 @@ import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
 import { evaluateDesignOptimized, scoreSimulation, loadScoringConfig } from "@/lib/scoring/index";
 import type { FeedbackResult } from "@/lib/scoring/types";
+import { on, emit } from "@/lib/events";
 
 type UpdateRunFn = (updater: (prev: PracticeRunState) => PracticeRunState) => void;
 type SetStepScoreFn = (step: keyof PracticeStepScores, result: FeedbackResult) => void;
@@ -175,9 +176,7 @@ export default function RunStage({
     const validation = validateDesignForScenario(scenario, design.nodes, design.edges);
     if (!validation.ok) {
       setError(validation.message);
-      if (typeof window !== "undefined") {
-        window._clearWaitingForSimulation?.();
-      }
+      emit("simulation:clearWaiting");
       return;
     }
 
@@ -332,9 +331,7 @@ export default function RunStage({
       await Promise.race([simulationPromise, timeoutPromise]);
     } catch (err) {
       logger.error("Simulation error", err);
-      if (typeof window !== "undefined") {
-        window._clearWaitingForSimulation?.();
-      }
+      emit("simulation:clearWaiting");
 
       if (err instanceof Error && err.message === "Simulation timeout") {
         setError(
@@ -369,12 +366,9 @@ export default function RunStage({
     updateRun,
   ]);
 
-  // Expose handleRun globally so PracticeFlow can trigger it
+  // Listen for simulation:run events from navigation
   useEffect(() => {
-    window._runSimulation = handleRun;
-    return () => {
-      delete window._runSimulation;
-    };
+    return on("simulation:run", handleRun);
   }, [handleRun]);
 
   return (

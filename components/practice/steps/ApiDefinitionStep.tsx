@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 import type { ApiEndpoint } from "@/lib/practice/types";
 import { getApiNotesPlaceholder } from "@/lib/practice/apiPlaceholders";
+import { on, emit } from "@/lib/events";
 
 const METHOD_OPTIONS: Array<ApiEndpoint["method"]> = ["GET", "POST", "PATCH", "DELETE"];
 
@@ -202,30 +203,40 @@ export function ApiDefinitionStep() {
     setTouchedEndpoints((prev) => new Set([...prev, id]));
   };
 
-  const updateEndpoint = (id: string, updater: (endpoint: ApiEndpoint) => ApiEndpoint) => {
-    if (isReadOnly) return;
-    setApiDefinition((prev) => ({
-      ...prev,
-      endpoints: prev.endpoints.map((endpoint) =>
-        endpoint.id === id ? updater(endpoint) : endpoint
-      ),
-    }));
-    // Mark as touched when user changes the endpoint
-    markEndpointTouched(id);
-    // Clear highlights when user starts fixing the issue
-    setShowHighlights(false);
-    // Clear the score when user changes their answer
-    if (state.scores?.api) {
-      setStepScore("api", undefined);
-    }
-    // Clear the cached iterative feedback result
-    if (state.iterativeFeedback?.api?.cachedResult) {
-      updateIterativeFeedback("api", (prev) => ({
+  const updateEndpoint = useCallback(
+    (id: string, updater: (endpoint: ApiEndpoint) => ApiEndpoint) => {
+      if (isReadOnly) return;
+      setApiDefinition((prev) => ({
         ...prev,
-        cachedResult: null,
+        endpoints: prev.endpoints.map((endpoint) =>
+          endpoint.id === id ? updater(endpoint) : endpoint
+        ),
       }));
-    }
-  };
+      // Mark as touched when user changes the endpoint
+      markEndpointTouched(id);
+      // Clear highlights when user starts fixing the issue
+      setShowHighlights(false);
+      // Clear the score when user changes their answer
+      if (state.scores?.api) {
+        setStepScore("api", undefined);
+      }
+      // Clear the cached iterative feedback result
+      if (state.iterativeFeedback?.api?.cachedResult) {
+        updateIterativeFeedback("api", (prev) => ({
+          ...prev,
+          cachedResult: null,
+        }));
+      }
+    },
+    [
+      isReadOnly,
+      setApiDefinition,
+      setStepScore,
+      state.scores?.api,
+      state.iterativeFeedback?.api?.cachedResult,
+      updateIterativeFeedback,
+    ]
+  );
 
   const addEndpoint = () => {
     if (isReadOnly) return;
@@ -283,49 +294,39 @@ export function ApiDefinitionStep() {
     ? endpoints.find((ep) => ep.id === mobileEditingId)
     : null;
 
-  // Expose close function and voice capture for footer
+  // Subscribe to close events and voice changes
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (!mobileEditingId) return;
 
-    if (mobileEditingId && mobileEditingEndpoint) {
-      window._apiMobileEditorClose = () => {
-        setMobileEditingId(null);
-      };
+    // Listen for close events from navigation
+    const unsubClose = on("apiEditor:close", () => {
+      setMobileEditingId(null);
+    });
 
-      // Expose voice capture value and onChange for footer
-      window._apiMobileEditorVoiceValue = mobileEditingEndpoint.notes;
-      window._apiMobileEditorVoiceOnChange = (notes: string) => {
-        updateEndpoint(mobileEditingId, (current) => ({
-          ...current,
-          notes,
-        }));
-      };
-
-      // Dispatch event to notify PracticeFlow
-      window.dispatchEvent(
-        new CustomEvent("apiMobileEditorChange", {
-          detail: { editing: true, value: mobileEditingEndpoint.notes },
-        })
-      );
-    } else {
-      delete window._apiMobileEditorClose;
-      delete window._apiMobileEditorVoiceValue;
-      delete window._apiMobileEditorVoiceOnChange;
-
-      // Dispatch event to notify PracticeFlow
-      window.dispatchEvent(
-        new CustomEvent("apiMobileEditorChange", {
-          detail: { editing: false },
-        })
-      );
-    }
+    // Listen for voice change events from footer
+    const unsubVoice = on("apiEditor:voiceChange", ({ value }) => {
+      updateEndpoint(mobileEditingId, (current) => ({
+        ...current,
+        notes: value,
+      }));
+    });
 
     return () => {
-      delete window._apiMobileEditorClose;
-      delete window._apiMobileEditorVoiceValue;
-      delete window._apiMobileEditorVoiceOnChange;
+      unsubClose();
+      unsubVoice();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mobileEditingId, updateEndpoint]);
+
+  // Emit state changes when mobile editing state changes
+  useEffect(() => {
+    if (mobileEditingId && mobileEditingEndpoint) {
+      emit("apiEditor:stateChange", {
+        editing: true,
+        value: mobileEditingEndpoint.notes,
+      });
+    } else {
+      emit("apiEditor:stateChange", { editing: false });
+    }
   }, [mobileEditingId, mobileEditingEndpoint]);
 
   return (

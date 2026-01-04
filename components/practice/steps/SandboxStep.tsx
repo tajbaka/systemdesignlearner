@@ -299,23 +299,21 @@ export function SandboxStep({
         </>
       )}
 
-      {/* Keep RunStage mounted but hidden so window._runSimulation is always available */}
-      {!runPanelOpen && (
-        <div style={{ display: "none" }}>
-          <RunStage
-            slug={state.slug}
-            design={state.design}
-            run={state.run}
-            requirements={state.requirements}
-            locked={isReadOnly}
-            readOnly={isReadOnly}
-            updateRun={setRun}
-            setStepScore={setStepScore}
-            onContinue={() => {}}
-            showFooterControls={false}
-          />
-        </div>
-      )}
+      {/* RunStage listens for simulation:run events - keep mounted for event handling */}
+      <div className="hidden">
+        <RunStage
+          slug={state.slug}
+          design={state.design}
+          run={state.run}
+          requirements={state.requirements}
+          locked={isReadOnly}
+          readOnly={isReadOnly}
+          updateRun={setRun}
+          setStepScore={setStepScore}
+          onContinue={() => {}}
+          showFooterControls={false}
+        />
+      </div>
     </>
   );
 }
