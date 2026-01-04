@@ -1,5 +1,5 @@
 import type { Scenario } from "@/lib/scenarios";
-import type { PlacedNode, Edge } from "@/app/components/types";
+import type { PlacedNode, Edge } from "@/components/canvas/types";
 
 // Evaluates scenario acceptance criteria based on the current design
 export function evaluateScenario(

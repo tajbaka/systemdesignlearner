@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { COMPONENT_LIBRARY } from "@/app/components/data";
-import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
-import ReactFlowBoard from "@/app/components/ReactFlowBoard";
-import Palette from "@/app/components/Palette";
-import { findScenarioPath } from "@/app/components/utils";
+import { COMPONENT_LIBRARY } from "@/components/canvas/data";
+import type { ComponentKind, PlacedNode, Edge } from "@/components/canvas/types";
+import ReactFlowBoard from "@/components/canvas/ReactFlowBoard";
+import Palette from "@/components/canvas/Palette";
+import { findScenarioPath } from "@/components/canvas/utils";
 import { SCENARIOS } from "@/lib/scenarios";
 import type { PracticeDesignState, Requirements } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SCENARIOS } from "@/lib/scenarios";
-import { simulate } from "@/app/components/simulation";
+import { simulate } from "@/components/canvas/simulation";
 import { validateDesignForScenario } from "@/lib/practice/validation";
 import type {
   PracticeDesignState,
@@ -10,7 +10,7 @@ import type {
   Requirements,
   PracticeStepScores,
 } from "@/lib/practice/types";
-import type { PlacedNode } from "@/app/components/types";
+import type { PlacedNode } from "@/components/canvas/types";
 import type { Scenario } from "@/lib/scenarios";
 import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";

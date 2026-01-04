@@ -1,4 +1,4 @@
-import type { PlacedNode, Edge } from "@/app/components/types";
+import type { PlacedNode, Edge } from "@/components/canvas/types";
 import type { ScoreBreakdown } from "@/lib/scoring";
 import type { FeedbackResult } from "@/lib/scoring/types";
 import type { IterativeTopicState, IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";

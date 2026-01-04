@@ -1,4 +1,4 @@
-import { findScenarioPath } from "@/app/components/utils";
+import { findScenarioPath } from "@/components/canvas/utils";
 import { SCENARIOS, type Scenario } from "@/lib/scenarios";
 import type { PracticeState, Requirements } from "./types";
 import type { ScenarioReference } from "./reference/schema";

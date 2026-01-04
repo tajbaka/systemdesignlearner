@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo } from "react";
-import type { PlacedNode, Edge } from "@/app/components/types";
+import type { PlacedNode, Edge } from "@/components/canvas/types";
 import type { PracticeDesignState, Requirements } from "@/lib/practice/types";
 import { track } from "@/lib/analytics";
 

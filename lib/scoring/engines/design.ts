@@ -21,8 +21,8 @@ import type {
   GraphPath,
   PathNode,
 } from "../types";
-import type { PlacedNode, Edge } from "@/app/components/types";
-import { hasConnectionBetweenKinds } from "@/app/components/utils";
+import type { PlacedNode, Edge } from "@/components/canvas/types";
+import { hasConnectionBetweenKinds } from "@/components/canvas/utils";
 
 export class DesignScoringEngine
   implements IScoringEngine<DesignScoringInput, DesignScoringConfig>

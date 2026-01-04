@@ -1,5 +1,5 @@
 import type { Scenario } from "@/lib/scenarios";
-import type { PlacedNode } from "@/app/components/types";
+import type { PlacedNode } from "@/components/canvas/types";
 
 export interface ScoreBreakdown {
   sloScore: number;

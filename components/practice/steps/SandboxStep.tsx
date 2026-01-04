@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { ComponentKind } from "@/app/components/types";
+import type { ComponentKind } from "@/components/canvas/types";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import DesignStage from "@/components/practice/stages/DesignStage";
 import RunStage from "@/components/practice/stages/RunStage";
@@ -10,8 +10,8 @@ import type {
   Requirements,
   PracticeApiDefinitionState,
 } from "@/lib/practice/types";
-import Palette from "@/app/components/Palette";
-import { COMPONENT_LIBRARY } from "@/app/components/data";
+import Palette from "@/components/canvas/Palette";
+import { COMPONENT_LIBRARY } from "@/components/canvas/data";
 
 const BASE_COMPONENTS: ComponentKind[] = [
   "Web",

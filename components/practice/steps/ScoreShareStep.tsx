@@ -10,7 +10,7 @@ import type { CumulativeScore, FeedbackResult } from "@/lib/scoring/types";
 import { getGradeDescription, getGradeColor, calculateCumulativeScore } from "@/lib/scoring/index";
 import type { IterativeFeedbackResult } from "@/lib/scoring/ai/iterative";
 import { useUser } from "@clerk/nextjs";
-import { IconLinkedIn, IconX } from "@/app/components/icons";
+import { IconLinkedIn, IconX } from "@/components/canvas/icons";
 import { AuthModal } from "@/components/practice/AuthModal";
 
 type ShareStatus = "idle" | "copied" | "error";
