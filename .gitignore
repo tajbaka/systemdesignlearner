@@ -50,3 +50,9 @@ next-env.d.ts
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Analytics exports
+/Google-Search-Console/
+
+# Backup files
+*.backup
