@@ -2,26 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { sendFeedbackConfirmation } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { feedbackSchema, parseRequest } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
   try {
-    const {
-      email,
-      name,
-      feedback,
-      contact_ok = false,
-      marketing_ok = false,
-      source = "landing",
-    } = await request.json();
-
-    // Validate required fields
-    if (!email || !email.includes("@")) {
-      return NextResponse.json({ error: "Valid email is required" }, { status: 400 });
+    const parsed = await parseRequest(request, feedbackSchema);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
 
-    if (!feedback || feedback.trim().length === 0) {
-      return NextResponse.json({ error: "Feedback is required" }, { status: 400 });
-    }
+    const { email, name, feedback, contact_ok, marketing_ok, source } = parsed.data;
 
     // Get client information for provenance
     const userAgent = request.headers.get("user-agent") || "";
@@ -39,7 +29,7 @@ export async function POST(request: NextRequest) {
     const { error: feedbackError } = await supabase.from("feedback_submissions").insert({
       email,
       name: name || null,
-      feedback: feedback.trim(),
+      feedback,
       contact_ok,
       marketing_ok,
       source,
@@ -100,7 +90,7 @@ export async function POST(request: NextRequest) {
     sendFeedbackConfirmation({
       to: email,
       name: name || undefined,
-      feedback: feedback.trim(),
+      feedback,
     }).catch((error) => {
       logger.error("Failed to send feedback confirmation email:", error);
     });

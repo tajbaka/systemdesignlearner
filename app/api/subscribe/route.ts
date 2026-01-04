@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { sendNewsletterConfirmation } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { subscribeSchema, parseRequest } from "@/lib/validation";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
-
-    // Validate email
-    if (!email || !email.includes("@")) {
-      return NextResponse.json({ error: "Valid email is required" }, { status: 400 });
+    const parsed = await parseRequest(request, subscribeSchema);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error }, { status: 400 });
     }
+
+    const { email } = parsed.data;
 
     // Check if email already exists
     const { data: existing } = await supabase
