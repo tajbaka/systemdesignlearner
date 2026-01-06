@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { ComponentKind } from "@/app/components/types";
+import type { ComponentKind } from "@/components/canvas/types";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import DesignStage from "@/components/practice/stages/DesignStage";
 import RunStage from "@/components/practice/stages/RunStage";
@@ -10,8 +10,10 @@ import type {
   Requirements,
   PracticeApiDefinitionState,
 } from "@/lib/practice/types";
-import Palette from "@/app/components/Palette";
-import { COMPONENT_LIBRARY } from "@/app/components/data";
+import Palette from "@/components/canvas/Palette";
+import { COMPONENT_LIBRARY } from "@/components/canvas/data";
+import { getScenarioReferenceSync } from "@/lib/practice/loader";
+import { SCENARIOS } from "@/lib/scenarios";
 
 const BASE_COMPONENTS: ComponentKind[] = [
   "Web",
@@ -29,11 +31,38 @@ const scalingComponents: ComponentKind[] = []; // Removed: Read Replica, Shard R
 const streamingComponents: ComponentKind[] = ["Stream Processor (Flink)"];
 const idComponents: ComponentKind[] = ["ID Generator (Snowflake)"];
 
+/**
+ * Get scenario-specific components from reference JSON or SCENARIOS metadata.
+ * Returns all components defined for the scenario across all categories.
+ */
+const getScenarioComponents = (slug: string): ComponentKind[] => {
+  // First try to get from reference JSON (has detailed categorization)
+  const reference = getScenarioReferenceSync(slug);
+  if (reference?.components) {
+    // Flatten all component categories (base, performance, metadata, optional, etc.)
+    const allComponents = Object.values(reference.components).flat();
+    return allComponents as ComponentKind[];
+  }
+
+  // Fall back to suggestedComponents from SCENARIOS
+  const scenario = SCENARIOS.find((s) => s.id === slug);
+  if (scenario?.suggestedComponents) {
+    return scenario.suggestedComponents as ComponentKind[];
+  }
+
+  return [];
+};
+
 const computeAllowedComponents = (
   requirements: Requirements,
-  apiDefinition: PracticeApiDefinitionState
+  apiDefinition: PracticeApiDefinitionState,
+  slug: string
 ): ComponentKind[] => {
   const set = new Set<ComponentKind>(BASE_COMPONENTS);
+
+  // Add scenario-specific components (from reference JSON or SCENARIOS)
+  const scenarioComponents = getScenarioComponents(slug);
+  scenarioComponents.forEach((kind) => set.add(kind));
 
   // Based on functional requirements
   if (requirements.functional["basic-analytics"]) {
@@ -100,21 +129,14 @@ const nextSpawnPosition = (nodes: PracticeDesignState["nodes"]) => {
 type SandboxStepProps = {
   mobilePaletteOpen: boolean;
   onMobilePaletteChange: (open: boolean) => void;
-  runPanelOpen: boolean;
-  onRunPanelChange: (open: boolean) => void;
 };
 
-export function SandboxStep({
-  mobilePaletteOpen,
-  onMobilePaletteChange,
-  runPanelOpen,
-  onRunPanelChange,
-}: SandboxStepProps) {
+export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: SandboxStepProps) {
   const { state, setDesign, setRun, setStepScore, isReadOnly } = usePracticeSession();
 
   const allowedComponents = useMemo(
-    () => computeAllowedComponents(state.requirements, state.apiDefinition),
-    [state.requirements, state.apiDefinition]
+    () => computeAllowedComponents(state.requirements, state.apiDefinition, state.slug),
+    [state.requirements, state.apiDefinition, state.slug]
   );
 
   const mobilePaletteItems = useMemo(
@@ -141,10 +163,6 @@ export function SandboxStep({
             onOpenPalette={() => {
               if (isReadOnly) return;
               onMobilePaletteChange(true);
-            }}
-            onOpenSimulation={() => {
-              if (isReadOnly) return;
-              onRunPanelChange(true);
             }}
             showPaletteTrigger={false}
           />
@@ -246,76 +264,21 @@ export function SandboxStep({
         </>
       )}
 
-      {/* Simulation Panel - Slides up from bottom */}
-      {runPanelOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300"
-            onClick={() => onRunPanelChange(false)}
-            aria-hidden="true"
-          />
-
-          {/* Panel */}
-          <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl border border-zinc-800 bg-zinc-900 shadow-2xl transition-transform duration-300 ease-out lg:inset-x-auto lg:right-6 lg:w-full lg:max-w-md translate-y-0 pointer-events-auto max-h-[90vh]">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-              <h2 className="text-lg font-semibold text-white">Simulation</h2>
-              <button
-                type="button"
-                onClick={() => onRunPanelChange(false)}
-                className="ml-auto rounded-full p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
-                aria-label="Close"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto">
-              <RunStage
-                slug={state.slug}
-                design={state.design}
-                run={state.run}
-                requirements={state.requirements}
-                locked={isReadOnly}
-                readOnly={isReadOnly}
-                updateRun={setRun}
-                setStepScore={setStepScore}
-                onContinue={() => {
-                  onRunPanelChange(false);
-                }}
-                showFooterControls={false}
-              />
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Keep RunStage mounted but hidden so window._runSimulation is always available */}
-      {!runPanelOpen && (
-        <div style={{ display: "none" }}>
-          <RunStage
-            slug={state.slug}
-            design={state.design}
-            run={state.run}
-            requirements={state.requirements}
-            locked={isReadOnly}
-            readOnly={isReadOnly}
-            updateRun={setRun}
-            setStepScore={setStepScore}
-            onContinue={() => {}}
-            showFooterControls={false}
-          />
-        </div>
-      )}
+      {/* RunStage listens for simulation:run events - keep mounted for event handling */}
+      <div className="hidden">
+        <RunStage
+          slug={state.slug}
+          design={state.design}
+          run={state.run}
+          requirements={state.requirements}
+          locked={isReadOnly}
+          readOnly={isReadOnly}
+          updateRun={setRun}
+          setStepScore={setStepScore}
+          onContinue={() => {}}
+          showFooterControls={false}
+        />
+      </div>
     </>
   );
 }

@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import type { PracticeStep } from "@/lib/practice/types";
 
-type OnboardingStage =
+export type OnboardingStage =
   | "welcome"
   | "functional-description"
   | "functional-next"

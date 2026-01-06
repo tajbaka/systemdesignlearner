@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { SCENARIOS } from "@/lib/scenarios";
-import type { PlacedNode, Edge, ComponentSpec } from "@/app/components/types";
-import { simulate } from "@/app/components/simulation";
+import type { PlacedNode, Edge, ComponentSpec } from "@/components/canvas/types";
+import { simulate } from "@/components/canvas/simulation";
 import { mulberry32 } from "@/lib/rng";
-import { snapToGrid, findScenarioPath } from "@/app/components/utils";
+import { snapToGrid, findScenarioPath } from "@/components/canvas/utils";
 
 const makeSpec = (
   kind: ComponentSpec["kind"],

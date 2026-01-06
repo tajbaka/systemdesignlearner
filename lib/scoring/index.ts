@@ -244,6 +244,8 @@ export { evaluateFunctionalRequirements } from "./engines/functional";
 export { evaluateNonFunctionalRequirements } from "./engines/nonFunctional";
 export { evaluateApiDefinition } from "./engines/api";
 export { evaluateDesign } from "./engines/design";
+export type { ScoreBreakdown } from "./engines/simulationScore";
+export { calculateScore } from "./engines/simulationScore";
 
 // Re-export AI-enhanced functions
 export {

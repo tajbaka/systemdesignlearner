@@ -6,7 +6,7 @@ import PracticeStepper from "@/components/practice/PracticeStepper";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { OnboardingProvider, useOnboarding } from "@/components/practice/PracticeOnboarding";
-import { OnboardingTooltip } from "@/components/practice/OnboardingTooltip";
+import { OnboardingTooltipRenderer } from "@/components/practice/OnboardingTooltipRenderer";
 import { useUser } from "@clerk/nextjs";
 import { PRACTICE_STEPS } from "@/lib/practice/types";
 import { STEP_CONFIGS, getHelperText, completeStep } from "@/lib/practice/step-configs";
@@ -22,6 +22,7 @@ import { SCENARIOS } from "@/lib/scenarios";
 import type { ApiEndpoint } from "@/lib/practice/types";
 import { loadScenarioReference, getScenarioReferenceSync } from "@/lib/practice/loader";
 import { DEFAULT_ONBOARDING_CONFIG, type OnboardingConfig } from "@/lib/practice/reference/schema";
+import { on, emit } from "@/lib/events";
 
 function PracticeFlowInner() {
   const router = useRouter();
@@ -37,9 +38,9 @@ function PracticeFlowInner() {
     setApiDefinition,
   } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
-  const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
   const [apiMobileEditing, setApiMobileEditing] = useState(false);
+  const [apiMobileEditorValue, setApiMobileEditorValue] = useState<string | undefined>(undefined);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
@@ -64,16 +65,12 @@ function PracticeFlowInner() {
     };
   }, [state.slug]);
 
-  // Listen for API mobile editor state changes
+  // Listen for API mobile editor state changes via typed events
   useEffect(() => {
-    const handleEditorChange = (event: CustomEvent<{ editing: boolean }>) => {
-      setApiMobileEditing(event.detail.editing);
-    };
-
-    window.addEventListener("apiMobileEditorChange", handleEditorChange as EventListener);
-    return () => {
-      window.removeEventListener("apiMobileEditorChange", handleEditorChange as EventListener);
-    };
+    return on("apiEditor:stateChange", (data) => {
+      setApiMobileEditing(data.editing);
+      setApiMobileEditorValue(data.value);
+    });
   }, []);
 
   // Track keyboard position using Visual Viewport API
@@ -112,11 +109,11 @@ function PracticeFlowInner() {
     };
   }, []);
 
-  // Get scenario title from SCENARIOS
-  const scenarioTitle = useMemo(() => {
-    const scenario = SCENARIOS.find((s) => s.id === state.slug);
-    return scenario?.title;
+  // Get scenario data from SCENARIOS
+  const scenario = useMemo(() => {
+    return SCENARIOS.find((s) => s.id === state.slug);
   }, [state.slug]);
+  const scenarioTitle = scenario?.title;
 
   // Scoring hook
   const {
@@ -238,7 +235,6 @@ function PracticeFlowInner() {
   useEffect(() => {
     if (currentStep !== "highLevelDesign") {
       setMobilePaletteOpen(false);
-      setRunPanelOpen(false);
     }
     // Clear verification, scoring, and iterative feedback state when step changes
     clearVerification();
@@ -248,17 +244,11 @@ function PracticeFlowInner() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
-  // Expose callback to clear waiting state (called by RunStage on error)
+  // Listen for simulation clear waiting events (from RunStage on error)
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-    window._clearWaitingForSimulation = () => {
+    return on("simulation:clearWaiting", () => {
       setWaitingForSimulation(false);
-    };
-    return () => {
-      delete window._clearWaitingForSimulation;
-    };
+    });
   }, [setWaitingForSimulation]);
 
   const config = STEP_CONFIGS[currentStep];
@@ -304,188 +294,17 @@ function PracticeFlowInner() {
 
   const helperText = getHelperText(currentStep, nextDisabled, isReadOnly);
 
-  // Render onboarding tooltips based on stage
-  const renderOnboardingTooltip = () => {
-    if (!isActive || hideTooltipTemp) return null;
-
-    switch (stage) {
-      case "welcome":
-        return (
-          <OnboardingTooltip
-            title="Welcome to System Design Practice!"
-            description={onboardingConfig.welcome}
-            position={{ top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}
-            arrow="top"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-          />
-        );
-
-      case "functional-description":
-        return (
-          <OnboardingTooltip
-            title="Step 1: Define Functionality"
-            description={onboardingConfig.steps.functional}
-            position={{ top: "200px", left: "20px" }}
-            arrow="right"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-            highlightSelector="textarea[placeholder*='Example: shorten URLs']"
-          />
-        );
-
-      case "functional-next":
-        return (
-          <OnboardingTooltip
-            title="Continue"
-            description="Once you've described the functionality, click the Next button at the bottom-right to proceed."
-            position={{ top: "200px", left: "20px" }}
-            arrow="right"
-            onNext={() => {
-              setHideTooltipTemp(true);
-              nextStage();
-            }}
-            onSkip={skipOnboarding}
-            pulseSelector="footer button[type='button']:not([disabled])"
-            highlightSelector="footer button[type='button']:not([disabled])"
-            nextLabel="Got it!"
-          />
-        );
-
-      case "nonfunctional-description":
-        return (
-          <OnboardingTooltip
-            title="Step 2: Performance Constraints"
-            description={onboardingConfig.steps.nonFunctional}
-            position={{ top: "200px", left: "20px" }}
-            arrow="right"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-            highlightSelector="textarea[placeholder*='target 100ms']"
-          />
-        );
-
-      case "nonfunctional-targets":
-        return (
-          <OnboardingTooltip
-            title="Optional: Numeric Targets"
-            description="You can expand 'Edit numeric targets' to set specific numbers. This helps you design more precisely."
-            position={{ top: "200px", left: "20px" }}
-            arrow="right"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-            highlightSelector="button:has(svg[class*='rotate'])"
-          />
-        );
-
-      case "nonfunctional-next":
-        return (
-          <OnboardingTooltip
-            title="Continue"
-            description="Click Next at the bottom-right to move on to defining your API endpoints."
-            position={{ top: "200px", left: "20px" }}
-            arrow="right"
-            onNext={() => {
-              setHideTooltipTemp(true);
-              nextStage();
-            }}
-            onSkip={skipOnboarding}
-            pulseSelector="footer button[type='button']:not([disabled])"
-            highlightSelector="footer button[type='button']:not([disabled])"
-            nextLabel="Got it!"
-          />
-        );
-
-      case "api-description":
-        return (
-          <OnboardingTooltip
-            title="Step 3: Define API Endpoints"
-            description={onboardingConfig.steps.api}
-            position={{ top: "200px", left: "20px" }}
-            arrow="right"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-            highlightSelector="article[class*='rounded-3xl']"
-          />
-        );
-
-      case "api-next":
-        return (
-          <OnboardingTooltip
-            title="Continue to Sandbox"
-            description="Next up: design your system architecture visually with drag-and-drop components!"
-            position={{ top: "200px", left: "20px" }}
-            arrow="right"
-            onNext={() => {
-              setHideTooltipTemp(true);
-              nextStage();
-            }}
-            onSkip={skipOnboarding}
-            pulseSelector="footer button[type='button']:not([disabled])"
-            highlightSelector="footer button[type='button']:not([disabled])"
-            nextLabel="Let's go!"
-          />
-        );
-
-      case "sandbox-welcome":
-        return (
-          <OnboardingTooltip
-            title="Step 4: Design Architecture"
-            description={onboardingConfig.steps.highLevelDesign}
-            position={{ top: "140px", left: "20px" }}
-            arrow="right"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-          />
-        );
-
-      case "sandbox-add-component":
-        return (
-          <OnboardingTooltip
-            title="Add Components"
-            description="Click the + button (bottom-right) to add caches, databases, load balancers, and more."
-            position={{ top: "140px", left: "20px" }}
-            arrow="right"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-            pulseSelector="button[aria-label='Open component palette']"
-          />
-        );
-
-      case "sandbox-minimap":
-        return (
-          <OnboardingTooltip
-            title="Navigation"
-            description="Use the mini-map (bottom-left) to navigate around your diagram as it grows."
-            position={{ top: "140px", left: "20px" }}
-            arrow="right"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-            highlightSelector=".react-flow__minimap"
-          />
-        );
-
-      case "sandbox-run":
-        return (
-          <OnboardingTooltip
-            title="Test Your Design"
-            description="Run the simulation to test if your architecture meets the requirements. The system evaluates latency, throughput, and patterns."
-            position={{ top: "140px", left: "20px" }}
-            arrow="right"
-            onNext={nextStage}
-            onSkip={skipOnboarding}
-            nextLabel="Start building!"
-          />
-        );
-
-      default:
-        return null;
-    }
-  };
-
   return (
     <TooltipProvider>
-      {renderOnboardingTooltip()}
+      <OnboardingTooltipRenderer
+        isActive={isActive}
+        hideTooltipTemp={hideTooltipTemp}
+        stage={stage}
+        onboardingConfig={onboardingConfig}
+        onNext={nextStage}
+        onSkip={skipOnboarding}
+        onHideTemp={() => setHideTooltipTemp(true)}
+      />
       <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
         <PracticeStepper
           scenario={session.state.slug}
@@ -511,8 +330,6 @@ function PracticeFlowInner() {
             currentStep={currentStep}
             mobilePaletteOpen={mobilePaletteOpen}
             onMobilePaletteChange={setMobilePaletteOpen}
-            runPanelOpen={runPanelOpen}
-            onRunPanelChange={setRunPanelOpen}
           />
         </div>
         {isSandboxStep ? (
@@ -548,21 +365,10 @@ function PracticeFlowInner() {
                 </p>
               </TooltipContent>
             </Tooltip>
-            <button
-              type="button"
-              onClick={() => setRunPanelOpen(true)}
-              disabled={isReadOnly}
-              className="fixed bottom-[180px] right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-500/20 text-emerald-100 transition hover:bg-emerald-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-[100px] sm:right-6 lg:bottom-[180px] lg:right-6"
-              aria-label="Open simulation panel"
-            >
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </button>
           </>
         ) : null}
         {/* Iterative Feedback Modal - Shows in center of screen */}
-        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api/sandbox steps */}
+        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api steps */}
         <IterativeFeedbackModal
           isOpen={
             !!iterativeFeedbackState.result &&
@@ -667,6 +473,8 @@ function PracticeFlowInner() {
             clearIterativeFeedback();
           }}
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
+          learnArticleSlug={scenario?.learnArticleSlug}
+          learnArticleTitle={scenario?.title ? `Design ${scenario.title}` : undefined}
         />
         <footer
           className="bg-black border-t border-zinc-800"
@@ -705,18 +513,15 @@ function PracticeFlowInner() {
             isVerifying={verification.isVerifying}
             onBack={handleBack}
             onNext={handleNext}
-            onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
+            onBackToSandbox={() => router.push(`/practice/${state.slug}/highLevelDesign`)}
             apiMobileEditing={apiMobileEditing}
             voiceCaptureValue={
               currentStep === "functional"
                 ? state.requirements.functionalSummary
                 : currentStep === "nonFunctional"
                   ? state.requirements.nonFunctional.notes
-                  : currentStep === "api" &&
-                      apiMobileEditing &&
-                      typeof window !== "undefined" &&
-                      window._apiMobileEditorVoiceValue !== undefined
-                    ? window._apiMobileEditorVoiceValue
+                  : currentStep === "api" && apiMobileEditing
+                    ? apiMobileEditorValue
                     : undefined
             }
             voiceCaptureOnChange={
@@ -737,11 +542,8 @@ function PracticeFlowInner() {
                         },
                       });
                     }
-                  : currentStep === "api" &&
-                      apiMobileEditing &&
-                      typeof window !== "undefined" &&
-                      window._apiMobileEditorVoiceOnChange
-                    ? window._apiMobileEditorVoiceOnChange
+                  : currentStep === "api" && apiMobileEditing
+                    ? (value: string) => emit("apiEditor:voiceChange", { value })
                     : undefined
             }
           />

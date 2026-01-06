@@ -18,16 +18,12 @@ type PracticeStepContentProps = {
   currentStep: PracticeStep;
   mobilePaletteOpen?: boolean;
   onMobilePaletteChange?: (open: boolean) => void;
-  runPanelOpen?: boolean;
-  onRunPanelChange?: (open: boolean) => void;
 };
 
 export function PracticeStepContent({
   currentStep,
   mobilePaletteOpen,
   onMobilePaletteChange,
-  runPanelOpen,
-  onRunPanelChange,
 }: PracticeStepContentProps) {
   const StepComponent = STEP_COMPONENTS[currentStep];
   const isSandboxStep = currentStep === "highLevelDesign";
@@ -36,8 +32,6 @@ export function PracticeStepContent({
     ? {
         mobilePaletteOpen,
         onMobilePaletteChange,
-        runPanelOpen,
-        onRunPanelChange,
       }
     : undefined;
 

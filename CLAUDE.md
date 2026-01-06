@@ -23,8 +23,8 @@ npm test -- __tests__/simulate.test.ts
 
 ## Git Hooks
 
-- **pre-commit**: Runs `npm run format`
-- **pre-push**: Runs `npm run test && npm run lint && npm run typecheck && npm run build`
+- **pre-commit**: Runs `lint-staged` (only formats/lints staged files)
+- **pre-push**: Runs `npm run pre-push` (test, lint, typecheck in parallel, then build)
 
 ## Architecture Overview
 
@@ -104,4 +104,6 @@ Uses `next/core-web-vitals` and `next/typescript`. Unused vars with `_` prefix a
 
 ## Git Commits
 
-Do not add Claude as a co-author in commit messages.
+- Do not add Claude as a co-author in commit messages
+- Do not mention "Generated with Claude Code" in commits or PR descriptions
+- Do not reference Claude or AI assistance anywhere in the codebase

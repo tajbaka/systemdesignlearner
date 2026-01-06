@@ -20,7 +20,8 @@ export type ScenarioChecklistItem = {
   required: boolean;
 };
 
-export type ApiEndpoint = {
+/** Reference API endpoints defined in scenarios (not user input) */
+export type ReferenceApiEndpoint = {
   method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   path: string;
   query?: string[];
@@ -45,7 +46,7 @@ export type Scenario = {
   flow: FlowStep[];
   hints?: string[];
   acceptance?: ScenarioChecklistItem[];
-  api?: ApiEndpoint[];
+  api?: ReferenceApiEndpoint[];
   version?: string;
   updatedAt?: string;
   suggestedComponents?: string[];
@@ -53,6 +54,8 @@ export type Scenario = {
   Prerequisites?: Prerequisite[];
   /** Whether this scenario has a practice mode implementation */
   hasPractice?: boolean;
+  /** Slug for the /learn article about this scenario (if one exists) */
+  learnArticleSlug?: string;
 };
 
 export const SCENARIOS: Scenario[] = [
@@ -164,6 +167,7 @@ export const SCENARIOS: Scenario[] = [
     version: "1.0",
     updatedAt: "2025-09-10",
     hasPractice: true,
+    learnArticleSlug: "tinyurl",
   },
   {
     id: "rate-limiter",
