@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { SCENARIOS } from "@/lib/scenarios";
-import { simulate } from "@/app/components/simulation";
+import { simulate } from "@/components/canvas/simulation";
 import { validateDesignForScenario } from "@/lib/practice/validation";
 import type {
   PracticeDesignState,
@@ -10,12 +10,13 @@ import type {
   Requirements,
   PracticeStepScores,
 } from "@/lib/practice/types";
-import type { PlacedNode } from "@/app/components/types";
+import type { PlacedNode } from "@/components/canvas/types";
 import type { Scenario } from "@/lib/scenarios";
 import { track } from "@/lib/analytics";
 import { logger } from "@/lib/logger";
 import { evaluateDesignOptimized, scoreSimulation, loadScoringConfig } from "@/lib/scoring/index";
 import type { FeedbackResult } from "@/lib/scoring/types";
+import { on, emit } from "@/lib/events";
 
 type UpdateRunFn = (updater: (prev: PracticeRunState) => PracticeRunState) => void;
 type SetStepScoreFn = (step: keyof PracticeStepScores, result: FeedbackResult) => void;
@@ -175,9 +176,7 @@ export default function RunStage({
     const validation = validateDesignForScenario(scenario, design.nodes, design.edges);
     if (!validation.ok) {
       setError(validation.message);
-      if (typeof window !== "undefined") {
-        window._clearWaitingForSimulation?.();
-      }
+      emit("simulation:clearWaiting");
       return;
     }
 
@@ -191,17 +190,6 @@ export default function RunStage({
       const validatedPath = validation.path;
       // FIX Issue #2: Add timeout wrapper to prevent hanging simulation
       const simulationPromise = (async () => {
-        console.log("[RunStage] Running simulation");
-        console.log(
-          "[RunStage] Nodes:",
-          design.nodes.map((n) => ({ id: n.id, kind: n.spec.kind }))
-        );
-        console.log(
-          "[RunStage] Edges:",
-          design.edges.map((e) => ({ id: e.id, from: e.from, to: e.to }))
-        );
-        console.log("[RunStage] Using validated path:", validatedPath);
-
         // Evaluate design architecture (in background, non-blocking)
         if (setStepScore) {
           try {
@@ -332,9 +320,7 @@ export default function RunStage({
       await Promise.race([simulationPromise, timeoutPromise]);
     } catch (err) {
       logger.error("Simulation error", err);
-      if (typeof window !== "undefined") {
-        window._clearWaitingForSimulation?.();
-      }
+      emit("simulation:clearWaiting");
 
       if (err instanceof Error && err.message === "Simulation timeout") {
         setError(
@@ -369,12 +355,9 @@ export default function RunStage({
     updateRun,
   ]);
 
-  // Expose handleRun globally so PracticeFlow can trigger it
+  // Listen for simulation:run events from navigation
   useEffect(() => {
-    window._runSimulation = handleRun;
-    return () => {
-      delete window._runSimulation;
-    };
+    return on("simulation:run", handleRun);
   }, [handleRun]);
 
   return (

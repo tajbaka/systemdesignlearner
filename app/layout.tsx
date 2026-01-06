@@ -113,8 +113,8 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
-      signInFallbackRedirectUrl="/"
-      signUpFallbackRedirectUrl="/"
+      signInFallbackRedirectUrl="/sso-callback"
+      signUpFallbackRedirectUrl="/sso-callback"
       appearance={{
         baseTheme: undefined,
         variables: {

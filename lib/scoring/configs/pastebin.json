@@ -237,7 +237,7 @@
           "weight": 25,
           "required": true,
           "examplePhrases": [
-            "POST /api/v1/pastes\nRequest: { content: string, title?: string, expiresAt?: string }\nResponse: { id: string, url: string, createdAt: string }"
+            "POST /api/v1/pastes\nRequest: { content: string, title?: string, expiresAt?: string }\nResponse: { id: string, url: string, createdAt: string }\nErrors: 400 (invalid content), 429 (rate limited)"
           ]
         },
         {

@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { logger } from "@/lib/logger";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
-import DemoBoard from "./components/DemoBoard";
+import DemoBoard from "@/components/canvas/DemoBoard";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

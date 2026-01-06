@@ -13,6 +13,10 @@ type IterativeFeedbackModalProps = {
   onContinue?: () => void;
   onInsertAnswer?: (text: string) => void;
   durationMs?: number | null;
+  /** Slug for the /learn article (if one exists) */
+  learnArticleSlug?: string;
+  /** Title for the learn article link */
+  learnArticleTitle?: string;
 };
 
 export function IterativeFeedbackModal({
@@ -23,6 +27,8 @@ export function IterativeFeedbackModal({
   onContinue,
   onInsertAnswer,
   durationMs: _durationMs,
+  learnArticleSlug,
+  learnArticleTitle,
 }: IterativeFeedbackModalProps) {
   const [isAnswerRevealed, setIsAnswerRevealed] = useState(false);
 
@@ -184,21 +190,23 @@ export function IterativeFeedbackModal({
                   )}
                 </div>
               )}
-              {/* Learn more link */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-zinc-400">See Full Solution:</p>
-                <div className="flex flex-wrap gap-2">
-                  <Link
-                    href="/learn/tinyurl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 hover:text-blue-300 hover:border-blue-500/50 transition-all cursor-pointer"
-                  >
-                    Design a URL Shortener
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </Link>
+              {/* Learn more link - only show if article exists */}
+              {learnArticleSlug && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-zinc-400">See Full Solution:</p>
+                  <div className="flex flex-wrap gap-2">
+                    <Link
+                      href={`/learn/${learnArticleSlug}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md bg-blue-500/10 text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 hover:text-blue-300 hover:border-blue-500/50 transition-all cursor-pointer"
+                    >
+                      {learnArticleTitle ?? "View Full Solution"}
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                 </div>
-              </div>
+              )}
             </>
           )}
         </div>

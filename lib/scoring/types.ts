@@ -5,7 +5,7 @@
  * reference solutions across all practice steps.
  */
 
-import type { ComponentKind, PlacedNode, Edge } from "@/app/components/types";
+import type { ComponentKind, PlacedNode, Edge } from "@/lib/types/domain";
 import type { ApiEndpoint } from "@/lib/practice/types";
 
 // ============================================================================
@@ -227,7 +227,7 @@ export type ArchitecturePattern = {
   requiredComponents: ComponentKind[];
   requiredConnections: Connection[];
   forbiddenConnections?: Connection[]; // Anti-patterns
-  triggeredBy: {
+  triggeredBy?: {
     functionalReqs?: string[];
     nfrThresholds?: Record<string, number>; // e.g., { "readRps": 10000 }
   };

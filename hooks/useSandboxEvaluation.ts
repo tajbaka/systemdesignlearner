@@ -4,6 +4,9 @@ import type { usePracticeSession } from "@/components/practice/session/PracticeS
 import type { VerificationState } from "./usePracticeScoring";
 import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
 
+/** Safety timeout for simulation completion - fallback if simulation hangs */
+const SIMULATION_COMPLETION_TIMEOUT_MS = 20000;
+
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
 type SandboxEvaluationResult = {
@@ -89,18 +92,10 @@ function buildSandboxFeedback(session: PracticeSessionValue): SandboxEvaluationR
     const filteredDesignBlocking = designScore.blocking.filter((b) => {
       // Remove cache-related warnings if cache is actually present
       if (cachePresent && (b.relatedTo === "cache-aside" || b.relatedTo === "Cache (Redis)")) {
-        console.log(
-          "[useSandboxEvaluation] Filtering out cache warning since cache is present:",
-          b.message
-        );
         return false;
       }
       // Remove LB-related warnings if LB is actually present
       if (lbPresent && (b.relatedTo === "Load Balancer" || b.relatedTo === "API Gateway")) {
-        console.log(
-          "[useSandboxEvaluation] Filtering out LB warning since LB is present:",
-          b.message
-        );
         return false;
       }
       // Remove analytics warnings if analytics is actually present
@@ -108,10 +103,6 @@ function buildSandboxFeedback(session: PracticeSessionValue): SandboxEvaluationR
         analyticsPresent &&
         (b.relatedTo === "analytics" || b.relatedTo === "Message Queue (Kafka Topic)")
       ) {
-        console.log(
-          "[useSandboxEvaluation] Filtering out analytics warning since analytics is present:",
-          b.message
-        );
         return false;
       }
       return true;
@@ -120,41 +111,19 @@ function buildSandboxFeedback(session: PracticeSessionValue): SandboxEvaluationR
     // Also filter warnings
     const filteredDesignWarnings = designScore.warnings.filter((w) => {
       if (cachePresent && (w.relatedTo === "cache-aside" || w.relatedTo === "Cache (Redis)")) {
-        console.log(
-          "[useSandboxEvaluation] Filtering out cache warning since cache is present:",
-          w.message
-        );
         return false;
       }
       if (lbPresent && (w.relatedTo === "Load Balancer" || w.relatedTo === "API Gateway")) {
-        console.log(
-          "[useSandboxEvaluation] Filtering out LB warning since LB is present:",
-          w.message
-        );
         return false;
       }
       if (
         analyticsPresent &&
         (w.relatedTo === "analytics" || w.relatedTo === "Message Queue (Kafka Topic)")
       ) {
-        console.log(
-          "[useSandboxEvaluation] Filtering out analytics warning since analytics is present:",
-          w.message
-        );
         return false;
       }
       return true;
     });
-
-    console.log(
-      "[useSandboxEvaluation] After filtering - filteredDesignBlocking:",
-      filteredDesignBlocking
-    );
-    console.log(
-      "[useSandboxEvaluation] After filtering - filteredDesignWarnings:",
-      filteredDesignWarnings
-    );
-    console.log("[useSandboxEvaluation] Simulation warnings:", simulationFeedback.warnings);
 
     const mergedFeedback: FeedbackResult = {
       score: designScore.score,
@@ -208,24 +177,16 @@ export function useSandboxEvaluation(
   // Auto-show feedback when simulation completes
   useEffect(() => {
     const lastResult = session.state.run.lastResult ?? null;
-    console.log("[useSandboxEvaluation useEffect] Auto-show feedback check:", {
-      waitingForSimulation,
-      currentStep,
-      hasRun: Boolean(lastResult),
-      hasDesignScore: session.state.scores?.design !== undefined,
-      designScore: session.state.scores?.design,
-    });
 
     if (!waitingForSimulation || currentStep !== "highLevelDesign") return;
 
     const hasRun = Boolean(lastResult);
     const hasDesignScore = session.state.scores?.design !== undefined;
 
-    // Safety timeout: If simulation doesn't complete within 20 seconds, clear waiting state
+    // Safety timeout: If simulation doesn't complete, clear waiting state
     // This is a fallback - proper errors should be shown by RunStage
     const timeoutId = setTimeout(() => {
       if (waitingForSimulation) {
-        console.log("[useSandboxEvaluation useEffect] Simulation timeout - clearing waiting state");
         setWaitingForSimulation(false);
         // Don't set verification error here - let RunStage handle error display
         setVerification({
@@ -234,11 +195,10 @@ export function useSandboxEvaluation(
           error: null,
         });
       }
-    }, 20000);
+    }, SIMULATION_COMPLETION_TIMEOUT_MS);
 
     if (hasRun && hasDesignScore) {
       clearTimeout(timeoutId);
-      console.log("[useSandboxEvaluation useEffect] Building merged feedback...");
 
       const evaluationResult = buildSandboxFeedback(session);
       if (evaluationResult) {
@@ -246,9 +206,6 @@ export function useSandboxEvaluation(
       }
 
       // Stop waiting and clear verifying AFTER setting feedback
-      console.log(
-        "[useSandboxEvaluation useEffect] Clearing waitingForSimulation and verification"
-      );
       setWaitingForSimulation(false);
       setVerification({ isVerifying: false, result: null, error: null });
     }

@@ -1,5 +1,5 @@
-import { findScenarioPath } from "@/app/components/utils";
-import type { Edge, NodeId, PlacedNode } from "@/app/components/types";
+import { findScenarioPath } from "@/components/canvas/utils";
+import type { Edge, NodeId, PlacedNode } from "@/lib/types/domain";
 import type { Scenario } from "@/lib/scenarios";
 
 export type DesignValidationResult =

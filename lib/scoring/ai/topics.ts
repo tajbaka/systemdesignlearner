@@ -211,7 +211,7 @@ export function getTopicsForStep(stepId: string): Topic[] {
       return NON_FUNCTIONAL_TOPICS;
     case "api":
       return API_TOPICS;
-    case "sandbox":
+    case "highLevelDesign":
     case "design":
       return DESIGN_TOPICS;
     default:

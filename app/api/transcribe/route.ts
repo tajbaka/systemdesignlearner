@@ -5,9 +5,23 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const maxDuration = 30; // Vercel function timeout
 
+/** Timeout for Whisper API calls (leave buffer before Vercel timeout) */
+const WHISPER_API_TIMEOUT_MS = 25000;
+
+/** Default allowed origins if ALLOWED_ORIGINS env var is not set */
+const DEFAULT_ALLOWED_ORIGINS = ["https://www.systemdesignsandbox.com"];
+
 type WhisperResponse = {
   text: string;
 };
+
+function getAllowedOrigins(): string[] {
+  const envOrigins = process.env.ALLOWED_ORIGINS;
+  if (envOrigins) {
+    return envOrigins.split(",").map((o) => o.trim());
+  }
+  return DEFAULT_ALLOWED_ORIGINS;
+}
 
 export async function POST(req: NextRequest) {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -31,7 +45,7 @@ export async function POST(req: NextRequest) {
       (referer &&
         (referer.startsWith("http://localhost:") || referer.startsWith("http://127.0.0.1:")));
 
-    const allowedOrigins = ["https://www.systemdesignsandbox.com"];
+    const allowedOrigins = getAllowedOrigins();
     const isAllowedOrigin = origin && allowedOrigins.some((allowed) => origin.startsWith(allowed));
 
     if (!isLocalhost && !isAllowedOrigin) {
@@ -62,13 +76,22 @@ export async function POST(req: NextRequest) {
       whisperFormData.append("language", language);
     }
 
-    const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: whisperFormData,
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), WHISPER_API_TIMEOUT_MS);
+
+    let response: Response;
+    try {
+      response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+        },
+        body: whisperFormData,
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();

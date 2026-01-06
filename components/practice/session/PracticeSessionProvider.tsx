@@ -9,12 +9,11 @@ import {
   useRef,
   useState,
 } from "react";
+import { useAuth } from "@clerk/nextjs";
 import {
-  PRACTICE_STEPS,
   type PracticeApiDefinitionState,
   type PracticeAuthState,
   type PracticeDesignState,
-  type PracticeProgress,
   type PracticeRunState,
   type PracticeState,
   type PracticeStep,
@@ -23,259 +22,21 @@ import {
   type PracticeIterativeFeedback,
 } from "@/lib/practice/types";
 import type { FeedbackResult } from "@/lib/scoring/types";
-import {
-  makeDefaultApiDefinition,
-  makeDefaultDesignState,
-  makeDefaultRequirements,
-  makeInitialPracticeState,
-} from "@/lib/practice/defaults";
+import { makeInitialPracticeState } from "@/lib/practice/defaults";
 import { loadPractice, savePractice } from "@/lib/practice/storage";
+import { getPracticeSession, savePracticeSession } from "@/lib/actions/practice";
+import { useLocalStorageMigration } from "@/hooks/useLocalStorageMigration";
 import { track } from "@/lib/analytics";
-import { isLegacyPlaceholderContent } from "@/lib/practice/apiPlaceholders";
+import {
+  ensureApiDefinition,
+  ensureAuthProgressConsistency,
+  ensureIterativeFeedback,
+  ensureRequirements,
+  mergeState,
+} from "@/lib/practice/migration";
 
-type LegacyLocked = {
-  brief?: boolean;
-  design?: boolean;
-  run?: boolean;
-};
-
-type LegacyPracticeState = Partial<{
-  slug: string;
-  requirements:
-    | Requirements
-    | {
-        functional: Record<string, boolean>;
-        nonFunctional: Partial<Requirements["nonFunctional"]>;
-      };
-  design: PracticeDesignState;
-  run: PracticeRunState;
-  locked: LegacyLocked;
-  updatedAt: number;
-}>;
-
-const ensureRequirements = (
-  value?: Requirements | LegacyPracticeState["requirements"],
-  slug = "url-shortener"
-): Requirements => {
-  const defaults = makeDefaultRequirements(slug);
-  if (!value) return defaults;
-
-  const candidate = value as Requirements;
-  const functionalSummary =
-    typeof (candidate as Requirements).functionalSummary === "string"
-      ? candidate.functionalSummary
-      : "";
-
-  const functional = {
-    ...defaults.functional,
-    ...(candidate?.functional ?? {}),
-  };
-
-  const nonFunctionalLegacy = (value as { nonFunctional?: Partial<Requirements["nonFunctional"]> })
-    .nonFunctional;
-  const nonFunctional = {
-    ...defaults.nonFunctional,
-    ...(candidate?.nonFunctional ?? {}),
-    ...(nonFunctionalLegacy ?? {}),
-  };
-
-  if (typeof nonFunctional.rateLimitNotes !== "string") {
-    nonFunctional.rateLimitNotes = "";
-  }
-
-  if (typeof nonFunctional.notes !== "string") {
-    nonFunctional.notes = "";
-  }
-
-  return {
-    functionalSummary,
-    functional,
-    nonFunctional,
-  };
-};
-
-const ensureApiDefinition = (
-  value?: PracticeApiDefinitionState,
-  slug = "url-shortener"
-): PracticeApiDefinitionState => {
-  if (!value || !Array.isArray(value.endpoints)) {
-    return makeDefaultApiDefinition(slug);
-  }
-
-  const endpoints = value.endpoints.map((endpoint, index) => {
-    const method = endpoint.method ?? "GET";
-    // Strip leading slashes - the UI displays a visual "/" prefix
-    const path = (endpoint.path ?? "").replace(/^\/+/, "");
-    const rawNotes = typeof endpoint.notes === "string" ? endpoint.notes : "";
-    const notes = isLegacyPlaceholderContent(rawNotes, method, path) ? "" : rawNotes;
-
-    return {
-      id: endpoint.id ?? `endpoint-${index}`,
-      method,
-      path,
-      notes,
-      suggested: Boolean(endpoint.suggested),
-    };
-  });
-
-  return {
-    endpoints,
-  };
-};
-
-const sanitizeDesignState = (
-  value?: PracticeDesignState,
-  slug = "url-shortener"
-): PracticeDesignState => {
-  const design = value ?? makeDefaultDesignState(slug);
-  const nodeIds = new Set(design.nodes.map((node) => node.id));
-  const edgeIds = new Set(design.edges.map((edge) => edge.id));
-  const hasLegacySeedEdge =
-    design.edges.length === 0 || (design.edges.length === 1 && edgeIds.has("seed-edge-web-api"));
-  const hasLegacySeedLayout =
-    nodeIds.size === 2 && nodeIds.has("seed-web") && nodeIds.has("seed-api") && hasLegacySeedEdge;
-
-  if (!hasLegacySeedLayout) {
-    return design;
-  }
-
-  return {
-    ...design,
-    nodes: design.nodes.filter((node) => node.id !== "seed-api"),
-    edges: design.edges.filter((edge) => edge.id !== "seed-edge-web-api"),
-  };
-};
-
-const ensureAuthState = (value?: PracticeAuthState): PracticeAuthState => ({
-  isAuthed: Boolean(value?.isAuthed),
-  skipped: Boolean(value?.skipped),
-});
-
-const ensureProgress = (value?: PracticeProgress): PracticeProgress => ({
-  functional: Boolean(value?.functional),
-  nonFunctional: Boolean(value?.nonFunctional),
-  api: Boolean(value?.api),
-  highLevelDesign: Boolean(value?.highLevelDesign),
-  score: Boolean(value?.score),
-});
-
-const migrateLegacyProgress = (locked?: LegacyLocked): PracticeProgress => ({
-  functional: Boolean(locked?.brief),
-  nonFunctional: Boolean(locked?.brief),
-  api: false,
-  highLevelDesign: Boolean(locked?.design),
-  score: Boolean(locked?.run),
-});
-
-const ensureIterativeFeedback = (value?: PracticeIterativeFeedback): PracticeIterativeFeedback => ({
-  functional: {
-    coveredTopics: value?.functional?.coveredTopics ?? {},
-    lastContent: value?.functional?.lastContent ?? "",
-    currentQuestion: value?.functional?.currentQuestion ?? null,
-    cachedResult: value?.functional?.cachedResult ?? null,
-  },
-  nonFunctional: {
-    coveredTopics: value?.nonFunctional?.coveredTopics ?? {},
-    lastContent: value?.nonFunctional?.lastContent ?? "",
-    currentQuestion: value?.nonFunctional?.currentQuestion ?? null,
-    cachedResult: value?.nonFunctional?.cachedResult ?? null,
-  },
-  api: {
-    coveredTopics: value?.api?.coveredTopics ?? {},
-    lastContent: value?.api?.lastContent ?? "",
-    currentQuestion: value?.api?.currentQuestion ?? null,
-    cachedResult: value?.api?.cachedResult ?? null,
-  },
-  design: {
-    coveredTopics: value?.design?.coveredTopics ?? {},
-    lastContent: value?.design?.lastContent ?? "",
-    currentQuestion: value?.design?.currentQuestion ?? null,
-    cachedResult: value?.design?.cachedResult ?? null,
-  },
-});
-
-const mergeState = (
-  raw: PracticeState | LegacyPracticeState | null,
-  slug: string
-): PracticeState => {
-  const defaults = makeInitialPracticeState(slug);
-  if (!raw) return defaults;
-
-  const candidate = raw as PracticeState;
-  const isModern =
-    typeof candidate.completed === "object" &&
-    candidate.completed !== null &&
-    Array.isArray((candidate as PracticeState).apiDefinition?.endpoints);
-
-  if (isModern) {
-    // Use the slug from candidate if it exists, otherwise use the provided slug
-    const finalSlug = candidate.slug || slug;
-    return {
-      ...defaults,
-      ...candidate,
-      slug: finalSlug,
-      // Ensure currentStep exists, default to functional if not present (for backwards compatibility)
-      currentStep: candidate.currentStep ?? defaults.currentStep,
-      requirements: ensureRequirements(candidate.requirements, finalSlug),
-      apiDefinition: ensureApiDefinition(candidate.apiDefinition, finalSlug),
-      design: sanitizeDesignState(candidate.design ?? defaults.design, finalSlug),
-      run: {
-        ...defaults.run,
-        ...(candidate.run ?? {}),
-      },
-      auth: ensureAuthState(candidate.auth),
-      completed: ensureProgress(candidate.completed),
-      scores: candidate.scores ?? defaults.scores,
-      iterativeFeedback: ensureIterativeFeedback(candidate.iterativeFeedback),
-      updatedAt: candidate.updatedAt ?? Date.now(),
-    };
-  }
-
-  const legacy = raw as LegacyPracticeState;
-  return {
-    ...defaults,
-    slug,
-    requirements: ensureRequirements(legacy.requirements as Requirements, slug),
-    apiDefinition: ensureApiDefinition(undefined, slug),
-    design: sanitizeDesignState(legacy.design ?? defaults.design, slug),
-    run: {
-      ...defaults.run,
-      ...(legacy.run ?? {}),
-    },
-    auth: ensureAuthState(),
-    completed: migrateLegacyProgress(legacy.locked),
-    iterativeFeedback: ensureIterativeFeedback(),
-    updatedAt: legacy.updatedAt ?? Date.now(),
-  };
-};
-
-const _deriveInitialStep = (state: PracticeState): PracticeStep => {
-  for (const step of PRACTICE_STEPS) {
-    if (!state.completed[step]) {
-      return step;
-    }
-  }
-  const lastStep = PRACTICE_STEPS[PRACTICE_STEPS.length - 1];
-  return lastStep;
-};
-
-const ensureAuthProgressConsistency = (state: PracticeState): PracticeState => {
-  // If authenticated, keep all progress as-is
-  if (state.auth.isAuthed) {
-    return state;
-  }
-
-  // If both sandbox and score are incomplete, no need to modify
-  if (!state.completed.highLevelDesign && !state.completed.score) {
-    return state;
-  }
-
-  // Don't clear progress during active sessions or auth transitions
-  // Only clear if the session has been abandoned (e.g., cleared auth but kept progress)
-  // This prevents clearing progress when user is actively going through the auth flow
-  // The PracticeFlow component will handle step gating based on auth state
-  return state;
-};
+/** Debounce delay for auto-saving practice state to localStorage */
+const SAVE_DEBOUNCE_MS = 400;
 
 type PracticeSessionContextValue = {
   state: PracticeState;
@@ -316,6 +77,7 @@ export function PracticeSessionProvider({
   initialStep,
   sharedState,
 }: PracticeSessionProviderProps) {
+  const { isSignedIn, isLoaded: authLoaded } = useAuth();
   const [state, setState] = useState<PracticeState>(() => {
     const initial = makeInitialPracticeState(slug);
     // Use initialStep from URL instead of deriving from state
@@ -324,9 +86,17 @@ export function PracticeSessionProvider({
   const [hydrated, setHydrated] = useState(false);
   const [isReadOnly, setIsReadOnly] = useState(false);
   const saveTimeout = useRef<number | null>(null);
+  const dbSaveTimeout = useRef<number | null>(null);
   const latestStateRef = useRef(state);
+  const isAuthenticated = isSignedIn ?? false;
+
+  // Handle localStorage to DB migration on sign-in
+  useLocalStorageMigration();
 
   useEffect(() => {
+    // Wait for auth to be loaded
+    if (!authLoaded) return;
+
     if (sharedState) {
       let merged = mergeState(sharedState, slug);
       // Use initialStep from URL for shared state too
@@ -338,21 +108,44 @@ export function PracticeSessionProvider({
       return;
     }
 
-    const stored = loadPractice(slug);
-    let merged = ensureAuthProgressConsistency(mergeState(stored, slug));
-    // Use initialStep from URL instead of deriving
-    merged = { ...merged, currentStep: initialStep };
-    setState(merged);
-    setIsReadOnly(false);
-    setHydrated(true);
+    const loadState = async () => {
+      let stored: PracticeState | Record<string, unknown> | null = null;
 
-    track("practice_start", {
-      slug,
-      step: initialStep,
-      isFirstVisit: !stored,
-      hasProgress: Boolean(stored),
-    });
-  }, [sharedState, slug, initialStep]);
+      if (isAuthenticated) {
+        // Try to load from DB first for authenticated users
+        try {
+          const dbState = await getPracticeSession(slug);
+          if (dbState) {
+            stored = dbState;
+          }
+        } catch (error) {
+          console.error("Failed to load from DB, falling back to localStorage", error);
+        }
+      }
+
+      // Fall back to localStorage (for anonymous users or if DB load failed)
+      if (!stored) {
+        stored = loadPractice(slug);
+      }
+
+      let merged = ensureAuthProgressConsistency(mergeState(stored, slug));
+      // Use initialStep from URL instead of deriving
+      merged = { ...merged, currentStep: initialStep };
+      setState(merged);
+      setIsReadOnly(false);
+      setHydrated(true);
+
+      track("practice_start", {
+        slug,
+        step: initialStep,
+        isFirstVisit: !stored,
+        hasProgress: Boolean(stored),
+        isAuthenticated,
+      });
+    };
+
+    loadState();
+  }, [sharedState, slug, initialStep, authLoaded, isAuthenticated]);
 
   useEffect(() => {
     latestStateRef.current = state;
@@ -362,6 +155,7 @@ export function PracticeSessionProvider({
     if (!hydrated || isReadOnly) return;
     if (typeof window === "undefined") return;
 
+    // Always save to localStorage (fast, serves as cache/backup)
     if (saveTimeout.current) {
       window.clearTimeout(saveTimeout.current);
     }
@@ -369,15 +163,36 @@ export function PracticeSessionProvider({
     saveTimeout.current = window.setTimeout(() => {
       savePractice(state);
       saveTimeout.current = null;
-    }, 400);
+    }, SAVE_DEBOUNCE_MS);
+
+    // Also save to DB for authenticated users (debounced separately)
+    if (isAuthenticated) {
+      if (dbSaveTimeout.current) {
+        window.clearTimeout(dbSaveTimeout.current);
+      }
+
+      dbSaveTimeout.current = window.setTimeout(async () => {
+        try {
+          await savePracticeSession(state);
+        } catch (error) {
+          console.error("Failed to save to DB", error);
+          // localStorage backup already done, so data is not lost
+        }
+        dbSaveTimeout.current = null;
+      }, 800); // Longer debounce for DB saves
+    }
 
     return () => {
       if (saveTimeout.current) {
         window.clearTimeout(saveTimeout.current);
         saveTimeout.current = null;
       }
+      if (dbSaveTimeout.current) {
+        window.clearTimeout(dbSaveTimeout.current);
+        dbSaveTimeout.current = null;
+      }
     };
-  }, [state, hydrated, isReadOnly]);
+  }, [state, hydrated, isReadOnly, isAuthenticated]);
 
   useEffect(() => {
     if (!hydrated || isReadOnly) return;

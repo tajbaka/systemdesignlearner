@@ -2,8 +2,8 @@ import { describe, it, expect, beforeAll } from "vitest";
 import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
 import { loadScenarioReference } from "@/lib/practice/loader";
 import type { PracticeDesignState } from "@/lib/practice/types";
-import { COMPONENT_LIBRARY } from "@/app/components/data";
-import type { ComponentKind } from "@/app/components/types";
+import { COMPONENT_LIBRARY } from "@/components/canvas/data";
+import type { ComponentKind } from "@/components/canvas/types";
 
 const specFor = (kind: ComponentKind) => {
   const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind);

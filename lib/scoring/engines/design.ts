@@ -21,8 +21,8 @@ import type {
   GraphPath,
   PathNode,
 } from "../types";
-import type { PlacedNode, Edge } from "@/app/components/types";
-import { hasConnectionBetweenKinds } from "@/app/components/utils";
+import type { PlacedNode, Edge } from "@/lib/types/domain";
+import { hasConnectionBetweenKinds } from "@/components/canvas/utils";
 
 export class DesignScoringEngine
   implements IScoringEngine<DesignScoringInput, DesignScoringConfig>
@@ -586,6 +586,11 @@ export class DesignScoringEngine
     functionalReqs: Record<string, boolean>,
     nfrValues: DesignScoringInput["nfrValues"]
   ): boolean {
+    // If no triggeredBy defined, pattern is always triggered (relies on required flag)
+    if (!pattern.triggeredBy) {
+      return true;
+    }
+
     // Check functional requirements
     if (pattern.triggeredBy.functionalReqs) {
       const hasFunctionalReq = pattern.triggeredBy.functionalReqs.some(
