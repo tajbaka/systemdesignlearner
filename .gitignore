@@ -57,3 +57,6 @@ next-env.d.ts
 
 # Backup files
 *.backup
+
+# Supabase temp files
+supabase/.temp/
