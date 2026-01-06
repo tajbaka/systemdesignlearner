@@ -25,6 +25,7 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
   const { userId } = await auth();
 
   if (!userId) {
+    logger.warn("getOrCreateProfile: No userId from auth()");
     return null;
   }
 
@@ -41,6 +42,7 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
     // Create new profile with data from Clerk
     const user = await currentUser();
     if (!user) {
+      logger.warn("getOrCreateProfile: No currentUser returned");
       return null;
     }
 
@@ -58,7 +60,7 @@ export async function getOrCreateProfile(): Promise<Profile | null> {
 
     return newProfile ?? null;
   } catch (error) {
-    logger.error("Failed to get or create profile", error);
+    logger.error("Failed to get or create profile - DB error:", error);
     return null;
   }
 }
@@ -249,11 +251,24 @@ export async function markScenarioCompleted(slug: string): Promise<boolean> {
  */
 export async function migrateLocalStorageToDb(
   localSessions: Record<string, PracticeState>
-): Promise<{ migrated: number; skipped: number }> {
+): Promise<{ success: boolean; migrated: number; skipped: number; error?: string }> {
+  const sessionCount = Object.keys(localSessions).length;
+
+  if (sessionCount === 0) {
+    return { success: true, migrated: 0, skipped: 0 };
+  }
+
   const profile = await getOrCreateProfile();
 
   if (!profile) {
-    return { migrated: 0, skipped: 0 };
+    // This is a real failure - user is authenticated but we can't get/create profile
+    // This usually means DB connection issues
+    return {
+      success: false,
+      migrated: 0,
+      skipped: 0,
+      error: "Failed to get user profile. Please check database connection.",
+    };
   }
 
   let migrated = 0;
@@ -328,10 +343,15 @@ export async function migrateLocalStorageToDb(
       }
     }
 
-    return { migrated, skipped };
+    return { success: true, migrated, skipped };
   } catch (error) {
     logger.error("Failed to migrate localStorage to DB", error);
-    return { migrated, skipped };
+    return {
+      success: false,
+      migrated,
+      skipped,
+      error: error instanceof Error ? error.message : "Unknown database error",
+    };
   }
 }
 

@@ -16,11 +16,18 @@ type UseMigrationResult = {
   error: string | null;
   migratedCount: number;
   skippedCount: number;
+  /** Manually trigger a retry of the migration */
+  retry: () => void;
 };
 
 /**
  * Hook that handles one-time migration of localStorage practice sessions to DB.
- * Called when a user signs in and hasn't migrated yet.
+ * Automatically runs when a user signs in and has localStorage data to migrate.
+ *
+ * Key behaviors:
+ * - Only marks migration as complete if it actually succeeds
+ * - Retries automatically on next page load if migration fails
+ * - Provides manual retry function for immediate retry
  */
 export function useLocalStorageMigration(): UseMigrationResult {
   const { isSignedIn, isLoaded } = useAuth();
@@ -28,7 +35,15 @@ export function useLocalStorageMigration(): UseMigrationResult {
   const [error, setError] = useState<string | null>(null);
   const [migratedCount, setMigratedCount] = useState(0);
   const [skippedCount, setSkippedCount] = useState(0);
-  const migrationAttemptedRef = useRef(false);
+  const migrationInProgressRef = useRef(false);
+  const [retryTrigger, setRetryTrigger] = useState(0);
+
+  const retry = () => {
+    if (status === "error" || status === "idle") {
+      setError(null);
+      setRetryTrigger((prev) => prev + 1);
+    }
+  };
 
   useEffect(() => {
     // Wait for auth to load
@@ -40,10 +55,10 @@ export function useLocalStorageMigration(): UseMigrationResult {
       return;
     }
 
-    // Prevent duplicate migration attempts
-    if (migrationAttemptedRef.current) return;
+    // Prevent concurrent migration attempts
+    if (migrationInProgressRef.current) return;
 
-    // Check if migration was already done
+    // Check if migration was already successfully done
     if (typeof window === "undefined") return;
 
     const migrationCompleted = localStorage.getItem(MIGRATION_FLAG_KEY);
@@ -52,14 +67,12 @@ export function useLocalStorageMigration(): UseMigrationResult {
       return;
     }
 
-    // Set flag immediately to prevent race conditions
-    migrationAttemptedRef.current = true;
-    setStatus("pending");
-
     const runMigration = async () => {
-      try {
-        setStatus("migrating");
+      migrationInProgressRef.current = true;
+      setStatus("migrating");
+      setError(null);
 
+      try {
         // Collect all practice sessions from localStorage
         const localSessions: Record<string, PracticeState> = {};
 
@@ -84,6 +97,7 @@ export function useLocalStorageMigration(): UseMigrationResult {
         if (Object.keys(localSessions).length === 0) {
           localStorage.setItem(MIGRATION_FLAG_KEY, "true");
           setStatus("completed");
+          migrationInProgressRef.current = false;
           return;
         }
 
@@ -93,35 +107,42 @@ export function useLocalStorageMigration(): UseMigrationResult {
         setMigratedCount(result.migrated);
         setSkippedCount(result.skipped);
 
-        // Mark migration as complete
-        localStorage.setItem(MIGRATION_FLAG_KEY, "true");
-        setStatus("completed");
-
-        logger.info("localStorage migration completed", {
-          migrated: result.migrated,
-          skipped: result.skipped,
-        });
+        if (result.success) {
+          // Only mark as complete if migration actually succeeded
+          localStorage.setItem(MIGRATION_FLAG_KEY, "true");
+          setStatus("completed");
+          logger.info("localStorage migration completed", {
+            migrated: result.migrated,
+            skipped: result.skipped,
+          });
+        } else {
+          // Migration failed - don't set flag, will retry on next load
+          setError(result.error ?? "Migration failed. Will retry on next page load.");
+          setStatus("error");
+          logger.error("localStorage migration failed", { error: result.error });
+        }
       } catch (migrationError) {
-        logger.error("localStorage migration failed", migrationError);
+        logger.error("localStorage migration threw exception", migrationError);
         setError(
           migrationError instanceof Error
             ? migrationError.message
             : "Unknown error during migration"
         );
         setStatus("error");
-        // Reset the ref so migration can be retried on next mount
-        migrationAttemptedRef.current = false;
+      } finally {
+        migrationInProgressRef.current = false;
       }
     };
 
     runMigration();
-  }, [isSignedIn, isLoaded]);
+  }, [isSignedIn, isLoaded, retryTrigger]);
 
   return {
     status,
     error,
     migratedCount,
     skippedCount,
+    retry,
   };
 }
 

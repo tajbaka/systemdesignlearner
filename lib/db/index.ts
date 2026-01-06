@@ -8,6 +8,10 @@ import * as schema from "./schema";
 const connectionString = process.env.POSTGRES_URL;
 
 if (!connectionString) {
+  console.error(
+    "[DB] POSTGRES_URL is not set. Available env vars:",
+    Object.keys(process.env).filter((k) => k.includes("POSTGRES") || k.includes("DATABASE"))
+  );
   throw new Error("POSTGRES_URL environment variable is not set");
 }
 
