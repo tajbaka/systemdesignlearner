@@ -69,6 +69,14 @@ export function AuthModal({ isOpen, onClose, onAuthenticated, slug }: AuthModalP
       url.searchParams.delete("auth_flow");
       returnUrl = url.toString();
 
+      // Store return URL in sessionStorage as backup for OAuth redirect
+      // This ensures we can redirect correctly even if Clerk's redirectUrlComplete is lost
+      try {
+        sessionStorage.setItem("clerk_auth_return_url", returnUrl);
+      } catch {
+        // sessionStorage might be unavailable in some contexts
+      }
+
       await signIn.authenticateWithRedirect({
         strategy: "oauth_google",
         redirectUrl: "/sso-callback",
