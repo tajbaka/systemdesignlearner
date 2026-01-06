@@ -10,7 +10,10 @@ process.on("warning", (warning) => {
 const { spawn } = require("child_process");
 
 const args = process.argv.slice(2);
-const child = spawn(args[0], args.slice(1), {
+// Join args into single command string to avoid DEP0190 warning
+// (passing args separately with shell:true is deprecated)
+const command = args.join(" ");
+const child = spawn(command, [], {
   stdio: "inherit",
   shell: true,
   env: {
