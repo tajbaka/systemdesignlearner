@@ -12,6 +12,8 @@ import type {
 } from "@/lib/practice/types";
 import Palette from "@/components/canvas/Palette";
 import { COMPONENT_LIBRARY } from "@/components/canvas/data";
+import { getScenarioReferenceSync } from "@/lib/practice/loader";
+import { SCENARIOS } from "@/lib/scenarios";
 
 const BASE_COMPONENTS: ComponentKind[] = [
   "Web",
@@ -29,11 +31,38 @@ const scalingComponents: ComponentKind[] = []; // Removed: Read Replica, Shard R
 const streamingComponents: ComponentKind[] = ["Stream Processor (Flink)"];
 const idComponents: ComponentKind[] = ["ID Generator (Snowflake)"];
 
+/**
+ * Get scenario-specific components from reference JSON or SCENARIOS metadata.
+ * Returns all components defined for the scenario across all categories.
+ */
+const getScenarioComponents = (slug: string): ComponentKind[] => {
+  // First try to get from reference JSON (has detailed categorization)
+  const reference = getScenarioReferenceSync(slug);
+  if (reference?.components) {
+    // Flatten all component categories (base, performance, metadata, optional, etc.)
+    const allComponents = Object.values(reference.components).flat();
+    return allComponents as ComponentKind[];
+  }
+
+  // Fall back to suggestedComponents from SCENARIOS
+  const scenario = SCENARIOS.find((s) => s.id === slug);
+  if (scenario?.suggestedComponents) {
+    return scenario.suggestedComponents as ComponentKind[];
+  }
+
+  return [];
+};
+
 const computeAllowedComponents = (
   requirements: Requirements,
-  apiDefinition: PracticeApiDefinitionState
+  apiDefinition: PracticeApiDefinitionState,
+  slug: string
 ): ComponentKind[] => {
   const set = new Set<ComponentKind>(BASE_COMPONENTS);
+
+  // Add scenario-specific components (from reference JSON or SCENARIOS)
+  const scenarioComponents = getScenarioComponents(slug);
+  scenarioComponents.forEach((kind) => set.add(kind));
 
   // Based on functional requirements
   if (requirements.functional["basic-analytics"]) {
@@ -106,8 +135,8 @@ export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: Sandbo
   const { state, setDesign, setRun, setStepScore, isReadOnly } = usePracticeSession();
 
   const allowedComponents = useMemo(
-    () => computeAllowedComponents(state.requirements, state.apiDefinition),
-    [state.requirements, state.apiDefinition]
+    () => computeAllowedComponents(state.requirements, state.apiDefinition, state.slug),
+    [state.requirements, state.apiDefinition, state.slug]
   );
 
   const mobilePaletteItems = useMemo(

@@ -227,7 +227,7 @@ export type ArchitecturePattern = {
   requiredComponents: ComponentKind[];
   requiredConnections: Connection[];
   forbiddenConnections?: Connection[]; // Anti-patterns
-  triggeredBy: {
+  triggeredBy?: {
     functionalReqs?: string[];
     nfrThresholds?: Record<string, number>; // e.g., { "readRps": 10000 }
   };

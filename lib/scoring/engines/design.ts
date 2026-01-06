@@ -586,6 +586,11 @@ export class DesignScoringEngine
     functionalReqs: Record<string, boolean>,
     nfrValues: DesignScoringInput["nfrValues"]
   ): boolean {
+    // If no triggeredBy defined, pattern is always triggered (relies on required flag)
+    if (!pattern.triggeredBy) {
+      return true;
+    }
+
     // Check functional requirements
     if (pattern.triggeredBy.functionalReqs) {
       const hasFunctionalReq = pattern.triggeredBy.functionalReqs.some(
