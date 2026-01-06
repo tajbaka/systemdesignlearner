@@ -54,6 +54,8 @@ export type Scenario = {
   Prerequisites?: Prerequisite[];
   /** Whether this scenario has a practice mode implementation */
   hasPractice?: boolean;
+  /** Slug for the /learn article about this scenario (if one exists) */
+  learnArticleSlug?: string;
 };
 
 export const SCENARIOS: Scenario[] = [
@@ -165,6 +167,7 @@ export const SCENARIOS: Scenario[] = [
     version: "1.0",
     updatedAt: "2025-09-10",
     hasPractice: true,
+    learnArticleSlug: "tinyurl",
   },
   {
     id: "rate-limiter",

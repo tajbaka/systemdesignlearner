@@ -109,11 +109,11 @@ function PracticeFlowInner() {
     };
   }, []);
 
-  // Get scenario title from SCENARIOS
-  const scenarioTitle = useMemo(() => {
-    const scenario = SCENARIOS.find((s) => s.id === state.slug);
-    return scenario?.title;
+  // Get scenario data from SCENARIOS
+  const scenario = useMemo(() => {
+    return SCENARIOS.find((s) => s.id === state.slug);
   }, [state.slug]);
+  const scenarioTitle = scenario?.title;
 
   // Scoring hook
   const {
@@ -473,6 +473,8 @@ function PracticeFlowInner() {
             clearIterativeFeedback();
           }}
           durationMs={iterativeFeedbackState.lastDurationMs ?? undefined}
+          learnArticleSlug={scenario?.learnArticleSlug}
+          learnArticleTitle={scenario?.title ? `Design ${scenario.title}` : undefined}
         />
         <footer
           className="bg-black border-t border-zinc-800"
