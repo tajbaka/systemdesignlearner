@@ -378,7 +378,7 @@ export function ScoreShareStep() {
             <div className="flex flex-wrap items-center justify-center gap-3">
               {/* <button
              type="button"
-             onClick={() => setStep("sandbox")}
+             onClick={() => setStep("highLevelDesign")}
              className="inline-flex h-11 items-center justify-center rounded-full border border-zinc-600 bg-zinc-800 px-5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 hover:bg-zinc-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-zinc-500"
            >
              Improve design

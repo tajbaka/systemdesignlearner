@@ -368,7 +368,7 @@ function PracticeFlowInner() {
           </>
         ) : null}
         {/* Iterative Feedback Modal - Shows in center of screen */}
-        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api/sandbox steps */}
+        {/* Show for ALL scores when using iterative feedback for functional/nonFunctional/api steps */}
         <IterativeFeedbackModal
           isOpen={
             !!iterativeFeedbackState.result &&
@@ -513,7 +513,7 @@ function PracticeFlowInner() {
             isVerifying={verification.isVerifying}
             onBack={handleBack}
             onNext={handleNext}
-            onBackToSandbox={() => router.push(`/practice/${state.slug}/sandbox`)}
+            onBackToSandbox={() => router.push(`/practice/${state.slug}/highLevelDesign`)}
             apiMobileEditing={apiMobileEditing}
             voiceCaptureValue={
               currentStep === "functional"
