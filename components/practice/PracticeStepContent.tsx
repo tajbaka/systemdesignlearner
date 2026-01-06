@@ -3,14 +3,16 @@ import type { PracticeStep } from "@/lib/practice/types";
 import FunctionalRequirementsStep from "@/components/practice/steps/FunctionalRequirementsStep";
 import NonFunctionalRequirementsStep from "@/components/practice/steps/NonFunctionalRequirementsStep";
 import ApiDefinitionStep from "@/components/practice/steps/ApiDefinitionStep";
-import SandboxStep from "@/components/practice/steps/SandboxStep";
+import HighLevelDesignStep from "@/components/practice/steps/HighLevelDesignStep";
 import ScoreShareStep from "@/components/practice/steps/ScoreShareStep";
 
 const STEP_COMPONENTS: Record<PracticeStep, (props?: Record<string, unknown>) => ReactElement> = {
   functional: () => <FunctionalRequirementsStep />,
   nonFunctional: () => <NonFunctionalRequirementsStep />,
   api: () => <ApiDefinitionStep />,
-  highLevelDesign: (props) => <SandboxStep {...(props as Parameters<typeof SandboxStep>[0])} />,
+  highLevelDesign: (props) => (
+    <HighLevelDesignStep {...(props as Parameters<typeof HighLevelDesignStep>[0])} />
+  ),
   score: () => <ScoreShareStep />,
 };
 
@@ -26,18 +28,18 @@ export function PracticeStepContent({
   onMobilePaletteChange,
 }: PracticeStepContentProps) {
   const StepComponent = STEP_COMPONENTS[currentStep];
-  const isSandboxStep = currentStep === "highLevelDesign";
+  const isDesignStep = currentStep === "highLevelDesign";
 
-  const sandboxProps = isSandboxStep
+  const designProps = isDesignStep
     ? {
         mobilePaletteOpen,
         onMobilePaletteChange,
       }
     : undefined;
 
-  const stepContent = StepComponent ? <StepComponent {...(sandboxProps ?? {})} /> : null;
+  const stepContent = StepComponent ? <StepComponent {...(designProps ?? {})} /> : null;
 
-  if (isSandboxStep) {
+  if (isDesignStep) {
     return <div className="h-full w-full">{stepContent}</div>;
   }
 

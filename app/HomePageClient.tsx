@@ -593,8 +593,8 @@ export function HomePageClient() {
               <div className="bg-zinc-800/40 flex items-center justify-center p-8 lg:p-12 min-h-[400px]">
                 <div className="w-full max-w-2xl">
                   <Image
-                    src="/SandboxStep_3x.gif"
-                    alt="Drag-and-drop architecture sandbox"
+                    src="/HighLevelDesignStep_3x.gif"
+                    alt="Drag-and-drop high level design canvas"
                     width={800}
                     height={600}
                     className="w-full h-auto rounded-lg shadow-2xl border border-zinc-700"

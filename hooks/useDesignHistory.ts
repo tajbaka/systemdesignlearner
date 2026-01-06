@@ -181,7 +181,11 @@ export function useDesignHistory({
   const copy = useCallback(() => {
     if (editingLocked) return;
 
-    const nodesToCopy = selectedNodeId ? nodes.filter((node) => node.id === selectedNodeId) : nodes;
+    // Only copy if a node is selected - don't copy all nodes as fallback
+    if (!selectedNodeId) return;
+
+    const nodesToCopy = nodes.filter((node) => node.id === selectedNodeId);
+    if (nodesToCopy.length === 0) return;
 
     const nodeIds = new Set(nodesToCopy.map((n) => n.id));
     const edgesToCopy = edges.filter((edge) => nodeIds.has(edge.from) && nodeIds.has(edge.to));

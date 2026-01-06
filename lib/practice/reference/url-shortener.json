@@ -445,8 +445,7 @@
       "base": ["Web", "API Gateway", "Service", "DB (Postgres)", "Cache (Redis)"],
       "analytics": ["Message Queue (Kafka Topic)", "Worker Pool"],
       "rateLimit": ["Rate Limiter"],
-      "admin": ["Auth"],
-      "optional": ["Load Balancer", "CDN", "Object Store (S3)", "Tracing/Logging"]
+      "admin": ["Auth"]
     }
   },
 
@@ -484,7 +483,6 @@
     "base": ["Web", "API Gateway", "Service", "DB (Postgres)", "Cache (Redis)"],
     "analytics": ["Message Queue (Kafka Topic)", "Worker Pool"],
     "rateLimit": ["Rate Limiter"],
-    "admin": ["Auth"],
-    "optional": ["Load Balancer", "CDN", "Object Store (S3)", "Tracing/Logging"]
+    "admin": ["Auth"]
   }
 }

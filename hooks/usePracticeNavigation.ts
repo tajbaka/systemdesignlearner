@@ -52,26 +52,27 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
    */
   const proceedToNext = () => {
     const config = STEP_CONFIGS[session.currentStep];
+    const currentSlug = session.state.slug;
 
-    // Run step-specific onNext logic
-    config?.onNext?.(session);
-
-    // Navigate to next step URL
+    // Compute next step URL before any state changes
     const nextStep = getNextStep(session.currentStep);
-    if (nextStep) {
-      const nextUrl = `/practice/${session.state.slug}/${stepToUrl(nextStep)}`;
-      router.push(nextUrl);
-    }
+    const nextUrl = nextStep ? `/practice/${currentSlug}/${stepToUrl(nextStep)}` : null;
+
+    // Run step-specific onNext logic (marks step as completed)
+    config?.onNext?.(session);
 
     // Sync auth state if user is signed in at design step
     if (session.currentStep === "highLevelDesign" && isSignedIn && !session.state.auth.isAuthed) {
       session.setAuth((prev) => ({ ...prev, isAuthed: true, skipped: false }));
     }
 
-    // Flush state to storage after React processes updates
-    setTimeout(() => {
-      session.flushToStorage();
-    }, 50);
+    // Flush state to storage (localStorage sync, DB async in background)
+    session.flushToStorage();
+
+    // Navigate to next step URL
+    if (nextUrl) {
+      router.push(nextUrl);
+    }
   };
 
   /**
@@ -123,6 +124,7 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
   /**
    * Handle "Back" button click.
    * On mobile API step with editor open: closes editor and returns to endpoint list.
+   * On first step (functional): navigates to the intro page.
    * Otherwise: navigates to the previous step.
    */
   const handleBack = () => {
@@ -139,6 +141,9 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
     if (prevStep) {
       const prevUrl = `/practice/${session.state.slug}/${stepToUrl(prevStep)}`;
       router.push(prevUrl);
+    } else {
+      // On first step, go back to the intro page
+      router.push(`/practice/${session.state.slug}`);
     }
   };
 

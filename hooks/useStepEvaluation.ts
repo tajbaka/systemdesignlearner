@@ -66,7 +66,7 @@ export type StepEvaluationOptions = {
     currentStep: PracticeStep,
     session: PracticeSessionValue
   ) => Promise<FeedbackResult | null>;
-  buildSandboxFeedback: (
+  buildDesignFeedback: (
     session: PracticeSessionValue
   ) => { feedback: FeedbackResult; canProceed: boolean } | null;
   getFocusedFeedback?: (
@@ -245,7 +245,7 @@ async function evaluateDesignStep(
   session: PracticeSessionValue,
   options: StepEvaluationOptions
 ): Promise<StepEvaluationResult> {
-  const { setVerification, setScoringFeedback, setWaitingForSimulation, buildSandboxFeedback } =
+  const { setVerification, setScoringFeedback, setWaitingForSimulation, buildDesignFeedback } =
     options;
 
   const scenario = SCENARIOS.find((s) => s.id === session.state.slug) ?? SCENARIOS[0];
@@ -326,7 +326,7 @@ async function evaluateDesignStep(
   // Simulation has been run - build and show feedback
   setVerification({ isVerifying: true, result: null, error: null });
 
-  const evaluationResult = buildSandboxFeedback(session);
+  const evaluationResult = buildDesignFeedback(session);
   if (!evaluationResult) {
     setVerification({
       isVerifying: false,

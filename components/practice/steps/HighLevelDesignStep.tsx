@@ -15,103 +15,47 @@ import { COMPONENT_LIBRARY } from "@/components/canvas/data";
 import { getScenarioReferenceSync } from "@/lib/practice/loader";
 import { SCENARIOS } from "@/lib/scenarios";
 
-const BASE_COMPONENTS: ComponentKind[] = [
-  "Web",
-  "API Gateway",
-  "Service",
-  "Cache (Redis)",
-  "DB (Postgres)",
-];
-
-const analyticsComponents: ComponentKind[] = ["Message Queue (Kafka Topic)", "Worker Pool"];
-const rateLimitComponents: ComponentKind[] = ["Rate Limiter"];
-const adminComponents: ComponentKind[] = ["Auth"];
-const searchComponents: ComponentKind[] = ["Search Index (Elastic)"];
-const scalingComponents: ComponentKind[] = []; // Removed: Read Replica, Shard Router - not needed for max points
-const streamingComponents: ComponentKind[] = ["Stream Processor (Flink)"];
-const idComponents: ComponentKind[] = ["ID Generator (Snowflake)"];
-
-/**
- * Get scenario-specific components from reference JSON or SCENARIOS metadata.
- * Returns all components defined for the scenario across all categories.
- */
-const getScenarioComponents = (slug: string): ComponentKind[] => {
-  // First try to get from reference JSON (has detailed categorization)
-  const reference = getScenarioReferenceSync(slug);
-  if (reference?.components) {
-    // Flatten all component categories (base, performance, metadata, optional, etc.)
-    const allComponents = Object.values(reference.components).flat();
-    return allComponents as ComponentKind[];
-  }
-
-  // Fall back to suggestedComponents from SCENARIOS
-  const scenario = SCENARIOS.find((s) => s.id === slug);
-  if (scenario?.suggestedComponents) {
-    return scenario.suggestedComponents as ComponentKind[];
-  }
-
-  return [];
+/** Feature-gated component categories that require specific functional requirements */
+const FEATURE_GATED_CATEGORIES: Record<string, string[]> = {
+  analytics: ["basic-analytics", "analytics"],
+  rateLimit: ["rate-limiting", "rate-limit"],
+  admin: ["admin-delete", "admin"],
+  auth: ["user-accounts", "authentication"],
 };
 
+/**
+ * Compute allowed components based on scenario reference JSON and user requirements.
+ */
 const computeAllowedComponents = (
   requirements: Requirements,
-  apiDefinition: PracticeApiDefinitionState,
+  _apiDefinition: PracticeApiDefinitionState,
   slug: string
 ): ComponentKind[] => {
-  const set = new Set<ComponentKind>(BASE_COMPONENTS);
+  const reference = getScenarioReferenceSync(slug);
+  const componentsByCategory = reference?.components as Record<string, ComponentKind[]> | undefined;
 
-  // Add scenario-specific components (from reference JSON or SCENARIOS)
-  const scenarioComponents = getScenarioComponents(slug);
-  scenarioComponents.forEach((kind) => set.add(kind));
-
-  // Based on functional requirements
-  if (requirements.functional["basic-analytics"]) {
-    analyticsComponents.forEach((kind) => set.add(kind));
-  }
-  if (requirements.functional["rate-limiting"]) {
-    rateLimitComponents.forEach((kind) => set.add(kind));
-  }
-  if (requirements.functional["admin-delete"]) {
-    adminComponents.forEach((kind) => set.add(kind));
+  // No reference JSON - use suggestedComponents from SCENARIOS
+  if (!componentsByCategory) {
+    const scenario = SCENARIOS.find((s) => s.id === slug);
+    return (scenario?.suggestedComponents as ComponentKind[]) ?? [];
   }
 
-  // Based on API routes - detect search/query endpoints
-  const hasSearchEndpoint = apiDefinition.endpoints.some(
-    (ep) =>
-      ep.path.toLowerCase().includes("search") ||
-      ep.path.toLowerCase().includes("query") ||
-      ep.notes.toLowerCase().includes("search")
-  );
-  if (hasSearchEndpoint) {
-    searchComponents.forEach((kind) => set.add(kind));
+  const set = new Set<ComponentKind>();
+
+  // Add all defined categories except feature-gated ones
+  const featureGatedKeys = new Set(Object.keys(FEATURE_GATED_CATEGORIES));
+  for (const [category, components] of Object.entries(componentsByCategory)) {
+    if (!featureGatedKeys.has(category)) {
+      components.forEach((kind) => set.add(kind));
+    }
   }
 
-  // Based on API routes - detect streaming/realtime endpoints
-  const hasStreamingEndpoint = apiDefinition.endpoints.some(
-    (ep) =>
-      ep.path.toLowerCase().includes("stream") ||
-      ep.path.toLowerCase().includes("websocket") ||
-      ep.path.toLowerCase().includes("realtime") ||
-      ep.notes.toLowerCase().includes("stream") ||
-      ep.notes.toLowerCase().includes("realtime")
-  );
-  if (hasStreamingEndpoint) {
-    streamingComponents.forEach((kind) => set.add(kind));
-  }
-
-  // Based on non-functional requirements - high read load suggests replicas
-  const highReadLoad = requirements.nonFunctional.readRps > 5000;
-  if (highReadLoad) {
-    scalingComponents.forEach((kind) => set.add(kind));
-  }
-
-  // Based on non-functional requirements - need for unique IDs at scale
-  const needsUniqueIds =
-    requirements.nonFunctional.writeRps > 1000 ||
-    requirements.functionalSummary.toLowerCase().includes("unique id") ||
-    requirements.functionalSummary.toLowerCase().includes("distributed id");
-  if (needsUniqueIds) {
-    idComponents.forEach((kind) => set.add(kind));
+  // Add feature-gated categories based on functional requirements
+  for (const [category, featureIds] of Object.entries(FEATURE_GATED_CATEGORIES)) {
+    const hasFeature = featureIds.some((id) => requirements.functional[id]);
+    if (hasFeature && componentsByCategory[category]) {
+      componentsByCategory[category].forEach((kind) => set.add(kind));
+    }
   }
 
   return Array.from(set);
@@ -126,12 +70,15 @@ const nextSpawnPosition = (nodes: PracticeDesignState["nodes"]) => {
   return { x: maxX + 180, y: offsetY };
 };
 
-type SandboxStepProps = {
+type HighLevelDesignStepProps = {
   mobilePaletteOpen: boolean;
   onMobilePaletteChange: (open: boolean) => void;
 };
 
-export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: SandboxStepProps) {
+export function HighLevelDesignStep({
+  mobilePaletteOpen,
+  onMobilePaletteChange,
+}: HighLevelDesignStepProps) {
   const { state, setDesign, setRun, setStepScore, isReadOnly } = usePracticeSession();
 
   const allowedComponents = useMemo(
@@ -283,4 +230,4 @@ export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: Sandbo
   );
 }
 
-export default SandboxStep;
+export default HighLevelDesignStep;

@@ -59,7 +59,7 @@ type PracticeSessionContextValue = {
     ) => PracticeIterativeFeedback[keyof PracticeIterativeFeedback]
   ) => void;
   resetIterativeFeedback: (step?: keyof PracticeIterativeFeedback) => void;
-  flushToStorage: () => void;
+  flushToStorage: () => Promise<void>;
 };
 
 const PracticeSessionContext = createContext<PracticeSessionContextValue | undefined>(undefined);
@@ -353,15 +353,30 @@ export function PracticeSessionProvider({
     [setStateWithTimestamp, state.slug]
   );
 
-  const flushToStorage = useCallback(() => {
+  const flushToStorage = useCallback(async () => {
     if (isReadOnly) return;
-    // Clear any pending save timeout and save immediately
+
+    // Clear any pending localStorage save timeout and save immediately
     if (saveTimeout.current) {
       window.clearTimeout(saveTimeout.current);
       saveTimeout.current = null;
     }
     savePractice(latestStateRef.current);
-  }, [isReadOnly]);
+
+    // Also save to DB for authenticated users
+    if (isAuthenticated) {
+      if (dbSaveTimeout.current) {
+        window.clearTimeout(dbSaveTimeout.current);
+        dbSaveTimeout.current = null;
+      }
+      try {
+        await savePracticeSession(latestStateRef.current);
+      } catch (error) {
+        console.error("Failed to flush to DB", error);
+        // localStorage already saved, so data is not lost
+      }
+    }
+  }, [isReadOnly, isAuthenticated]);
 
   const value = useMemo<PracticeSessionContextValue>(
     () => ({

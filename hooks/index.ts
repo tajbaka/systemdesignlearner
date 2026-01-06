@@ -11,7 +11,7 @@ export { useScrollToTop } from "./useScrollToTop";
 // Practice Mode
 export { usePracticeNavigation } from "./usePracticeNavigation";
 export { usePracticeScoring } from "./usePracticeScoring";
-export { useSandboxEvaluation } from "./useSandboxEvaluation";
+export { useDesignEvaluation } from "./useDesignEvaluation";
 export { useStepEvaluation } from "./useStepEvaluation";
 export { useIterativeFeedback } from "./useIterativeFeedback";
 

@@ -170,14 +170,38 @@ export const ensureAuthState = (value?: PracticeAuthState): PracticeAuthState =>
 
 /**
  * Ensure progress state has all step flags as booleans.
+ * Also fixes inconsistent states where later steps are completed but earlier ones aren't.
+ * (This can happen due to a bug where navigation happened before state was saved.)
  */
-export const ensureProgress = (value?: PracticeProgress): PracticeProgress => ({
-  functional: Boolean(value?.functional),
-  nonFunctional: Boolean(value?.nonFunctional),
-  api: Boolean(value?.api),
-  highLevelDesign: Boolean(value?.highLevelDesign),
-  score: Boolean(value?.score),
-});
+export const ensureProgress = (value?: PracticeProgress): PracticeProgress => {
+  const raw = {
+    functional: Boolean(value?.functional),
+    nonFunctional: Boolean(value?.nonFunctional),
+    api: Boolean(value?.api),
+    highLevelDesign: Boolean(value?.highLevelDesign),
+    score: Boolean(value?.score),
+  };
+
+  // Fix inconsistent progress: if a later step is completed, all earlier steps should be too
+  // Steps order: functional -> nonFunctional -> api -> highLevelDesign -> score
+  if (raw.score) {
+    raw.highLevelDesign = true;
+    raw.api = true;
+    raw.nonFunctional = true;
+    raw.functional = true;
+  } else if (raw.highLevelDesign) {
+    raw.api = true;
+    raw.nonFunctional = true;
+    raw.functional = true;
+  } else if (raw.api) {
+    raw.nonFunctional = true;
+    raw.functional = true;
+  } else if (raw.nonFunctional) {
+    raw.functional = true;
+  }
+
+  return raw;
+};
 
 /**
  * Convert legacy 'locked' state to modern 'completed' progress state.

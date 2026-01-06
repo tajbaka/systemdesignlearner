@@ -319,10 +319,7 @@
       }
     },
     "components": {
-      "base": ["Web", "API Gateway", "Service", "Object Store (S3)"],
-      "performance": ["CDN", "Cache (Redis)"],
-      "metadata": ["DB (Postgres)"],
-      "optional": ["Load Balancer", "Tracing/Logging"]
+      "base": ["Web", "API Gateway", "Service", "Object Store (S3)", "CDN", "DB (Postgres)"]
     }
   },
 
@@ -357,9 +354,6 @@
   },
 
   "components": {
-    "base": ["Web", "API Gateway", "Service", "Object Store (S3)"],
-    "performance": ["CDN", "Cache (Redis)"],
-    "metadata": ["DB (Postgres)"],
-    "optional": ["Load Balancer", "Tracing/Logging"]
+    "base": ["Web", "API Gateway", "Service", "Object Store (S3)", "CDN", "DB (Postgres)"]
   }
 }

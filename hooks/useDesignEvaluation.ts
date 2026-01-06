@@ -9,7 +9,7 @@ const SIMULATION_COMPLETION_TIMEOUT_MS = 20000;
 
 type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
-type SandboxEvaluationResult = {
+type DesignEvaluationResult = {
   feedback: FeedbackResult;
   canProceed: boolean;
 };
@@ -17,7 +17,7 @@ type SandboxEvaluationResult = {
 /**
  * Builds feedback from simulation results, merging simulation and design scores
  */
-function buildSandboxFeedback(session: PracticeSessionValue): SandboxEvaluationResult | null {
+function buildDesignFeedback(session: PracticeSessionValue): DesignEvaluationResult | null {
   const result = session.state.run.lastResult;
   const designScore = session.state.scores?.design;
 
@@ -166,7 +166,7 @@ function buildSandboxFeedback(session: PracticeSessionValue): SandboxEvaluationR
   }
 }
 
-export function useSandboxEvaluation(
+export function useDesignEvaluation(
   session: PracticeSessionValue,
   currentStep: string,
   setScoringFeedback: (feedback: FeedbackResult | null) => void,
@@ -200,7 +200,7 @@ export function useSandboxEvaluation(
     if (hasRun && hasDesignScore) {
       clearTimeout(timeoutId);
 
-      const evaluationResult = buildSandboxFeedback(session);
+      const evaluationResult = buildDesignFeedback(session);
       if (evaluationResult) {
         setScoringFeedback(evaluationResult.feedback);
       }
@@ -226,6 +226,6 @@ export function useSandboxEvaluation(
   return {
     waitingForSimulation,
     setWaitingForSimulation,
-    buildSandboxFeedback,
+    buildDesignFeedback,
   };
 }

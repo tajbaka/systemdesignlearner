@@ -11,7 +11,7 @@ import { useUser } from "@clerk/nextjs";
 import { PRACTICE_STEPS } from "@/lib/practice/types";
 import { STEP_CONFIGS, getHelperText, completeStep } from "@/lib/practice/step-configs";
 import { usePracticeScoring } from "@/hooks/usePracticeScoring";
-import { useSandboxEvaluation } from "@/hooks/useSandboxEvaluation";
+import { useDesignEvaluation } from "@/hooks/useDesignEvaluation";
 import { usePracticeNavigation } from "@/hooks/usePracticeNavigation";
 import { useIterativeFeedback } from "@/hooks/useIterativeFeedback";
 import { PracticeFooter } from "@/components/practice/PracticeFooter";
@@ -135,9 +135,9 @@ function PracticeFlowInner() {
     clearState: clearIterativeFeedback,
   } = useIterativeFeedback();
 
-  // Sandbox evaluation hook
-  const { waitingForSimulation, setWaitingForSimulation, buildSandboxFeedback } =
-    useSandboxEvaluation(session, currentStep, setScoringFeedback, setVerification);
+  // Design evaluation hook (for high level design step)
+  const { waitingForSimulation, setWaitingForSimulation, buildDesignFeedback } =
+    useDesignEvaluation(session, currentStep, setScoringFeedback, setVerification);
 
   // Navigation hook
   const { handleNext, handleBack, proceedToNext } = usePracticeNavigation(session, {
@@ -147,7 +147,7 @@ function PracticeFlowInner() {
     waitingForSimulation,
     setWaitingForSimulation,
     evaluateCurrentStep,
-    buildSandboxFeedback,
+    buildDesignFeedback,
     isSignedIn: isSignedIn ?? false,
     getFocusedFeedback,
     apiMobileEditing,
@@ -253,7 +253,7 @@ function PracticeFlowInner() {
   }, [setWaitingForSimulation]);
 
   const config = STEP_CONFIGS[currentStep];
-  const isSandboxStep = currentStep === "highLevelDesign";
+  const isDesignStep = currentStep === "highLevelDesign";
 
   const nextDisabled = useMemo(
     () => (config?.nextDisabled ? config.nextDisabled(session) : false),
@@ -318,13 +318,13 @@ function PracticeFlowInner() {
         />
         <div
           className={
-            isSandboxStep
+            isDesignStep
               ? "flex-1 min-h-0 overflow-hidden sm:pt-[40px]"
               : "flex-1 min-h-0 overflow-y-auto sm:pt-[40px]"
           }
           style={{
             paddingBottom:
-              !isSandboxStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
+              !isDesignStep && keyboardOffset > 0 ? `${keyboardOffset + 80}px` : undefined,
           }}
         >
           <PracticeStepContent
@@ -333,7 +333,7 @@ function PracticeFlowInner() {
             onMobilePaletteChange={setMobilePaletteOpen}
           />
         </div>
-        {isSandboxStep ? (
+        {isDesignStep ? (
           <>
             <Tooltip open={showTooltips} onOpenChange={setShowTooltips}>
               <TooltipTrigger asChild>
