@@ -170,6 +170,24 @@ export async function savePracticeSession(state: PracticeState): Promise<boolean
       });
     }
 
+    // Also create scenario_completions entry when score step is completed
+    // This enables cross-device completion tracking on the practice list page
+    if (state.completed.score) {
+      const existingCompletion = await db.query.scenarioCompletions.findFirst({
+        where: and(
+          eq(scenarioCompletions.profileId, profile.id),
+          eq(scenarioCompletions.scenarioSlug, state.slug)
+        ),
+      });
+
+      if (!existingCompletion) {
+        await db.insert(scenarioCompletions).values({
+          profileId: profile.id,
+          scenarioSlug: state.slug,
+        });
+      }
+    }
+
     return true;
   } catch (error) {
     logger.error("Failed to save practice session", error);

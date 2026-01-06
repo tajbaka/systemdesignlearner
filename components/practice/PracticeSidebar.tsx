@@ -102,32 +102,6 @@ export function PracticeSidebar() {
               </svg>
               <span>Practice</span>
             </Link>
-            <Link
-              href="/play"
-              className="mt-4 flex h-9 items-center gap-2 rounded-lg bg-emerald-500 px-3 text-sm font-semibold text-white shadow-lg transition-colors hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <svg
-                className="h-5 w-5 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span className="whitespace-nowrap">Try Sandbox</span>
-            </Link>
           </nav>
 
           {/* Mobile user button */}
