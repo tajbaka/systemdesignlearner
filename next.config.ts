@@ -23,10 +23,6 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  eslint: {
-    // Skip rerunning ESLint locally; CI remains the gatekeeper.
-    ignoreDuringBuilds: !isCI,
-  },
   typescript: {
     // Use CI for type safety so local builds avoid duplicate work.
     ignoreBuildErrors: !isCI,
