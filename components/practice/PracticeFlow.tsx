@@ -38,7 +38,6 @@ function PracticeFlowInner() {
     setApiDefinition,
   } = session;
   const [mobilePaletteOpen, setMobilePaletteOpen] = useState(false);
-  const [runPanelOpen, setRunPanelOpen] = useState(false);
   const [showTooltips, setShowTooltips] = useState(false);
   const [apiMobileEditing, setApiMobileEditing] = useState(false);
   const [apiMobileEditorValue, setApiMobileEditorValue] = useState<string | undefined>(undefined);
@@ -236,7 +235,6 @@ function PracticeFlowInner() {
   useEffect(() => {
     if (currentStep !== "highLevelDesign") {
       setMobilePaletteOpen(false);
-      setRunPanelOpen(false);
     }
     // Clear verification, scoring, and iterative feedback state when step changes
     clearVerification();
@@ -332,8 +330,6 @@ function PracticeFlowInner() {
             currentStep={currentStep}
             mobilePaletteOpen={mobilePaletteOpen}
             onMobilePaletteChange={setMobilePaletteOpen}
-            runPanelOpen={runPanelOpen}
-            onRunPanelChange={setRunPanelOpen}
           />
         </div>
         {isSandboxStep ? (
@@ -369,17 +365,6 @@ function PracticeFlowInner() {
                 </p>
               </TooltipContent>
             </Tooltip>
-            <button
-              type="button"
-              onClick={() => setRunPanelOpen(true)}
-              disabled={isReadOnly}
-              className="fixed bottom-[180px] right-4 z-40 inline-flex h-12 w-12 items-center justify-center rounded-full border border-emerald-400/40 bg-emerald-500/20 text-emerald-100 transition hover:bg-emerald-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 sm:bottom-[100px] sm:right-6 lg:bottom-[180px] lg:right-6"
-              aria-label="Open simulation panel"
-            >
-              <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </button>
           </>
         ) : null}
         {/* Iterative Feedback Modal - Shows in center of screen */}

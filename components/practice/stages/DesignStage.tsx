@@ -69,7 +69,6 @@ type DesignStageProps = {
   showFooterControls?: boolean;
   layout?: "guided" | "immersive";
   onOpenPalette?: () => void;
-  onOpenSimulation?: () => void;
   showPaletteTrigger?: boolean;
   simulationLocked?: boolean;
 };
@@ -118,7 +117,6 @@ export default function DesignStage({
   showFooterControls = true,
   layout = "guided",
   onOpenPalette: _onOpenPalette,
-  onOpenSimulation: _onOpenSimulation,
   showPaletteTrigger: _showPaletteTrigger = true,
 }: DesignStageProps) {
   // Access session to clear simulation state when design changes

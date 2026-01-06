@@ -100,16 +100,9 @@ const nextSpawnPosition = (nodes: PracticeDesignState["nodes"]) => {
 type SandboxStepProps = {
   mobilePaletteOpen: boolean;
   onMobilePaletteChange: (open: boolean) => void;
-  runPanelOpen: boolean;
-  onRunPanelChange: (open: boolean) => void;
 };
 
-export function SandboxStep({
-  mobilePaletteOpen,
-  onMobilePaletteChange,
-  runPanelOpen,
-  onRunPanelChange,
-}: SandboxStepProps) {
+export function SandboxStep({ mobilePaletteOpen, onMobilePaletteChange }: SandboxStepProps) {
   const { state, setDesign, setRun, setStepScore, isReadOnly } = usePracticeSession();
 
   const allowedComponents = useMemo(
@@ -141,10 +134,6 @@ export function SandboxStep({
             onOpenPalette={() => {
               if (isReadOnly) return;
               onMobilePaletteChange(true);
-            }}
-            onOpenSimulation={() => {
-              if (isReadOnly) return;
-              onRunPanelChange(true);
             }}
             showPaletteTrigger={false}
           />
@@ -240,59 +229,6 @@ export function SandboxStep({
                 }}
                 className="h-full"
                 listClassName="pb-10"
-              />
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* Simulation Panel - Slides up from bottom */}
-      {runPanelOpen && (
-        <>
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40 bg-black/50 transition-opacity duration-300"
-            onClick={() => onRunPanelChange(false)}
-            aria-hidden="true"
-          />
-
-          {/* Panel */}
-          <div className="fixed inset-x-0 bottom-0 z-50 flex flex-col rounded-t-3xl border border-zinc-800 bg-zinc-900 shadow-2xl transition-transform duration-300 ease-out lg:inset-x-auto lg:right-6 lg:w-full lg:max-w-md translate-y-0 pointer-events-auto max-h-[90vh]">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-              <h2 className="text-lg font-semibold text-white">Simulation</h2>
-              <button
-                type="button"
-                onClick={() => onRunPanelChange(false)}
-                className="ml-auto rounded-full p-2 text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
-                aria-label="Close"
-              >
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto">
-              <RunStage
-                slug={state.slug}
-                design={state.design}
-                run={state.run}
-                requirements={state.requirements}
-                locked={isReadOnly}
-                readOnly={isReadOnly}
-                updateRun={setRun}
-                setStepScore={setStepScore}
-                onContinue={() => {
-                  onRunPanelChange(false);
-                }}
-                showFooterControls={false}
               />
             </div>
           </div>
