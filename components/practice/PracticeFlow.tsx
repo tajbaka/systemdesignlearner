@@ -150,6 +150,7 @@ function PracticeFlowInner() {
     buildSandboxFeedback,
     isSignedIn: isSignedIn ?? false,
     getFocusedFeedback,
+    apiMobileEditing,
   });
 
   // Reset hideTooltipTemp when stage changes

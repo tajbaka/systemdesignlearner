@@ -18,6 +18,8 @@ type PracticeSessionValue = ReturnType<typeof usePracticeSession>;
 
 export type NavigationOptions = StepEvaluationOptions & {
   isSignedIn: boolean;
+  /** Whether the API mobile editor is currently open */
+  apiMobileEditing?: boolean;
 };
 
 /** Convert step to URL format */
@@ -120,13 +122,17 @@ export function usePracticeNavigation(session: PracticeSessionValue, options: Na
 
   /**
    * Handle "Back" button click.
-   * Navigates to the previous step.
+   * On mobile API step with editor open: closes editor and returns to endpoint list.
+   * Otherwise: navigates to the previous step.
    */
   const handleBack = () => {
     if (session.isReadOnly) return;
 
-    // Close API editor if open (mobile)
-    emit("apiEditor:close");
+    // If on API step with mobile editor open, just close the editor (don't navigate)
+    if (session.currentStep === "api" && options.apiMobileEditing) {
+      emit("apiEditor:close");
+      return;
+    }
 
     // Navigate to previous step
     const prevStep = getPrevStep(session.currentStep);
