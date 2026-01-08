@@ -9,7 +9,6 @@ import {
   type VerificationResult,
   type VerificationContext,
 } from "@/lib/practice/verification";
-import { loadScenarioReference } from "@/lib/practice/loader";
 import { loadScoringConfig } from "@/lib/scoring/index";
 import { SCENARIOS } from "@/lib/scenarios";
 import type { Requirements, ApiEndpoint } from "@/lib/practice/types";
@@ -57,15 +56,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Load scenario reference and scoring config dynamically
-    const [reference, scoringConfig] = await Promise.all([
-      loadScenarioReference(slug),
-      loadScoringConfig(slug),
-    ]);
+    // Load scoring config as source of truth
+    const scoringConfig = await loadScoringConfig(slug);
 
     const context: VerificationContext = {
       scenarioTitle: scenario.title,
-      reference,
       scoringConfig,
     };
 

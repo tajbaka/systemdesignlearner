@@ -1,21 +1,4 @@
-import type {
-  HighLevelChoice,
-  LowLevel,
-  PracticeState,
-  PracticeDesignState,
-  PracticeRunState,
-  Requirements,
-  PracticeApiDefinitionState,
-} from "./types";
-import * as ScenarioConfigs from "./scenario-configs";
-
-/**
- * Create default requirements for a specific scenario.
- * @param slug - The scenario slug (defaults to "url-shortener")
- */
-export const makeDefaultRequirements = (slug = "url-shortener"): Requirements => {
-  return ScenarioConfigs.makeDefaultRequirements(slug);
-};
+import type { HighLevelChoice, LowLevel, PracticeStep } from "./types";
 
 export const PRESET_CHOICES: HighLevelChoice[] = [
   {
@@ -87,40 +70,42 @@ export const makeDefaultLowLevel = (): LowLevel => ({
 });
 
 /**
- * Create default design state for a specific scenario.
- * @param slug - The scenario slug (defaults to "url-shortener")
- */
-export const makeDefaultDesignState = (slug = "url-shortener"): PracticeDesignState => {
-  return ScenarioConfigs.makeDefaultDesignState(slug);
-};
-
-/**
- * Create default run state for a specific scenario.
- * @param slug - The scenario slug (defaults to "url-shortener")
- */
-export const makeDefaultRunState = (slug = "url-shortener"): PracticeRunState => {
-  return ScenarioConfigs.makeDefaultRunState(slug);
-};
-
-/**
- * Create default API definition for a specific scenario.
- * @param slug - The scenario slug (defaults to "url-shortener")
- */
-export const makeDefaultApiDefinition = (slug = "url-shortener"): PracticeApiDefinitionState => {
-  return ScenarioConfigs.makeDefaultApiDefinition(slug);
-};
-
-/**
  * Create initial practice state for a specific scenario.
  * @param slug - The scenario slug (defaults to "url-shortener")
  */
-export const makeInitialPracticeState = (slug = "url-shortener"): PracticeState => ({
+export const makeInitialPracticeState = (slug = "url-shortener") => ({
   slug,
-  currentStep: "functional",
-  requirements: makeDefaultRequirements(slug),
-  apiDefinition: makeDefaultApiDefinition(slug),
-  design: makeDefaultDesignState(slug),
-  run: makeDefaultRunState(slug),
+  currentStep: "functional" as PracticeStep,
+  requirements: {
+    functionalSummary: "",
+    functional: {},
+    nonFunctional: {
+      readRps: 0,
+      writeRps: 0,
+      p95RedirectMs: 0,
+      rateLimitNotes: "",
+      availability: "99.9" as const,
+      notes: "",
+    },
+  },
+  apiDefinition: {
+    endpoints: [],
+  },
+  design: {
+    nodes: [],
+    edges: [],
+    guidedStepIndex: 0,
+    guidedCompleted: false,
+    guidedDismissed: false,
+    freeModeUnlocked: false,
+    redirectMode: "302" as const,
+  },
+  run: {
+    attempts: 0,
+    chaosMode: false,
+    isRunning: false,
+    lastResult: null,
+  },
   auth: {
     isAuthed: false,
     skipped: false,

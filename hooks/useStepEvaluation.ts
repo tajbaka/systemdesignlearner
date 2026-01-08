@@ -250,8 +250,13 @@ async function evaluateDesignStep(
 
   const scenario = SCENARIOS.find((s) => s.id === session.state.slug) ?? SCENARIOS[0];
 
+  // Load scoring config first to ensure guidance rules are available
+  const { loadScoringConfig } = await import("@/lib/scoring");
+  await loadScoringConfig(session.state.slug);
+
   // Check for core design guidance issues first
   const guidance = evaluateDesignGuidance(session.state.design, session.state.slug);
+  console.log("guidance", guidance);
   if (guidance && guidance.level === "core") {
     const feedback: FeedbackResult = {
       score: 0,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import type { ComponentKind } from "@/components/canvas/types";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import DesignStage from "@/components/practice/stages/DesignStage";
@@ -12,53 +12,70 @@ import type {
 } from "@/lib/practice/types";
 import Palette from "@/components/canvas/Palette";
 import { COMPONENT_LIBRARY } from "@/components/canvas/data";
-import { getScenarioReferenceSync } from "@/lib/practice/loader";
+import { getScoringConfigSync, loadScoringConfig } from "@/lib/scoring";
 import { SCENARIOS } from "@/lib/scenarios";
 
-/** Feature-gated component categories that require specific functional requirements */
-const FEATURE_GATED_CATEGORIES: Record<string, string[]> = {
-  analytics: ["basic-analytics", "analytics"],
-  rateLimit: ["rate-limiting", "rate-limit"],
-  admin: ["admin-delete", "admin"],
-  auth: ["user-accounts", "authentication"],
+const componentSpecFor = (kind: ComponentKind) => {
+  const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind);
+  if (!spec) {
+    throw new Error(`Component spec not found for kind: ${kind}`);
+  }
+  return spec;
 };
 
 /**
- * Compute allowed components based on scenario reference JSON and user requirements.
+ * Compute allowed components based on scoring config and user requirements.
+ * Uses componentRequirements from scoring config to determine which components
+ * should be available based on functional requirements.
  */
 const computeAllowedComponents = (
   requirements: Requirements,
   _apiDefinition: PracticeApiDefinitionState,
   slug: string
 ): ComponentKind[] => {
-  const reference = getScenarioReferenceSync(slug);
-  const componentsByCategory = reference?.components as Record<string, ComponentKind[]> | undefined;
+  const config = getScoringConfigSync(slug);
+  const componentKinds = new Set<ComponentKind>();
 
-  // No reference JSON - use suggestedComponents from SCENARIOS
-  if (!componentsByCategory) {
-    const scenario = SCENARIOS.find((s) => s.id === slug);
-    return (scenario?.suggestedComponents as ComponentKind[]) ?? [];
+  // Get components from scoring config componentRequirements
+  if (config?.steps?.design?.componentRequirements) {
+    config.steps.design.componentRequirements.forEach((req) => {
+      // Always include the component kind
+      if (req.kind) {
+        componentKinds.add(req.kind as ComponentKind);
+      }
+
+      // Include alternative components
+      if (req.alternativesAccepted) {
+        req.alternativesAccepted.forEach((alt) => {
+          componentKinds.add(alt as ComponentKind);
+        });
+      }
+
+      // For optional components, check if requiredBy features are enabled
+      if (req.requiredBy && req.requiredBy.length > 0) {
+        const hasRequiredFeature = req.requiredBy.some(
+          (featureId) => requirements.functional[featureId]
+        );
+        if (!hasRequiredFeature && !req.required) {
+          // Optional component that requires a feature - only show if feature is enabled
+          componentKinds.delete(req.kind as ComponentKind);
+        }
+      }
+    });
   }
 
-  const set = new Set<ComponentKind>();
-
-  // Add all defined categories except feature-gated ones
-  const featureGatedKeys = new Set(Object.keys(FEATURE_GATED_CATEGORIES));
-  for (const [category, components] of Object.entries(componentsByCategory)) {
-    if (!featureGatedKeys.has(category)) {
-      components.forEach((kind) => set.add(kind));
-    }
+  // If we have components from config, return them
+  if (componentKinds.size > 0) {
+    return Array.from(componentKinds);
   }
 
-  // Add feature-gated categories based on functional requirements
-  for (const [category, featureIds] of Object.entries(FEATURE_GATED_CATEGORIES)) {
-    const hasFeature = featureIds.some((id) => requirements.functional[id]);
-    if (hasFeature && componentsByCategory[category]) {
-      componentsByCategory[category].forEach((kind) => set.add(kind));
-    }
+  // Fall back to suggestedComponents from SCENARIOS
+  const scenario = SCENARIOS.find((s) => s.id === slug);
+  if (scenario?.suggestedComponents) {
+    return scenario.suggestedComponents as ComponentKind[];
   }
 
-  return Array.from(set);
+  return [];
 };
 
 const nextSpawnPosition = (nodes: PracticeDesignState["nodes"]) => {
@@ -80,6 +97,80 @@ export function HighLevelDesignStep({
   onMobilePaletteChange,
 }: HighLevelDesignStepProps) {
   const { state, setDesign, setRun, setStepScore, isReadOnly } = usePracticeSession();
+
+  // Preload scoring config to ensure components are available
+  useEffect(() => {
+    loadScoringConfig(state.slug).catch((err) => {
+      console.warn(`[SandboxStep] Failed to preload scoring config for ${state.slug}:`, err);
+    });
+  }, [state.slug]);
+
+  // Initialize default component based on first guidance rule if design is empty
+  useEffect(() => {
+    if (isReadOnly || state.design.nodes.length > 0) return;
+
+    const initializeDefaultComponent = async () => {
+      try {
+        // Load scoring config
+        await loadScoringConfig(state.slug);
+        const config = getScoringConfigSync(state.slug);
+
+        if (!config?.steps?.design?.guidance?.rules) return;
+
+        // Find the first guidance rule with type "hasKind" to determine initial component
+        const firstHasKindRule = config.steps.design.guidance.rules.find(
+          (rule) => rule.check.type === "hasKind"
+        );
+
+        if (!firstHasKindRule || firstHasKindRule.check.type !== "hasKind") return;
+
+        const initialKind = firstHasKindRule.check.kind as ComponentKind;
+
+        // Check if this component is allowed for this scenario
+        const allowedComponents = computeAllowedComponents(
+          state.requirements,
+          state.apiDefinition,
+          state.slug
+        );
+
+        if (!allowedComponents.includes(initialKind)) return;
+
+        // Place the component at default position
+        const spec = componentSpecFor(initialKind);
+        const uniqueId =
+          typeof crypto !== "undefined" && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        setDesign((prev) => ({
+          ...prev,
+          nodes: [
+            {
+              id: `node-${initialKind}-${uniqueId}`,
+              spec,
+              x: -120,
+              y: -140,
+              replicas: 1,
+            },
+          ],
+        }));
+      } catch (error) {
+        console.warn(
+          `[SandboxStep] Failed to initialize default component for ${state.slug}:`,
+          error
+        );
+      }
+    };
+
+    initializeDefaultComponent();
+  }, [
+    state.slug,
+    state.design.nodes.length,
+    state.requirements,
+    state.apiDefinition,
+    isReadOnly,
+    setDesign,
+  ]);
 
   const allowedComponents = useMemo(
     () => computeAllowedComponents(state.requirements, state.apiDefinition, state.slug),

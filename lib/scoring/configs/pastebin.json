@@ -469,7 +469,81 @@
             "present": "Excellent! CDN caches content from Object Store for fast delivery."
           }
         }
-      ]
+      ],
+      "guidance": {
+        "rules": [
+          {
+            "id": "add-web",
+            "level": "core",
+            "check": { "type": "hasKind", "kind": "Web" },
+            "question": "Where do requests originate from in the current diagram?",
+            "hint": "Start with a client/Web node so requests have an entry point."
+          },
+          {
+            "id": "add-api-gateway",
+            "level": "core",
+            "check": { "type": "hasKind", "kind": "API Gateway" },
+            "question": "What component handles incoming HTTP requests, routing, and rate limiting?",
+            "hint": "Clients need an API Gateway to handle routing and request validation."
+          },
+          {
+            "id": "connect-web-api",
+            "level": "core",
+            "check": { "type": "hasConnection", "from": "Web", "to": "API Gateway" },
+            "question": "How does traffic flow from the Web client to the API Gateway?",
+            "hint": "Connect the Web client to the API Gateway so requests can reach your backend."
+          },
+          {
+            "id": "add-service",
+            "level": "core",
+            "check": { "type": "hasKind", "kind": "Service" },
+            "question": "Which component handles the paste creation and retrieval logic?",
+            "hint": "A Service layer is required to handle paste operations."
+          },
+          {
+            "id": "connect-api-service",
+            "level": "core",
+            "check": { "type": "hasConnection", "from": "API Gateway", "to": "Service" },
+            "question": "How do requests flow from the API Gateway to the Service?",
+            "hint": "Wire the API Gateway to your Service for request handling."
+          },
+          {
+            "id": "add-object-store",
+            "level": "core",
+            "check": { "type": "hasKind", "kind": "Object Store (S3)" },
+            "question": "Where will large text content be stored durably and cost-effectively?",
+            "hint": "Paste content (text blobs) is ideal for object storage like S3."
+          },
+          {
+            "id": "connect-service-storage",
+            "level": "core",
+            "check": { "type": "hasConnection", "from": "Service", "to": "Object Store (S3)" },
+            "question": "How does the Service store and retrieve paste content?",
+            "hint": "Connect the Service to Object Store to persist paste content."
+          },
+          {
+            "id": "add-cdn",
+            "level": "bonus",
+            "check": { "type": "hasKind", "kind": "CDN" },
+            "question": "For frequently accessed pastes, what component can serve content from edge locations with minimal latency?",
+            "hint": "A CDN caches static paste content at edge locations for faster global access."
+          },
+          {
+            "id": "connect-cdn-storage",
+            "level": "bonus",
+            "check": { "type": "hasConnection", "from": "CDN", "to": "Object Store (S3)" },
+            "question": "How does the CDN fetch content when there's a cache miss?",
+            "hint": "Connect CDN to Object Store so it can pull content on cache misses."
+          },
+          {
+            "id": "add-database",
+            "level": "bonus",
+            "check": { "type": "hasKind", "kind": "DB (Postgres)" },
+            "question": "Where will you store paste metadata (IDs, expiration, ownership) for quick lookups?",
+            "hint": "A database stores paste metadata separately from the content for efficient queries."
+          }
+        ]
+      }
     },
     "simulation": {
       "maxScore": 5,

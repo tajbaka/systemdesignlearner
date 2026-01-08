@@ -3,6 +3,7 @@ import type { FeedbackResult } from "@/lib/scoring/types";
 import type { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import type { VerificationState } from "./usePracticeScoring";
 import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
+import { loadScoringConfig } from "@/lib/scoring";
 
 /** Safety timeout for simulation completion - fallback if simulation hangs */
 const SIMULATION_COMPLETION_TIMEOUT_MS = 20000;
@@ -173,6 +174,16 @@ export function useDesignEvaluation(
   setVerification: (state: VerificationState) => void
 ) {
   const [waitingForSimulation, setWaitingForSimulation] = useState(false);
+
+  // Preload scoring config to ensure guidance rules are available
+  useEffect(() => {
+    loadScoringConfig(session.state.slug).catch((err) => {
+      console.warn(
+        `[useSandboxEvaluation] Failed to preload scoring config for ${session.state.slug}:`,
+        err
+      );
+    });
+  }, [session.state.slug]);
 
   // Auto-show feedback when simulation completes
   useEffect(() => {

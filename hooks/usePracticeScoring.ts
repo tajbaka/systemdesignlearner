@@ -4,11 +4,9 @@ import type { FeedbackResult } from "@/lib/scoring/types";
 import type { ProgressStep } from "@/lib/scoring/ai/progress";
 import type { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import {
-  evaluateFunctionalOptimized,
-  evaluateNonFunctionalRequirements,
-  evaluateApiOptimized,
-  createFunctionalProgress,
-  createApiProgress,
+  scoreFunctionalRequirements,
+  scoreNonFunctionalRequirements,
+  scoreApiDefinition,
   loadScoringConfig,
 } from "@/lib/scoring/index";
 import { logger } from "@/lib/logger";
@@ -43,26 +41,19 @@ export function usePracticeScoring() {
 
       switch (currentStep) {
         case "functional": {
-          const progress = createFunctionalProgress();
-          progress.onProgress(setScoringProgressSteps);
-
-          result = await evaluateFunctionalOptimized(
+          result = await scoreFunctionalRequirements(
             {
               functionalSummary: session.state.requirements.functionalSummary,
               selectedRequirements: session.state.requirements.functional,
             },
-            config.steps.functional,
-            {
-              useAI: true,
-              explainScore: true,
-              progress,
-            }
+            config,
+            session.state.slug
           );
           break;
         }
 
         case "nonFunctional": {
-          result = evaluateNonFunctionalRequirements(
+          result = await scoreNonFunctionalRequirements(
             {
               readRps: session.state.requirements.nonFunctional.readRps,
               writeRps: session.state.requirements.nonFunctional.writeRps,
@@ -72,31 +63,25 @@ export function usePracticeScoring() {
               notes: session.state.requirements.nonFunctional.notes,
               functionalRequirements: session.state.requirements.functional,
             },
-            config.steps.nonFunctional
+            config,
+            session.state.slug
           );
           break;
         }
 
         case "api": {
-          const progress = createApiProgress();
-          progress.onProgress(setScoringProgressSteps);
-
           // Filter out empty placeholder endpoints before scoring
           const validEndpoints = session.state.apiDefinition.endpoints.filter(
             (ep) => ep.path.trim().length > 0
           );
 
-          result = await evaluateApiOptimized(
+          result = await scoreApiDefinition(
             {
               endpoints: validEndpoints,
               functionalRequirements: session.state.requirements.functional,
             },
-            config.steps.api,
-            {
-              useAI: true,
-              explainScore: true,
-              progress,
-            }
+            config,
+            session.state.slug
           );
           break;
         }

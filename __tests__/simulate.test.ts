@@ -2,8 +2,17 @@ import { describe, it, expect } from "vitest";
 import { SCENARIOS } from "@/lib/scenarios";
 import type { PlacedNode, Edge, ComponentSpec } from "@/components/canvas/types";
 import { simulate } from "@/components/canvas/simulation";
-import { mulberry32 } from "@/lib/rng";
 import { snapToGrid, findScenarioPath } from "@/components/canvas/utils";
+
+// Simple deterministic RNG for testing (mulberry32 implementation)
+function mulberry32(seed: number): () => number {
+  return function () {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 
 const makeSpec = (
   kind: ComponentSpec["kind"],

@@ -2,7 +2,6 @@ import type { ApiEndpoint } from "@/lib/practice/types";
 
 type HttpMethod = ApiEndpoint["method"];
 
-const normalizeText = (value: string) => value.replace(/\r\n/g, "\n").trim();
 const normalizePathKey = (value: string) => value.trim().replace(/^\/+/, "");
 
 const FALLBACK_PLACEHOLDER =
@@ -37,12 +36,6 @@ const SPECIFIC_PLACEHOLDERS: Array<{
   },
 ];
 
-const LEGACY_PLACEHOLDERS = new Set<string>(
-  [FALLBACK_PLACEHOLDER, "Describe the request payload, response codes, and validation rules."].map(
-    normalizeText
-  )
-);
-
 export const getApiNotesPlaceholder = (method: HttpMethod, rawPath: string): string => {
   const normalizedPath = normalizePathKey(rawPath);
   const special = SPECIFIC_PLACEHOLDERS.find(
@@ -54,22 +47,4 @@ export const getApiNotesPlaceholder = (method: HttpMethod, rawPath: string): str
   }
 
   return METHOD_PLACEHOLDERS[method] ?? FALLBACK_PLACEHOLDER;
-};
-
-export const isLegacyPlaceholderContent = (
-  text: string | undefined,
-  method: HttpMethod,
-  rawPath: string
-): boolean => {
-  if (typeof text !== "string") {
-    return false;
-  }
-
-  const normalized = normalizeText(text);
-  if (!normalized) {
-    return false;
-  }
-
-  const currentPlaceholder = normalizeText(getApiNotesPlaceholder(method, rawPath));
-  return normalized === currentPlaceholder || LEGACY_PLACEHOLDERS.has(normalized);
 };

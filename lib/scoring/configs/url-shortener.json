@@ -6,23 +6,12 @@
   "steps": {
     "functional": {
       "maxScore": 20,
-      "minKeywordsMatch": 1,
-      "minTextLength": 50,
       "coreRequirements": [
         {
           "id": "url-shortening",
           "label": "URL Shortening",
-          "description": "Accept a long URL and return a short, compact alias.",
-          "keywords": [
-            "shorten",
-            "create",
-            "generate",
-            "alias",
-            "short url",
-            "short link",
-            "compact",
-            "slug"
-          ],
+          "description": "Accept a long URL and return a short, compact alias. Users should be able to submit a long URL and receive a shortened version.",
+          "keywords": ["shorten", "create", "alias"],
           "weight": 20,
           "required": true,
           "category": "core",
@@ -34,17 +23,8 @@
         {
           "id": "redirection",
           "label": "URL Redirection",
-          "description": "Resolve a short URL and redirect the client to the original long URL.",
-          "keywords": [
-            "redirect",
-            "forward",
-            "resolve",
-            "lookup",
-            "301",
-            "302",
-            "navigate",
-            "send to"
-          ],
+          "description": "Resolve a short URL and redirect the client to the original long URL. When a user visits the short URL, they should be redirected to the original destination.",
+          "keywords": ["redirect", "resolve", "302"],
           "weight": 20,
           "required": true,
           "category": "core",
@@ -56,23 +36,15 @@
         {
           "id": "uniqueness",
           "label": "Uniqueness Guarantee",
-          "description": "Each short URL is unique and maps to exactly one long URL.",
-          "keywords": [
-            "unique",
-            "collision",
-            "duplicate",
-            "hash",
-            "base62",
-            "distinct",
-            "no conflict",
-            "guarantee"
-          ],
+          "description": "Each short URL is unique and maps to exactly one long URL. Pre-generating codes in batches is the preferred approach to guarantee uniqueness and avoid runtime collisions.",
+          "keywords": ["unique", "pre-generate", "pool"],
           "weight": 20,
           "required": true,
           "category": "core",
           "examplePhrases": [
             "Every short link is unique.",
-            "Use hashing, counters, or base62 to avoid collisions."
+            "Pre-generate codes in batches to guarantee uniqueness.",
+            "Use a pool of pre-generated codes to avoid collisions at runtime."
           ]
         }
       ],
@@ -80,8 +52,8 @@
         {
           "id": "custom-aliases",
           "label": "Custom Aliases",
-          "description": "Allow users to provide a custom short code instead of a generated one.",
-          "keywords": ["custom", "vanity", "personalized", "user-defined", "choose", "specific"],
+          "description": "Allow users to provide a custom short code instead of a generated one. Users can choose their own vanity URLs.",
+          "keywords": ["custom", "vanity"],
           "weight": 1,
           "required": false,
           "category": "optional",
@@ -93,8 +65,8 @@
         {
           "id": "link-expiration",
           "label": "Link Expiration",
-          "description": "Support optional expiration dates or TTL after which links are invalid.",
-          "keywords": ["expire", "ttl", "temporary", "time-limited", "timeout", "lifetime"],
+          "description": "Support optional expiration dates or TTL after which links are invalid. Links can expire after a set period.",
+          "keywords": ["expire", "ttl"],
           "weight": 1,
           "required": false,
           "category": "optional",
@@ -106,17 +78,8 @@
         {
           "id": "basic-analytics",
           "label": "Analytics and Metrics",
-          "description": "Track usage per short URL such as click counts and referrers.",
-          "keywords": [
-            "analytics",
-            "metrics",
-            "clicks",
-            "count",
-            "stats",
-            "track",
-            "monitor",
-            "views"
-          ],
+          "description": "Track usage per short URL such as click counts and referrers. Monitor how many times each short URL is accessed.",
+          "keywords": ["analytics", "clicks", "track"],
           "weight": 1,
           "required": false,
           "category": "optional",
@@ -128,8 +91,8 @@
         {
           "id": "user-accounts",
           "label": "User Authentication",
-          "description": "Support accounts and API keys to manage owned links.",
-          "keywords": ["auth", "login", "account", "user", "register", "sign in", "api key"],
+          "description": "Support accounts and API keys to manage owned links. Users can sign in to manage their URLs.",
+          "keywords": ["auth", "login", "api key"],
           "weight": 1,
           "required": false,
           "category": "optional",
@@ -141,8 +104,8 @@
         {
           "id": "admin-delete",
           "label": "URL Management and Deletion",
-          "description": "List, edit, and delete created short URLs.",
-          "keywords": ["delete", "remove", "manage", "list", "edit", "update", "admin"],
+          "description": "List, edit, and delete created short URLs. Users can manage and remove links they created.",
+          "keywords": ["delete", "manage"],
           "weight": 1,
           "required": false,
           "category": "optional",
@@ -155,47 +118,24 @@
     },
     "nonFunctional": {
       "maxScore": 20,
-      "minTextLength": 50,
       "coreRequirements": [
         {
           "id": "performance",
           "label": "Performance and Latency",
-          "description": "Redirects should be fast. Aim for sub 100 ms p95 on the redirect path.",
-          "keywords": [
-            "fast",
-            "quick",
-            "responsive",
-            "low latency",
-            "speed",
-            "instant",
-            "milliseconds",
-            "p95",
-            "p99"
-          ],
+          "description": "Redirects should be fast. Aim for sub 10 ms for the lookup operation, with p95 under 100 ms including network overhead. Low latency is critical for user experience.",
+          "keywords": ["latency", "fast", "10ms"],
           "weight": 5,
           "required": true,
           "examplePhrases": [
-            "Redirects should target p95 under 100 ms.",
-            "Keep overall responsiveness high for good UX."
+            "Redirect lookups should target under 10 ms for the database/cache operation.",
+            "Keep overall redirect latency low for good user experience."
           ]
         },
         {
           "id": "scalability",
           "label": "Scalability and Throughput",
-          "description": "Handle large read traffic with growth and spikes. Reference targets from the brief.",
-          "keywords": [
-            "scale",
-            "traffic",
-            "load",
-            "growth",
-            "volume",
-            "requests",
-            "concurrent",
-            "high traffic",
-            "throughput",
-            "rps",
-            "qps"
-          ],
+          "description": "Handle large read traffic with growth and spikes. Support about 1B reads per day (10k rps average) with 10x-100x spikes. Writes in millions per day with 1-5B lifetime URLs.",
+          "keywords": ["scale", "throughput", "rps"],
           "weight": 5,
           "required": true,
           "examplePhrases": [
@@ -206,18 +146,8 @@
         {
           "id": "availability",
           "label": "Availability and Reliability",
-          "description": "Service should be highly available with no single points of failure.",
-          "keywords": [
-            "available",
-            "uptime",
-            "reliable",
-            "always on",
-            "24/7",
-            "downtime",
-            "fault tolerant",
-            "99.9",
-            "sla"
-          ],
+          "description": "Service should be highly available with no single points of failure. Target 99.9% uptime with redundancy and fault tolerance.",
+          "keywords": ["availability", "uptime", "99.9"],
           "weight": 5,
           "required": true,
           "examplePhrases": [
@@ -230,17 +160,8 @@
         {
           "id": "data-durability",
           "label": "Data Durability and Persistence",
-          "description": "URL mappings should survive crashes. Use persistence, replication, and backups.",
-          "keywords": [
-            "durable",
-            "persist",
-            "backup",
-            "replicate",
-            "no data loss",
-            "recovery",
-            "snapshot",
-            "wal"
-          ],
+          "description": "URL mappings should survive crashes. Use persistence, replication, and backups to prevent data loss.",
+          "keywords": ["durable", "replicate", "backup"],
           "weight": 2,
           "required": false,
           "examplePhrases": [
@@ -251,16 +172,8 @@
         {
           "id": "consistency-model",
           "label": "Consistency Tradeoffs",
-          "description": "Pick acceptable consistency per path. Redirects need strong mapping. Analytics can be eventual.",
-          "keywords": [
-            "consistency",
-            "eventual",
-            "strong",
-            "cap theorem",
-            "partition",
-            "trade-off",
-            "stale reads"
-          ],
+          "description": "Pick acceptable consistency per path. Redirects need strong consistency for URL mappings. Analytics can use eventual consistency.",
+          "keywords": ["consistency", "eventual", "strong"],
           "weight": 2,
           "required": false,
           "examplePhrases": [
@@ -271,17 +184,8 @@
         {
           "id": "security",
           "label": "Security and Abuse Prevention",
-          "description": "Mitigate abuse and attacks. Validate targets and control traffic.",
-          "keywords": [
-            "security",
-            "abuse",
-            "rate limit",
-            "ddos",
-            "malicious",
-            "spam",
-            "throttle",
-            "blacklist"
-          ],
+          "description": "Mitigate abuse and attacks. Validate targets and control traffic with rate limiting and bot protection.",
+          "keywords": ["security", "rate limit", "abuse"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -292,17 +196,8 @@
         {
           "id": "monitoring",
           "label": "Observability and Monitoring",
-          "description": "Collect metrics, logs, traces, and set alerts for key SLOs.",
-          "keywords": [
-            "monitor",
-            "observability",
-            "metrics",
-            "logging",
-            "alerts",
-            "dashboard",
-            "trace",
-            "debug"
-          ],
+          "description": "Collect metrics, logs, traces, and set alerts for key SLOs. Monitor latency, error rates, and cache hit ratios.",
+          "keywords": ["monitor", "metrics", "alerts"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -313,15 +208,8 @@
         {
           "id": "caching-policy",
           "label": "Caching Policy",
-          "description": "Choose 302 to count every hit or 301 to favor client caching.",
-          "keywords": [
-            "cache",
-            "301",
-            "302",
-            "analytics accuracy",
-            "browser cache",
-            "redirect policy"
-          ],
+          "description": "Choose 302 to count every hit or 301 to favor client caching. Most URL shorteners use 302 for analytics accuracy.",
+          "keywords": ["302", "301", "cache"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -332,57 +220,39 @@
         {
           "id": "throughput-optimizations",
           "label": "Throughput and Latency Optimizations",
-          "description": "Use caches for hot keys, DB indexes on short_url, and optional read replicas.",
-          "keywords": ["cache", "redis", "index", "replica", "hot keys", "throughput", "latency"],
+          "description": "Use caches for hot keys, DB indexes on short_url, and master-replica database setup for read scaling. Master handles writes, replicas handle reads.",
+          "keywords": ["cache", "replica", "master-replica"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
             "Cache frequent short links in Redis.",
-            "Index short_url and add read replicas if needed."
+            "Use master-replica database setup: master for writes, replicas for reads.",
+            "Index short_url and add read replicas to reduce load on master database."
           ]
         },
         {
           "id": "id-generation-resilience",
           "label": "ID Generation Resilience",
-          "description": "If using a counter service, avoid a single point of failure and plan for contention.",
-          "keywords": [
-            "id",
-            "counter",
-            "generator",
-            "availability",
-            "contention",
-            "shard",
-            "retry"
-          ],
+          "description": "Pre-generate codes in batches to avoid runtime collisions. Store with is_used flag and assign on demand. If using counters, avoid single points of failure.",
+          "keywords": ["pre-generate", "batch", "pool"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
+            "Pre-generate millions of codes in batches and store with is_used flag.",
             "Shard counter ranges to remove a single bottleneck.",
-            "Fallback to random or hash based IDs on counter errors."
+            "Use pre-generated code pool to avoid runtime collision checks."
           ]
         }
       ]
     },
     "api": {
       "maxScore": 25,
-      "minKeywordsMatch": 1,
       "coreRequirements": [
         {
           "id": "create-url-endpoint",
           "label": "URL Creation Endpoint",
-          "description": "POST endpoint to create shortened URLs with documented request/response",
-          "keywords": [
-            "POST",
-            "create",
-            "shorten",
-            "body",
-            "request",
-            "url",
-            "api/v1",
-            "fields",
-            "response",
-            "returns"
-          ],
+          "description": "POST endpoint to create shortened URLs with documented request/response. Request body should include the long URL, optional custom alias, and optional expiration. Response returns shortUrl, code, and metadata. Handle errors: 400 (invalid URL), 409 (alias taken), 429 (rate limit).",
+          "keywords": ["POST", "create", "api/v1"],
           "weight": 25,
           "required": true,
           "examplePhrases": [
@@ -392,8 +262,8 @@
         {
           "id": "redirect-endpoint",
           "label": "Redirect Endpoint",
-          "description": "GET endpoint to redirect short URLs with documented behavior",
-          "keywords": ["GET", "redirect", "302", "301", "slug", "code", "param", "404", "410"],
+          "description": "GET endpoint to redirect short URLs with documented behavior. Takes a short code and returns HTTP 301 or 302 redirect to original URL (302 recommended for analytics). Handle 404 (not found) and 410 (expired).",
+          "keywords": ["GET", "redirect", "302"],
           "weight": 25,
           "required": true,
           "examplePhrases": [
@@ -405,18 +275,8 @@
         {
           "id": "error-handling",
           "label": "Error Handling",
-          "description": "Document error codes and scenarios (400, 404, 409, 410, 429)",
-          "keywords": [
-            "error",
-            "400",
-            "404",
-            "409",
-            "410",
-            "429",
-            "invalid",
-            "not found",
-            "expired"
-          ],
+          "description": "Document error codes and scenarios: 400 (invalid URL), 404 (not found), 409 (alias taken), 410 (expired), 429 (rate limit).",
+          "keywords": ["error", "400", "404", "409"],
           "weight": 3,
           "required": false,
           "examplePhrases": [
@@ -427,8 +287,8 @@
         {
           "id": "analytics-endpoint",
           "label": "Analytics Endpoint",
-          "description": "GET endpoint to retrieve click stats and analytics",
-          "keywords": ["stats", "analytics", "clicks", "metrics", "GET", "api/v1"],
+          "description": "GET endpoint to retrieve click stats and analytics. Returns click count, createdAt, and lastAccessedAt for a short URL.",
+          "keywords": ["analytics", "clicks", "stats"],
           "weight": 2,
           "required": false,
           "examplePhrases": [
@@ -439,8 +299,8 @@
         {
           "id": "update-endpoint",
           "label": "Update Endpoint",
-          "description": "PATCH or PUT endpoint to modify URL properties",
-          "keywords": ["PATCH", "PUT", "update", "modify", "edit", "change", "url", "destination"],
+          "description": "PATCH or PUT endpoint to modify URL properties. Allows updating expiration or destination URL. Requires authentication.",
+          "keywords": ["PATCH", "PUT", "update"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -451,8 +311,8 @@
         {
           "id": "delete-endpoint",
           "label": "Delete Endpoint",
-          "description": "DELETE endpoint to remove URLs",
-          "keywords": ["DELETE", "remove", "delete"],
+          "description": "DELETE endpoint to remove URLs. Requires authentication. Returns 204 on success.",
+          "keywords": ["DELETE", "remove"],
           "weight": 1,
           "required": false,
           "examplePhrases": [
@@ -1012,7 +872,100 @@
             "incorrect": "Do Services initiate requests to the API Gateway, or do they receive requests from it? Think about the request-response pattern - who calls whom?"
           }
         }
-      ]
+      ],
+      "guidance": {
+        "rules": [
+          {
+            "id": "add-web",
+            "level": "core",
+            "check": { "type": "hasKind", "kind": "Web" },
+            "question": "Where do requests originate from in the current diagram?",
+            "hint": "Start with a client/Web node so requests have an entry point."
+          },
+          {
+            "id": "add-api-gateway",
+            "level": "core",
+            "check": { "type": "hasKind", "kind": "API Gateway" },
+            "question": "What component sits between users and backend services to terminate HTTP, enforce auth, and route traffic?",
+            "hint": "Clients need an API Gateway to handle routing, auth, and rate limiting."
+          },
+          {
+            "id": "connect-web-api",
+            "level": "core",
+            "check": { "type": "hasConnection", "from": "Web", "to": "API Gateway" },
+            "question": "How does traffic flow from the Web client into the API Gateway at the moment?",
+            "hint": "Connect the Web client to the API Gateway so requests can actually reach your backend."
+          },
+          {
+            "id": "add-service",
+            "level": "core",
+            "check": { "type": "hasKind", "kind": "Service" },
+            "question": "After the API Gateway, which component should execute the URL creation and redirect logic?",
+            "hint": "A Service layer is required to handle URL creation and redirect logic."
+          },
+          {
+            "id": "connect-api-service",
+            "level": "core",
+            "check": { "type": "hasConnection", "from": "API Gateway", "to": "Service" },
+            "question": "How are requests moving from the API Gateway into the Service layer right now?",
+            "hint": "Wire the API Gateway to your Service so requests continue through the stack."
+          },
+          {
+            "id": "add-database",
+            "level": "core",
+            "check": { "type": "hasKind", "kind": "DB (Postgres)" },
+            "question": "Where will the platform persist the short-to-long URL mappings for durability?",
+            "hint": "URL mappings need durable storage. Add a primary database (Postgres is fine)."
+          },
+          {
+            "id": "connect-service-db",
+            "level": "core",
+            "check": { "type": "hasConnection", "from": "Service", "to": "DB (Postgres)" },
+            "question": "How does the Service reach the database for reads and writes in the current layout?",
+            "hint": "Connect the Service to the database so it can store and fetch URL records."
+          },
+          {
+            "id": "add-second-service",
+            "level": "bonus",
+            "check": { "type": "hasKind", "kind": "Service", "minCount": 2 },
+            "question": "Right now one Service handles both shortening URLs and redirecting clicks. How could adding a separate redirect Service lighten the work on the write Service?",
+            "hint": "Split read-heavy redirects from write operations so you can scale each path independently."
+          },
+          {
+            "id": "add-cache",
+            "level": "bonus",
+            "check": { "type": "hasKind", "kind": "Cache (Redis)" },
+            "question": "What in-memory cache would reduce database load for hot redirects while keeping latency low?",
+            "hint": "A Redis/Memcached layer offloads hot redirects from the database and keeps p95 < 100ms."
+          },
+          {
+            "id": "connect-service-cache",
+            "level": "bonus",
+            "check": { "type": "hasConnection", "from": "Service", "to": "Cache (Redis)" },
+            "question": "If cache is present, how does the Service reach it before falling back to the database?",
+            "hint": "Remember to connect the Service to cache first and fall back to the database on a miss."
+          },
+          {
+            "id": "cache-service-db",
+            "level": "bonus",
+            "check": {
+              "type": "kindConnectedToFirstMissingSecond",
+              "kind": "Service",
+              "connectedTo": "Cache (Redis)",
+              "missingConnection": "DB (Postgres)"
+            },
+            "question": "The Service feeding cache still needs a fallback—can it also reach the database when a slug is missing?",
+            "hint": "The Service that talks to cache also needs a direct path to the database for cache misses."
+          },
+          {
+            "id": "rename-services",
+            "level": "bonus",
+            "check": { "type": "servicesHaveUniqueLabels", "minServices": 2 },
+            "question": "Can you rename the Services so it's obvious which one handles shortening and which one handles redirects?",
+            "hint": "Naming each Service after its role (e.g., Shorten vs Redirect) makes the diagram clearer."
+          }
+        ]
+      }
     },
     "simulation": {
       "maxScore": 5,

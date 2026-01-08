@@ -1,6 +1,5 @@
 import type { Requirements } from "./types";
 import type { ApiEndpoint } from "./types";
-import type { ScenarioReference } from "./reference/schema";
 import type { ProblemScoringConfig } from "@/lib/scoring/types";
 import { logger } from "@/lib/logger";
 
@@ -12,11 +11,10 @@ export type VerificationResult = {
 
 /**
  * Context needed for verification prompts.
- * Load these dynamically using loadScenarioReference() and loadScoringConfig().
+ * Uses scoring config as the source of truth for all requirements.
  */
 export type VerificationContext = {
   scenarioTitle: string;
-  reference: ScenarioReference;
   scoringConfig: ProblemScoringConfig;
 };
 
@@ -32,10 +30,6 @@ export type FunctionalVerificationInput = {
 export type NonFunctionalVerificationInput = {
   step: "nonFunctional";
   notes: string;
-  readRps: number;
-  writeRps: number;
-  p95RedirectMs: number;
-  availability: string;
 };
 
 export type ApiVerificationInput = {
@@ -85,52 +79,20 @@ Return ONLY valid JSON in this format:
   },
 
   nonFunctional: (input: NonFunctionalVerificationInput, context: VerificationContext) => {
-    const { scenarioTitle, reference } = context;
-    const nf = reference.nonFunctional;
-
-    // Extract categories from the JSON structure
-    const readThroughput = nf.categories.find((c) => c.id === "readThroughput");
-    const writeThroughput = nf.categories.find((c) => c.id === "writeThroughput");
-    const latency = nf.categories.find((c) => c.id === "latency");
-    const availabilityCategory = nf.categories.find((c) => c.id === "availability");
-
-    // Build acceptable ranges string, handling optional categories
-    const ranges: string[] = [];
-    if (readThroughput?.quantitative && "min" in readThroughput.quantitative) {
-      ranges.push(
-        `- Read throughput: ${readThroughput.quantitative.min}-${readThroughput.quantitative.max} rps (recommended: ${readThroughput.quantitative.recommended})`
-      );
-    }
-    if (writeThroughput?.quantitative && "min" in writeThroughput.quantitative) {
-      ranges.push(
-        `- Write throughput: ${writeThroughput.quantitative.min}-${writeThroughput.quantitative.max} rps (recommended: ${writeThroughput.quantitative.recommended})`
-      );
-    }
-    if (latency?.quantitative && "min" in latency.quantitative) {
-      ranges.push(
-        `- P95 latency: ${latency.quantitative.min}-${latency.quantitative.max} ms (recommended: ${latency.quantitative.recommended})`
-      );
-    }
-    if (availabilityCategory?.quantitative && "acceptable" in availabilityCategory.quantitative) {
-      ranges.push(`- Availability: ${availabilityCategory.quantitative.acceptable.join(", ")}`);
-    }
+    const { scenarioTitle, scoringConfig } = context;
+    const required = scoringConfig.steps.nonFunctional.coreRequirements || [];
+    const optional = scoringConfig.steps.nonFunctional.optionalRequirements || [];
 
     return `You are verifying non-functional requirements for a ${scenarioTitle} system design.
 
-**Acceptable Ranges:**
-${ranges.length > 0 ? ranges.join("\n") : "No specific ranges defined"}
+**Required Non-Functional Requirements (user MUST address these):**
+${required.map((r: { label: string; description: string }) => `- ${r.label}: ${r.description}`).join("\n")}
 
-**User's Input:**
-Text: ${input.notes}
-Read RPS: ${input.readRps}
-Write RPS: ${input.writeRps}
-P95 Latency: ${input.p95RedirectMs} ms
-Availability: ${input.availability}%
+**Optional Non-Functional Requirements (user may address these):**
+${optional.length > 0 ? optional.map((o: { label: string; description: string }) => `- ${o.label}: ${o.description}`).join("\n") : "None"}
 
 **Task:**
-1. Check if numeric values are within acceptable ranges
-2. Check if text description is reasonably detailed (blocking if completely empty)
-3. Verify text and numbers are somewhat aligned
+1. Check if text description addresses the required non-functional requirements (blocking if missing)
 
 Return ONLY valid JSON:
 {
@@ -141,26 +103,26 @@ Return ONLY valid JSON:
   },
 
   api: (input: ApiVerificationInput, context: VerificationContext) => {
-    const { scenarioTitle, reference } = context;
+    const { scenarioTitle, scoringConfig } = context;
+    const api = scoringConfig.steps.api;
 
-    // Support both apiEndpoints (legacy) and api.endpoints (new schema)
-    const apiEndpoints = reference.apiEndpoints ?? reference.api?.endpoints ?? [];
-
-    const requiredEndpoints = apiEndpoints.filter((e) => e.required);
-    const optionalEndpoints = apiEndpoints.filter(
-      (e) =>
-        !e.required &&
-        (!e.requiresFeature ||
-          input.selectedFeatures[e.requiresFeature as keyof typeof input.selectedFeatures])
+    const requiredEndpoints = api.requiredEndpoints || [];
+    const optionalEndpoints = (api.optionalEndpoints || []).filter(
+      (e: { requiredBy?: string[] }) => {
+        if (!e.requiredBy) return true;
+        return e.requiredBy.some(
+          (reqId: string) => input.selectedFeatures[reqId as keyof typeof input.selectedFeatures]
+        );
+      }
     );
 
     return `You are verifying API design for a ${scenarioTitle} system.
 
 **Required Endpoints:**
-${requiredEndpoints.map((e) => `- ${e.method} ${e.path}: ${e.purpose}`).join("\n")}
+${requiredEndpoints.map((e) => `- ${e.method} ${e.examplePath || e.pathPattern || "endpoint"}: ${e.purpose}`).join("\n")}
 
 **Optional Endpoints (based on selected features):**
-${optionalEndpoints.length > 0 ? optionalEndpoints.map((e) => `- ${e.method} ${e.path}: ${e.purpose}`).join("\n") : "None"}
+${optionalEndpoints.length > 0 ? optionalEndpoints.map((e) => `- ${e.method} ${e.examplePath || e.pathPattern || "endpoint"}: ${e.purpose}`).join("\n") : "None"}
 
 **User's API Definition:**
 ${input.endpoints.map((e) => `${e.method} ${e.path}: ${e.notes.substring(0, 100)}`).join("\n")}
@@ -214,20 +176,16 @@ export function buildFunctionalPrompt(
  */
 export function buildNonFunctionalPrompt(
   notes: string,
-  readRps: number,
-  writeRps: number,
-  p95RedirectMs: number,
-  availability: string,
+  _readRps: number,
+  _writeRps: number,
+  _p95RedirectMs: number,
+  _availability: string,
   context: VerificationContext
 ) {
   return buildVerificationPrompt(
     {
       step: "nonFunctional",
       notes,
-      readRps,
-      writeRps,
-      p95RedirectMs,
-      availability,
     },
     context
   );

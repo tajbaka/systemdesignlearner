@@ -28,10 +28,9 @@ import { getPracticeSession, savePracticeSession } from "@/lib/actions/practice"
 import { useLocalStorageMigration } from "@/hooks/useLocalStorageMigration";
 import { track } from "@/lib/analytics";
 import {
-  ensureApiDefinition,
   ensureAuthProgressConsistency,
   ensureIterativeFeedback,
-  ensureRequirements,
+  // ensureRequirements,
   mergeState,
 } from "@/lib/practice/migration";
 
@@ -43,13 +42,13 @@ type PracticeSessionContextValue = {
   isReadOnly: boolean;
   hydrated: boolean;
   currentStep: PracticeStep;
-  setRequirements: (value: Requirements) => void;
+  setAuth: (updater: (prev: PracticeAuthState) => PracticeAuthState) => void;
+  setRequirements: (requirements: Requirements) => void;
   setApiDefinition: (
     updater: (prev: PracticeApiDefinitionState) => PracticeApiDefinitionState
   ) => void;
   setDesign: (updater: (prev: PracticeDesignState) => PracticeDesignState) => void;
   setRun: (updater: (prev: PracticeRunState) => PracticeRunState) => void;
-  setAuth: (updater: (prev: PracticeAuthState) => PracticeAuthState) => void;
   markStep: (step: PracticeStep, value: boolean) => void;
   setStepScore: (step: keyof PracticeStepScores, result: FeedbackResult | undefined) => void;
   updateIterativeFeedback: (
@@ -128,7 +127,7 @@ export function PracticeSessionProvider({
         stored = loadPractice(slug);
       }
 
-      let merged = ensureAuthProgressConsistency(mergeState(stored, slug));
+      let merged = ensureAuthProgressConsistency(mergeState(stored as PracticeState | null, slug));
       // Use initialStep from URL instead of deriving
       merged = { ...merged, currentStep: initialStep };
       setState(merged);
@@ -226,36 +225,6 @@ export function PracticeSessionProvider({
     [isReadOnly]
   );
 
-  const setRequirements = useCallback(
-    (value: Requirements) => {
-      setStateWithTimestamp((prev) => ({
-        ...prev,
-        requirements: ensureRequirements(value, prev.slug),
-      }));
-    },
-    [setStateWithTimestamp]
-  );
-
-  const setApiDefinition = useCallback(
-    (updater: (prev: PracticeApiDefinitionState) => PracticeApiDefinitionState) => {
-      setStateWithTimestamp((prev) => ({
-        ...prev,
-        apiDefinition: ensureApiDefinition(updater(prev.apiDefinition), prev.slug),
-      }));
-    },
-    [setStateWithTimestamp]
-  );
-
-  const setDesign = useCallback(
-    (updater: (prev: PracticeDesignState) => PracticeDesignState) => {
-      setStateWithTimestamp((prev) => ({
-        ...prev,
-        design: updater(prev.design),
-      }));
-    },
-    [setStateWithTimestamp]
-  );
-
   const setRun = useCallback(
     (updater: (prev: PracticeRunState) => PracticeRunState) => {
       setStateWithTimestamp((prev) => ({
@@ -271,6 +240,36 @@ export function PracticeSessionProvider({
       setStateWithTimestamp((prev) => ({
         ...prev,
         auth: updater(prev.auth),
+      }));
+    },
+    [setStateWithTimestamp]
+  );
+
+  const setRequirements = useCallback(
+    (requirements: Requirements) => {
+      setStateWithTimestamp((prev) => ({
+        ...prev,
+        requirements,
+      }));
+    },
+    [setStateWithTimestamp]
+  );
+
+  const setApiDefinition = useCallback(
+    (updater: (prev: PracticeApiDefinitionState) => PracticeApiDefinitionState) => {
+      setStateWithTimestamp((prev) => ({
+        ...prev,
+        apiDefinition: updater(prev.apiDefinition),
+      }));
+    },
+    [setStateWithTimestamp]
+  );
+
+  const setDesign = useCallback(
+    (updater: (prev: PracticeDesignState) => PracticeDesignState) => {
+      setStateWithTimestamp((prev) => ({
+        ...prev,
+        design: updater(prev.design),
       }));
     },
     [setStateWithTimestamp]
@@ -384,11 +383,11 @@ export function PracticeSessionProvider({
       isReadOnly,
       hydrated,
       currentStep: state.currentStep,
+      setRun,
+      setAuth,
       setRequirements,
       setApiDefinition,
       setDesign,
-      setRun,
-      setAuth,
       markStep,
       setStepScore,
       updateIterativeFeedback,
@@ -399,11 +398,11 @@ export function PracticeSessionProvider({
       state,
       isReadOnly,
       hydrated,
+      setRun,
+      setAuth,
       setRequirements,
       setApiDefinition,
       setDesign,
-      setRun,
-      setAuth,
       markStep,
       setStepScore,
       updateIterativeFeedback,

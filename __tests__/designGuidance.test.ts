@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
-import { loadScenarioReference } from "@/lib/practice/loader";
 import type { PracticeDesignState } from "@/lib/practice/types";
 import { COMPONENT_LIBRARY } from "@/components/canvas/data";
 import type { ComponentKind } from "@/components/canvas/types";
+import { loadScoringConfig } from "@/lib/scoring";
 
 const specFor = (kind: ComponentKind) => {
   const spec = COMPONENT_LIBRARY.find((c) => c.kind === kind);
@@ -50,9 +50,9 @@ const makeDesign = (
 };
 
 describe("evaluateDesignGuidance", () => {
-  // Preload the scenario reference before tests
-  beforeAll(async () => {
-    await loadScenarioReference("url-shortener");
+  // Preload scoring config before tests run to ensure guidance rules are available
+  beforeEach(async () => {
+    await loadScoringConfig("url-shortener");
   });
 
   it("prompts to add Web when empty design", () => {

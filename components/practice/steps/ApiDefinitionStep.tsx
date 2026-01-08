@@ -6,6 +6,7 @@ import { VoiceCaptureBridge } from "@/components/practice/VoiceCaptureBridge";
 import type { ApiEndpoint } from "@/lib/practice/types";
 import { getApiNotesPlaceholder } from "@/lib/practice/apiPlaceholders";
 import { on, emit } from "@/lib/events";
+import { loadScoringConfig, getScoringConfigSync } from "@/lib/scoring";
 
 const METHOD_OPTIONS: Array<ApiEndpoint["method"]> = ["GET", "POST", "PATCH", "DELETE"];
 
@@ -159,6 +160,65 @@ export function ApiDefinitionStep() {
       setShowHighlights(false);
     }
   }, [hasBlockingFeedback, cachedResult]);
+
+  // Initialize default endpoints from scoring config if empty
+  useEffect(() => {
+    if (isReadOnly || endpoints.length > 0) return;
+
+    const initializeDefaultEndpoints = async () => {
+      try {
+        // Load scoring config
+        await loadScoringConfig(state.slug);
+        const config = getScoringConfigSync(state.slug);
+
+        if (!config?.steps?.api?.requiredEndpoints) return;
+
+        // Create default endpoints from requiredEndpoints
+        // Match with coreRequirements to get detailed examplePhrases
+        const coreReqs = config.steps.api.coreRequirements || [];
+        const defaultEndpoints: ApiEndpoint[] = config.steps.api.requiredEndpoints.map((ep) => {
+          // Try to find matching coreRequirement by matching endpoint ID pattern
+          // e.g., "create-paste" endpoint matches "create-paste-endpoint" requirement
+          const matchingReq = coreReqs.find(
+            (req) => req.id.includes(ep.id) || ep.id.includes(req.id.replace("-endpoint", ""))
+          );
+
+          // Use examplePhrases from coreRequirements if available (more detailed)
+          // Otherwise fall back to exampleNotes, then purpose
+          let notes = ep.exampleNotes || ep.purpose;
+          if (matchingReq?.examplePhrases && matchingReq.examplePhrases.length > 0) {
+            // Use the first examplePhrase which usually has the most detail
+            notes = matchingReq.examplePhrases[0];
+          }
+
+          return {
+            id: `endpoint-${crypto.randomUUID()}`,
+            method: ep.method,
+            path: ep.examplePath || ep.pathPattern || "",
+            notes,
+            suggested: true,
+          };
+        });
+
+        if (defaultEndpoints.length > 0) {
+          setApiDefinition((prev) => ({
+            ...prev,
+            endpoints: defaultEndpoints,
+          }));
+          // Auto-expand all default endpoints
+          setExpandedIds(new Set(defaultEndpoints.map((ep) => ep.id)));
+          setOpenId(defaultEndpoints[0]?.id ?? null);
+        }
+      } catch (error) {
+        console.warn(
+          `[ApiDefinitionStep] Failed to initialize default endpoints for ${state.slug}:`,
+          error
+        );
+      }
+    };
+
+    initializeDefaultEndpoints();
+  }, [state.slug, endpoints.length, isReadOnly, setApiDefinition]);
 
   // Check if there are any validation issues
   const hasNoEndpoints = endpoints.length === 0;

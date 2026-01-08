@@ -6,7 +6,6 @@
 
 // UI Utilities
 export { useIsMobile } from "./useIsMobile";
-export { useScrollToTop } from "./useScrollToTop";
 
 // Practice Mode
 export { usePracticeNavigation } from "./usePracticeNavigation";

@@ -5,21 +5,7 @@
  * to augment rule-based scoring.
  */
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-// Initialize Gemini
-let genAI: GoogleGenerativeAI | null = null;
-
-function getGeminiClient() {
-  if (!genAI) {
-    const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY not found in environment variables");
-    }
-    genAI = new GoogleGenerativeAI(apiKey);
-  }
-  return genAI;
-}
+import { getGenAI } from "@/lib/gemini";
 
 /**
  * Extract structured requirements from natural language text
@@ -28,7 +14,7 @@ export async function extractRequirementsWithAI(
   text: string,
   referenceRequirements: Array<{ id: string; label: string; description: string }>
 ): Promise<Record<string, boolean>> {
-  const client = getGeminiClient();
+  const client = getGenAI();
   const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `You are analyzing a system design functional requirements description.
@@ -84,7 +70,7 @@ export async function explainScoreWithAI(
   feedbackItems: Array<{ message: string; severity: string }>,
   stepName: string
 ): Promise<string> {
-  const client = getGeminiClient();
+  const client = getGenAI();
   const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const percentage = Math.round((score / maxScore) * 100);
@@ -137,7 +123,7 @@ export async function validateAlternativeSolution(
   confidence: number;
   reasoning: string;
 }> {
-  const client = getGeminiClient();
+  const client = getGenAI();
   const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `You are evaluating whether a creative system design solution meets a requirement.
@@ -204,7 +190,7 @@ export async function analyzeApiDesign(
   improvements: string[];
   suggestions: string[];
 }> {
-  const client = getGeminiClient();
+  const client = getGenAI();
   const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `You are a REST API design expert reviewing a system design.
@@ -281,7 +267,7 @@ export async function generateImprovementPath(
   improvements: string[];
   examples: string[];
 }> {
-  const client = getGeminiClient();
+  const client = getGenAI();
   const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const percentage = Math.round((currentScore / maxScore) * 100);
@@ -361,7 +347,7 @@ export async function analyzeArchitecture(
   scalabilityConcerns: string[];
   recommendations: string[];
 }> {
-  const client = getGeminiClient();
+  const client = getGenAI();
   const model = client.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `You are a system architecture expert reviewing a high-level design.

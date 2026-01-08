@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { COMPONENT_LIBRARY } from "@/components/canvas/data";
 import type { ComponentKind, PlacedNode, Edge } from "@/components/canvas/types";
 import ReactFlowBoard from "@/components/canvas/ReactFlowBoard";
@@ -14,6 +14,7 @@ import { usePracticeSession } from "@/components/practice/session/PracticeSessio
 import { evaluateDesignGuidance } from "@/lib/practice/designGuidance";
 import { useDesignHistory } from "@/hooks/useDesignHistory";
 import { useTutorialManager, hasEdge } from "@/hooks/useTutorialManager";
+import { loadScoringConfig } from "@/lib/scoring";
 
 // Shallow comparison for nodes array (avoids JSON.stringify stack overflow)
 function nodesEqual(a: PlacedNode[], b: PlacedNode[]): boolean {
@@ -131,6 +132,16 @@ export default function DesignStage({
         : null;
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+
+  // Preload scoring config to ensure guidance rules are available
+  useEffect(() => {
+    loadScoringConfig(session.state.slug).catch((err) => {
+      console.warn(
+        `[DesignStage] Failed to preload scoring config for ${session.state.slug}:`,
+        err
+      );
+    });
+  }, [session.state.slug]);
 
   // Clear simulation state helper
   const clearSimulationState = useCallback(() => {

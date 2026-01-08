@@ -15,48 +15,77 @@ import type {
   SimulationScoringInput,
 } from "./types";
 
-import { evaluateFunctionalRequirements } from "./engines/functional";
-import { evaluateNonFunctionalRequirements } from "./engines/nonFunctional";
-import { evaluateApiDefinition } from "./engines/api";
 import { evaluateDesign } from "./engines/design";
+import {
+  evaluateFunctionalAIOnly,
+  evaluateNonFunctionalAIOnly,
+  evaluateApiAIOnly,
+} from "./ai/ai-only";
+
+// In-memory cache for loaded scoring configs
+const scoringConfigCache = new Map<string, ProblemScoringConfig>();
 
 /**
  * Load scoring configuration for a problem
  */
 export async function loadScoringConfig(problemId: string): Promise<ProblemScoringConfig> {
+  // Return from cache if available
+  if (scoringConfigCache.has(problemId)) {
+    return scoringConfigCache.get(problemId)!;
+  }
+
   // Dynamic import of JSON config
   const config = await import(`./configs/${problemId}.json`);
-  return config.default || config;
+  const scoringConfig = (config.default || config) as ProblemScoringConfig;
+
+  // Cache for future use
+  scoringConfigCache.set(problemId, scoringConfig);
+
+  return scoringConfig;
 }
 
 /**
- * Evaluate functional requirements step
+ * Get scoring configuration synchronously from cache.
+ * Returns null if not yet loaded.
+ *
+ * Use this when you need to check if a config is available
+ * without triggering a load operation.
  */
-export function scoreFunctionalRequirements(
+export function getScoringConfigSync(problemId: string): ProblemScoringConfig | null {
+  return scoringConfigCache.get(problemId) ?? null;
+}
+
+/**
+ * Evaluate functional requirements step (AI-only)
+ */
+export async function scoreFunctionalRequirements(
   input: FunctionalScoringInput,
-  config: ProblemScoringConfig
-): FeedbackResult {
-  return evaluateFunctionalRequirements(input, config.steps.functional);
+  config: ProblemScoringConfig,
+  slug: string
+): Promise<FeedbackResult> {
+  return evaluateFunctionalAIOnly(input, config.steps.functional, slug);
 }
 
 /**
- * Evaluate non-functional requirements step
+ * Evaluate non-functional requirements step (AI-only)
  */
-export function scoreNonFunctionalRequirements(
+export async function scoreNonFunctionalRequirements(
   input: NonFunctionalScoringInput,
-  config: ProblemScoringConfig
-): FeedbackResult {
-  return evaluateNonFunctionalRequirements(input, config.steps.nonFunctional);
+  config: ProblemScoringConfig,
+  slug: string
+): Promise<FeedbackResult> {
+  return evaluateNonFunctionalAIOnly(input, config.steps.nonFunctional, slug);
 }
 
 /**
- * Evaluate API definition step
+ * Evaluate API definition step (AI-only)
  */
-export function scoreApiDefinition(
+export async function scoreApiDefinition(
   input: ApiScoringInput,
-  config: ProblemScoringConfig
-): FeedbackResult {
-  return evaluateApiDefinition(input, config.steps.api);
+  config: ProblemScoringConfig,
+  slug: string
+): Promise<FeedbackResult> {
+  return evaluateApiAIOnly(input, config.steps.api, slug);
 }
 
 /**
@@ -240,27 +269,19 @@ export function getGradeColor(grade: CumulativeScore["grade"]): string {
 
 // Re-export types for convenience
 export * from "./types";
-export { evaluateFunctionalRequirements } from "./engines/functional";
-export { evaluateNonFunctionalRequirements } from "./engines/nonFunctional";
-export { evaluateApiDefinition } from "./engines/api";
 export { evaluateDesign } from "./engines/design";
 export type { ScoreBreakdown } from "./engines/simulationScore";
 export { calculateScore } from "./engines/simulationScore";
 
-// Re-export AI-enhanced functions
+// Re-export AI-only functions (recommended - pure AI evaluation)
 export {
-  evaluateFunctionalWithAI,
-  evaluateApiWithAI,
-  evaluateDesignWithAI,
-  explainOverallScore,
-} from "./ai/hybrid";
+  evaluateFunctionalAIOnly,
+  evaluateNonFunctionalAIOnly,
+  evaluateApiAIOnly,
+} from "./ai/ai-only";
 
-// Re-export optimized functions (recommended - faster with deduplication)
-export {
-  evaluateFunctionalOptimized,
-  evaluateApiOptimized,
-  evaluateDesignOptimized,
-} from "./ai/optimized";
+// Optimized design evaluation (used in RunStage)
+export { evaluateDesignOptimized } from "./ai/optimized";
 
 // Re-export progress tracking
 export type { ProgressStep, ProgressCallback, EvaluationProgress } from "./ai/progress";

@@ -1,8 +1,7 @@
 import type { PracticeDesignState } from "./types";
-import type { ComponentKind } from "@/lib/types/domain";
 import { hasConnectionBetweenKinds } from "@/components/canvas/utils";
-import type { GuidanceLevel, GuidanceRule, GuidanceRuleCheck } from "./reference/schema";
-import { getScenarioReferenceSync } from "./loader";
+import type { GuidanceLevel, GuidanceRule, GuidanceRuleCheck } from "@/lib/scoring/types";
+import { getScoringConfigSync } from "@/lib/scoring";
 
 export type DesignGuidance = {
   id: string;
@@ -152,170 +151,36 @@ function evaluateRulesFromReference(
   return null;
 }
 
-// ============================================================================
-// Legacy Fallback (for scenarios without JSON rules)
-// ============================================================================
-
-const DB_KIND: ComponentKind = "DB (Postgres)";
-const CACHE_KIND: ComponentKind = "Cache (Redis)";
-
-/**
- * Legacy fallback: hardcoded evaluation logic for when JSON rules aren't available.
- * This maintains backwards compatibility during migration.
- */
-function evaluateLegacyGuidance(design: PracticeDesignState): DesignGuidance | null {
-  if (!hasKind(design, "Web")) {
-    return {
-      id: "add-web",
-      level: "core",
-      question: "Where do requests originate from in the current diagram?",
-      summary: "Start with a client/Web node so requests have an entry point.",
-    };
-  }
-
-  if (!hasKind(design, "API Gateway")) {
-    return {
-      id: "add-api-gateway",
-      level: "core",
-      question:
-        "What component sits between users and backend services to terminate HTTP, enforce auth, and route traffic?",
-      summary: "Clients need an API Gateway to handle routing, auth, and rate limiting.",
-    };
-  }
-
-  if (!hasConnection(design, "Web", "API Gateway")) {
-    return {
-      id: "connect-web-api",
-      level: "core",
-      question: "How does traffic flow from the Web client into the API Gateway at the moment?",
-      summary:
-        "Connect the Web client to the API Gateway so requests can actually reach your backend.",
-    };
-  }
-
-  if (!hasKind(design, "Service")) {
-    return {
-      id: "add-service",
-      level: "core",
-      question:
-        "After the API Gateway, which component should execute the URL creation and redirect logic?",
-      summary: "A Service layer is required to handle URL creation and redirect logic.",
-    };
-  }
-
-  if (!hasConnection(design, "API Gateway", "Service")) {
-    return {
-      id: "connect-api-service",
-      level: "core",
-      question: "How are requests moving from the API Gateway into the Service layer right now?",
-      summary: "Wire the API Gateway to your Service so requests continue through the stack.",
-    };
-  }
-
-  if (!hasKind(design, DB_KIND)) {
-    return {
-      id: "add-database",
-      level: "core",
-      question: "Where will the platform persist the short-to-long URL mappings for durability?",
-      summary: "URL mappings need durable storage. Add a primary database (Postgres is fine).",
-    };
-  }
-
-  if (!hasConnection(design, "Service", DB_KIND)) {
-    return {
-      id: "connect-service-db",
-      level: "core",
-      question:
-        "How does the Service reach the database for reads and writes in the current layout?",
-      summary: "Connect the Service to the database so it can store and fetch URL records.",
-    };
-  }
-
-  // Core path satisfied; bonus guidance
-  if (!hasKind(design, "Service", 2)) {
-    return {
-      id: "add-second-service",
-      level: "bonus",
-      question:
-        "Right now one Service handles both shortening URLs and redirecting clicks. How could adding a separate redirect Service lighten the work on the write Service?",
-      summary:
-        "Split read-heavy redirects from write operations so you can scale each path independently.",
-    };
-  }
-
-  if (!hasKind(design, CACHE_KIND)) {
-    return {
-      id: "add-cache",
-      level: "bonus",
-      question:
-        "What in-memory cache would reduce database load for hot redirects while keeping latency low?",
-      summary:
-        "A Redis/Memcached layer offloads hot redirects from the database and keeps p95 < 100ms.",
-    };
-  }
-
-  if (!hasConnection(design, "Service", CACHE_KIND)) {
-    return {
-      id: "connect-service-cache",
-      level: "bonus",
-      question:
-        "If cache is present, how does the Service reach it before falling back to the database?",
-      summary:
-        "Remember to connect the Service to cache first and fall back to the database on a miss.",
-    };
-  }
-
-  if (!kindConnectedToFirstMissingSecond(design, "Service", CACHE_KIND, DB_KIND)) {
-    return {
-      id: "cache-service-db",
-      level: "bonus",
-      question:
-        "The Service feeding cache still needs a fallback—can it also reach the database when a slug is missing?",
-      summary:
-        "The Service that talks to cache also needs a direct path to the database for cache misses.",
-    };
-  }
-
-  if (!servicesHaveUniqueLabels(design, 2)) {
-    return {
-      id: "rename-services",
-      level: "bonus",
-      question:
-        "Can you rename the Services so it's obvious which one handles shortening and which one handles redirects?",
-      summary:
-        "Naming each Service after its role (e.g., Shorten vs Redirect) makes the diagram clearer.",
-    };
-  }
-
-  return null;
-}
-
-// ============================================================================
-// Main Export
-// ============================================================================
-
 /**
  * Evaluate the current design and return guidance for the next step.
  *
- * Uses declarative rules from JSON when available, falling back to
- * hardcoded logic for scenarios without JSON rules defined.
+ * Uses declarative rules from scoring config JSON when available.
+ * Note: The scoring config must be loaded (via loadScoringConfig) before calling this function.
  *
  * @param design - The current design state
- * @param slug - Optional scenario slug to load reference from. Defaults to "url-shortener".
+ * @param slug - Optional scenario slug to load config from. Defaults to "url-shortener".
  */
 export function evaluateDesignGuidance(
   design: PracticeDesignState,
   slug: string = "url-shortener"
 ): DesignGuidance | null {
-  // Try to get reference from cache (should be preloaded)
-  const reference = getScenarioReferenceSync(slug);
-  const rules = reference?.design?.guidance?.rules;
+  // Get scoring config from cache (must be preloaded)
+  const config = getScoringConfigSync(slug);
+  const rules = config?.steps?.design?.guidance?.rules;
 
-  // Use declarative rules if available
-  if (rules && rules.length > 0) {
-    return evaluateRulesFromReference(design, rules);
+  if (!rules || rules.length === 0) {
+    // Debug logging to help diagnose the issue
+    if (process.env.NODE_ENV === "development") {
+      console.warn(
+        `[evaluateDesignGuidance] No guidance rules found for ${slug}.`,
+        `Config cached: ${!!config},`,
+        `Has design step: ${!!config?.steps?.design},`,
+        `Has guidance: ${!!config?.steps?.design?.guidance},`,
+        `Rules count: ${rules?.length ?? 0}`
+      );
+    }
+    return null;
   }
 
-  // Fall back to legacy hardcoded logic
-  return evaluateLegacyGuidance(design);
+  return evaluateRulesFromReference(design, rules);
 }

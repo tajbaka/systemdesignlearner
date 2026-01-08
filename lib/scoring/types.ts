@@ -78,8 +78,8 @@ export type FunctionalScoringConfig = {
   maxScore: number;
   coreRequirements: FunctionalRequirement[];
   optionalRequirements: FunctionalRequirement[];
-  minKeywordsMatch: number;
-  minTextLength?: number;
+  minKeywordsMatch?: number; // Deprecated: Not used by AI-only evaluation
+  minTextLength?: number; // Deprecated: Not used by AI-only evaluation
 };
 
 export type FunctionalScoringInput = {
@@ -134,7 +134,7 @@ export type QualitativeAspect = {
 
 export type NonFunctionalScoringConfig = {
   maxScore: number;
-  minTextLength?: number;
+  minTextLength?: number; // Deprecated: Not used by AI-only evaluation
   coreRequirements?: QualitativeAspect[];
   optionalRequirements?: QualitativeAspect[];
   qualitativeAspects?: QualitativeAspect[];
@@ -189,7 +189,7 @@ export type ApiRequirement = {
 
 export type ApiScoringConfig = {
   maxScore: number;
-  minKeywordsMatch?: number;
+  minKeywordsMatch?: number; // Deprecated: Not used by AI-only evaluation
   // Topic-based requirements for iterative feedback
   coreRequirements: ApiRequirement[];
   optionalRequirements: ApiRequirement[];
@@ -278,6 +278,38 @@ export type CriticalPath = {
   };
 };
 
+export type GuidanceLevel = "error" | "warning" | "info" | "core" | "bonus";
+
+export type GuidanceRuleCheck =
+  | {
+      type: "hasKind";
+      kind: string;
+      minCount?: number;
+    }
+  | {
+      type: "hasConnection";
+      from: string;
+      to: string;
+    }
+  | {
+      type: "kindConnectedToFirstMissingSecond";
+      kind: string;
+      connectedTo: string;
+      missingConnection: string;
+    }
+  | {
+      type: "servicesHaveUniqueLabels";
+      minServices: number;
+    };
+
+export type GuidanceRule = {
+  id: string;
+  level: GuidanceLevel;
+  question: string;
+  hint: string;
+  check: GuidanceRuleCheck;
+};
+
 export type DesignScoringConfig = {
   maxScore: number;
   architecturePatterns: ArchitecturePattern[];
@@ -287,6 +319,9 @@ export type DesignScoringConfig = {
     coreArchitecture: number;
     optionalComponents?: number;
     connections: number;
+  };
+  guidance?: {
+    rules?: GuidanceRule[];
   };
 };
 

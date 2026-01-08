@@ -5,8 +5,6 @@ import { useRouter } from "next/navigation";
 import PracticeStepper from "@/components/practice/PracticeStepper";
 import { usePracticeSession } from "@/components/practice/session/PracticeSessionProvider";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { OnboardingProvider, useOnboarding } from "@/components/practice/PracticeOnboarding";
-import { OnboardingTooltipRenderer } from "@/components/practice/OnboardingTooltipRenderer";
 import { useUser } from "@clerk/nextjs";
 import { PRACTICE_STEPS } from "@/lib/practice/types";
 import { STEP_CONFIGS, getHelperText, completeStep } from "@/lib/practice/step-configs";
@@ -20,8 +18,6 @@ import { PracticeFeedbackPanel } from "@/components/practice/PracticeFeedbackPan
 import { IterativeFeedbackModal } from "@/components/practice/IterativeFeedbackModal";
 import { SCENARIOS } from "@/lib/scenarios";
 import type { ApiEndpoint } from "@/lib/practice/types";
-import { loadScenarioReference, getScenarioReferenceSync } from "@/lib/practice/loader";
-import { DEFAULT_ONBOARDING_CONFIG, type OnboardingConfig } from "@/lib/practice/reference/schema";
 import { on, emit } from "@/lib/events";
 
 function PracticeFlowInner() {
@@ -42,28 +38,7 @@ function PracticeFlowInner() {
   const [apiMobileEditing, setApiMobileEditing] = useState(false);
   const [apiMobileEditorValue, setApiMobileEditorValue] = useState<string | undefined>(undefined);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
-
-  const { stage, isActive, nextStage, skipOnboarding } = useOnboarding();
-  const [hideTooltipTemp, setHideTooltipTemp] = useState(false);
   const { isSignedIn } = useUser();
-
-  // Load onboarding text from scenario reference
-  const [onboardingConfig, setOnboardingConfig] = useState<OnboardingConfig>(
-    () => getScenarioReferenceSync(state.slug)?.onboarding ?? DEFAULT_ONBOARDING_CONFIG
-  );
-
-  // Load scenario reference on mount (fires once per slug)
-  useEffect(() => {
-    let cancelled = false;
-    loadScenarioReference(state.slug).then((ref) => {
-      if (!cancelled && ref.onboarding) {
-        setOnboardingConfig(ref.onboarding);
-      }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [state.slug]);
 
   // Listen for API mobile editor state changes via typed events
   useEffect(() => {
@@ -153,21 +128,16 @@ function PracticeFlowInner() {
     apiMobileEditing,
   });
 
-  // Reset hideTooltipTemp when stage changes
+  // Check if it's the first time visiting sandbox
   useEffect(() => {
-    setHideTooltipTemp(false);
-  }, [stage]);
-
-  // Check if it's the first time visiting sandbox (fallback for users who skip onboarding)
-  useEffect(() => {
-    if (currentStep === "highLevelDesign" && hydrated && !isActive) {
+    if (currentStep === "highLevelDesign" && hydrated) {
       const hasSeenSandboxTips = localStorage.getItem("practice-sandbox-tips-seen");
       if (!hasSeenSandboxTips) {
         setShowTooltips(true);
         localStorage.setItem("practice-sandbox-tips-seen", "true");
       }
     }
-  }, [currentStep, hydrated, isActive]);
+  }, [currentStep, hydrated]);
 
   useEffect(() => {
     if (hydrated && !isReadOnly && currentStep === "score" && (state.auth.isAuthed || isSignedIn)) {
@@ -297,15 +267,6 @@ function PracticeFlowInner() {
 
   return (
     <TooltipProvider>
-      <OnboardingTooltipRenderer
-        isActive={isActive}
-        hideTooltipTemp={hideTooltipTemp}
-        stage={stage}
-        onboardingConfig={onboardingConfig}
-        onNext={nextStage}
-        onSkip={skipOnboarding}
-        onHideTemp={() => setHideTooltipTemp(true)}
-      />
       <div className="flex h-full w-full flex-1 flex-col overflow-hidden">
         <PracticeStepper
           scenario={session.state.slug}
@@ -554,13 +515,8 @@ function PracticeFlowInner() {
   );
 }
 
-// Wrapper component that provides onboarding context
 export function PracticeFlow() {
-  return (
-    <OnboardingProvider>
-      <PracticeFlowInner />
-    </OnboardingProvider>
-  );
+  return <PracticeFlowInner />;
 }
 
 export default PracticeFlow;
