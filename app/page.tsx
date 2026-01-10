@@ -59,53 +59,6 @@ export default function HomePage() {
     sameAs: ["https://www.linkedin.com/in/antonio-coppe", "https://antoniocoppe.com"],
   };
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "How do I prepare for a system design interview?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Start by practicing with interactive scenarios like our URL shortener tutorial. Focus on understanding distributed systems, scalability patterns, and architecture trade-offs. Practice designing systems end-to-end, from requirements gathering to capacity planning. Our platform provides instant feedback on your designs to accelerate learning.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "What is system design and why is it important?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "System design is the process of defining the architecture, components, and data flow of large-scale software systems. It's crucial for building scalable, reliable applications and is a key evaluation criterion in senior engineering interviews at top tech companies.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "What are the most common system design interview questions?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Common questions include designing URL shorteners, social media feeds (Twitter/Instagram), video streaming platforms (Netflix/YouTube), messaging systems (WhatsApp), ride-sharing apps (Uber), and e-commerce sites (Amazon). Each teaches different scalability and architecture patterns.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "How long does it take to learn system design?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "With focused practice, you can learn core system design concepts in 4-8 weeks. Our interactive platform accelerates learning by providing hands-on practice with real-time feedback. Practice 3-4 scenarios per week to build strong fundamentals for your system design interview.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "Is System Design Sandbox free to use?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Yes! System Design Sandbox is completely free. We provide interactive tutorials, practice scenarios, and instant feedback at no cost. Our mission is to make high-quality system design education accessible to everyone preparing for technical interviews.",
-        },
-      },
-    ],
-  };
-
   const courseSchema = {
     "@context": "https://schema.org",
     "@type": "Course",
@@ -159,8 +112,8 @@ export default function HomePage() {
       {
         "@type": "ListItem",
         position: 3,
-        name: "Interview Guide",
-        item: "https://www.systemdesignsandbox.com/interview-guide",
+        name: "Learn",
+        item: "https://www.systemdesignsandbox.com/learn",
       },
     ],
   };
@@ -170,10 +123,6 @@ export default function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <script
         type="application/ld+json"

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
-import { AuthModal } from "@/components/practice/AuthModal";
+import { AuthModal } from "@/domains/practice/containers/AuthModal";
 
 interface NavbarProps {
   variant?: "dark" | "light";
@@ -146,34 +146,19 @@ export function Navbar({ variant = "dark" }: NavbarProps) {
                 Practice
               </Link>
               <Link
-                href="/interview-guide"
-                className={`block px-3 py-3 rounded-lg transition-colors text-base font-medium ${getNavLinkClasses(pathname === "/interview-guide")}`}
-                onClick={closeMenu}
-              >
-                Interview Guide
-              </Link>
-              <Link
-                href="/docs"
+                href="/learn"
                 className={`block px-3 py-3 rounded-lg transition-colors text-base font-medium ${getNavLinkClasses(pathname === "/docs")}`}
                 onClick={closeMenu}
               >
-                Docs
+                Learn
               </Link>
-              <Link
-                href="/feedback"
-                className={`block px-3 py-3 rounded-lg transition-colors text-base font-medium ${getNavLinkClasses(pathname === "/feedback")}`}
-                onClick={closeMenu}
-              >
-                Feedback
-              </Link>
-
               <div className="pt-2 space-y-3">
                 <Link
                   href="/practice/url-shortener/intro"
                   className="inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 h-10 rounded-md px-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-base shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 w-full"
                   onClick={closeMenu}
                 >
-                  Start Practicing
+                  Try Url Shortener Scenario
                 </Link>
 
                 {/* Mobile User Button / Sign In */}

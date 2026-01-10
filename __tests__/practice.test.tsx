@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { loadPractice, savePractice } from "@/lib/practice/storage";
-import { makeInitialPracticeState } from "@/lib/practice/defaults";
-import type { PracticeState } from "@/lib/practice/types";
+import { loadPractice, savePractice } from "@/domains/practice/lib/storage";
+import { makeInitialPracticeState } from "@/domains/practice/lib/defaults";
+import type { PracticeState } from "@/domains/practice/types";
 
 vi.mock("@/lib/analytics", () => ({
   track: vi.fn(),

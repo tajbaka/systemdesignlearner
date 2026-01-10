@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PracticePageClient } from "./PracticePageClient";
+import { PracticePageClient } from "@/domains/practice/containers/PracticePageClient";
 
 export const metadata: Metadata = {
   title: "System Design Practice Scenarios - Interactive Interview Challenges",
@@ -21,6 +21,6 @@ export const metadata: Metadata = {
   },
 };
 
-export default function PracticePage() {
+export default function Page() {
   return <PracticePageClient />;
 }

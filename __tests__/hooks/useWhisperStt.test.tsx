@@ -1,6 +1,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { vi } from "vitest";
-import { useWhisperStt } from "@/hooks/useWhisperStt";
+import { useWhisperStt } from "@/domains/practice/hooks/useWhisperStt";
 
 type MediaRecorderConstructor = typeof MediaRecorder;
 type MediaRecorderGlobal = typeof globalThis & {

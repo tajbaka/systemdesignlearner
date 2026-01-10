@@ -8,10 +8,10 @@ import {
   parseVerificationResponse,
   type VerificationResult,
   type VerificationContext,
-} from "@/lib/practice/verification";
-import { loadScoringConfig } from "@/lib/scoring/index";
-import { SCENARIOS } from "@/lib/scenarios";
-import type { Requirements, ApiEndpoint } from "@/lib/practice/types";
+} from "@/domains/practice/lib/verification";
+import { loadScoringConfig } from "@/domains/practice/scoring/index";
+import { SCENARIOS } from "@/domains/practice/scenarios";
+import type { Requirements, ApiEndpoint } from "@/domains/practice/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -58,6 +58,12 @@ export async function POST(request: NextRequest) {
 
     // Load scoring config as source of truth
     const scoringConfig = await loadScoringConfig(slug);
+    if (!scoringConfig) {
+      return NextResponse.json(
+        { error: `Scoring config not found for scenario: ${slug}` },
+        { status: 500 }
+      );
+    }
 
     const context: VerificationContext = {
       scenarioTitle: scenario.title,

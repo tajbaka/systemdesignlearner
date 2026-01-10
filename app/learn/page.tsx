@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
-export default function LearnPage() {
+export default function Page() {
   redirect("/learn/introduction");
 }

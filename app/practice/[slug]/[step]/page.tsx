@@ -1,9 +1,9 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { SCENARIOS } from "@/lib/scenarios";
-import { PRACTICE_STEPS, type PracticeStep } from "@/lib/practice/types";
-import PracticeStepClient from "./PracticeStepClient";
-import { IntroPage } from "@/components/practice/steps/IntroPage";
+import { SCENARIOS } from "@/domains/practice/scenarios";
+import { PRACTICE_STEPS, type PracticeStep } from "@/domains/practice/types";
+import PracticeStepClient from "@/domains/practice/containers/PracticeStepClient";
+import { IntroPage } from "@/domains/practice/components/IntroPage";
 
 type Props = {
   params: Promise<{ slug: string; step: string }>;
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function PracticeStepPage({ params, searchParams }: Props) {
+export default async function Page({ params, searchParams }: Props) {
   const { slug, step } = await params;
   const search = await searchParams;
 

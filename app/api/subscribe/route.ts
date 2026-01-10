@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { sendNewsletterConfirmation } from "@/lib/email";
 import { logger } from "@/lib/logger";
-import { subscribeSchema, parseRequest } from "@/lib/validation";
+import { subscribeSchema, parseRequest } from "@/app/api/types";
 
 export async function POST(request: NextRequest) {
   try {

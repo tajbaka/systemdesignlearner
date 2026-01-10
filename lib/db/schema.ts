@@ -11,8 +11,8 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import type { PracticeState } from "@/lib/practice/types";
-import type { FeedbackResult } from "@/lib/scoring/types";
+import type { PracticeState } from "@/domains/practice/types";
+import type { FeedbackResult } from "@/domains/practice/types";
 
 // ============================================================================
 // Enums

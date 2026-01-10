@@ -8,16 +8,17 @@
 export { useIsMobile } from "./useIsMobile";
 
 // Practice Mode
-export { usePracticeNavigation } from "./usePracticeNavigation";
-export { usePracticeScoring } from "./usePracticeScoring";
-export { useDesignEvaluation } from "./useDesignEvaluation";
-export { useStepEvaluation } from "./useStepEvaluation";
-export { useIterativeFeedback } from "./useIterativeFeedback";
+export { usePracticeNavigation } from "@/domains/practice/hooks/usePracticeNavigation";
+export { useStepEvaluation } from "@/domains/practice/hooks/useStepEvaluation";
+export { useIterativeFeedback } from "@/domains/practice/hooks/useIterativeFeedback";
 
 // Canvas / Design
-export { useDesignHistory } from "./useDesignHistory";
-export { useTutorialManager } from "./useTutorialManager";
+export { useDesignHistory } from "@/domains/practice/hooks/useDesignHistory";
+export { useTutorialManager } from "@/domains/practice/hooks/useTutorialManager";
+export { useAdjacencyList } from "@/domains/practice/hooks/useAdjacencyList";
+export { useHighLevelDesign } from "@/domains/practice/hooks/useHighLevelDesign";
+export { useHighLevelDesignComponentList } from "@/domains/practice/hooks/useHighLevelDesignComponentList";
 
 // Speech Recognition
-export { useWhisperStt } from "./useWhisperStt";
-export { useWebSpeechStt } from "./useWebSpeechStt";
+export { useWhisperStt } from "../domains/practice/hooks/useWhisperStt";
+export { useWebSpeechStt } from "../domains/practice/hooks/useWebSpeechStt";

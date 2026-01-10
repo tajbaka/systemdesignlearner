@@ -5,10 +5,10 @@ import {
   generateSingleQuestion,
   type StepConfig,
   type Topic,
-} from "@/lib/scoring/ai/iterative";
+} from "@/domains/practice/scoring/iterative";
 import { logger } from "@/lib/logger";
-import { loadScoringConfig } from "@/lib/scoring/index";
-import type { ProblemScoringConfig } from "@/lib/scoring/types";
+import { loadScoringConfig } from "@/domains/practice/scoring/index";
+import type { ProblemScoringConfig, Solution, Hint } from "@/domains/practice/types";
 
 type SupportedIterativeStep = "functional" | "nonFunctional" | "api";
 
@@ -22,33 +22,22 @@ interface BaseRequirement {
   description: string;
   keywords: string[];
   weight: number;
-  examplePhrases?: string[];
+  required?: boolean; // Whether this is a core requirement (defaults to false)
+  solutions?: Solution[];
+  hints?: Hint[]; // Hints to guide users when this requirement is missing
 }
 
-function buildTopics(stepConfig: {
-  coreRequirements: BaseRequirement[];
-  optionalRequirements: BaseRequirement[];
-}) {
-  return [
-    ...stepConfig.coreRequirements.map((req) => ({
-      id: req.id,
-      label: req.label,
-      description: req.description,
-      keywords: req.keywords,
-      required: true,
-      weight: req.weight,
-      examplePhrases: req.examplePhrases,
-    })),
-    ...stepConfig.optionalRequirements.map((req) => ({
-      id: req.id,
-      label: req.label,
-      description: req.description,
-      keywords: req.keywords,
-      required: false,
-      weight: req.weight,
-      examplePhrases: req.examplePhrases,
-    })),
-  ];
+function buildTopics(stepConfig: { requirements: BaseRequirement[] | readonly BaseRequirement[] }) {
+  return stepConfig.requirements.map((req) => ({
+    id: req.id,
+    label: req.label,
+    description: req.description,
+    keywords: req.keywords,
+    required: req.required ?? false, // Use required field from config, default to false
+    weight: req.weight,
+    solutions: req.solutions,
+    hints: req.hints,
+  }));
 }
 
 const STEP_BUILDERS: Record<
@@ -58,47 +47,48 @@ const STEP_BUILDERS: Record<
   functional: (scoringConfig) => ({
     stepId: "functional",
     stepName: "Functional Requirements",
-    topics: buildTopics(scoringConfig.steps.functional),
+    topics: buildTopics({
+      requirements: scoringConfig.steps.functional.requirements as BaseRequirement[],
+    }),
   }),
   nonFunctional: (scoringConfig) => ({
     stepId: "nonFunctional",
     stepName: "Non-Functional Requirements",
     topics: buildTopics({
-      coreRequirements: scoringConfig.steps.nonFunctional.coreRequirements ?? [],
-      optionalRequirements: scoringConfig.steps.nonFunctional.optionalRequirements ?? [],
+      requirements: (scoringConfig.steps.nonFunctional.requirements ?? []) as BaseRequirement[],
     }),
   }),
   api: (scoringConfig) => {
     const api = scoringConfig.steps.api;
-    const endpointRequirements = [
-      ...api.requiredEndpoints.map(
-        (ep: (typeof api.requiredEndpoints)[number] & { exampleNotes?: string }) => ({
-          id: ep.id,
-          method: ep.method,
-          examplePath: ep.examplePath,
-          purpose: ep.purpose,
-          documentationHints: ep.documentationHints,
-          required: true,
-          exampleNotes: ep.exampleNotes,
-        })
-      ),
-      ...api.optionalEndpoints.map(
-        (ep: (typeof api.optionalEndpoints)[number] & { exampleNotes?: string }) => ({
-          id: ep.id,
-          method: ep.method,
-          examplePath: ep.examplePath,
-          purpose: ep.purpose,
-          documentationHints: ep.documentationHints,
-          required: false,
-          exampleNotes: ep.exampleNotes,
-        })
-      ),
-    ];
+    const endpointRequirements: Array<{
+      id: string;
+      method: string;
+      correctPath?: string;
+      purpose: string;
+      required: boolean;
+      solutions?: Solution[];
+    }> = [];
+
+    // Collect endpoints from requirements[].endpoint
+    for (const req of api.requirements || []) {
+      if (req.endpoint) {
+        endpointRequirements.push({
+          id: req.id, // Use requirement id as endpoint id
+          method: req.endpoint.method,
+          correctPath: req.endpoint.correctPath,
+          purpose: req.endpoint.purpose,
+          required: req.required,
+          solutions: req.solutions, // Use requirement's solutions for textarea content
+        });
+      }
+    }
 
     return {
       stepId: "api",
       stepName: "API Design",
-      topics: buildTopics(api),
+      topics: buildTopics({
+        requirements: api.requirements as BaseRequirement[],
+      }),
       endpointRequirements,
     };
   },
@@ -107,7 +97,11 @@ const STEP_BUILDERS: Record<
 async function getStepConfig(slug: string, stepId: SupportedIterativeStep): Promise<StepConfig> {
   // Load and cache the scoring config for this slug
   if (!SCORING_CONFIG_CACHE[slug]) {
-    SCORING_CONFIG_CACHE[slug] = await loadScoringConfig(slug);
+    const config = await loadScoringConfig(slug);
+    if (!config) {
+      throw new Error(`Scoring config not found for slug: ${slug}`);
+    }
+    SCORING_CONFIG_CACHE[slug] = config;
   }
   const scoringConfig = SCORING_CONFIG_CACHE[slug];
 
@@ -189,11 +183,6 @@ export async function POST(request: NextRequest) {
         body.previousQuestion,
         body.attemptCount
       );
-      logger.info("[API iterative-feedback] get_feedback response", {
-        blocking: result.ui.blocking,
-        hasExampleHint: !!result.ui.exampleHint,
-        attemptCount: body.attemptCount,
-      });
       return NextResponse.json(result);
     }
 
