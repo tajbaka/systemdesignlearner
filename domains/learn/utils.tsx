@@ -154,8 +154,8 @@ export function createMarkdownComponents(): Components {
       if (!src || typeof src !== "string") return null;
 
       return (
-        <div className="my-12 flex justify-center">
-          <div className="relative w-full max-w-4xl min-h-[300px] rounded-lg shadow-lg overflow-hidden">
+        <span className="my-12 flex justify-center w-full">
+          <span className="relative w-full max-w-4xl min-h-[300px] rounded-lg shadow-lg overflow-hidden block">
             <Image
               src={src}
               alt={alt || ""}
@@ -163,8 +163,8 @@ export function createMarkdownComponents(): Components {
               className="object-contain"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
             />
-          </div>
-        </div>
+          </span>
+        </span>
       );
     },
   };

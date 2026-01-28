@@ -1,9 +1,10 @@
 import { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { SCENARIOS } from "@/domains/practice/scenarios";
-import { PRACTICE_STEPS, type PracticeStep } from "@/domains/practice/types";
-import PracticeStepClient from "@/domains/practice/containers/PracticeStepClient";
-import { IntroPage } from "@/domains/practice/components/IntroPage";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import PracticeBackend from "@/domains/practice/back-end/PracticeBackend";
+import type { ProblemResponse, ProblemStepWithUserStep } from "@/app/api/v2/practice/schemas";
+import { getBaseUrl } from "@/lib/getBaseUrl";
+import { PRACTICE_STEPS, SLUGS_TO_STEPS } from "@/domains/practice/back-end/constants";
 
 type Props = {
   params: Promise<{ slug: string; step: string }>;
@@ -31,34 +32,87 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function Page({ params, searchParams }: Props) {
+export default async function Page({ params }: Props) {
   const { slug, step } = await params;
-  const search = await searchParams;
 
-  // Check if the slug is a valid scenario
-  const scenario = SCENARIOS.find((s) => s.id === slug);
-  if (!scenario) {
-    notFound();
+  // Get cookies to forward authentication to internal API calls
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  // Map problem category to container component
+  const baseUrl = getBaseUrl();
+  const problem: ProblemResponse | null = await fetch(`${baseUrl}/api/v2/practice/${slug}`, {
+    next: { revalidate: 60 * 5 }, // Cache for 5 minutes
+    headers: {
+      Cookie: cookieHeader,
+    },
+  }).then(async (response) => {
+    if (response.ok) {
+      const data = await response.json();
+      return data?.data ?? null;
+    }
+    return null;
+  });
+
+  if (!problem) {
+    return <div>Problem not found</div>;
   }
 
-  // Normalize step name (convert kebab-case to camelCase for nonFunctional)
-  const normalizedStep = step === "non-functional" ? "nonFunctional" : step;
+  if (problem.category === "backend") {
+    // Validate that the step is a valid route
+    const validStepRoutes = Object.keys(SLUGS_TO_STEPS);
 
-  // If this is the intro step, render it as a standalone page
-  if (normalizedStep === "intro") {
-    return <IntroPage slug={slug} />;
+    if (!validStepRoutes.includes(step)) {
+      // Invalid step - redirect to intro
+      redirect(`/practice/${slug}/intro`);
+    }
+
+    const steps: ProblemStepWithUserStep[] | null = await fetch(
+      `${baseUrl}/api/v2/practice/${slug}/steps`,
+      {
+        cache: "no-store", // Temporarily disable cache to see new data field
+        headers: {
+          Cookie: cookieHeader,
+        },
+      }
+    ).then(async (response) => {
+      if (response.ok) {
+        const data = await response.json();
+        return data?.data ?? null;
+      }
+      return null;
+    });
+
+    if (!steps) {
+      return <div>Steps not found</div>;
+    }
+
+    // Access control: Calculate maxVisitedStep from completed steps (skip for intro)
+    if (step !== "intro") {
+      let highestCompletedOrder = -1;
+
+      for (const problemStep of steps) {
+        if (problemStep.userStep?.status === "completed") {
+          highestCompletedOrder = Math.max(highestCompletedOrder, problemStep.order);
+        }
+      }
+
+      const maxVisitedStep = highestCompletedOrder + 1;
+
+      // Find the current step's order from PRACTICE_STEPS
+      const currentStepConfig = Object.values(PRACTICE_STEPS).find((s) => s.route === step);
+
+      // If user tries to access a step beyond maxVisitedStep, redirect them
+      if (currentStepConfig && currentStepConfig.order > maxVisitedStep) {
+        const targetStep = Object.values(PRACTICE_STEPS).find((s) => s.order === maxVisitedStep);
+        if (targetStep) {
+          redirect(`/practice/${slug}/${targetStep.route}`);
+        }
+      }
+    }
+
+    return <PracticeBackend slug={slug} step={step} data={{ problem, steps }} />;
   }
 
-  // Check if the step is valid
-  if (!PRACTICE_STEPS.includes(normalizedStep as PracticeStep)) {
-    notFound();
-  }
-
-  return (
-    <PracticeStepClient
-      scenario={slug}
-      step={normalizedStep as PracticeStep}
-      searchParams={search}
-    />
-  );
+  return null;
 }

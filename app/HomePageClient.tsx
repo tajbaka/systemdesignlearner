@@ -3,19 +3,126 @@
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { logger } from "@/lib/logger";
-import { Navbar } from "@/components/Navbar";
+import { AuthenticatedNavbar } from "@/domains/authentication/AuthenticatedNavbar";
 import { Footer } from "@/components/Footer";
-import DemoBoard from "@/domains/practice/components/DemoBoard";
+import ReactFlowBoard from "@/domains/practice/back-end/high-level-design/components/design-board/ReactFlowBoard";
+import type {
+  BoardNode,
+  BoardEdge,
+} from "@/domains/practice/back-end/high-level-design/components/design-board/types";
+import { getIcon } from "@/domains/practice/back-end/high-level-design/DesignBoardIcons";
 import { track } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Demo board nodes and edges for URL shortener architecture
+const demoNodes: BoardNode[] = [
+  {
+    id: "demo-web",
+    type: "Client",
+    name: "Client",
+    x: -250,
+    y: 250,
+    icon: getIcon("client"),
+  },
+  {
+    id: "demo-gateway",
+    type: "APIGateway",
+    name: "API Gateway",
+    x: 68,
+    y: 230,
+    icon: getIcon("api-gateway"),
+  },
+  {
+    id: "demo-shortener",
+    type: "Service",
+    name: "URL Shortening",
+    x: 347,
+    y: 296,
+    icon: getIcon("service"),
+  },
+  {
+    id: "demo-redirection",
+    type: "Service",
+    name: "URL Redirection",
+    x: 328,
+    y: 95,
+    icon: getIcon("service"),
+  },
+  {
+    id: "demo-cache",
+    type: "Cache",
+    name: "Cache",
+    x: 698,
+    y: 73,
+    icon: getIcon("cache"),
+  },
+  {
+    id: "demo-db",
+    type: "RelationDb",
+    name: "SQL Database",
+    x: 709,
+    y: 241,
+    icon: getIcon("sql"),
+  },
+];
+
+const demoEdges: BoardEdge[] = [
+  // Client → API Gateway (right → left)
+  {
+    id: "edge-1",
+    from: "demo-web",
+    to: "demo-gateway",
+    sourceHandle: "right",
+    targetHandle: "left",
+  },
+  // API Gateway → URL Redirection (top → left)
+  {
+    id: "edge-2",
+    from: "demo-gateway",
+    to: "demo-redirection",
+    sourceHandle: "top",
+    targetHandle: "left",
+  },
+  // API Gateway → URL Shortening (bottom → left)
+  {
+    id: "edge-3",
+    from: "demo-gateway",
+    to: "demo-shortener",
+    sourceHandle: "bottom",
+    targetHandle: "left",
+  },
+  // URL Redirection → Cache (right → left)
+  {
+    id: "edge-4",
+    from: "demo-redirection",
+    to: "demo-cache",
+    sourceHandle: "right",
+    targetHandle: "left",
+  },
+  // URL Shortening → SQL Database (right → left)
+  {
+    id: "edge-5",
+    from: "demo-shortener",
+    to: "demo-db",
+    sourceHandle: "right",
+    targetHandle: "left",
+  },
+  // URL Redirection → SQL Database (right → left)
+  {
+    id: "edge-6",
+    from: "demo-redirection",
+    to: "demo-db",
+    sourceHandle: "right",
+    targetHandle: "left",
+  },
+];
 
 export function HomePageClient() {
   return (
     <div className="min-h-screen bg-zinc-900 text-white">
       {/* Header/Navbar */}
-      <Navbar />
+      <AuthenticatedNavbar />
 
       {/* Hero Section */}
       <section className="relative border-b border-zinc-800">
@@ -103,12 +210,6 @@ export function HomePageClient() {
                   aria-label="Try URL Shortener Scenario"
                   onClick={() => {
                     track("homepage_try_url_shortener_clicked");
-                    // Fire Meta Conversions API event
-                    fetch("/api/meta-analytics", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ event_name: "try_url_shortener" }),
-                    }).catch((err) => logger.error("Meta analytics error:", err));
                   }}
                 >
                   Try URL Shortener Scenario
@@ -137,8 +238,20 @@ export function HomePageClient() {
               transition={{ duration: 0.4, delay: 0.5 }}
               className="max-w-6xl mx-auto"
             >
-              <div className="bg-zinc-800/60 pointer-events-none border border-zinc-700 rounded-2xl p-6 sm:p-10 shadow-2xl">
-                <DemoBoard />
+              <div className="bg-zinc-800/60 border border-zinc-700 rounded-2xl p-6 sm:p-10 shadow-2xl">
+                <div className="relative w-full h-96 bg-zinc-900/50 border border-zinc-700 rounded-xl overflow-hidden">
+                  <div className="absolute inset-0 pointer-events-none">
+                    <ReactFlowBoard
+                      nodes={demoNodes}
+                      edges={demoEdges}
+                      onNodesChange={() => {}}
+                      onEdgesChange={() => {}}
+                      className="w-full h-full"
+                      style={{ backgroundColor: "transparent" }}
+                      showMiniMap={false}
+                    />
+                  </div>
+                </div>
               </div>
             </motion.div>
           </motion.div>
@@ -776,8 +889,8 @@ export function HomePageClient() {
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">Practice Scenarios</h2>
             <p className="text-lg text-zinc-400 max-w-3xl mx-auto">
-              Start with URL Shortener and get ready for Twitter, Instagram, and Netflix-style
-              drills from the practice page that mirror real interview asks.
+              Master the basics with URL Shorteners and Rate Limiters, then tackle complex scenarios
+              like WhatsApp, Leaderboards, and Payment Systems.
             </p>
           </div>
 
@@ -814,14 +927,16 @@ export function HomePageClient() {
                 <CardHeader>
                   <CardTitle className="text-xl">Upcoming Scenarios</CardTitle>
                   <CardDescription>
-                    Twitter timelines, Instagram stories, Netflix-style streaming, and more to ship.
+                    Specialized drills for Leaderboards, Ticketmaster, Payments, and more.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 text-sm text-zinc-400">
-                    <p>• Feeds: fan-out vs fan-in, ranking, caching</p>
-                    <p>• Real-time chat and notifications: websockets, delivery guarantees</p>
-                    <p>• Streaming: edge delivery, segmenting, prefetch, content protection</p>
+                    <p>• Scale: Leaderboards with Redis Sorted Sets & Skip Lists</p>
+                    <p>• Concurrency: Ticketmaster with Distributed Locking</p>
+                    <p>• Reliability: Payment systems and Double-Entry Ledgers</p>
+                    <p>• Infrastructure: Dropbox File Sync & Web Crawlers</p>
+                    <p>• Media: YouTube-style CDNs & Adaptive Streaming</p>
                   </div>
                 </CardContent>
               </Card>

@@ -3,11 +3,15 @@
 // Sourced from: https://posthog.com/docs/libraries/next-js#capturing-pageviews
 
 import { useEffect } from "react";
-import { useUser } from "@clerk/nextjs";
+import useAuthentication from "@/domains/hooks/useAuthentication";
 import { group, identify } from "@/lib/analytics";
 
 export default function PosthogTrackIdentity(): null {
-  const { user, isSignedIn, isLoaded } = useUser();
+  const { user, isSignedIn, isLoaded } = useAuthentication({
+    slug: "posthog-tracking",
+    isOpen: false,
+    onClose: () => {},
+  });
 
   const userId = user?.id;
   const userEmail = user?.primaryEmailAddress?.emailAddress;

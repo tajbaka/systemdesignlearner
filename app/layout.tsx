@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const fbPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
+// const fbPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
@@ -113,8 +113,8 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
-      signInFallbackRedirectUrl="/sso-callback"
       signUpFallbackRedirectUrl="/sso-callback"
+      signInFallbackRedirectUrl="/sso-callback"
       appearance={{
         baseTheme: undefined,
         variables: {
@@ -218,7 +218,8 @@ export default function RootLayout({
     >
       <html lang="en" className="h-full dark">
         <head>
-          {fbPixel && (
+          {/* Facebook Pixel - Commented out */}
+          {/* {fbPixel && (
             <>
               <script
                 dangerouslySetInnerHTML={{
@@ -238,17 +239,16 @@ export default function RootLayout({
                 }}
               />
               <noscript>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   height="1"
                   width="1"
                   style={{ display: "none" }}
-                  src={`https://www.facebook.com/tr?id=${fbPixel}&ev=PageView&noscript=1`}
+                  src={\`https://www.facebook.com/tr?id=\${fbPixel}&ev=PageView&noscript=1\`}
                   alt=""
                 />
               </noscript>
             </>
-          )}
+          )} */}
         </head>
         <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}>
           <ScrollToTop />

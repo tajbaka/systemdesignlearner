@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { POST } from "@/app/api/transcribe/route";
+import { POST } from "@/app/api/v2/transcribe/route";
 import { NextRequest } from "next/server";
 
 describe("/api/transcribe", () => {

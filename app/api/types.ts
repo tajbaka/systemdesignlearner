@@ -39,7 +39,6 @@ const getFeedbackSchema = z.object({
   stepId: supportedIterativeStep,
   userContent: z.string(),
   previousQuestion: z.string().nullable().optional(),
-  attemptCount: z.number().optional(),
 });
 
 const evaluateRevisionSchema = z.object({

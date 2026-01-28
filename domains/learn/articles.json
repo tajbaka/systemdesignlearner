@@ -38,7 +38,7 @@
       "articles": [
         {
           "id": "7",
-          "slug": "designUrlShortener"
+          "slug": "design-url-shortener"
         }
       ]
     }
@@ -302,14 +302,14 @@
       ]
     },
     {
-      "slug": "designUrlShortener",
+      "slug": "design-url-shortener",
       "title": "Design a URL Shortener",
       "subtitle": "Building a scalable URL shortening service like TinyURL or Bitly",
       "description": "Learn how to design a production-ready URL shortening service. This guide covers pre-generated short codes, separating read and write servers, caching strategies, database replication, and scaling to handle millions of redirects per day.",
       "author": "System Design Sandbox",
       "date": "2024-12-08",
       "readTime": "15 min",
-      "markdownFile": "designUrlShortener.md",
+      "markdownFile": "design-url-shortener.md",
       "removeFirstHeading": true,
       "keywords": [
         "URL shortener",

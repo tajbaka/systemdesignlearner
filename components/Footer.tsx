@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { track } from "@/lib/analytics";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// import { useState } from "react";
+// import { track } from "@/lib/analytics";
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
 
 export function Footer() {
+  /* Commented out newsletter feature
   const [newsletterStatus, setNewsletterStatus] = useState<
     "idle" | "submitting" | "success" | "error"
   >("idle");
@@ -75,6 +76,7 @@ export function Footer() {
       }, 3000);
     }
   };
+  */
 
   return (
     <footer className="border-t border-zinc-800 mt-16">
@@ -197,7 +199,7 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter Column */}
+          {/* Newsletter Column - Commented out feature
           <div className="lg:col-span-2">
             <h3 className="text-white font-semibold text-sm mb-4">Stay Updated</h3>
             <p className="text-zinc-400 text-sm mb-4">Get updates and help validate this idea.</p>
@@ -249,6 +251,7 @@ export function Footer() {
               )}
             </form>
           </div>
+          */}
         </div>
 
         {/* Bottom Bar */}

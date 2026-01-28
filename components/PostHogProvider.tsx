@@ -32,9 +32,9 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       autocapture: true,
       disable_surveys: true, // Disable surveys to prevent script loading errors
       debug: (process.env.NODE_ENV as string) === "development",
-      loaded: (posthog) => {
+      loaded: (posthogInstance) => {
         // Expose PostHog to window for analytics.ts to use
-        window.posthog = posthog;
+        (window as unknown as { posthog: typeof posthogInstance }).posthog = posthogInstance;
       },
     });
 

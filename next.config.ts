@@ -5,7 +5,20 @@ import type { NextConfig } from "next";
 const isCI = Boolean(process.env.CI);
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   /* config options here */
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "img.clerk.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.clerk.dev",
+      },
+    ],
+  },
   webpack(config, { dev }) {
     // Avoid webpack persisting very large serialized strings to disk while keeping repeat builds fast.
     // Use an in-memory cache in dev for responsiveness and fall back to the filesystem cache for production builds.

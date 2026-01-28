@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Navbar } from "@/components/Navbar";
+import { AuthenticatedNavbar } from "@/domains/authentication/AuthenticatedNavbar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
@@ -85,7 +85,7 @@ export default function FeedbackPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
-      <Navbar />
+      <AuthenticatedNavbar />
       <div className="max-w-4xl mx-auto px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -199,6 +199,7 @@ export default function FeedbackPage() {
                   </Label>
                 </div>
 
+                {/* Newsletter subscription checkbox - Commented out
                 <div className="flex items-start space-x-3">
                   <Checkbox
                     id="marketing_ok"
@@ -216,6 +217,7 @@ export default function FeedbackPage() {
                     announcements, and system design content.
                   </Label>
                 </div>
+                */}
               </div>
 
               {/* Status Messages */}

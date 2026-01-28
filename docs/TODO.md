@@ -1,8 +1,24 @@
-Later
-Check if bidirectional arrows are possible in the high level design stage
-use implementation of className="react-flow\_\_arrowhead" instead of double sided
-tighten scenario answers to match interview.io closer
-fix scenario description to match link from intro page
+Antonio
 
-NOW
-onboarding 463 url-shortner.json file is this needed? also is it possible to merge the two json and only have one?
+High Priority:
+ingestion link in notification system plus bad feedback hints on many steps/
+More blogs
+
+Low priority:
+Bring back share link
+Learn page should have same footer as the rest of the pages
+Sidebar in learn should not be laggy and showing all the main points already open if when i then open it many appear (not from 1 to many like now)
+
+Problems Plan:  
+1 Rate Limiter Redis + Lua Scripting "Race Conditions & Atomic Counters"
+2 Notification System Message Queues (Kafka/RabbitMQ) "Push vs. Pull Models & Idempotency"
+3 WhatsApp WebSockets (Stateful) "Scaling Long-Lived Connections"
+4 Leaderboard Sorted Sets (Data Structures) "Redis Sorted Sets & Skip Lists"
+5 Ticketmaster Distributed Locking "Optimistic vs. Pessimistic Locking"
+6 Job Scheduler Leader Election "How Cron Works at Scale"
+7 Payment System Reliability / Ledger "Double-Entry Accounting in SQL"
+8 Dropbox File Sync / Hashing "Merkle Trees & Block Level Sync"
+9 Web Crawler Graph Traversal "Bloom Filters & DNS Caching"
+10 YouTube Content Delivery "How CDNs & Adaptive Streaming Work"
+
+paste retrieval link in pastebin does not exist

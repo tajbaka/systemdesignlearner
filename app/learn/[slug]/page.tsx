@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/getBaseUrl";
-import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/domains/practice/constants";
+import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/domains/practice/back-end/constants";
 import { loadArticlesConfig, getArticleBySlug } from "@/domains/learn/utils";
 import { LearnArticlePageClient } from "@/domains/learn/containers/LearnArticlePageClient";
 
@@ -31,20 +31,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const url = `${baseUrl}/learn/${slug}`;
   const ogImage = `${baseUrl}${PRACTICE_IMAGE_URLS[VALID_SLUGS.URL_SHORTENER]}`;
 
-  // Use article-specific keywords, fallback to generic ones
-  const keywords = config.keywords || [
-    "system design",
-    "distributed systems",
-    "software architecture",
-    "scalability",
-    "system design interview",
-    "backend engineering",
-  ];
-
   return {
     title: config.title,
     description: config.description,
-    keywords,
     authors: [{ name: config.author }],
     creator: config.author,
     publisher: "System Design Sandbox",
@@ -66,7 +55,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: config.date,
       authors: [config.author],
       section: "System Design",
-      tags: keywords.slice(0, 4), // Use article-specific keywords for OG tags
     },
     twitter: {
       card: "summary_large_image",
@@ -89,5 +77,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
+
   return <LearnArticlePageClient slug={slug} />;
 }

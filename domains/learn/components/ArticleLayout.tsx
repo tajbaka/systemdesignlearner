@@ -1,8 +1,9 @@
 import { ReactNode } from "react";
 import Link from "next/link";
 import type { ArticleCategory } from "../types";
-import { ArticleSidebarWrapper } from "./ArticleSidebarWrapper";
-import { NavbarWrapper } from "@/components/NavbarWrapper";
+import { Sidebar } from "@/components/sidebar";
+import type { SidebarConfig } from "@/components/sidebar";
+import { AuthenticatedNavbar } from "@/domains/authentication/AuthenticatedNavbar";
 import { ArticleFooter } from "./ArticleFooter";
 import { TableOfContents } from "./TableOfContents";
 import { ArticleStructuredData } from "./ArticleStructuredData";
@@ -32,6 +33,25 @@ export function ArticleLayout({
   slug,
   children,
 }: ArticleLayoutProps) {
+  const sidebarConfig: SidebarConfig = {
+    theme: "light",
+    logo: {
+      href: "/",
+      text: "System Design",
+      short: "SD",
+    },
+    categories: categories.map((cat) => ({
+      id: cat.id,
+      title: cat.title,
+      icon: cat.icon,
+      items: cat.articles.map((article) => ({
+        id: article.id,
+        title: article.title,
+        href: `/learn/${article.slug}`,
+      })),
+    })),
+  };
+
   return (
     <div className="min-h-screen">
       {/* Structured Data for SEO */}
@@ -44,9 +64,9 @@ export function ArticleLayout({
         readTime={readTime}
         slug={slug}
       />
-      <NavbarWrapper variant="light" />
+      <AuthenticatedNavbar variant="light" hideIcon={true} hideMobileMenu={true} />
 
-      <ArticleSidebarWrapper categories={categories} />
+      <Sidebar config={sidebarConfig} />
 
       {/* Light mode wrapper for article */}
       <div className="md:ml-16 bg-white text-zinc-900">

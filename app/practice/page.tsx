@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { PracticePageClient } from "@/domains/practice/containers/PracticePageClient";
+import { cookies } from "next/headers";
+import { PracticePageClient } from "@/domains/practice/PracticePageClient";
+import { getBaseUrl } from "@/lib/getBaseUrl";
 
 export const metadata: Metadata = {
   title: "System Design Practice Scenarios - Interactive Interview Challenges",
@@ -21,6 +23,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
-  return <PracticePageClient />;
+export default async function Page() {
+  // Fetch problems from API endpoint
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
+
+  const baseUrl = getBaseUrl();
+  const problems = await fetch(`${baseUrl}/api/v2/practice`, {
+    cache: "no-store",
+    headers: {
+      Cookie: cookieHeader,
+    },
+  }).then(async (response) => {
+    if (response.ok) {
+      const data = await response.json();
+      return data?.data ?? [];
+    }
+    return [];
+  });
+
+  return <PracticePageClient problems={problems} />;
 }

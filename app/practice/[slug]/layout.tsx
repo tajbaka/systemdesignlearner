@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getBaseUrl } from "@/lib/getBaseUrl";
-import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/domains/practice/constants";
+import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/domains/practice/back-end/constants";
 
 type Props = {
   params: Promise<{ slug: string }>;
