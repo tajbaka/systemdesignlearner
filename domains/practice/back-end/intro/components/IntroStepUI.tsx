@@ -26,6 +26,7 @@ type IntroStepUIProps = {
   estimatedTime?: string;
   prerequisites?: Prerequisite[];
   hints?: LinkItem[];
+  buttonText?: string;
   onStartPractice: () => void;
 };
 
@@ -37,6 +38,7 @@ export function IntroStepUI({
   estimatedTime,
   prerequisites,
   hints,
+  buttonText = "Start Practice",
   onStartPractice,
 }: IntroStepUIProps) {
   return (
@@ -140,7 +142,7 @@ export function IntroStepUI({
             )}
           </div>
 
-          {/* Start Practice Button - Right aligned */}
+          {/* Action Button - Right aligned */}
           <div className="flex justify-end items-center gap-4 pt-4">
             {estimatedTime && <p className="text-sm text-zinc-500">{estimatedTime}</p>}
             <Button
@@ -148,7 +150,7 @@ export function IntroStepUI({
               onClick={onStartPractice}
               className="bg-blue-600 hover:bg-blue-500 text-white font-medium transition-all px-8 min-h-[48px] text-base"
             >
-              Start Practice
+              {buttonText}
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>

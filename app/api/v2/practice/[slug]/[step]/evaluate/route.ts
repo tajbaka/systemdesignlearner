@@ -28,6 +28,7 @@ import type {
   APIEvaluationResult,
 } from "@/app/api/v2/practice/(evaluation)/types";
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
+import { calculateMaxVisitedStep } from "@/domains/practice/utils/access-control";
 
 // Helper to strip markdown code blocks if the LLM wraps JSON
 const cleanJson = (raw: string) => raw.replace(/```json|```/g, "").trim();
@@ -161,17 +162,11 @@ export async function POST(
       if (userProblemStep) {
         const stepData = (userProblemStep.data as Record<string, unknown>) || {};
 
-        // Calculate maxVisitedStep (highest completed step order + 1)
-        let highestCompletedOrder = -1;
-
-        for (const step of allSteps) {
+        // Calculate maxVisitedStep: find first incomplete step sequentially
+        const maxVisitedStep = calculateMaxVisitedStep(allSteps, (step) => {
           const userStepData = stepData[step.stepType] as { status?: string } | undefined;
-          if (userStepData?.status === "completed") {
-            highestCompletedOrder = Math.max(highestCompletedOrder, step.order);
-          }
-        }
-
-        const maxVisitedStep = highestCompletedOrder + 1;
+          return userStepData?.status === "completed";
+        });
 
         // Check if user is trying to evaluate a step they don't have access to
         if (stepRecord.order > maxVisitedStep) {

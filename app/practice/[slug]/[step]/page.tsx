@@ -5,6 +5,7 @@ import PracticeBackend from "@/domains/practice/back-end/PracticeBackend";
 import type { ProblemResponse, ProblemStepWithUserStep } from "@/app/api/v2/practice/schemas";
 import { getBaseUrl } from "@/lib/getBaseUrl";
 import { PRACTICE_STEPS, SLUGS_TO_STEPS } from "@/domains/practice/back-end/constants";
+import { calculateMaxVisitedStep } from "@/domains/practice/utils/access-control";
 
 type Props = {
   params: Promise<{ slug: string; step: string }>;
@@ -32,8 +33,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function Page({ params }: Props) {
+export default async function Page({ params, searchParams }: Props) {
   const { slug, step } = await params;
+  const query = await searchParams;
 
   // Get cookies to forward authentication to internal API calls
   const cookieStore = await cookies();
@@ -87,17 +89,26 @@ export default async function Page({ params }: Props) {
       return <div>Steps not found</div>;
     }
 
+    // If continue parameter is present and we're on intro, redirect to maxVisitedStep
+    if (query.continue === "true" && step === "intro") {
+      const maxVisitedStep = calculateMaxVisitedStep(
+        steps,
+        (step) => step.userStep?.status === "completed"
+      );
+
+      const targetStep = Object.values(PRACTICE_STEPS).find((s) => s.order === maxVisitedStep);
+
+      if (targetStep) {
+        redirect(`/practice/${slug}/${targetStep.route}`);
+      }
+    }
+
     // Access control: Calculate maxVisitedStep from completed steps (skip for intro)
     if (step !== "intro") {
-      let highestCompletedOrder = -1;
-
-      for (const problemStep of steps) {
-        if (problemStep.userStep?.status === "completed") {
-          highestCompletedOrder = Math.max(highestCompletedOrder, problemStep.order);
-        }
-      }
-
-      const maxVisitedStep = highestCompletedOrder + 1;
+      const maxVisitedStep = calculateMaxVisitedStep(
+        steps,
+        (step) => step.userStep?.status === "completed"
+      );
 
       // Find the current step's order from PRACTICE_STEPS
       const currentStepConfig = Object.values(PRACTICE_STEPS).find((s) => s.route === step);

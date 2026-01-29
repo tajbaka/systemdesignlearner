@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { PRACTICE_STEPS } from "../constants";
 import type { PracticeStepWithRoute } from "../types";
 import type { ProblemConfig } from "../types";
+import { calculateMaxVisitedStep as calculateMaxVisitedStepUtil } from "@/domains/practice/utils/access-control";
 
 type UseStepperProps = {
   stepType: string | null;
@@ -15,30 +16,17 @@ type UseStepperResult = {
 };
 
 /**
- * Calculates the maximum visited step index based on completed steps.
- * maxVisitedStep = highest order of completed step + 1
- *
- * Example:
- * - If no steps completed: returns 0 (can access functional, order 0)
- * - If functional (order 0) completed: returns 1 (can access nonFunctional, order 1)
- * - If nonFunctional (order 1) completed: returns 2 (can access api, order 2)
+ * Wrapper function to calculate max visited step from problem config.
+ * Uses the shared calculateMaxVisitedStep utility.
  */
 function calculateMaxVisitedStep(config: ProblemConfig | null): number {
   if (!config?.steps) {
     return 0; // No config, allow access to first step (functional)
   }
 
-  // Get all completed steps with their order
-  const completedSteps = Object.values(config.steps)
-    .filter((step) => step.completed && step.order !== undefined)
-    .map((step) => step.order!);
+  const stepsArray = Object.values(config.steps);
 
-  // Find the highest completed order, default to -1 if none completed
-  const highestCompletedOrder = completedSteps.length > 0 ? Math.max(...completedSteps) : -1;
-
-  // Return the next step order (highest completed + 1)
-  // If no steps are completed (highestCompletedOrder = -1), returns 0
-  return highestCompletedOrder + 1;
+  return calculateMaxVisitedStepUtil(stepsArray, (step) => step.completed === true);
 }
 
 /**

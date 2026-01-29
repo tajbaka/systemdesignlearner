@@ -41,15 +41,21 @@ export function useActionHandler(slug: string): StepHandlers {
 
   const handlers: StepHandlers = useMemo<StepHandlers>(
     () => ({
-      [STEPS.INTRO]: (action) => {
+      [STEPS.INTRO]: (action, hasStarted) => {
         if (action === "start") {
           // Track analytics
           track("practice_intro_start", {
             slug: slug,
+            hasStarted: hasStarted,
           });
 
-          // Navigate to functional step (first actual practice step)
-          router.push(`/practice/${slug}/functional`);
+          // If user has started, use continue=true to redirect to appropriate step
+          // Otherwise, navigate to first step (functional)
+          if (hasStarted) {
+            router.push(`/practice/${slug}/intro?continue=true`);
+          } else {
+            router.push(`/practice/${slug}/functional`);
+          }
         }
       },
       [STEPS.FUNCTIONAL]: async (action, ...args) => {

@@ -7,12 +7,16 @@ import type { StepComponentProps } from "../types";
 export default function IntroStep({ config, handlers }: StepComponentProps) {
   const hints = config.articles || [];
 
+  // Check if user has started practice by checking if any steps are completed
+  const hasStarted = Object.values(config.steps).some((step) => step.completed === true);
+
   return (
     <IntroStepUI
       title={config.title}
       description={config.description}
       hints={hints}
-      onStartPractice={() => handlers[STEPS.INTRO]("start")}
+      buttonText={hasStarted ? "Continue" : "Start Practice"}
+      onStartPractice={() => handlers[STEPS.INTRO]("start", hasStarted)}
     />
   );
 }

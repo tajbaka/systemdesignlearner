@@ -13,7 +13,7 @@ import { capitalize } from "@/utils/capitalize";
 
 const BUTTON_CONFIG = {
   completed: { text: "View Results", href: "/practice/[slug]/score", color: "green" },
-  in_progress: { text: "Start Practice", href: "/practice/[slug]/intro", color: "blue" },
+  in_progress: { text: "Continue", href: "/practice/[slug]/intro?continue=true", color: "blue" },
   not_started: { text: "Start Practice", href: "/practice/[slug]/intro", color: "blue" },
 } as const;
 
