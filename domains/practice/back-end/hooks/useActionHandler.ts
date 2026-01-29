@@ -105,6 +105,12 @@ export function useActionHandler(slug: string): StepHandlers {
             setModalOpen(true);
           } catch (error) {
             console.error("Failed to save/evaluate functional requirements:", error);
+            // Track evaluation error
+            track("practice_evaluation_error", {
+              slug: slug,
+              step: "functional",
+              error: error instanceof Error ? error.message : "Unknown error",
+            });
             setIsActionLoading(false);
             // TODO: Handle error display
           }
@@ -113,6 +119,12 @@ export function useActionHandler(slug: string): StepHandlers {
           setModalOpen(false);
           router.push(`/practice/${slug}/non-functional`);
         } else if (action === "revise") {
+          // Track revision - indicates user needs another attempt
+          track("practice_step_revised", {
+            slug: slug,
+            step: "functional",
+            attempts: functionalRequirements.attempts ?? 0,
+          });
           // Just close modal so user can revise their answer
           setModalOpen(false);
         } else if (action === "changeTextBox") {
@@ -130,6 +142,12 @@ export function useActionHandler(slug: string): StepHandlers {
           setFunctionalRequirements(updatedRequirements);
         } else if (action === "insert") {
           const [solutionText] = args as [string];
+          // Track solution insertion - indicates user gave up on self-solving
+          track("practice_solution_inserted", {
+            slug: slug,
+            step: "functional",
+            attempts: functionalRequirements.attempts ?? 0,
+          });
           const updatedRequirements = {
             ...functionalRequirements,
             textField: {
@@ -187,6 +205,12 @@ export function useActionHandler(slug: string): StepHandlers {
             setModalOpen(true);
           } catch (error) {
             console.error("Failed to save/evaluate non-functional requirements:", error);
+            // Track evaluation error
+            track("practice_evaluation_error", {
+              slug: slug,
+              step: "non_functional",
+              error: error instanceof Error ? error.message : "Unknown error",
+            });
             setIsActionLoading(false);
             // TODO: Handle error display
           }
@@ -195,6 +219,12 @@ export function useActionHandler(slug: string): StepHandlers {
           setModalOpen(false);
           router.push(`/practice/${slug}/api`);
         } else if (action === "revise") {
+          // Track revision - indicates user needs another attempt
+          track("practice_step_revised", {
+            slug: slug,
+            step: "non_functional",
+            attempts: nonFunctionalRequirements.attempts ?? 0,
+          });
           // Just close modal so user can revise their answer
           setModalOpen(false);
         } else if (action === "changeTextBox") {
@@ -212,6 +242,12 @@ export function useActionHandler(slug: string): StepHandlers {
           setNonFunctionalRequirements(updatedRequirements);
         } else if (action === "insert") {
           const [solutionText] = args as [string];
+          // Track solution insertion - indicates user gave up on self-solving
+          track("practice_solution_inserted", {
+            slug: slug,
+            step: "non_functional",
+            attempts: nonFunctionalRequirements.attempts ?? 0,
+          });
           const updatedRequirements = {
             ...nonFunctionalRequirements,
             textField: {
@@ -376,6 +412,12 @@ export function useActionHandler(slug: string): StepHandlers {
             setModalOpen(true);
           } catch (error) {
             console.error("Failed to save/evaluate API endpoints:", error);
+            // Track evaluation error
+            track("practice_evaluation_error", {
+              slug: slug,
+              step: "api",
+              error: error instanceof Error ? error.message : "Unknown error",
+            });
             setIsActionLoading(false);
             // TODO: Handle error display
           }
@@ -384,6 +426,12 @@ export function useActionHandler(slug: string): StepHandlers {
           setModalOpen(false);
           router.push(`/practice/${slug}/high-level-design`);
         } else if (action === "revise") {
+          // Track revision - indicates user needs another attempt
+          track("practice_step_revised", {
+            slug: slug,
+            step: "api",
+            attempts: apiDesign.attempts ?? 0,
+          });
           // Just close modal so user can revise their answer
           setModalOpen(false);
         } else if (action === "changeInput" || action === "changeTextBox") {
@@ -444,6 +492,12 @@ export function useActionHandler(slug: string): StepHandlers {
           });
         } else if (action === "insert") {
           const [updatedEndpoints] = args as [EndpointItem[]];
+          // Track solution insertion - indicates user gave up on self-solving
+          track("practice_solution_inserted", {
+            slug: slug,
+            step: "api",
+            attempts: apiDesign.attempts ?? 0,
+          });
           setApiDesign({
             endpoints: updatedEndpoints,
             submission: undefined, // Clear results when user inserts solution
@@ -496,6 +550,12 @@ export function useActionHandler(slug: string): StepHandlers {
             setModalOpen(true);
           } catch (error) {
             console.error("Failed to save/evaluate high-level design:", error);
+            // Track evaluation error
+            track("practice_evaluation_error", {
+              slug: slug,
+              step: "high_level_design",
+              error: error instanceof Error ? error.message : "Unknown error",
+            });
             setIsActionLoading(false);
             // TODO: Handle error display
           }
@@ -504,6 +564,12 @@ export function useActionHandler(slug: string): StepHandlers {
           setModalOpen(false);
           router.push(`/practice/${slug}/score`);
         } else if (action === "revise") {
+          // Track revision - indicates user needs another attempt
+          track("practice_step_revised", {
+            slug: slug,
+            step: "high_level_design",
+            attempts: highLevelDesign.attempts ?? 0,
+          });
           // Just close modal so user can revise their answer
           setModalOpen(false);
         } else if (action === "updateDiagram") {
@@ -532,13 +598,38 @@ export function useActionHandler(slug: string): StepHandlers {
             // Calculate total score for analytics
             const totalScore = data.stepScores.reduce((sum, step) => sum + step.score, 0);
 
+            // Check if all steps passed on first attempt (no retries needed)
+            // Get fresh state to check attempts from local store
+            const freshState = stepStateStore.getState();
+            const problemState = freshState.problems[slug];
+            const allStepsPassedFirst =
+              problemState &&
+              (problemState.functionalRequirements.attempts ?? 0) === 0 &&
+              (problemState.nonFunctionalRequirements.attempts ?? 0) === 0 &&
+              (problemState.apiDesign.attempts ?? 0) === 0 &&
+              (problemState.highLevelDesign.attempts ?? 0) === 0;
+
             // Track analytics
             track("practice_score_fetched", {
               slug: slug,
               totalScore: totalScore,
             });
+
+            // Track first-pass win if all steps passed without retries
+            if (allStepsPassedFirst) {
+              track("practice_pass_first", {
+                slug: slug,
+                totalScore: totalScore,
+              });
+            }
           } catch (error) {
             console.error("Failed to fetch score:", error);
+            // Track score fetch error
+            track("practice_evaluation_error", {
+              slug: slug,
+              step: "score",
+              error: error instanceof Error ? error.message : "Unknown error",
+            });
             // TODO: Handle error display
           }
         }
