@@ -18,103 +18,135 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 // Demo board nodes and edges for URL shortener architecture
 const demoNodes: BoardNode[] = [
   {
-    id: "demo-web",
+    id: "demo-client",
     type: "Client",
     name: "Client",
     x: -250,
-    y: 250,
+    y: 200,
     icon: getIcon("client"),
   },
   {
     id: "demo-gateway",
     type: "APIGateway",
     name: "API Gateway",
-    x: 68,
-    y: 230,
+    x: 50,
+    y: 200,
     icon: getIcon("api-gateway"),
   },
   {
-    id: "demo-shortener",
+    id: "demo-read-service",
     type: "Service",
-    name: "URL Shortening",
-    x: 347,
-    y: 296,
+    name: "Read Service",
+    x: 350,
+    y: 100,
     icon: getIcon("service"),
   },
   {
-    id: "demo-redirection",
+    id: "demo-write-service",
     type: "Service",
-    name: "URL Redirection",
-    x: 328,
-    y: 95,
+    name: "Write Service",
+    x: 350,
+    y: 280,
     icon: getIcon("service"),
   },
   {
     id: "demo-cache",
     type: "Cache",
     name: "Cache",
-    x: 698,
-    y: 73,
+    x: 650,
+    y: 50,
     icon: getIcon("cache"),
   },
   {
-    id: "demo-db",
+    id: "demo-main-db",
     type: "RelationDb",
     name: "SQL Database",
-    x: 709,
-    y: 241,
+    x: 650,
+    y: 200,
+    icon: getIcon("sql"),
+  },
+  {
+    id: "demo-background-service",
+    type: "Service",
+    name: "Background Service",
+    x: 350,
+    y: 450,
+    icon: getIcon("service"),
+  },
+  {
+    id: "demo-pregen-db",
+    type: "RelationDb",
+    name: "Pre-Generated URL Database",
+    x: 650,
+    y: 450,
     icon: getIcon("sql"),
   },
 ];
 
 const demoEdges: BoardEdge[] = [
-  // Client → API Gateway (right → left)
+  // Client → API Gateway
   {
     id: "edge-1",
-    from: "demo-web",
+    from: "demo-client",
     to: "demo-gateway",
     sourceHandle: "right",
     targetHandle: "left",
   },
-  // API Gateway → URL Redirection (top → left)
+  // API Gateway → Write Service
   {
     id: "edge-2",
     from: "demo-gateway",
-    to: "demo-redirection",
-    sourceHandle: "top",
-    targetHandle: "left",
-  },
-  // API Gateway → URL Shortening (bottom → left)
-  {
-    id: "edge-3",
-    from: "demo-gateway",
-    to: "demo-shortener",
+    to: "demo-write-service",
     sourceHandle: "bottom",
     targetHandle: "left",
   },
-  // URL Redirection → Cache (right → left)
+  // Write Service → Main Database
+  {
+    id: "edge-3",
+    from: "demo-write-service",
+    to: "demo-main-db",
+    sourceHandle: "right",
+    targetHandle: "left",
+  },
+  // API Gateway → Read Service
   {
     id: "edge-4",
-    from: "demo-redirection",
+    from: "demo-gateway",
+    to: "demo-read-service",
+    sourceHandle: "top",
+    targetHandle: "left",
+  },
+  // Read Service → Cache
+  {
+    id: "edge-5",
+    from: "demo-read-service",
     to: "demo-cache",
     sourceHandle: "right",
     targetHandle: "left",
   },
-  // URL Shortening → SQL Database (right → left)
+  // Read Service → Main Database
   {
-    id: "edge-5",
-    from: "demo-shortener",
-    to: "demo-db",
+    id: "edge-6",
+    from: "demo-read-service",
+    to: "demo-main-db",
     sourceHandle: "right",
     targetHandle: "left",
   },
-  // URL Redirection → SQL Database (right → left)
+  // Background Service → Pre-Generated Database
   {
-    id: "edge-6",
-    from: "demo-redirection",
-    to: "demo-db",
+    id: "edge-7",
+    from: "demo-background-service",
+    to: "demo-pregen-db",
     sourceHandle: "right",
     targetHandle: "left",
+  },
+  // Background Service → Main Database
+  {
+    id: "edge-8",
+    from: "demo-background-service",
+    to: "demo-main-db",
+    sourceHandle: "top",
+    targetHandle: "bottom",
   },
 ];
 

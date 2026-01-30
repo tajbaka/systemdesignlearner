@@ -154,18 +154,18 @@ export function createMarkdownComponents(): Components {
       if (!src || typeof src !== "string") return null;
 
       return (
-        <span className="my-12 flex justify-center w-full">
-          <span className="relative w-full max-w-4xl min-h-[300px] rounded-lg shadow-lg overflow-hidden block">
-            <Image
-              src={src}
-              alt={alt || ""}
-              fill
-              className="object-contain"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-            />
-          </span>
+        <span className="my-12 block w-full">
+          <Image
+            src={src}
+            alt={alt || ""}
+            width={1200}
+            height={400}
+            className="w-full h-auto"
+            sizes="100vw"
+          />
         </span>
       );
     },
   };
 }
+//

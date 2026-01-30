@@ -515,7 +515,10 @@ body {
   }
 
   .article-content img {
-    @apply my-12 w-full rounded-sm;
+    @apply my-12 max-w-full h-auto rounded-sm;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .article-content hr {
