@@ -162,7 +162,7 @@ export const URL_SHORTENER_PROBLEM = {
             required: true,
             solutions: [
               {
-                text: "Support about 1B reads per day vs 10 million writes, this is because more urls will be redirected than created.",
+                text: "Support about 100 million reads per day vs 10 million writes, this is because more urls will be redirected than created.",
               },
             ],
             hints: [

@@ -42,18 +42,19 @@ const nextConfig: NextConfig = {
   },
   outputFileTracingRoot: __dirname,
 
-  // Add PostHog rewrites to support analytics ingestion endpoints
+  // PostHog proxy: use /ph (not /ingest) so ad blockers are less likely to block by path
   async rewrites() {
-    return [
+    const rewrites = [
       {
-        source: "/ingest/static/:path*",
+        source: "/ph/static/:path*",
         destination: "https://us-assets.i.posthog.com/static/:path*",
       },
       {
-        source: "/ingest/:path*",
+        source: "/ph/:path*",
         destination: "https://us.i.posthog.com/:path*",
       },
     ];
+    return rewrites;
   },
 
   // Required to support PostHog trailing slash API requests

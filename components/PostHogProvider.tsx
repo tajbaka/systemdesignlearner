@@ -24,12 +24,11 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
 
     // Initialize PostHog
     posthog.init(apiKey, {
-      api_host: "/ingest",
+      api_host: "/ph",
       ui_host: "https://us.posthog.com",
-      person_profiles: "identified_only",
-      capture_pageview: true, // Disable automatic pageview capture, as we capture manually
+      capture_pageview: true,
       capture_pageleave: false,
-      autocapture: true,
+      autocapture: false,
       disable_surveys: true, // Disable surveys to prevent script loading errors
       debug: (process.env.NODE_ENV as string) === "development",
       loaded: (posthogInstance) => {
