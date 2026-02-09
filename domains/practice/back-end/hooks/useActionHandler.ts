@@ -575,6 +575,12 @@ export function useActionHandler(slug: string): StepHandlers {
         } else if (action === "updateDiagram") {
           const [diagramData] = args as [PracticeDesignState];
           setHighLevelDesign({ design: diagramData, submission: undefined }); // Clear results when user modifies their answer
+        } else if (action === "insert") {
+          const [diagramData] = args as [PracticeDesignState];
+          setHighLevelDesign({
+            design: diagramData,
+            submission: undefined, // Clear results when user inserts solution
+          });
         }
       },
       [STEPS.SCORE]: async (action) => {

@@ -5,7 +5,8 @@ import { stepStateStore } from "../store/store";
 import useStepStore from "../store/useStore";
 import { useActionHandler } from "./useActionHandler";
 import type { HttpMethod } from "../api-design/components/MethodSelect";
-import type { ProblemConfig, ApiSolution, EndpointApiRequirement } from "../types";
+import type { ProblemConfig, ApiSolution, EndpointApiRequirement, DesignSolution } from "../types";
+import type { PracticeDesignState, PlacedNode, Edge } from "../high-level-design/types";
 
 type UseSolutionRevealProps = {
   slug: string;
@@ -91,8 +92,6 @@ export function useSolutionReveal({
   } else if (stepType === "highLevelDesign") {
     attempts = highLevelDesign.attempts ?? 0;
   }
-
-  const shouldShow = attempts > 2;
 
   // Get solution text from config based on step type
   const solutionText = useMemo(() => {
@@ -189,24 +188,59 @@ export function useSolutionReveal({
 
         return formattedSolutions.filter(Boolean).join("\n\n");
       }
+    } else if (stepType === "highLevelDesign" && config.steps.highLevelDesign?.requirements?.[0]) {
+      return "The reference diagram will be added to your design board.";
     }
 
     return "";
   }, [stepType, config]);
+
+  // Solution diagram for high-level design (nodes with layout + edges)
+  const solutionDesign = useMemo((): PracticeDesignState | null => {
+    if (stepType !== "highLevelDesign" || !config.steps.highLevelDesign?.requirements?.[0]) {
+      return null;
+    }
+    const requirement: DesignSolution = config.steps.highLevelDesign.requirements[0];
+    const configNodes = requirement.nodes ?? [];
+    const configEdges = requirement.edges ?? [];
+
+    // Layout: left to right, then next row
+    const HORIZONTAL_STEP = 320;
+    const VERTICAL_STEP = 240;
+    const START_X = 80;
+    const START_Y = 80;
+    const PER_ROW = 3;
+
+    const nodes: PlacedNode[] = configNodes.map((node, i) => ({
+      id: node.id,
+      type: node.type,
+      name: node.name,
+      x: START_X + (i % PER_ROW) * HORIZONTAL_STEP,
+      y: START_Y + Math.floor(i / PER_ROW) * VERTICAL_STEP,
+    }));
+
+    const edges: Edge[] = configEdges.map((e) => ({
+      id: `${e.from}-${e.to}`,
+      from: e.from,
+      to: e.to,
+    }));
+
+    return { nodes, edges };
+  }, [stepType, config]);
+
+  const shouldShow =
+    attempts > 2 &&
+    (stepType === "highLevelDesign" ? solutionDesign !== null : solutionText !== "");
 
   const handleReveal = () => {
     setIsRevealed(true);
   };
 
   const handleInsert = () => {
-    // Skip insertion for high-level design step
-    if (stepType === "highLevelDesign") {
-      console.log("Insert not supported for high-level design");
-      return;
-    }
-
     // Insert based on step type using the action handler
-    if (stepType === "functional") {
+    if (stepType === "highLevelDesign" && solutionDesign) {
+      handlers.highLevelDesign("insert", solutionDesign);
+    } else if (stepType === "functional") {
       handlers.functional("insert", solutionText);
     } else if (stepType === "nonFunctional") {
       handlers.nonFunctional("insert", solutionText);
@@ -314,7 +348,7 @@ export function useSolutionReveal({
       handlers.api("insert", updatedEndpoints);
     }
 
-    // Close the modal after inserting
+    // Close the modal after inserting (for all step types including highLevelDesign)
     if (onInsertComplete) {
       onInsertComplete();
     }

@@ -30,7 +30,13 @@ export type ApiStepActions =
   | "revise"
   | "insert";
 
-export type HighLevelDesignStepActions = "back" | "next" | "updateDiagram" | "continue" | "revise";
+export type HighLevelDesignStepActions =
+  | "back"
+  | "next"
+  | "updateDiagram"
+  | "continue"
+  | "revise"
+  | "insert";
 
 export type ScoreStepActions = "back" | "home" | "getScore";
 
