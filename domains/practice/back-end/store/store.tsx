@@ -102,8 +102,10 @@ export interface StepStateStoreState {
   setViewedTooltip: (slug: string, stepType: string) => void;
   resetState: (slug: string) => void;
 
-  // Helper to get or initialize problem state
+  // Helper to get or initialize problem state (pure read — safe inside selectors)
   getProblemState: (slug: string) => ProblemState;
+  // Ensure a problem slug is initialized in the store (call from effects, not selectors)
+  ensureProblemState: (slug: string) => void;
 }
 
 export type StepStateStore = StepStateStoreState;
@@ -186,6 +188,7 @@ const initialState: Omit<
   | "setViewedTooltip"
   | "resetState"
   | "getProblemState"
+  | "ensureProblemState"
 > = {
   problems: {},
   loading: true,
@@ -198,37 +201,43 @@ export const stepStateStore = create<StepStateStoreState>()(
     (set, get) => ({
       ...initialState,
 
-      // Helper to get or initialize problem state
+      // Helper to get or initialize problem state.
+      // Pure read — returns defaults without calling set() so it's safe inside selectors.
+      // The actual write to the store happens lazily on the first action call.
       getProblemState: (slug: string): ProblemState => {
         const state = get();
+        const problemState = state.problems[slug];
+
+        if (!problemState) {
+          return createInitialProblemState();
+        }
+
+        // Migrate old problem state if viewedTooltips is missing
+        if (!problemState.viewedTooltips) {
+          return { ...problemState, viewedTooltips: [] };
+        }
+
+        return problemState;
+      },
+
+      // Ensure a problem slug is initialized in the store (call from effects, not selectors)
+      ensureProblemState: (slug: string) => {
+        const state = get();
         if (!state.problems[slug]) {
-          // Initialize new problem state
           set({
             problems: {
               ...state.problems,
               [slug]: createInitialProblemState(),
             },
           });
-          return get().problems[slug];
-        }
-
-        // Migrate old problem state if viewedTooltips is missing
-        const problemState = state.problems[slug];
-        if (!problemState.viewedTooltips) {
-          const migratedState = {
-            ...problemState,
-            viewedTooltips: [],
-          };
+        } else if (!state.problems[slug].viewedTooltips) {
           set({
             problems: {
               ...state.problems,
-              [slug]: migratedState,
+              [slug]: { ...state.problems[slug], viewedTooltips: [] },
             },
           });
-          return migratedState;
         }
-
-        return problemState;
       },
 
       setFunctionalRequirements: (slug: string, data: Partial<FunctionalRequirements>) => {

@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useMemo } from "react";
 import { stepStateStore, type ProblemState } from "./store";
 import { useStore } from "zustand";
+import { useShallow } from "zustand/react/shallow";
 
 // Type for the scoped problem state with actions
 export type ScopedProblemState = ProblemState & {
@@ -22,27 +24,47 @@ export type ScopedProblemState = ProblemState & {
 
 // Hook to get scoped problem state
 export default function useStepStore(slug: string): ScopedProblemState {
-  return useStore(stepStateStore, (state) => {
-    const problemState = state.getProblemState(slug);
+  // Select only the plain data — useShallow prevents re-renders when values are equal
+  const state = useStore(
+    stepStateStore,
+    useShallow((s) => {
+      const problemState = s.getProblemState(slug);
+      return {
+        ...problemState,
+        loading: s.loading,
+        isModalOpen: s.isModalOpen,
+        isActionLoading: s.isActionLoading,
+      };
+    })
+  );
 
+  // Lazily persist the problem state into the store on first mount
+  useEffect(() => {
+    stepStateStore.getState().ensureProblemState(slug);
+  }, [slug]);
+
+  // Stable action references — only recreated when slug changes
+  const actions = useMemo(() => {
+    const store = stepStateStore.getState();
     return {
-      // Problem-specific state
-      ...problemState,
-      // Global state
-      loading: state.loading,
-      isModalOpen: state.isModalOpen,
-      isActionLoading: state.isActionLoading,
-      // Actions scoped to this problem
-      setFunctionalRequirements: (data) => state.setFunctionalRequirements(slug, data),
-      setNonFunctionalRequirements: (data) => state.setNonFunctionalRequirements(slug, data),
-      setApiDesign: (data) => state.setApiDesign(slug, data),
-      setHighLevelDesign: (data) => state.setHighLevelDesign(slug, data),
-      setScore: (data) => state.setScore(slug, data),
-      setLoading: state.setLoading,
-      setModalOpen: state.setModalOpen,
-      setIsActionLoading: state.setIsActionLoading,
-      setViewedTooltip: (stepType) => state.setViewedTooltip(slug, stepType),
-      resetState: () => state.resetState(slug),
+      setFunctionalRequirements: (data: Partial<ProblemState["functionalRequirements"]>) =>
+        stepStateStore.getState().setFunctionalRequirements(slug, data),
+      setNonFunctionalRequirements: (data: Partial<ProblemState["nonFunctionalRequirements"]>) =>
+        stepStateStore.getState().setNonFunctionalRequirements(slug, data),
+      setApiDesign: (data: Partial<ProblemState["apiDesign"]>) =>
+        stepStateStore.getState().setApiDesign(slug, data),
+      setHighLevelDesign: (data: Partial<ProblemState["highLevelDesign"]>) =>
+        stepStateStore.getState().setHighLevelDesign(slug, data),
+      setScore: (data: Partial<ProblemState["score"]>) =>
+        stepStateStore.getState().setScore(slug, data),
+      setLoading: store.setLoading,
+      setModalOpen: store.setModalOpen,
+      setIsActionLoading: store.setIsActionLoading,
+      setViewedTooltip: (stepType: string) =>
+        stepStateStore.getState().setViewedTooltip(slug, stepType),
+      resetState: () => stepStateStore.getState().resetState(slug),
     };
-  });
+  }, [slug]);
+
+  return { ...state, ...actions };
 }

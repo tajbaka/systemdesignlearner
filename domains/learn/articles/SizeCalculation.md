@@ -4,15 +4,15 @@ Alright, so picture this: You walk into that interview feeling pretty damn good.
 
 Then you hit the Non-functional Requirements section. The interviewer leans back and casually asks, "So, what kind of storage are we talking about for your database? And what's the throughput looking like?"
 
-And just like that, everything falls apart. Now you're stuck doing mental gymnastics with math you haven't touched since college, trying to multiply huge numbers in your head or scribbling frantically on a whiteboard—when in real life you'd just pull out a calculator like a normal human being.
+And just like that, everything falls apart. Now you're stuck doing mental gymnastics with math you haven't touched since college, trying to multiply huge numbers in your head or scribbling frantically on a whiteboard, when in real life you'd just pull out a calculator like a normal human being.
 
-Good news though: I put together a cheat sheet that'll save your ass in these situations.
+Here's a cheat sheet that'll save your ass in these situations.
 
 ---
 
 ## The Golden Rule
 
-Here's the thing—in interviews, they only care about **order of magnitude**. Not exact numbers. So we can estimate.
+In interviews, they only care about **order of magnitude**. Not exact numbers. So we can estimate.
 
 **The one trick you absolutely need to remember:**
 
@@ -168,7 +168,7 @@ Now if we've got a **5:1 read-to-write ratio**:
 
 ## Summary
 
-And there you have it. That's the framework. Memorize that **2^10 ≈ 10^3** trick and you'll be able to estimate your way through any storage or throughput question they throw at you.
+That's the framework. Memorize that **2^10 ≈ 10^3** trick and you'll be able to estimate your way through any storage or throughput question they throw at you.
 
 The key takeaways:
 

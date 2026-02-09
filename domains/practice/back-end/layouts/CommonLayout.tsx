@@ -18,7 +18,6 @@ import { FeedbackModal } from "../components/FeedbackModal";
 import { PracticeModalContent } from "../PracticeModalContent";
 import { useFeedbackModal } from "../hooks/useFeedbackModal";
 import { Sidebar } from "@/components/sidebar";
-import type { SidebarConfig } from "@/components/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { StepTooltip } from "../components/StepTooltip";
 import { useStepTooltip } from "../hooks/useStepTooltip";
@@ -110,65 +109,16 @@ export function CommonLayout({
       ? PRACTICE_STEPS[stepType as keyof typeof PRACTICE_STEPS]
       : null;
 
-  const sidebarConfig: SidebarConfig = {
-    theme: "dark",
-    logo: {
-      href: "/",
-      text: "System Design",
-      short: "SD",
-    },
-    links: [
-      {
-        href: "/practice",
-        label: "Practice",
-        icon: (
-          <svg
-            className="h-5 w-5 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-            />
-          </svg>
-        ),
-      },
-      {
-        href: "/learn",
-        label: "Learn",
-        icon: (
-          <svg
-            className="h-5 w-5 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        ),
-      },
-    ],
-  };
-
   return (
     <>
-      <Sidebar config={sidebarConfig} />
+      <Sidebar theme="dark" />
       <TooltipProvider>
         <div className="flex h-full w-full flex-1 flex-col overflow-hidden lg:pl-16">
           {/* Title and Stepper */}
           <div className="bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80 mx-auto w-full flex-1 flex flex-col min-h-0">
             <div className="flex-shrink-0 md:px-[15%]">
               {config.title && (
-                <div className="relative flex items-center justify-center pl-16 pr-6 md:pl-0 md:pr-0 pt-[22px] pb-[22px] md:pt-10 md:pb-0">
+                <div className="relative flex items-center justify-center pl-6 pr-16 md:pl-0 md:pr-0 pt-[22px] pb-[22px] md:pt-10 md:pb-0">
                   <h2 className="text-xl font-semibold text-white sm:text-2xl">{config.title}</h2>
                   {/* Tooltip button */}
                   {currentStepData && (

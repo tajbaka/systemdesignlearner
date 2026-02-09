@@ -926,67 +926,69 @@ export function HomePageClient() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Card 1: Available Practice Problems */}
+            <Link href="/practice" onClick={() => track("homepage_scenario_practice_clicked")}>
+              <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
+                <CardHeader>
+                  <CardTitle className="text-xl">Available Now</CardTitle>
+                  <CardDescription>
+                    5 guided practice scenarios with sandbox environments to validate your designs.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-zinc-400">
+                    <p>1. URL Shortener - Hashing & Encoding</p>
+                    <p>2. Pastebin - Object Storage & TTL</p>
+                    <p>3. Rate Limiter - Sliding Window & Token Bucket</p>
+                    <p>4. Notification System - Message Queues & Fan-out</p>
+                    <p>5. WhatsApp - WebSockets & Presence</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+
+            {/* Card 2: Upcoming Scenarios */}
+            <Card className="bg-zinc-800/40 border-zinc-700 h-full">
+              <CardHeader>
+                <CardTitle className="text-xl">Upcoming Scenarios</CardTitle>
+                <CardDescription>
+                  New problems added regularly. Each one teaches a different distributed systems
+                  concept.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm text-zinc-400">
+                  <p>6. Leaderboard - Redis Sorted Sets & Skip Lists</p>
+                  <p>7. Ticketmaster - Optimistic vs. Pessimistic Locking</p>
+                  <p>8. Job Scheduler - How Cron Works at Scale</p>
+                  <p>9. Payment System - Double-Entry Accounting in SQL</p>
+                  <p>10. Dropbox - Merkle Trees & Block Level Sync</p>
+                  <p>11. Web Crawler - Bloom Filters & DNS Caching</p>
+                  <p>12. YouTube - How CDNs & Adaptive Streaming Work</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Card 3: System Design Playbook */}
             <Link
-              href="/practice/url-shortener/intro"
-              onClick={() => track("homepage_scenario_url_shortener_clicked")}
+              href="/learn/introduction"
+              onClick={() => track("homepage_scenario_playbook_clicked")}
             >
-              <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <CardTitle className="text-xl">URL Shortener System</CardTitle>
-                  <CardDescription>
-                    The same flow as the practice page: design, APIs, data model, and scaling.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm text-zinc-400">
-                    <p>
-                      • Endpoints: shorten and redirect links, custom domains, link expiry,
-                      analytics
-                    </p>
-                    <p>• Data: keys to targets, storage choices, abuse controls, rate limits</p>
-                    <p>
-                      • Scale: hashing or sharding, caching and edge delivery, retries, availability
-                      targets
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/practice" onClick={() => track("homepage_all_scenarios_clicked")}>
-              <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <CardTitle className="text-xl">Upcoming Scenarios</CardTitle>
-                  <CardDescription>
-                    Specialized drills for Leaderboards, Ticketmaster, Payments, and more.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2 text-sm text-zinc-400">
-                    <p>• Scale: Leaderboards with Redis Sorted Sets & Skip Lists</p>
-                    <p>• Concurrency: Ticketmaster with Distributed Locking</p>
-                    <p>• Reliability: Payment systems and Double-Entry Ledgers</p>
-                    <p>• Infrastructure: Dropbox File Sync & Web Crawlers</p>
-                    <p>• Media: YouTube-style CDNs & Adaptive Streaming</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/docs" onClick={() => track("homepage_docs_clicked")}>
-              <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
+              <Card className="bg-zinc-800/40 border-zinc-700 hover:border-blue-500/50 transition-all cursor-pointer h-full">
                 <CardHeader>
                   <CardTitle className="text-xl">System Design Playbook</CardTitle>
                   <CardDescription>
-                    Patterns and trade-offs to reuse across every scenario.
+                    Read the theory first. 10 articles covering databases, caching, scaling, and
+                    architecture patterns.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2 text-sm text-zinc-400">
-                    <p>• Architecture blueprints, availability targets, capacity planning</p>
-                    <p>• Data, cache, queue, and storage patterns with pitfalls</p>
-                    <p>• Interview structures and example answers</p>
+                    <p>• Throughput calculations & database sizing</p>
+                    <p>• CAP theorem, scaling, object storage & CDN</p>
+                    <p>• Rate limiting algorithms, message queues</p>
+                    <p>• WebSockets & real-time communication</p>
                   </div>
                 </CardContent>
               </Card>

@@ -1,3 +1,5 @@
+import { buildLinks } from "./article-links";
+
 export const URL_SHORTENER_PROBLEM = {
   slug: "url-shortener",
   category: "backend" as const,
@@ -9,12 +11,7 @@ export const URL_SHORTENER_PROBLEM = {
     difficulty: "medium" as const,
     timeToComplete: "45 min",
     topic: "System Design",
-    links: [
-      { label: "System Design Structure", href: "/learn/system-design-structure" },
-      { label: "Databases & Caching", href: "/learn/database-caching" },
-      { label: "CAP Theorem", href: "/learn/cap-theorem" },
-      { label: "Scaling: Vertical vs Horizontal", href: "/learn/scaling" },
-    ],
+    links: buildLinks(["system-design-structure", "database-caching", "cap-theorem", "scaling"]),
     isCurrent: true,
   },
   steps: [
@@ -44,7 +41,7 @@ export const URL_SHORTENER_PROBLEM = {
                 id: "hint-url-shortening",
                 title: "System Design Functional Requirements",
                 text: "Think about how bitly works, what is the core functionality of this site?",
-                href: "/learn/system-design-structure#functional-requirements",
+                href: "/learn/design-url-shortener#functional-requirements",
               },
             ],
             evaluationCriteria:
@@ -64,7 +61,7 @@ export const URL_SHORTENER_PROBLEM = {
                 id: "hint-redirection",
                 title: "System Design Functional Requirements",
                 text: "Think about the user experience: what happens technically when someone clicks on the shortened link?",
-                href: "/learn/system-design-structure#functional-requirements",
+                href: "/learn/design-url-shortener#functional-requirements",
               },
             ],
             evaluationCriteria:
@@ -84,7 +81,7 @@ export const URL_SHORTENER_PROBLEM = {
                 id: "hint-uniqueness",
                 title: "System Design Functional Requirements",
                 text: "How do we prevent two different long URLs from getting the exact same short code?",
-                href: "/learn/system-design-structure#functional-requirements",
+                href: "/learn/design-url-shortener#functional-requirements",
               },
             ],
             evaluationCriteria:
@@ -121,7 +118,7 @@ export const URL_SHORTENER_PROBLEM = {
                 id: "hint-latency",
                 title: "Performance and Latency",
                 text: "Consider the speed of the redirect. Does this need to be fast? How fast should the system respond to ensure a good user experience?",
-                href: "/learn/system-design-structure#non-functional-requirements",
+                href: "/learn/database-caching#latency-numbers-you-should-know",
               },
             ],
             evaluationCriteria:
@@ -146,7 +143,7 @@ export const URL_SHORTENER_PROBLEM = {
                 id: "hint-availability",
                 title: "Cap Theorem - Availability vs Consistency",
                 text: "If the system goes down, links stop working. Is it more important to always be up (Availability) or to always have the latest data immediately (Consistency)? How available should the system be?",
-                href: "/learn/cap-theorem",
+                href: "/learn/cap-theorem#ap-systems-availability-partition-tolerance",
               },
             ],
             evaluationCriteria:
@@ -170,7 +167,7 @@ export const URL_SHORTENER_PROBLEM = {
                 id: "hint-scalability",
                 title: "Scaling: Vertical vs Horizontal",
                 text: "How many people will use this? What's the ratio of people creating links versus people clicking on them?",
-                href: "/learn/scaling",
+                href: "/learn/scaling#horizontal-scaling-scale-out",
               },
             ],
             evaluationCriteria:
@@ -391,6 +388,7 @@ export const URL_SHORTENER_PROBLEM = {
                     id: "hint-client-gateway",
                     title: "Client to API Gateway",
                     text: "API Gateway is helpful in routing the correct request to the right service",
+                    href: "/learn/scaling#api-gateway--load-balancer-the-traffic-cop",
                   },
                 ],
               },
@@ -405,6 +403,7 @@ export const URL_SHORTENER_PROBLEM = {
                     id: "hint-gateway-write-service",
                     title: "API Gateway to Write Service",
                     text: "API Gateway routes post requests to the shortening service",
+                    href: "/learn/design-url-shortener#high-level-design",
                   },
                 ],
               },
@@ -419,7 +418,7 @@ export const URL_SHORTENER_PROBLEM = {
                     id: "hint-write-service-db",
                     title: "Databases & Caching",
                     text: "Shortening service creates the URL mapping in the database",
-                    href: "/learn/database-caching",
+                    href: "/learn/database-caching#sql-vs-nosql-the-real-differences",
                   },
                 ],
               },
@@ -434,6 +433,7 @@ export const URL_SHORTENER_PROBLEM = {
                     id: "hint-gateway-shortening-service",
                     title: "API Gateway to Read Service",
                     text: "API Gateway routes get requests to the redirect service",
+                    href: "/learn/design-url-shortener#high-level-design",
                   },
                 ],
               },
@@ -449,7 +449,7 @@ export const URL_SHORTENER_PROBLEM = {
                     id: "hint-service-cache",
                     title: "Databases & Caching",
                     text: "Using a LRU cache with your redirect service avoids DB load and reduces latency for popular URLs",
-                    href: "/learn/database-caching",
+                    href: "/learn/database-caching#cache-eviction-lru-vs-lfu",
                   },
                 ],
               },
@@ -465,7 +465,7 @@ export const URL_SHORTENER_PROBLEM = {
                     id: "hint-service-db",
                     title: "Databases & Caching",
                     text: "Redirect service needs to query the the database when a cache miss occurs",
-                    href: "/learn/database-caching",
+                    href: "/learn/database-caching#the-standard-pattern-cache-aside",
                   },
                 ],
               },
@@ -481,6 +481,7 @@ export const URL_SHORTENER_PROBLEM = {
                     id: "hint-background-service-db-2",
                     title: "Background Service to Pre-Generated Database",
                     text: "Background service pulls available urls from the pre-generated database",
+                    href: "/learn/design-url-shortener#pre-generated-short-codes-the-clever-part",
                   },
                 ],
               },
@@ -494,7 +495,9 @@ export const URL_SHORTENER_PROBLEM = {
                 hints: [
                   {
                     id: "hint-background-service-db-1",
+                    title: "Background Service to Main Database",
                     text: "Background service needs to check the main database for how many urls are left to use. If low it will write more urls to the main database.",
+                    href: "/learn/design-url-shortener#pre-generated-short-codes-the-clever-part",
                   },
                 ],
               },

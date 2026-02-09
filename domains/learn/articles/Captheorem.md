@@ -6,7 +6,7 @@ Then the interviewer drops this bomb: "So what happens when the network between 
 
 And now you're sweating because you know there's a trade-off here, but you can't quite articulate it. You've heard of the CAP Theorem, but what does it actually mean in practice?
 
-Let me break it down for you in a way that'll actually stick.
+Here's how it actually works in practice.
 
 ---
 
@@ -19,7 +19,7 @@ The CAP Theorem is brutal in its simplicity:
 - Returning the correct data, or
 - Returning _any_ data at all
 
-You cannot have both. This isn't a tooling problem or an implementation issue—it's physics.
+You cannot have both. This isn't a tooling problem or an implementation issue. It's physics.
 
 ### The Three Properties
 
@@ -45,7 +45,7 @@ You can only guarantee TWO out of three when network partitions occur
 ### Consistency (C)
 
 **What it means:**
-After you write data, EVERY subsequent read—no matter which server handles it—returns that new value.
+After you write data, EVERY subsequent read, no matter which server handles it, returns that new value.
 
 **In other words:**
 
@@ -83,7 +83,7 @@ You post on social media. Your friend in another region might not see it for a f
 ### Partition Tolerance (P)
 
 **What it means:**
-The system keeps working even when the network is screwed up—messages dropped, delayed, or nodes can't talk to each other.
+The system keeps working even when the network is screwed up -- messages dropped, delayed, or nodes can't talk to each other.
 
 **Here's the reality:**
 Network failures WILL happen. Cables get cut. Data centers go down. AWS regions have outages.
@@ -264,7 +264,7 @@ Wrong. CA systems can't handle network partitions, which happen in every distrib
 
 ### Mistake 3: "Eventually consistent = broken"
 
-Wrong. Eventually consistent systems are still correct—they just tolerate temporary divergence for better availability.
+Wrong. Eventually consistent systems are still correct. They just tolerate temporary divergence for better availability.
 
 ### Mistake 4: Memorizing labels without understanding trade-offs
 
@@ -281,7 +281,7 @@ Don't just say "We'll use a CP system." Explain WHY and what happens during fail
 "We'll use Cassandra because availability is more critical than immediate consistency for our use case. During a network partition, we'd rather serve slightly stale data than block user requests. Once the partition heals, the system will converge to a consistent state through its eventual consistency model."
 
 **Great answer:**
-"For user profiles, we'll prioritize consistency—if there's a partition, we'll reject writes rather than risk conflicting profile updates. But for the activity feed, we'll prioritize availability—users can still scroll their feed even if the latest posts haven't replicated yet. We're making different CAP trade-offs for different parts of the system based on their requirements."
+"For user profiles, we'll prioritize consistency -- if there's a partition, we'll reject writes rather than risk conflicting profile updates. But for the activity feed, we'll prioritize availability -- users can still scroll their feed even if the latest posts haven't replicated yet. We're making different CAP trade-offs for different parts of the system based on their requirements."
 
 ---
 
@@ -347,5 +347,3 @@ Your choice depends on: What hurts your users more?
 CAP isn't about what you choose during normal operation.
 It's about what you choose when shit hits the fan.
 ```
-
-Now go explain distributed trade-offs like a boss.

@@ -1,18 +1,12 @@
 import type { LucideIcon } from "lucide-react";
-import type { ReactNode } from "react";
 
 export type SidebarTheme = "light" | "dark";
-
-export interface SidebarLink {
-  href: string;
-  label: string;
-  icon?: ReactNode;
-}
 
 export interface SidebarCategory {
   id: string;
   title: string;
   icon?: string | LucideIcon;
+  href?: string;
   items: Array<{
     id: string;
     title: string;
@@ -20,15 +14,22 @@ export interface SidebarCategory {
   }>;
 }
 
-export interface SidebarConfig {
+/** A standalone navigation button (not a numbered category) */
+export interface SidebarButton {
+  id: string;
+  label: string;
+  href: string;
+  icon?: string | LucideIcon;
+}
+
+/** Internal config passed from Sidebar to Desktop/Mobile sub-components */
+export interface SidebarInternalConfig {
   theme: SidebarTheme;
   logo: {
     href: string;
     text: string;
     short: string;
   };
-  // For simple navigation (practice mode)
-  links?: SidebarLink[];
-  // For nested navigation (learn mode)
-  categories?: SidebarCategory[];
+  categories: SidebarCategory[];
+  buttons?: SidebarButton[];
 }

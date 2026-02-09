@@ -1,16 +1,16 @@
 ## Introduction
 
-Alright, real talk: You're in that system design interview, crushing it, drawing your boxes and arrows like a pro. Then the interviewer hits you with: "So how are you handling caching here? What eviction policy makes sense?"
+Alright, real talk: You're in that system design interview, crushing it, drawing your boxes and arrows. Then the interviewer hits you with: "So how are you handling caching here? What eviction policy makes sense?"
 
 And suddenly you're frozen. LRU? LFU? Wait, what's the difference again? Do I even need a cache? Can't I just use Redis for everything?
 
-Don't worry, I've got you covered with everything you actually need to know about databases, caching, and when to use what.
+Here's everything you actually need to know about databases, caching, and when to use what.
 
 ---
 
 ## The Core Concept: Different Tools for Different Jobs
 
-Here's the thing people always mess up: **databases and caches are NOT interchangeable**. They're built for completely different purposes.
+**Databases and caches are NOT interchangeable**. They're built for completely different purposes.
 
 ### Database = Correctness
 
@@ -282,4 +282,4 @@ Memorize these, they'll save you in back-of-envelope calculations:
 - Using cache as a database
 - Picking NoSQL "because it scales" without understanding the tradeoffs
 
-And there you have it. Now you know when to apply what.
+Now you know when to apply what.

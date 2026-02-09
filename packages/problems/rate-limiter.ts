@@ -1,3 +1,5 @@
+import { buildLinks } from "./article-links";
+
 export const RATE_LIMITER_PROBLEM = {
   slug: "rate-limiter",
   category: "backend" as const,
@@ -9,12 +11,13 @@ export const RATE_LIMITER_PROBLEM = {
     difficulty: "medium" as const,
     timeToComplete: "45 min",
     topic: "System Design",
-    links: [
-      { label: "Databases & Caching", href: "/learn/database-caching" },
-      { label: "CAP Theorem", href: "/learn/cap-theorem" },
-      { label: "Scaling: Vertical vs Horizontal", href: "/learn/scaling" },
-      { label: "System Design Structure", href: "/learn/system-design-structure" },
-    ],
+    links: buildLinks([
+      "rate-limiting-algorithms",
+      "database-caching",
+      "cap-theorem",
+      "scaling",
+      "system-design-structure",
+    ]),
     isCurrent: true,
   },
   steps: [
@@ -44,7 +47,7 @@ export const RATE_LIMITER_PROBLEM = {
                 id: "hint-throttling",
                 title: "Throttling Granularity",
                 text: "How do we identify who to limit? Should it be by IP address, User ID, or API Key?",
-                // href: "/learn/system-design-structure#functional-requirements",
+                href: "/learn/rate-limiting-algorithms#where-to-put-the-rate-limiter",
               },
             ],
             evaluationCriteria:
@@ -69,7 +72,7 @@ export const RATE_LIMITER_PROBLEM = {
                 id: "hint-configuration",
                 title: "Flexible Rules",
                 text: "Should every user have the same limit, or do we need different tiers (Free vs Premium)?",
-                href: "/learn/system-design-structure#functional-requirements",
+                href: "/learn/design-rate-limiter#functional-requirements",
               },
             ],
             evaluationCriteria:
@@ -94,7 +97,7 @@ export const RATE_LIMITER_PROBLEM = {
                 id: "hint-feedback",
                 title: "Response Handling",
                 text: "How does the client know they've been blocked? What HTTP status code is standard for this?",
-                href: "/learn/system-design-structure#functional-requirements",
+                href: "/learn/design-rate-limiter#response-headers",
               },
             ],
             evaluationCriteria:
@@ -131,7 +134,7 @@ export const RATE_LIMITER_PROBLEM = {
                 id: "hint-latency",
                 title: "Performance Impact",
                 text: "Since this checks every single request, how much time can it afford to take?",
-                href: "/learn/database-caching",
+                href: "/learn/database-caching#latency-numbers-you-should-know",
               },
             ],
             evaluationCriteria:
@@ -156,7 +159,7 @@ export const RATE_LIMITER_PROBLEM = {
                 id: "hint-availability",
                 title: "Failure Strategy",
                 text: "If the Rate Limiter crashes, should the API stop working (Fail-Closed) or let everyone in (Fail-Open)?",
-                href: "/learn/cap-theorem",
+                href: "/learn/rate-limiting-algorithms#fail-open-vs-fail-closed",
               },
             ],
             evaluationCriteria:
@@ -181,7 +184,7 @@ export const RATE_LIMITER_PROBLEM = {
                 id: "hint-distributed",
                 title: "Global vs Local",
                 text: "If we have 10 servers, does the user get 10x the limit? How do we synchronize counters?",
-                href: "/learn/scaling",
+                href: "/learn/rate-limiting-algorithms#distributed-rate-limiting",
               },
             ],
             evaluationCriteria:
@@ -302,7 +305,7 @@ export const RATE_LIMITER_PROBLEM = {
                     id: "hint-client-gateway",
                     title: "Entry Point",
                     text: "Where do requests first land? Usually a Gateway or Load Balancer.",
-                    // href: "/learn/scaling",
+                    href: "/learn/scaling#api-gateway-load-balancer-the-traffic-cop",
                   },
                 ],
               },
@@ -318,7 +321,7 @@ export const RATE_LIMITER_PROBLEM = {
                     id: "hint-middleware",
                     title: "Middleware Check",
                     text: "Before doing the heavy work, the Gateway checks with the Rate Limiter.",
-                    href: "/learn/system-design-structure",
+                    href: "/learn/design-rate-limiter#high-level-design",
                   },
                 ],
               },
@@ -334,13 +337,13 @@ export const RATE_LIMITER_PROBLEM = {
                     id: "hint-cache-redis",
                     title: "Storage Engine",
                     text: "We need fast shared storage for counters. Redis is the standard choice here.",
-                    href: "/learn/database-caching",
+                    href: "/learn/rate-limiting-algorithms#the-solution-redis",
                   },
                   {
                     id: "hint-atomicity",
                     title: "Race Conditions",
                     text: "How do we prevent race conditions when two requests update the counter at the exact same time? (Lua Scripts).",
-                    href: "/learn/database-caching",
+                    href: "/learn/rate-limiting-algorithms#lua-scripts-for-atomicity",
                   },
                 ],
               },
@@ -355,7 +358,7 @@ export const RATE_LIMITER_PROBLEM = {
                     id: "hint-forwarding",
                     title: "Happy Path",
                     text: "If the limiter says 'Yes', where does the request go next?",
-                    href: "/learn/system-design-structure",
+                    href: "/learn/design-rate-limiter#high-level-design",
                   },
                 ],
               },

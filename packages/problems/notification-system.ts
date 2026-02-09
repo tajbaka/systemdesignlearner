@@ -1,3 +1,5 @@
+import { buildLinks } from "./article-links";
+
 export const NOTIFICATION_SYSTEM_PROBLEM = {
   slug: "notification-system",
   category: "backend" as const,
@@ -9,12 +11,13 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
     difficulty: "medium" as const,
     timeToComplete: "45 min",
     topic: "System Design",
-    links: [
-      // { label: "Message Queues (Kafka/RabbitMQ)", href: "/learn/system-design-structure" },
-      // { label: "Microservices Architecture", href: "/learn/scaling" },
-      // { label: "Asynchronous Processing", href: "/learn/system-design-structure" },
-      { label: "System Design Structure", href: "/learn/system-design-structure" },
-    ],
+    links: buildLinks([
+      "message-queues",
+      "rate-limiting-algorithms",
+      "database-caching",
+      "scaling",
+      "system-design-structure",
+    ]),
     isCurrent: true,
   },
   steps: [
@@ -44,7 +47,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 id: "hint-channels",
                 title: "Third-Party Integration",
                 text: "We don't build email servers ourselves. How do we integrate with vendors like Twilio or SendGrid?",
-                href: "/learn/system-design-structure#functional-requirements",
+                href: "/learn/design-notification-system#functional-requirements",
               },
             ],
             evaluationCriteria:
@@ -69,7 +72,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 id: "hint-priority",
                 title: "Critical Path",
                 text: "If a user is waiting for a 2FA code, can it wait behind a queue of 1 million marketing emails?",
-                href: "/learn/system-design-structure",
+                href: "/learn/message-queues#priority-queues",
               },
             ],
             evaluationCriteria:
@@ -94,7 +97,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 id: "hint-compliance",
                 title: "User Control",
                 text: "Can we legally or ethically spam users? We need to check their settings before sending.",
-                href: "/learn/system-design-structure#functional-requirements",
+                href: "/learn/design-notification-system#functional-requirements",
               },
             ],
             evaluationCriteria:
@@ -131,7 +134,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 id: "hint-retry",
                 title: "Failure Handling",
                 text: "If Twilio is down for 5 seconds, do we drop the SMS? We need a retry queue.",
-                href: "/learn/system-design-structure",
+                href: "/learn/message-queues#dead-letter-queues-dlq",
               },
             ],
             evaluationCriteria:
@@ -155,7 +158,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 id: "hint-throttling-3rdparty",
                 title: "Vendor Limits",
                 text: "Third-party APIs have rate limits. If we send too fast, they will block us. How do we control our send rate?",
-                // href: "/learn/database-caching",
+                href: "/learn/rate-limiting-algorithms#token-bucket",
               },
             ],
             evaluationCriteria:
@@ -220,7 +223,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 id: "hint-async-response",
                 title: "Response Type",
                 text: "Should the client wait for the email to actually send? Or just get a '202 Accepted'?",
-                href: "/learn/system-design-structure",
+                href: "/learn/system-design-structure#api-design",
               },
             ],
             evaluationCriteria:
@@ -281,7 +284,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                     id: "hint-ingestion",
                     title: "Ingestion",
                     text: "The entry point for all notification requests.",
-                    href: "/learn/system-design-structure",
+                    href: "/learn/design-notification-system#delivery-pipeline",
                   },
                 ],
               },
@@ -297,7 +300,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                     id: "hint-filtering",
                     title: "Filtering",
                     text: "Check if the user actually wants this notification before queuing it.",
-                    href: "/learn/database-caching",
+                    href: "/learn/database-caching#the-standard-pattern-cache-aside",
                   },
                 ],
               },
@@ -313,7 +316,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                     id: "hint-decoupling",
                     title: "Decoupling",
                     text: "Use a queue to handle bursts and ensure durability. Ideally separate topics for High/Low priority.",
-                    href: "/learn/system-design-structure",
+                    href: "/learn/message-queues#the-core-concept-decouple-producers-from-consumers",
                   },
                 ],
               },
@@ -329,7 +332,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                     id: "hint-processing",
                     title: "Async Workers",
                     text: "Scalable workers process the backlog independently of the API.",
-                    href: "/learn/scaling",
+                    href: "/learn/scaling#horizontal-scaling-scale-out",
                   },
                 ],
               },
@@ -345,7 +348,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                     id: "hint-external-call",
                     title: "Final Delivery",
                     text: "The actual transmission happens via external vendors.",
-                    href: "/learn/system-design-structure",
+                    href: "/learn/design-notification-system#provider-failover",
                   },
                 ],
               },

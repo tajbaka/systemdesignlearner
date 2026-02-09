@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "System Design Interview Practice - Interactive Sandbox",
   description:
     "Practice system design interviews with interactive scenarios. AI-powered feedback on distributed systems, scalability & architecture design.",
+  alternates: {
+    canonical: "https://www.systemdesignsandbox.com",
+  },
   openGraph: {
     title: "System Design Interview Practice - Interactive Sandbox",
     description:

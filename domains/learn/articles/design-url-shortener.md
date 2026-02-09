@@ -8,7 +8,7 @@ Then they hit you with: "How do you handle 10 million redirects per day? How do 
 
 And suddenly you're realizing this isn't as simple as you thought.
 
-Don't worry. I'm going to show you a clean architecture that actually works at scale, using pre-generated codes and separate read/write servers. This is a pattern you'll see in real production systems.
+This walkthrough covers a clean architecture that works at scale, using pre-generated codes and separate read/write servers. This is a pattern you'll see in real production systems.
 
 ---
 
@@ -392,5 +392,3 @@ For a comprehensive guide on when to scale up vs scale out, see [Scaling: Vertic
 **Interview golden rule:**
 
 Don't just list components. Explain WHY you're making each choice and HOW it handles the specific challenges of a URL shortener (uniqueness, read-heavy traffic, low latency).
-
-Now go design some scalable systems.

@@ -6,7 +6,7 @@ Then the interviewer leans forward: "Okay, so this works for 1,000 users. What h
 
 And now you're standing there thinking... do I make the server bigger? Add more servers? What's the difference? When do I use which approach?
 
-Don't panic. I'm going to break down vertical vs horizontal scaling in a way that'll make you sound like you've actually scaled production systems before.
+Here's the breakdown of vertical vs horizontal scaling.
 
 ---
 
@@ -405,5 +405,3 @@ Most systems use both. Start simple (vertical), scale out when needed (horizonta
 Don't just name a strategy - explain the trade-offs
 and justify your choice based on requirements.
 ```
-
-Now go scale some systems like a pro.

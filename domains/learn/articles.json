@@ -28,6 +28,22 @@
         {
           "id": "6",
           "slug": "scaling"
+        },
+        {
+          "id": "8",
+          "slug": "object-storage-cdn"
+        },
+        {
+          "id": "10",
+          "slug": "rate-limiting-algorithms"
+        },
+        {
+          "id": "12",
+          "slug": "message-queues"
+        },
+        {
+          "id": "14",
+          "slug": "websockets-realtime"
         }
       ]
     },
@@ -39,6 +55,22 @@
         {
           "id": "7",
           "slug": "design-url-shortener"
+        },
+        {
+          "id": "9",
+          "slug": "design-pastebin"
+        },
+        {
+          "id": "11",
+          "slug": "design-rate-limiter"
+        },
+        {
+          "id": "13",
+          "slug": "design-notification-system"
+        },
+        {
+          "id": "15",
+          "slug": "design-whatsapp"
         }
       ]
     }
@@ -50,7 +82,7 @@
       "subtitle": "Getting started with system design",
       "description": "Learn what system design is, why it matters, and how to practice it effectively. This introduction covers the fundamentals you need to know before diving into system design interviews and real-world engineering challenges.",
       "author": "System Design Sandbox",
-      "date": "2024-12-08",
+      "date": "2025-12-12",
       "readTime": "8 min",
       "markdownFile": "Introduction.md",
       "removeFirstHeading": true,
@@ -84,7 +116,7 @@
       "subtitle": "The steps to follow when designing a system",
       "description": "Learn the structured approach to system design interviews. This guide covers functional requirements, non-functional requirements (availability, latency, reliability, consistency), API design, database modeling, and high-level design.",
       "author": "System Design Sandbox",
-      "date": "2024-12-08",
+      "date": "2025-12-12",
       "readTime": "10 min",
       "markdownFile": "SystemDesignStructure.md",
       "removeFirstHeading": false,
@@ -124,7 +156,7 @@
       "subtitle": "A practical cheat sheet for estimating storage and throughput in system design interviews",
       "description": "Learn how to calculate storage requirements and throughput for system design interviews. This guide covers the golden rule (2^10 ≈ 10^3), step-by-step storage calculations, throughput estimation, and a quick reference cheat sheet for interview success.",
       "author": "System Design Sandbox",
-      "date": "2024-12-08",
+      "date": "2025-12-29",
       "readTime": "8 min",
       "markdownFile": "SizeCalculation.md",
       "removeFirstHeading": true,
@@ -159,7 +191,7 @@
       "subtitle": "Understanding when to use databases vs caches, and SQL vs NoSQL",
       "description": "Learn the fundamental differences between databases and caches, when to use SQL vs NoSQL, cache eviction policies (LRU vs LFU), and the cache-aside pattern. Essential knowledge for system design interviews.",
       "author": "System Design Sandbox",
-      "date": "2024-12-08",
+      "date": "2025-12-29",
       "readTime": "10 min",
       "markdownFile": "DatabaseCaching.md",
       "removeFirstHeading": true,
@@ -209,7 +241,7 @@
       "subtitle": "Understanding consistency, availability, and partition tolerance in distributed systems",
       "description": "Learn the CAP theorem and how to make trade-offs between consistency, availability, and partition tolerance in distributed systems. Essential knowledge for system design interviews.",
       "author": "System Design Sandbox",
-      "date": "2024-12-08",
+      "date": "2025-12-29",
       "readTime": "12 min",
       "markdownFile": "Captheorem.md",
       "removeFirstHeading": true,
@@ -258,7 +290,7 @@
       "subtitle": "Understanding when to scale up vs scale out in distributed systems",
       "description": "Learn the fundamental differences between vertical and horizontal scaling, when to use each approach, load balancers and API gateways, and how to make scaling decisions in system design interviews.",
       "author": "System Design Sandbox",
-      "date": "2024-12-08",
+      "date": "2025-12-29",
       "readTime": "12 min",
       "markdownFile": "Scaling.md",
       "removeFirstHeading": true,
@@ -307,7 +339,7 @@
       "subtitle": "Building a scalable URL shortening service like TinyURL or Bitly",
       "description": "Learn how to design a production-ready URL shortening service. This guide covers pre-generated short codes, separating read and write servers, caching strategies, database replication, and scaling to handle millions of redirects per day.",
       "author": "System Design Sandbox",
-      "date": "2024-12-08",
+      "date": "2025-12-29",
       "readTime": "15 min",
       "markdownFile": "design-url-shortener.md",
       "removeFirstHeading": true,
@@ -325,6 +357,289 @@
         "scalable architecture",
         "system design problem",
         "distributed systems"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "object-storage-cdn",
+      "title": "Object Storage & CDN",
+      "subtitle": "Understanding when to use object storage vs databases, and how CDNs accelerate content delivery",
+      "description": "Learn when to use object storage (S3) vs databases for content, how to separate metadata from content, and how CDNs cache data at edge locations. Essential for designing systems like Pastebin, Instagram, or any content-heavy service.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-09",
+      "readTime": "12 min",
+      "markdownFile": "ObjectStorageCdn.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "object storage",
+        "S3",
+        "CDN",
+        "content delivery network",
+        "blob storage",
+        "metadata separation",
+        "presigned URLs",
+        "edge caching",
+        "system design interview",
+        "Pastebin design",
+        "content storage"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        {
+          "id": "the-core-concept-separate-metadata-from-content",
+          "title": "The Core Concept: Separate Metadata from Content"
+        },
+        { "id": "object-storage-the-basics", "title": "Object Storage: The Basics" },
+        { "id": "cdn-caching-at-the-edge", "title": "CDN: Caching at the Edge" },
+        { "id": "presigned-urls", "title": "Presigned URLs" },
+        { "id": "the-complete-pattern", "title": "The Complete Pattern" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-pastebin",
+      "title": "Design Pastebin",
+      "subtitle": "Building a scalable text paste sharing service",
+      "description": "Learn how to design a production-ready Pastebin service. This guide covers separating metadata from content using object storage, CDN integration for popular pastes, and scaling to handle millions of text snippets.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-09",
+      "readTime": "15 min",
+      "markdownFile": "design-pastebin.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "Pastebin",
+        "system design interview",
+        "paste service",
+        "object storage",
+        "S3",
+        "CDN",
+        "metadata separation",
+        "text sharing",
+        "scalable architecture",
+        "system design problem"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "rate-limiting-algorithms",
+      "title": "Rate Limiting Algorithms",
+      "subtitle": "Understanding the algorithms behind rate limiting in distributed systems",
+      "description": "Learn the four main rate limiting algorithms (Fixed Window, Sliding Window Log, Sliding Window Counter, Token Bucket), when to use each, and how to implement distributed rate limiting with Redis. Essential for system design interviews.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-09",
+      "readTime": "12 min",
+      "markdownFile": "RateLimitingAlgorithms.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "rate limiting",
+        "token bucket",
+        "sliding window",
+        "fixed window",
+        "rate limiter",
+        "Redis",
+        "Lua scripts",
+        "distributed rate limiting",
+        "API rate limit",
+        "system design interview",
+        "throttling"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "why-rate-limiting-matters", "title": "Why Rate Limiting Matters" },
+        { "id": "the-four-main-algorithms", "title": "The Four Main Algorithms" },
+        { "id": "comparison-table", "title": "Comparison Table" },
+        { "id": "where-to-put-the-rate-limiter", "title": "Where to Put the Rate Limiter" },
+        { "id": "distributed-rate-limiting", "title": "Distributed Rate Limiting" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-rate-limiter",
+      "title": "Design a Distributed Rate Limiter",
+      "subtitle": "Building a scalable rate limiting service for distributed systems",
+      "description": "Learn how to design a production-ready distributed rate limiter. This guide covers algorithm selection, Redis-based distributed counting with Lua scripts, fail-open strategies, and scaling to handle millions of requests per second.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-09",
+      "readTime": "15 min",
+      "markdownFile": "design-rate-limiter.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "rate limiter",
+        "distributed rate limiting",
+        "system design interview",
+        "Redis",
+        "token bucket",
+        "sliding window",
+        "API gateway",
+        "throttling",
+        "Lua scripts",
+        "system design problem"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "message-queues",
+      "title": "Message Queues",
+      "subtitle": "Understanding asynchronous processing with Kafka and RabbitMQ",
+      "description": "Learn when and why to use message queues, the differences between Kafka and RabbitMQ, and key concepts like priority queues, dead letter queues, and at-least-once delivery. Essential for designing notification systems, order pipelines, and any async workflow.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-09",
+      "readTime": "12 min",
+      "markdownFile": "MessageQueues.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "message queues",
+        "Kafka",
+        "RabbitMQ",
+        "async processing",
+        "producer consumer",
+        "dead letter queue",
+        "priority queue",
+        "at-least-once delivery",
+        "event streaming",
+        "system design interview",
+        "decoupling"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        {
+          "id": "the-core-concept-decouple-producers-from-consumers",
+          "title": "The Core Concept: Decouple Producers from Consumers"
+        },
+        { "id": "when-to-use-message-queues", "title": "When to Use Message Queues" },
+        {
+          "id": "kafka-vs-rabbitmq-the-two-main-options",
+          "title": "Kafka vs RabbitMQ: The Two Main Options"
+        },
+        { "id": "key-concepts-you-need-to-know", "title": "Key Concepts You Need to Know" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-notification-system",
+      "title": "Design a Notification System",
+      "subtitle": "Building a scalable multi-channel notification service",
+      "description": "Learn how to design a production-ready notification system that sends millions of messages across Email, SMS, and Push channels. This guide covers message queues for async processing, priority-based delivery, user preference management, and retry strategies.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-09",
+      "readTime": "15 min",
+      "markdownFile": "design-notification-system.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "notification system",
+        "system design interview",
+        "message queue",
+        "Kafka",
+        "push notifications",
+        "email service",
+        "SMS service",
+        "async processing",
+        "priority queue",
+        "scalable architecture",
+        "system design problem"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "websockets-realtime",
+      "title": "WebSockets & Real-Time Communication",
+      "subtitle": "Understanding persistent connections for real-time features",
+      "description": "Learn how WebSockets enable real-time bidirectional communication, how they compare to HTTP polling and SSE, and how to scale stateful connections across servers. Essential for designing chat apps, live dashboards, and collaborative tools.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-09",
+      "readTime": "12 min",
+      "markdownFile": "WebSocketsRealtime.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "WebSockets",
+        "real-time communication",
+        "long polling",
+        "SSE",
+        "server-sent events",
+        "persistent connections",
+        "bidirectional communication",
+        "presence system",
+        "Redis Pub/Sub",
+        "system design interview",
+        "chat architecture"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        {
+          "id": "http-vs-websockets-the-fundamental-difference",
+          "title": "HTTP vs WebSockets: The Fundamental Difference"
+        },
+        { "id": "how-websockets-work", "title": "How WebSockets Work" },
+        {
+          "id": "the-polling-alternatives-and-why-they-lose",
+          "title": "The Polling Alternatives (and Why They Lose)"
+        },
+        { "id": "scaling-websockets-the-hard-part", "title": "Scaling WebSockets: The Hard Part" },
+        {
+          "id": "presence-systems-is-the-user-online",
+          "title": "Presence Systems: Is the User Online?"
+        },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-whatsapp",
+      "title": "Design WhatsApp",
+      "subtitle": "Building a real-time chat application with presence and group messaging",
+      "description": "Learn how to design a production-ready chat application like WhatsApp. This guide covers WebSocket-based real-time messaging, Cassandra for write-heavy message storage, presence systems with Redis, and scaling stateful connections across servers.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-09",
+      "readTime": "15 min",
+      "markdownFile": "design-whatsapp.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "WhatsApp",
+        "chat application",
+        "system design interview",
+        "WebSockets",
+        "real-time messaging",
+        "Cassandra",
+        "presence system",
+        "group chat",
+        "message fan-out",
+        "scalable architecture",
+        "system design problem"
       ],
       "tableOfContents": [
         { "id": "introduction", "title": "Introduction" },

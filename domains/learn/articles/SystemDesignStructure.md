@@ -156,7 +156,7 @@ In high-level design we want to draw and connect the different components of the
 
 Unless we are designing a rate limiter or some sort of auth system, we don't need to explicitly include those into every problem.
 
-Don't worry about diving too deep in this section, that can be further explained later.
+No need to dive too deep in this section. That can be further explained later.
 
 ---
 

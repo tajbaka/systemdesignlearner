@@ -4,12 +4,7 @@ import remarkGfm from "remark-gfm";
 import fs from "fs";
 import path from "path";
 import { ArticleLayout } from "../components/ArticleLayout";
-import {
-  getArticleBySlug,
-  getCategories,
-  processMarkdownContent,
-  createMarkdownComponents,
-} from "../utils";
+import { getArticleBySlug, processMarkdownContent, createMarkdownComponents } from "../utils";
 
 type LearnArticlePageClientProps = {
   slug: string;
@@ -21,8 +16,6 @@ export async function LearnArticlePageClient({ slug }: LearnArticlePageClientPro
   if (!config) {
     notFound();
   }
-
-  const categories = getCategories();
 
   // Read the markdown file
   const markdownPath = path.join(process.cwd(), "domains/learn/articles", config.markdownFile);
@@ -43,7 +36,6 @@ export async function LearnArticlePageClient({ slug }: LearnArticlePageClientPro
       readTime={config.readTime}
       description={config.description}
       tableOfContents={config.tableOfContents}
-      categories={categories}
       slug={slug}
     >
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>

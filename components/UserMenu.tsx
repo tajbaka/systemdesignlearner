@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { UserAvatar } from "@/components/UserAvatar";
 
 interface UserMenuProps {
@@ -23,6 +23,7 @@ export function UserMenu({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800">
+        <DialogTitle className="sr-only">User menu</DialogTitle>
         <div className="space-y-6">
           {/* User Info */}
           <div className="flex items-center gap-4">

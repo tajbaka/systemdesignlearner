@@ -1,3 +1,5 @@
+import { buildLinks } from "./article-links";
+
 export const WHATSAPP_PROBLEM = {
   slug: "design-whatsapp",
   category: "backend" as const,
@@ -9,12 +11,13 @@ export const WHATSAPP_PROBLEM = {
     difficulty: "hard" as const,
     timeToComplete: "60 min",
     topic: "System Design",
-    links: [
-      // { label: "WebSockets vs HTTP", href: "/learn/system-design-structure" },
-      { label: "NoSQL Data Modeling (Cassandra)", href: "/learn/database-caching" },
-      // { label: "Pub/Sub Patterns", href: "/learn/scaling" },
-      { label: "System Design Structure", href: "/learn/system-design-structure" },
-    ],
+    links: buildLinks([
+      "websockets-realtime",
+      "database-caching",
+      "cap-theorem",
+      "scaling",
+      "system-design-structure",
+    ]),
     isCurrent: true,
   },
   steps: [
@@ -43,7 +46,7 @@ export const WHATSAPP_PROBLEM = {
                 id: "hint-protocol",
                 title: "Communication Protocol",
                 text: "HTTP is too slow for real-time chat. What protocol keeps a connection open for instant bi-directional data?",
-                href: "/learn/system-design-structure",
+                href: "/learn/websockets-realtime#websockets-persistent-bidirectional-connection",
               },
             ],
             evaluationCriteria:
@@ -68,7 +71,7 @@ export const WHATSAPP_PROBLEM = {
                 id: "hint-fanout",
                 title: "Message Fan-out",
                 text: "When a user sends a message to a group of 100 people, does the client send 100 requests, or does the server handle it?",
-                // href: "/learn/scaling",
+                href: "/learn/websockets-realtime#scaling-websockets-the-hard-part",
               },
             ],
             evaluationCriteria:
@@ -92,7 +95,7 @@ export const WHATSAPP_PROBLEM = {
                 id: "hint-heartbeat",
                 title: "Heartbeats",
                 text: "How do we know a user is still there if they haven't sent a message? They need to send a periodic signal.",
-                href: "/learn/database-caching",
+                href: "/learn/websockets-realtime#presence-systems-is-the-user-online",
               },
             ],
             evaluationCriteria:
@@ -117,7 +120,7 @@ export const WHATSAPP_PROBLEM = {
                 id: "hint-ack",
                 title: "Acknowledgments",
                 text: "The server needs to know when the device received the data to update the status in the DB.",
-                href: "/learn/system-design-structure",
+                href: "/learn/design-whatsapp#delivery-receipts",
               },
             ],
             evaluationCriteria:
@@ -153,7 +156,7 @@ export const WHATSAPP_PROBLEM = {
                 id: "hint-latency",
                 title: "Real-time Expectations",
                 text: "Chat feels broken if there's a delay. Optimizing the connection path is critical.",
-                href: "/learn/system-design-structure",
+                href: "/learn/websockets-realtime#how-websockets-work",
               },
             ],
             evaluationCriteria:
@@ -177,7 +180,7 @@ export const WHATSAPP_PROBLEM = {
                 id: "hint-sequencing",
                 title: "Sequence Consistency",
                 text: "If I say 'Hi' then 'How are you', they shouldn't arrive as 'How are you' then 'Hi'.",
-                href: "/learn/cap-theorem",
+                href: "/learn/cap-theorem#consistency-c",
               },
             ],
             evaluationCriteria:
@@ -196,53 +199,6 @@ export const WHATSAPP_PROBLEM = {
       data: {
         scoreWeight: 20,
         requirements: [
-          // TODO: WebSocket endpoints not yet supported - uncomment when WS method type is added
-          // {
-          //   id: "websocket-connect",
-          //   scope: "endpoint",
-          //   label: "WebSocket Connection",
-          //   description:
-          //     "Establish a persistent bidirectional connection for sending/receiving live messages.",
-          //   weight: 10,
-          //   required: true,
-          //   method: "WS",
-          //   correctPath: "/chat/connect",
-          //   solutions: [
-          //     {
-          //       overview: "WebSocket endpoint for real-time bidirectional messaging",
-          //       request: "WS /chat/connect?userId={id}&token={authToken}",
-          //       response: {
-          //         statusCode: "101",
-          //         text: "Switching Protocols - WebSocket connection established. Events: sendMessage, receiveMessage, userTyping, ack",
-          //       },
-          //       errors: [
-          //         {
-          //           statusCode: "401",
-          //           text: "Unauthorized - Invalid or missing auth token",
-          //         },
-          //         {
-          //           statusCode: "403",
-          //           text: "Forbidden - User blocked or suspended",
-          //         },
-          //       ],
-          //     },
-          //   ],
-          //   hints: [
-          //     {
-          //       id: "hint-ws-events",
-          //       title: "Event Based",
-          //       text: "Unlike REST, WebSockets are event-driven. What events do we emit? (e.g., onMessage, onTyping).",
-          //       href: "/learn/system-design-structure",
-          //     },
-          //   ],
-          //   evaluationCriteria:
-          //     "User defines a WebSocket endpoint (e.g., /chat/connect) that: " +
-          //     "1) Accepts userId and authentication in connection params, " +
-          //     "2) Describes the connection upgrade (101 Switching Protocols), " +
-          //     "3) Lists key events (sendMessage, receiveMessage, typing, ack), " +
-          //     "4) Documents error cases (e.g., 401 Unauthorized, 403 Forbidden).",
-          //   feedbackOnMissing: "How does the client open the tunnel to the server?",
-          // },
           {
             id: "fetch-history",
             scope: "endpoint",
@@ -277,7 +233,7 @@ export const WHATSAPP_PROBLEM = {
                 id: "hint-pagination",
                 title: "Pagination Strategy",
                 text: "Chats can have thousands of messages. We shouldn't load them all at once. Use Cursor-based pagination.",
-                href: "/learn/database-caching",
+                href: "/learn/database-caching#sql-vs-nosql-the-real-differences",
               },
             ],
             evaluationCriteria:
@@ -334,7 +290,7 @@ export const WHATSAPP_PROBLEM = {
                     id: "hint-stateful",
                     title: "Stateful Connection",
                     text: "Since this server holds the open connection, we need to know exactly which server the user is connected to.",
-                    href: "/learn/system-design-structure",
+                    href: "/learn/websockets-realtime#the-problem-stateful-connections",
                   },
                 ],
               },
@@ -349,7 +305,7 @@ export const WHATSAPP_PROBLEM = {
                     id: "hint-status-update",
                     title: "Updating Status",
                     text: "When the socket connects or sends data, mark the user as 'Online' in Redis.",
-                    href: "/learn/database-caching",
+                    href: "/learn/database-caching#cache-speed",
                   },
                 ],
               },
@@ -365,7 +321,7 @@ export const WHATSAPP_PROBLEM = {
                     id: "hint-ttl",
                     title: "Auto-Expiry",
                     text: "Use Redis TTL features to automatically set a user to offline if the app crashes.",
-                    href: "/learn/database-caching",
+                    href: "/learn/database-caching#cache-eviction-lru-vs-lfu",
                   },
                 ],
               },
@@ -381,7 +337,7 @@ export const WHATSAPP_PROBLEM = {
                     id: "hint-stateless-logic",
                     title: "Separation of Concerns",
                     text: "Keep the Gateway dumb (just connections). Move logic (storage, grouping) to a stateless Chat Service.",
-                    href: "/learn/scaling",
+                    href: "/learn/scaling#horizontal-scaling-scale-out",
                   },
                 ],
               },
@@ -397,7 +353,7 @@ export const WHATSAPP_PROBLEM = {
                     id: "hint-write-heavy",
                     title: "Database Choice",
                     text: "Chat apps generate billions of small messages. SQL struggles here. Wide-column stores (Cassandra) are optimized for this.",
-                    href: "/learn/database-caching",
+                    href: "/learn/database-caching#sql-vs-nosql-the-real-differences",
                   },
                 ],
               },

@@ -26,7 +26,7 @@ There are three main reasons engineers should learn system design:
 
 ### 1. It is increasingly expected in interviews
 
-Interviews are more competitive than ever. Most companies—not just big tech—expect engineers to have at least a basic grasp of system design fundamentals.
+Interviews are more competitive than ever. Most companies, not just big tech, expect engineers to have at least a basic grasp of system design fundamentals.
 
 ### 2. It makes you a better engineer
 
@@ -46,7 +46,7 @@ Think about it this way: **LeetCode** exists because developers needed a place t
 
 So where’s the equivalent for **System Design**?
 
-Sure, you can learn the fundamentals (CAP theorem, replication, queues, caching) or watch YouTube videos. But where do you actually **practice** system design problems you’ve never seen before—without being hand-held by a tutorial that ruins the challenge?
+Sure, you can learn the fundamentals (CAP theorem, replication, queues, caching) or watch YouTube videos. But where do you actually **practice** system design problems you've never seen before, without being hand-held by a tutorial that ruins the challenge?
 
 ### Enter: SystemDesignSandbox
 

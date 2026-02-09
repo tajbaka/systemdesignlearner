@@ -3,6 +3,9 @@ import { cookies } from "next/headers";
 import { PracticePageClient } from "@/domains/practice/PracticePageClient";
 import { getBaseUrl } from "@/lib/getBaseUrl";
 
+const canonicalUrl = `${getBaseUrl()}/practice`;
+const ogImage = `${getBaseUrl()}/desktop-url-shortener-practice.gif`;
+
 export const metadata: Metadata = {
   title: "System Design Practice Scenarios - Interactive Interview Challenges",
   description:
@@ -15,11 +18,23 @@ export const metadata: Metadata = {
     "practice system design",
     "system design challenges",
   ],
+  alternates: {
+    canonical: canonicalUrl,
+  },
   openGraph: {
     title: "System Design Practice Scenarios - Interactive Challenges",
     description:
       "Master system design interviews with hands-on practice scenarios. URL shortener, distributed systems, caching & more.",
     type: "website",
+    url: canonicalUrl,
+    images: [{ url: ogImage, width: 1200, height: 630, alt: "System Design Practice Scenarios" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "System Design Practice Scenarios - Interactive Challenges",
+    description:
+      "Master system design interviews with hands-on practice scenarios. URL shortener, distributed systems, caching & more.",
+    images: [ogImage],
   },
 };
 

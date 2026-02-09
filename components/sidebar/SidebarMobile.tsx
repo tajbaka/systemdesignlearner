@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
-import type { SidebarConfig } from "./types";
+import type { SidebarInternalConfig } from "./types";
 import { getCategoryIcon } from "./utils";
 
 interface SidebarMobileProps {
-  config: SidebarConfig;
+  config: SidebarInternalConfig;
 }
 
 export function SidebarMobile({ config }: SidebarMobileProps) {
@@ -23,7 +23,6 @@ export function SidebarMobile({ config }: SidebarMobileProps) {
   const textClass = isDark ? "text-white" : "text-zinc-900";
   const textMutedClass = isDark ? "text-zinc-300" : "text-zinc-600";
   const textHoverClass = isDark ? "hover:text-white" : "hover:text-zinc-900";
-  const bgHoverClass = isDark ? "hover:bg-zinc-800" : "hover:bg-zinc-100";
   const buttonBgClass = isDark
     ? "bg-zinc-900/95 border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800"
     : "bg-white border-zinc-200";
@@ -53,109 +52,13 @@ export function SidebarMobile({ config }: SidebarMobileProps) {
     setIsExpanded(!isExpanded);
   };
 
-  const renderSimpleLinks = () => {
-    if (!config.links) return null;
-
-    return (
-      <nav className="flex-1 space-y-1 p-2">
-        {config.links.map((link) => {
-          const isActive = pathname?.startsWith(link.href);
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                isActive
-                  ? `${activeBgClass} ${activeTextClass}`
-                  : `${textMutedClass} ${bgHoverClass} ${textHoverClass}`
-              }`}
-              onClick={() => setIsExpanded(false)}
-            >
-              {link.icon}
-              <span>{link.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
-    );
-  };
-
-  const renderCategories = () => {
-    if (!config.categories) return null;
-
-    return (
-      <div className="flex-1 overflow-y-auto pb-4">
-        <div className="space-y-6 p-4">
-          {config.categories.map((category, categoryIndex) => {
-            const hasActiveItem = category.items.some((item) => pathname === item.href);
-
-            return (
-              <div key={category.id}>
-                <div
-                  className={`mb-3 flex items-center gap-2 px-4 py-2 transition-colors ${
-                    hasActiveItem ? activeBgClass : ""
-                  }`}
-                >
-                  {(() => {
-                    const IconComponent = getCategoryIcon(category.icon);
-                    return IconComponent ? (
-                      <IconComponent
-                        className={`flex-shrink-0 h-5 w-5 ${
-                          hasActiveItem ? activeTextClass : textClass
-                        }`}
-                      />
-                    ) : null;
-                  })()}
-                  <h3 className={`text-sm font-bold ${textClass}`}>
-                    <span className="whitespace-nowrap">
-                      {categoryIndex + 1}. {category.title}
-                    </span>
-                  </h3>
-                </div>
-                <ul className="space-y-2 px-4">
-                  {category.items.map((item) => {
-                    const isActive = pathname === item.href;
-                    return (
-                      <li key={item.id}>
-                        <Link
-                          href={item.href}
-                          onClick={() => setIsExpanded(false)}
-                          className={`flex items-start gap-2 p-2 transition-colors ${
-                            isActive
-                              ? `${activeTextClass} font-medium`
-                              : `${textMutedClass} ${textHoverClass}`
-                          }`}
-                        >
-                          <span
-                            className={`flex-shrink-0 text-sm mt-0.5 ${
-                              isActive ? activeTextClass : textClass
-                            }`}
-                          >
-                            •
-                          </span>
-                          <span className="text-sm leading-snug">{item.title}</span>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <>
-      {/* Mobile Hamburger Button */}
+      {/* Mobile Hamburger / Close Button — stays in the same spot */}
       <button
         onClick={toggleExpanded}
-        className={`fixed left-4 top-4 z-50 flex h-10 w-10 items-center justify-center rounded-lg border shadow-md transition-all ${buttonBgClass} ${
-          isExpanded ? "opacity-0 pointer-events-none" : "opacity-100"
-        }`}
-        aria-label="Toggle navigation"
+        className={`fixed right-4 top-2 z-[60] flex h-10 w-10 items-center justify-center rounded-lg border shadow-md transition-all ${buttonBgClass}`}
+        aria-label={isExpanded ? "Close navigation" : "Toggle navigation"}
       >
         <svg
           className={`h-6 w-6 ${isDark ? "text-zinc-300" : "text-zinc-700"}`}
@@ -166,7 +69,7 @@ export function SidebarMobile({ config }: SidebarMobileProps) {
           viewBox="0 0 24 24"
           stroke="currentColor"
         >
-          <path d="M4 6h16M4 12h16M4 18h16" />
+          {isExpanded ? <path d="M6 18L18 6M6 6l12 12" /> : <path d="M4 6h16M4 12h16M4 18h16" />}
         </svg>
       </button>
 
@@ -181,15 +84,13 @@ export function SidebarMobile({ config }: SidebarMobileProps) {
 
       {/* Mobile Navbar */}
       <nav
-        className={`fixed inset-0 z-50 ${bgClass} transition-transform duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-50 ${bgClass} rounded-b-2xl shadow-lg border-b ${borderClass} transition-transform duration-300 max-h-[90vh] overflow-y-auto ${
           isExpanded ? "translate-y-0" : "-translate-y-full"
         }`}
       >
-        <div className="flex h-full w-full flex-col overflow-hidden">
+        <div className="flex w-full flex-col">
           {/* Mobile Header */}
-          <div
-            className={`flex items-center justify-between border-b ${borderClass} p-4 flex-shrink-0`}
-          >
+          <div className={`flex items-center border-b ${borderClass} p-4 flex-shrink-0`}>
             <Link
               href={config.logo.href}
               className="flex items-center gap-3 hover:opacity-80 transition-opacity"
@@ -204,27 +105,102 @@ export function SidebarMobile({ config }: SidebarMobileProps) {
                 {config.logo.text}
               </span>
             </Link>
-            <button
-              onClick={toggleExpanded}
-              className={`flex h-8 w-8 items-center justify-center rounded-lg ${bgHoverClass} transition-colors`}
-              aria-label="Close navigation"
-            >
-              <svg
-                className={`h-6 w-6 ${isDark ? "text-zinc-300" : "text-zinc-700"}`}
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
           </div>
 
           {/* Content */}
-          {config.links ? renderSimpleLinks() : renderCategories()}
+          <div className="flex-1 overflow-y-auto pb-4">
+            <div className="space-y-6 p-4">
+              {config.categories.map((category, categoryIndex) => {
+                const hasActiveItem = category.items.some((item) => pathname === item.href);
+
+                const headerEl = (
+                  <div
+                    className={`mb-3 flex items-center gap-2 px-4 py-2 transition-colors ${
+                      hasActiveItem ? activeBgClass : ""
+                    }`}
+                  >
+                    {(() => {
+                      const IconComponent = getCategoryIcon(category.icon);
+                      return IconComponent ? (
+                        <IconComponent
+                          className={`flex-shrink-0 h-5 w-5 ${
+                            hasActiveItem ? activeTextClass : textClass
+                          }`}
+                        />
+                      ) : null;
+                    })()}
+                    <h3 className={`text-sm font-bold ${textClass}`}>
+                      <span className="whitespace-nowrap">
+                        {categoryIndex + 1}. {category.title}
+                      </span>
+                    </h3>
+                  </div>
+                );
+
+                return (
+                  <div key={category.id}>
+                    {category.href ? (
+                      <Link
+                        href={category.href}
+                        className="block"
+                        onClick={() => setIsExpanded(false)}
+                      >
+                        {headerEl}
+                      </Link>
+                    ) : (
+                      headerEl
+                    )}
+                    {category.items.length > 0 && (
+                      <ul className="space-y-2 px-4">
+                        {category.items.map((item) => {
+                          const isActive = pathname === item.href;
+                          return (
+                            <li key={item.id}>
+                              <Link
+                                href={item.href}
+                                onClick={() => setIsExpanded(false)}
+                                className={`flex items-start gap-2 p-2 transition-colors ${
+                                  isActive
+                                    ? `${activeTextClass} font-medium`
+                                    : `${textMutedClass} ${textHoverClass}`
+                                }`}
+                              >
+                                <span
+                                  className={`flex-shrink-0 text-sm mt-0.5 ${
+                                    isActive ? activeTextClass : textClass
+                                  }`}
+                                >
+                                  •
+                                </span>
+                                <span className="text-sm leading-snug">{item.title}</span>
+                              </Link>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Standalone action buttons */}
+              {config.buttons?.map((btn) => {
+                const IconComponent = getCategoryIcon(btn.icon);
+
+                return (
+                  <Link
+                    key={btn.id}
+                    href={btn.href}
+                    onClick={() => setIsExpanded(false)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-emerald-500 hover:bg-emerald-600 text-white"
+                  >
+                    {IconComponent && <IconComponent className="flex-shrink-0 h-5 w-5" />}
+                    <span className="text-sm font-bold whitespace-nowrap">{btn.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </nav>
     </>
