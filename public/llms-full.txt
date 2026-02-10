@@ -1,0 +1,157 @@
+# System Design Sandbox
+
+> Free interactive platform for practicing system design interviews with hands-on scenarios and AI-powered feedback.
+
+## About
+
+System Design Sandbox is a free, interactive platform where software engineers practice system design interviews. Users work through real interview scenarios step-by-step — gathering requirements, designing APIs, planning capacity, and building architecture diagrams on a drag-and-drop canvas — then receive instant AI-powered feedback on their designs.
+
+The platform is designed for:
+- Software engineers preparing for FAANG and tech company system design interviews
+- Senior engineers learning system design patterns and distributed systems
+- Engineering managers understanding architecture patterns and trade-offs
+- Students learning distributed systems concepts hands-on
+
+## Key Features
+
+- Interactive Architecture Canvas: Drag-and-drop components (load balancers, databases, caches, message queues, API gateways, CDNs, object storage) to design systems visually on an infinite canvas
+- Step-by-Step Practice: Each scenario walks through the real interview flow — functional requirements, non-functional requirements, API design, capacity planning, and high-level architecture design
+- AI-Powered Feedback: After completing a design, get instant AI analysis and scoring with specific feedback on what you did well and what to improve
+- Learn Articles: 15 in-depth tutorials covering core distributed systems concepts and step-by-step design problem solutions
+- Free to Use: No paywall, no credit card required, no account needed to read articles
+
+## Practice Scenarios
+
+Interactive system design interview simulations. Each scenario includes these steps:
+1. Introduction — overview of the system to design
+2. Functional Requirements — define what the system should do
+3. Non-Functional Requirements — define availability, latency, consistency, reliability targets
+4. API Design — design the REST API endpoints
+5. High-Level Design — build the architecture on the interactive canvas
+6. Score — receive AI-powered feedback on your design
+
+### URL Shortener
+- URL: https://www.systemdesignsandbox.com/practice/url-shortener/intro
+- Description: Design a scalable URL shortening service like TinyURL or Bitly. Handle millions of URL redirects per day with pre-generated short codes, read/write separation, caching, and database replication.
+
+### Pastebin
+- URL: https://www.systemdesignsandbox.com/practice/pastebin/intro
+- Description: Design a text paste sharing service. Separate metadata from content using object storage (S3), integrate CDN for popular pastes, and handle paste creation and retrieval at scale.
+
+### Rate Limiter
+- URL: https://www.systemdesignsandbox.com/practice/rate-limiter/intro
+- Description: Design a distributed rate limiting service. Implement token bucket or sliding window algorithms with Redis-based distributed counting, Lua scripts for atomicity, and fail-open strategies.
+
+### Notification System
+- URL: https://www.systemdesignsandbox.com/practice/notification-system/intro
+- Description: Design a multi-channel notification service handling Email, SMS, and Push notifications. Use message queues for async processing, priority-based delivery, user preference management, and retry strategies.
+
+### WhatsApp
+- URL: https://www.systemdesignsandbox.com/practice/whatsapp/intro
+- Description: Design a real-time chat application like WhatsApp. Implement WebSocket-based messaging, Cassandra for write-heavy message storage, presence systems with Redis, and group chat with message fan-out.
+
+## Learn — Core Concepts
+
+### Introduction
+- URL: https://www.systemdesignsandbox.com/learn/introduction
+- Description: Learn what system design is, why it matters, and how to practice it effectively. This introduction covers the fundamentals you need to know before diving into system design interviews and real-world engineering challenges.
+- Topics: What is system design, what kinds of system design questions are there, why should I learn system design, why should I use this tool
+- Read time: 8 min
+
+### System Design Structure
+- URL: https://www.systemdesignsandbox.com/learn/system-design-structure
+- Description: Learn the structured approach to system design interviews. This guide covers functional requirements, non-functional requirements (availability, latency, reliability, consistency), API design, database modeling, and high-level design.
+- Topics: How to start the interview, functional requirements, non-functional requirements, API design, database modelling, high-level design (design diagram), detailed design, bottlenecks tradeoffs and scaling
+- Read time: 10 min
+
+### How to Calculate Throughput & Database Size
+- URL: https://www.systemdesignsandbox.com/learn/size-calculation
+- Description: Learn how to calculate storage requirements and throughput for system design interviews. This guide covers the golden rule (2^10 ≈ 10^3), step-by-step storage calculations, throughput estimation, and a quick reference cheat sheet for interview success.
+- Topics: The golden rule, storage calculation example (URL shortener), throughput calculation example, quick reference cheat sheet
+- Read time: 8 min
+
+### Databases & Caching
+- URL: https://www.systemdesignsandbox.com/learn/database-caching
+- Description: Learn the fundamental differences between databases and caches, when to use SQL vs NoSQL, cache eviction policies (LRU vs LFU), and the cache-aside pattern. Essential knowledge for system design interviews.
+- Topics: Different tools for different jobs, the standard pattern (cache-aside), cache eviction (LRU vs LFU), SQL vs NoSQL (the real differences), mixing up responsibilities, how this looks in real systems, latency numbers you should know
+- Read time: 10 min
+
+### CAP Theorem
+- URL: https://www.systemdesignsandbox.com/learn/cap-theorem
+- Description: Learn the CAP theorem and how to make trade-offs between consistency, availability, and partition tolerance in distributed systems. Essential knowledge for system design interviews.
+- Topics: You can't have everything, breaking down each property, why you can't have all three, the three system types, quick decision framework, concrete interview example, common interview mistakes, CAP is a spectrum
+- Read time: 12 min
+
+### Scaling: Vertical vs Horizontal
+- URL: https://www.systemdesignsandbox.com/learn/scaling
+- Description: Learn the fundamental differences between vertical and horizontal scaling, when to use each approach, load balancers and API gateways, and how to make scaling decisions in system design interviews.
+- Topics: The two ways to scale (bigger vs more), vertical scaling (scale up), horizontal scaling (scale out), API gateway / load balancer (the traffic cop), the hybrid approach, common interview mistakes, decision framework
+- Read time: 12 min
+
+### Object Storage & CDN
+- URL: https://www.systemdesignsandbox.com/learn/object-storage-cdn
+- Description: Learn when to use object storage (S3) vs databases for content, how to separate metadata from content, and how CDNs cache data at edge locations. Essential for designing systems like Pastebin, Instagram, or any content-heavy service.
+- Topics: Separate metadata from content, object storage basics, CDN (caching at the edge), presigned URLs, the complete pattern, common interview mistakes
+- Read time: 12 min
+
+### Rate Limiting Algorithms
+- URL: https://www.systemdesignsandbox.com/learn/rate-limiting-algorithms
+- Description: Learn the four main rate limiting algorithms (Fixed Window, Sliding Window Log, Sliding Window Counter, Token Bucket), when to use each, and how to implement distributed rate limiting with Redis. Essential for system design interviews.
+- Topics: Why rate limiting matters, the four main algorithms, comparison table, where to put the rate limiter, distributed rate limiting, common interview mistakes
+- Read time: 12 min
+
+### Message Queues
+- URL: https://www.systemdesignsandbox.com/learn/message-queues
+- Description: Learn when and why to use message queues, the differences between Kafka and RabbitMQ, and key concepts like priority queues, dead letter queues, and at-least-once delivery. Essential for designing notification systems, order pipelines, and any async workflow.
+- Topics: Decouple producers from consumers, when to use message queues, Kafka vs RabbitMQ, key concepts (priority queues, dead letter queues, at-least-once delivery), common interview mistakes
+- Read time: 12 min
+
+### WebSockets & Real-Time Communication
+- URL: https://www.systemdesignsandbox.com/learn/websockets-realtime
+- Description: Learn how WebSockets enable real-time bidirectional communication, how they compare to HTTP polling and SSE, and how to scale stateful connections across servers. Essential for designing chat apps, live dashboards, and collaborative tools.
+- Topics: HTTP vs WebSockets, how WebSockets work, polling alternatives (and why they lose), scaling WebSockets (the hard part), presence systems (is the user online), common interview mistakes
+- Read time: 12 min
+
+## Learn — Design Problems
+
+### Design a URL Shortener
+- URL: https://www.systemdesignsandbox.com/learn/design-url-shortener
+- Description: Learn how to design a production-ready URL shortening service. This guide covers pre-generated short codes, separating read and write servers, caching strategies, database replication, and scaling to handle millions of redirects per day.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design Pastebin
+- URL: https://www.systemdesignsandbox.com/learn/design-pastebin
+- Description: Learn how to design a production-ready Pastebin service. This guide covers separating metadata from content using object storage, CDN integration for popular pastes, and scaling to handle millions of text snippets.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design a Distributed Rate Limiter
+- URL: https://www.systemdesignsandbox.com/learn/design-rate-limiter
+- Description: Learn how to design a production-ready distributed rate limiter. This guide covers algorithm selection, Redis-based distributed counting with Lua scripts, fail-open strategies, and scaling to handle millions of requests per second.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design a Notification System
+- URL: https://www.systemdesignsandbox.com/learn/design-notification-system
+- Description: Learn how to design a production-ready notification system that sends millions of messages across Email, SMS, and Push channels. This guide covers message queues for async processing, priority-based delivery, user preference management, and retry strategies.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design WhatsApp
+- URL: https://www.systemdesignsandbox.com/learn/design-whatsapp
+- Description: Learn how to design a production-ready chat application like WhatsApp. This guide covers WebSocket-based real-time messaging, Cassandra for write-heavy message storage, presence systems with Redis, and scaling stateful connections across servers.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+## Links
+
+- Website: https://www.systemdesignsandbox.com
+- Practice: https://www.systemdesignsandbox.com/practice
+- Learn: https://www.systemdesignsandbox.com/learn/introduction
+- Sitemap: https://www.systemdesignsandbox.com/sitemap.xml
+- LLM summary: https://www.systemdesignsandbox.com/llms.txt
+
+## Contact
+
+- Email: hello@systemdesignsandbox.com

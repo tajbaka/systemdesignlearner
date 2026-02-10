@@ -1,6 +1,22 @@
-# *
+# All crawlers
 User-agent: *
 Allow: /
+
+# AI Crawlers — explicitly allowed
+User-agent: GPTBot
+User-agent: ChatGPT-User
+User-agent: Claude-Web
+User-agent: PerplexityBot
+User-agent: Anthropic-AI
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: cohere-ai
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# LLM context files
+# https://www.systemdesignsandbox.com/llms.txt
+# https://www.systemdesignsandbox.com/llms-full.txt
 
 # Host
 Host: https://www.systemdesignsandbox.com

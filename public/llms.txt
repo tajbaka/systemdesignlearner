@@ -1,49 +1,61 @@
 # System Design Sandbox
 
-> Interactive system design interview practice platform with hands-on tutorials and real-world examples.
+> Free interactive platform for practicing system design interviews with hands-on scenarios and AI-powered feedback.
 
-## What is System Design Sandbox?
+## About
 
-System Design Sandbox is a free, interactive platform for practicing system design interviews. Engineers use it to master distributed systems, scalability patterns, and architecture design through hands-on practice scenarios with instant AI-powered feedback.
+System Design Sandbox is a free, interactive platform where software engineers practice system design interviews. Users work through real interview scenarios step-by-step — gathering requirements, designing APIs, planning capacity, and building architecture diagrams on a drag-and-drop canvas — then receive instant AI-powered feedback on their designs.
 
 ## Key Features
 
-- Interactive Architecture Canvas: Drag-and-drop components to design systems visually
-- Practice Scenarios: Real interview questions (URL shortener and more coming soon)
-- AI-Powered Feedback: Get instant analysis of your system designs
-- Step-by-Step Tutorials: Learn system design concepts progressively
-- Requirements Analysis: Practice gathering and clarifying requirements
-- API Definition: Design REST APIs for your systems
-- Capacity Planning: Estimate traffic, storage, and compute needs
+- Interactive Architecture Canvas: Drag-and-drop components (load balancers, databases, caches, message queues) to design systems visually
+- Step-by-Step Practice: Work through each phase of a system design interview (requirements, API design, capacity planning, high-level design)
+- AI-Powered Feedback: Get instant analysis and scoring of your system designs
+- Learn Articles: In-depth tutorials covering core distributed systems concepts
+- Free to Use: No paywall, no credit card required
 
-## Use Cases
+## Practice Scenarios
 
-- Prepare for FAANG system design interviews
-- Learn distributed systems architecture
-- Practice designing scalable systems
-- Understand trade-offs between different architectural patterns
-- Get hands-on experience with load balancers, databases, caches, and message queues
+Interactive system design interview simulations:
 
-## Available Practice Scenarios
+- [URL Shortener](https://www.systemdesignsandbox.com/practice/url-shortener/intro): Design a scalable URL shortening service like TinyURL or Bitly
+- [Pastebin](https://www.systemdesignsandbox.com/practice/pastebin/intro): Design a text paste sharing service with object storage and CDN
+- [Rate Limiter](https://www.systemdesignsandbox.com/practice/rate-limiter/intro): Design a distributed rate limiting service with Redis and Lua scripts
+- [Notification System](https://www.systemdesignsandbox.com/practice/notification-system/intro): Design a multi-channel notification service (Email, SMS, Push)
+- [WhatsApp](https://www.systemdesignsandbox.com/practice/whatsapp/intro): Design a real-time chat application with presence and group messaging
 
-- URL Shortener (like bit.ly)
-- More scenarios coming soon
+## Learn — Core Concepts
 
-## Target Audience
+Tutorials covering fundamental distributed systems topics:
 
-- Software engineers preparing for technical interviews
-- Senior engineers learning system design
-- Engineering managers understanding architecture patterns
-- Students learning distributed systems
+- [Introduction](https://www.systemdesignsandbox.com/learn/introduction): Getting started with system design
+- [System Design Structure](https://www.systemdesignsandbox.com/learn/system-design-structure): The steps to follow when designing a system
+- [How to Calculate Throughput & Database Size](https://www.systemdesignsandbox.com/learn/size-calculation): Estimating storage and throughput for interviews
+- [Databases & Caching](https://www.systemdesignsandbox.com/learn/database-caching): SQL vs NoSQL, cache-aside pattern, LRU vs LFU
+- [CAP Theorem](https://www.systemdesignsandbox.com/learn/cap-theorem): Consistency, availability, and partition tolerance trade-offs
+- [Scaling: Vertical vs Horizontal](https://www.systemdesignsandbox.com/learn/scaling): Load balancers, API gateways, scale up vs scale out
+- [Object Storage & CDN](https://www.systemdesignsandbox.com/learn/object-storage-cdn): S3, presigned URLs, edge caching, metadata separation
+- [Rate Limiting Algorithms](https://www.systemdesignsandbox.com/learn/rate-limiting-algorithms): Fixed window, sliding window, token bucket, distributed rate limiting
+- [Message Queues](https://www.systemdesignsandbox.com/learn/message-queues): Kafka vs RabbitMQ, async processing, dead letter queues
+- [WebSockets & Real-Time Communication](https://www.systemdesignsandbox.com/learn/websockets-realtime): Persistent connections, polling vs SSE vs WebSockets, presence systems
+
+## Learn — Design Problems
+
+Step-by-step system design solutions:
+
+- [Design a URL Shortener](https://www.systemdesignsandbox.com/learn/design-url-shortener): Pre-generated codes, read/write separation, caching strategies
+- [Design Pastebin](https://www.systemdesignsandbox.com/learn/design-pastebin): Object storage, CDN integration, metadata separation
+- [Design a Distributed Rate Limiter](https://www.systemdesignsandbox.com/learn/design-rate-limiter): Redis-based counting, Lua scripts, fail-open strategies
+- [Design a Notification System](https://www.systemdesignsandbox.com/learn/design-notification-system): Message queues, priority delivery, retry strategies
+- [Design WhatsApp](https://www.systemdesignsandbox.com/learn/design-whatsapp): WebSocket messaging, Cassandra storage, presence systems
 
 ## Links
 
 - Website: https://www.systemdesignsandbox.com
 - Practice: https://www.systemdesignsandbox.com/practice
-- Interview Guide: https://www.systemdesignsandbox.com/interview-guide
-- Documentation: https://www.systemdesignsandbox.com/docs
+- Learn: https://www.systemdesignsandbox.com/learn/introduction
+- Full LLM context: https://www.systemdesignsandbox.com/llms-full.txt
 
 ## Contact
 
 - Email: hello@systemdesignsandbox.com
-- Support: support@systemdesignsandbox.com
