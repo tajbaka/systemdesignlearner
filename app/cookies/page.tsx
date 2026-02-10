@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Cookie Policy | System Design Sandbox",
   description:
     "Cookie Policy for System Design Sandbox - How we use cookies and tracking technologies.",
+  alternates: {
+    canonical: "https://www.systemdesignsandbox.com/cookies",
+  },
 };
 
 export default function CookiesPage() {

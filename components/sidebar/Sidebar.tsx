@@ -32,7 +32,7 @@ const SIDEBAR_CATEGORIES: SidebarCategory[] = [...LEARN_CATEGORIES];
 
 const LOGO = {
   href: "/",
-  text: "System Design",
+  text: "System Design Sandbox",
   short: "SD",
 };
 

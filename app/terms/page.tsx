@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "Terms of Service | System Design Sandbox",
   description:
     "Terms of Service for System Design Sandbox - Rules and guidelines for using our platform.",
+  alternates: {
+    canonical: "https://www.systemdesignsandbox.com/terms",
+  },
 };
 
 export default function TermsPage() {

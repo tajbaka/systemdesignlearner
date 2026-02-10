@@ -92,9 +92,8 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  alternates: {
-    canonical: "https://www.systemdesignsandbox.com",
-  },
+  // canonical is set per-page, not inherited from root layout
+  // (root canonical caused all child pages to declare homepage as canonical)
 };
 
 export const viewport: Viewport = {
@@ -218,6 +217,12 @@ export default function RootLayout({
     >
       <html lang="en" className="h-full dark">
         <head>
+          {/* Auto-reload once on ChunkLoadError (stale deployment chunks) */}
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `!function(){window.addEventListener("error",function(e){var n=e.error&&e.error.name||"";if(n==="ChunkLoadError"||n==="CSS_CHUNK_LOAD_FAILED"||(e.message&&e.message.indexOf("ChunkLoadError")!==-1)){if(!sessionStorage.getItem("chunk_retry")){sessionStorage.setItem("chunk_retry","1");window.location.reload()}}})}()`,
+            }}
+          />
           {/* Facebook Pixel - Commented out */}
           {/* {fbPixel && (
             <>

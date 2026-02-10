@@ -39,7 +39,7 @@ export function Navbar({
       <div className="flex items-center justify-between h-14 px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <div id="navbar-logo">
-          {!hideIcon && (
+          {!hideIcon ? (
             <Link href={content.logo.href} className="hover:opacity-80 transition-opacity">
               <div id="navbar-logo-inner" className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-emerald-400 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -51,6 +51,20 @@ export function Navbar({
                   {content.logo.full}
                 </span>
               </div>
+            </Link>
+          ) : (
+            <Link
+              href={content.logo.href}
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity md:hidden"
+            >
+              <div className="w-8 h-8 bg-emerald-400 text-zinc-900 rounded-lg flex items-center justify-center flex-shrink-0">
+                <span className="font-bold text-sm">SD</span>
+              </div>
+              <span
+                className={`text-lg font-bold whitespace-nowrap ${isLight ? "text-zinc-900" : "text-white"}`}
+              >
+                {content.logo.full}
+              </span>
             </Link>
           )}
         </div>

@@ -1,5 +1,6 @@
 import path from "path";
 import { withSentryConfig } from "@sentry/nextjs";
+import { withPostHogConfig } from "@posthog/nextjs-config";
 import type { NextConfig } from "next";
 
 const isCI = Boolean(process.env.CI);
@@ -8,6 +9,8 @@ const nextConfig: NextConfig = {
   devIndicators: false,
   // Explicitly disable trailing slashes so all canonical URLs are /path (not /path/)
   trailingSlash: false,
+  // Allow browsers to report full error details for cross-origin scripts (fixes "Script error.")
+  crossOrigin: "anonymous",
   images: {
     remotePatterns: [
       {
@@ -76,11 +79,27 @@ const nextConfig: NextConfig = {
         destination: "https://www.systemdesignsandbox.com/:path*",
         permanent: true,
       },
+      // Clean up ghost URLs that Google has crawled as 404
+      { source: "/examples", destination: "/practice", permanent: true },
+      { source: "/interview-guide", destination: "/learn/introduction", permanent: true },
+      { source: "/docs", destination: "/", permanent: true },
     ];
   },
 };
 
-export default withSentryConfig(nextConfig, {
+// PostHog sourcemap upload: wraps config so PostHog receives sourcemaps before Sentry deletes them
+const withPostHog = withPostHogConfig(nextConfig, {
+  personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY ?? "",
+  envId: process.env.POSTHOG_ENV_ID ?? "",
+  host: "https://us.i.posthog.com",
+  sourcemaps: {
+    enabled: isCI,
+    // Let Sentry handle deletion — PostHog should not delete since it runs first
+    deleteAfterUpload: false,
+  },
+});
+
+export default withSentryConfig(withPostHog, {
   // For all available options, see:
   // https://www.npmjs.com/package/@sentry/webpack-plugin#options
 
