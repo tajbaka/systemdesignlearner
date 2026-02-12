@@ -49,7 +49,7 @@ The connection starts as a regular HTTP request, then upgrades. This means WebSo
 ```
 1. Client sends HTTP request with "Upgrade: websocket" header
 2. Server responds with "101 Switching Protocols"
-3. Connection is now upgraded -- full-duplex communication
+3. Connection is now upgraded to full-duplex communication
 4. Both sides can send messages freely until one closes the connection
 ```
 
@@ -72,7 +72,7 @@ Client sends an HTTP request every N seconds. Dead simple to implement. Devastat
 
 ### Long Polling
 
-Client sends an HTTP request, and the server holds it open until there's data or a timeout. Better than short polling -- fewer empty responses, lower latency. But it's still one-directional, still has per-request overhead, and the connection must be re-established after every response. It's a clever hack, not a real solution.
+Client sends an HTTP request, and the server holds it open until there's data or a timeout. Better than short polling, with fewer empty responses and lower latency. But it's still one-directional, still has per-request overhead, and the connection must be re-established after every response. It's a clever hack, not a real solution.
 
 ### Server-Sent Events (SSE)
 
@@ -114,7 +114,7 @@ Store a mapping of `userId -> serverId` in Redis. When a message needs to reach 
 
 ### Sticky Sessions
 
-Your load balancer must route the same user to the same server for WebSocket connections. Use IP-based or cookie-based affinity. If the server goes down, the client must reconnect -- potentially to a different server. This is expected behavior, and your client should handle it gracefully.
+Your load balancer must route the same user to the same server for WebSocket connections. Use IP-based or cookie-based affinity. If the server goes down, the client must reconnect, potentially to a different server. This is expected behavior, and your client should handle it gracefully.
 
 ---
 
@@ -131,7 +131,7 @@ This comes up in every chat system design interview. The interviewer wants a spe
 
 **Why Redis?** TTL handles the "user crashed without disconnecting" case automatically. No cleanup jobs, no stale data. Checking if a user is online is a single Redis GET. And presence is ephemeral data that doesn't belong in your primary database. For more on consistency tradeoffs here, see [CAP Theorem](/learn/cap-theorem).
 
-**The fan-out problem** is worth mentioning. If Alice has 500 contacts, do you push 500 presence updates when she comes online? No. Use lazy loading -- only fetch presence when a user opens a specific chat window. For group chats, batch presence queries rather than individual lookups.
+**The fan-out problem** is worth mentioning. If Alice has 500 contacts, do you push 500 presence updates when she comes online? No. Use lazy loading: only fetch presence when a user opens a specific chat window. For group chats, batch presence queries rather than individual lookups.
 
 ---
 
@@ -165,7 +165,7 @@ This comes up in every chat system design interview. The interviewer wants a spe
 
 "I'll use Server-Sent Events for the chat system."
 
-**Problem:** SSE is one-directional -- server to client only. Chat requires bidirectional communication.
+**Problem:** SSE is one-directional, server to client only. Chat requires bidirectional communication.
 
 **Better:** WebSockets for bidirectional real-time communication. SSE only for one-way server pushes like notification feeds. Know the difference.
 
@@ -173,13 +173,13 @@ This comes up in every chat system design interview. The interviewer wants a spe
 
 ## Summary: What to Remember
 
-- **HTTP = request-response, WebSockets = persistent bidirectional connection** -- know when each is appropriate
-- WebSockets eliminate polling overhead -- the server pushes data the instant it happens
+- **HTTP = request-response, WebSockets = persistent bidirectional connection**. Know when each is appropriate
+- WebSockets eliminate polling overhead. The server pushes data the instant it happens
 - The handshake upgrades an HTTP connection to WebSocket (101 Switching Protocols)
 - Scaling challenge: WebSocket connections are stateful, tied to a specific server
 - Cross-server routing: use Redis Pub/Sub or a connection registry to deliver messages across servers
 - Presence systems: Redis with TTL for automatic offline detection on heartbeat timeout
-- Always plan for disconnections -- buffer messages server-side, fetch missed messages on reconnect via REST
+- Always plan for disconnections. Buffer messages server-side, and fetch missed messages on reconnect via REST
 - SSE is for one-way server pushes, WebSockets are for bidirectional real-time communication
 
 **Key numbers to have ready:**

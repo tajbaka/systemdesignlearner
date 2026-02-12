@@ -76,7 +76,6 @@ export const metadata: Metadata = {
     description:
       "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
     // images removed - child layouts will provide specific images
-    creator: "@systemdesignsb",
   },
   icons: {
     icon: "/favicon.ico",

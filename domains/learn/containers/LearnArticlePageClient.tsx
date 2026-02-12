@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import fs from "fs";
 import path from "path";
@@ -38,7 +38,11 @@ export async function LearnArticlePageClient({ slug }: LearnArticlePageClientPro
       tableOfContents={config.tableOfContents}
       slug={slug}
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={components}
+        urlTransform={(url) => (url.startsWith("diagram:") ? url : defaultUrlTransform(url))}
+      >
         {markdownContent}
       </ReactMarkdown>
     </ArticleLayout>

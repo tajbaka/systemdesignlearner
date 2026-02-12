@@ -388,7 +388,7 @@ export const URL_SHORTENER_PROBLEM = {
                     id: "hint-client-gateway",
                     title: "Client to API Gateway",
                     text: "API Gateway is helpful in routing the correct request to the right service",
-                    href: "/learn/scaling#api-gateway--load-balancer-the-traffic-cop",
+                    href: "/learn/scaling#api-gateway-load-balancer-the-traffic-cop",
                   },
                 ],
               },

@@ -63,7 +63,7 @@ RabbitMQ is a **push-based** broker. It pushes messages to consumers as they arr
 - Best for: task queues, work distribution, RPC patterns
 - Messages are deleted after the consumer acknowledges them
 - Lower throughput but rich routing features (exchanges, bindings, dead letter handling)
-- Think of it as a **job queue** -- each message gets processed exactly once by one worker
+- Think of it as a **job queue** where each message gets processed exactly once by one worker
 
 ### Kafka (Distributed Event Log)
 
@@ -72,7 +72,7 @@ Kafka is a **pull-based** system. Consumers pull messages at their own pace.
 - Best for: event streaming, high-throughput data pipelines, event sourcing
 - Messages are **retained** for a configurable period (e.g., 7 days), even after consumption
 - Massive throughput (millions of messages per second)
-- Think of it as an **append-only log** -- multiple consumer groups can independently read the same messages
+- Think of it as an **append-only log** where multiple consumer groups can independently read the same messages
 
 ### Quick Comparison
 
@@ -95,7 +95,7 @@ Kafka is a **pull-based** system. Consumers pull messages at their own pace.
 
 A **topic** is a category of messages (e.g., "notifications", "emails", "user-events"). A **partition** is a subdivision of that topic for parallelism.
 
-Messages within the same partition are strictly ordered. A **consumer group** allows multiple workers to process partitions in parallel -- each partition is consumed by exactly one worker in the group. Need more throughput? Add more partitions and more workers. This is [horizontal scaling](/learn/scaling) for message processing.
+Messages within the same partition are strictly ordered. A **consumer group** allows multiple workers to process partitions in parallel, where each partition is consumed by exactly one worker in the group. Need more throughput? Add more partitions and more workers. This is [horizontal scaling](/learn/scaling) for message processing.
 
 ### Priority Queues
 
@@ -115,7 +115,7 @@ In an interview, mentioning this separation unprompted shows you've thought abou
 
 ### Dead Letter Queues (DLQ)
 
-Messages that fail processing after N retries go to a **dead letter queue.** This prevents poison messages -- malformed or unprocessable messages -- from blocking the entire queue forever.
+Messages that fail processing after N retries go to a **dead letter queue.** This prevents poison messages (malformed or unprocessable messages) from blocking the entire queue forever.
 
 You can inspect DLQ messages later, fix the bug, and replay them. It's your safety net. A DLQ paired with monitoring and alerting means no message silently disappears.
 
@@ -124,7 +124,7 @@ You can inspect DLQ messages later, fix the bug, and replay them. It's your safe
 - **At-least-once:** A message may be delivered multiple times. Simpler, more common, and usually good enough.
 - **Exactly-once:** Guaranteed single delivery. Much harder. Kafka supports it with idempotent producers and transactional consumers.
 
-For notifications, at-least-once is usually fine. Sending an email twice is annoying but tolerable. Not sending it at all is a bug. The key is to make your consumers **idempotent** -- processing the same message twice should produce the same result. Use a deduplication key (like a message ID) stored in [Redis or your cache layer](/learn/database-caching) to track what's already been processed.
+For notifications, at-least-once is usually fine. Sending an email twice is annoying but tolerable. Not sending it at all is a bug. The key is to make your consumers **idempotent** so that processing the same message twice produces the same result. Use a deduplication key (like a message ID) stored in [Redis or your cache layer](/learn/database-caching) to track what's already been processed. For a deep dive on how to implement this, see [Idempotency & Deduplication](/learn/idempotency-deduplication).
 
 ---
 
@@ -166,7 +166,7 @@ For notifications, at-least-once is usually fine. Sending an email twice is anno
 
 ## Summary: What to Remember
 
-- Message queues decouple producers from consumers -- the producer fires and forgets, the consumer processes at its own pace
+- Message queues decouple producers from consumers. The producer fires and forgets, the consumer processes at its own pace.
 - Use queues for async processing, spike absorption, service decoupling, and retry handling
 - Kafka = high-throughput distributed event log (~1M+ msg/sec). RabbitMQ = traditional task queue (~50K msg/sec)
 - Priority queues prevent critical messages (OTP, 2FA) from being blocked by bulk operations

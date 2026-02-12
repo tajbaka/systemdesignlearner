@@ -21,6 +21,7 @@ import { PASTEBIN_PROBLEM } from "./problems/pastebin";
 import { RATE_LIMITER_PROBLEM } from "./problems/rate-limiter";
 import { NOTIFICATION_SYSTEM_PROBLEM } from "./problems/notification-system";
 import { WHATSAPP_PROBLEM } from "./problems/whatsapp";
+import { LEADERBOARD_PROBLEM } from "./problems/leaderboard";
 
 // Load environment variables - check both root and packages folder
 const rootEnvPath = resolve(process.cwd(), ".env.local");
@@ -55,6 +56,7 @@ const PROBLEMS = [
   RATE_LIMITER_PROBLEM,
   NOTIFICATION_SYSTEM_PROBLEM,
   WHATSAPP_PROBLEM,
+  LEADERBOARD_PROBLEM,
 ];
 
 async function seedProblem(

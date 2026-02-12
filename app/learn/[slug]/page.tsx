@@ -61,7 +61,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: config.title,
       description: config.description,
       images: [ogImage],
-      creator: "@systemdesignsb",
     },
     alternates: {
       canonical: url,

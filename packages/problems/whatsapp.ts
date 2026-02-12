@@ -14,6 +14,8 @@ export const WHATSAPP_PROBLEM = {
     links: buildLinks([
       "websockets-realtime",
       "database-caching",
+      "wide-column-databases",
+      "fan-out-strategies",
       "cap-theorem",
       "scaling",
       "system-design-structure",
@@ -275,53 +277,39 @@ export const WHATSAPP_PROBLEM = {
                 icon: "service",
               },
               { id: "Redis-Cache", type: "redis-cache", name: "Redis (Presence)", icon: "cache" },
-              { id: "Msg-Store", type: "message-store", name: "Cassandra/HBase", icon: "nosql" },
+              { id: "Redis-PubSub", type: "redis-pubsub", name: "Redis Pub/Sub", icon: "cache" },
+              { id: "Msg-Store", type: "message-store", name: "Cassandra", icon: "nosql" },
             ],
             edges: [
               {
-                id: "Client-Gateway",
+                id: "Client-LB",
                 from: "Client",
+                to: "LB",
+                description:
+                  "Client connects through a Load Balancer that routes to the appropriate WebSocket Gateway instance.",
+                weight: 5,
+                hints: [
+                  {
+                    id: "hint-lb",
+                    title: "Load Balancing WebSockets",
+                    text: "A load balancer distributes incoming connections across gateway instances. Once a WebSocket connection is established, it stays on that gateway.",
+                    href: "/learn/scaling#horizontal-scaling-scale-out",
+                  },
+                ],
+              },
+              {
+                id: "LB-Gateway",
+                from: "LB",
                 to: "WS-Gateway",
                 description:
-                  "Client establishes a long-lived WebSocket connection. This gateway manages the state of open connections.",
-                weight: 10,
+                  "Load Balancer routes the connection to a WebSocket Gateway. The gateway manages long-lived, stateful connections.",
+                weight: 5,
                 hints: [
                   {
                     id: "hint-stateful",
                     title: "Stateful Connection",
                     text: "Since this server holds the open connection, we need to know exactly which server the user is connected to.",
                     href: "/learn/websockets-realtime#the-problem-stateful-connections",
-                  },
-                ],
-              },
-              {
-                id: "Gateway-Presence",
-                from: "WS-Gateway",
-                to: "Presence-Svc",
-                description: "Gateway sends 'Heartbeats' to Presence Service when user is active.",
-                weight: 5,
-                hints: [
-                  {
-                    id: "hint-status-update",
-                    title: "Updating Status",
-                    text: "When the socket connects or sends data, mark the user as 'Online' in Redis.",
-                    href: "/learn/database-caching#cache-speed",
-                  },
-                ],
-              },
-              {
-                id: "Presence-Redis",
-                from: "Presence-Svc",
-                to: "Redis-Cache",
-                description:
-                  "Stores UserID -> Status mapping with a TTL (Time To Live). If no heartbeat, TTL expires -> User Offline.",
-                weight: 5,
-                hints: [
-                  {
-                    id: "hint-ttl",
-                    title: "Auto-Expiry",
-                    text: "Use Redis TTL features to automatically set a user to offline if the app crashes.",
-                    href: "/learn/database-caching#cache-eviction-lru-vs-lfu",
                   },
                 ],
               },
@@ -354,6 +342,53 @@ export const WHATSAPP_PROBLEM = {
                     title: "Database Choice",
                     text: "Chat apps generate billions of small messages. SQL struggles here. Wide-column stores (Cassandra) are optimized for this.",
                     href: "/learn/database-caching#sql-vs-nosql-the-real-differences",
+                  },
+                ],
+              },
+              {
+                id: "ChatSvc-PubSub",
+                from: "Chat-Svc",
+                to: "Redis-PubSub",
+                description:
+                  "Chat Service publishes messages to Redis Pub/Sub for cross-server routing. Each gateway subscribes to channels for its connected users.",
+                weight: 5,
+                hints: [
+                  {
+                    id: "hint-cross-server",
+                    title: "Cross-Server Routing",
+                    text: "Alice is on Gateway A, Bob is on Gateway B. Redis Pub/Sub lets the Chat Service publish to Bob's channel, which Gateway B subscribes to.",
+                    href: "/learn/websockets-realtime#scaling-websockets-the-hard-part",
+                  },
+                ],
+              },
+              {
+                id: "Gateway-Presence",
+                from: "WS-Gateway",
+                to: "Presence-Svc",
+                description: "Gateway sends 'Heartbeats' to Presence Service when user is active.",
+                weight: 5,
+                hints: [
+                  {
+                    id: "hint-status-update",
+                    title: "Updating Status",
+                    text: "When the socket connects or sends data, mark the user as 'Online' in Redis.",
+                    href: "/learn/database-caching#cache-speed",
+                  },
+                ],
+              },
+              {
+                id: "Presence-Redis",
+                from: "Presence-Svc",
+                to: "Redis-Cache",
+                description:
+                  "Stores UserID -> Status mapping with a TTL (Time To Live). If no heartbeat, TTL expires -> User Offline.",
+                weight: 5,
+                hints: [
+                  {
+                    id: "hint-ttl",
+                    title: "Auto-Expiry",
+                    text: "Use Redis TTL features to automatically set a user to offline if the app crashes.",
+                    href: "/learn/database-caching#cache-eviction-lru-vs-lfu",
                   },
                 ],
               },

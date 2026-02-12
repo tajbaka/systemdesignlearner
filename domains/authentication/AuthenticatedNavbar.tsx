@@ -50,6 +50,7 @@ export function AuthenticatedNavbar({
   const pathname = usePathname();
   const { signOut } = useClerk();
   const { user, isSignedIn } = useUser();
+  const [hasMounted, setHasMounted] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [userInitial, setUserInitial] = useState<string>("");
@@ -78,6 +79,10 @@ export function AuthenticatedNavbar({
   });
 
   useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (user) {
       const initial = (user.firstName?.[0] || user.username?.[0] || "U").toUpperCase();
       setUserInitial(initial);
@@ -85,7 +90,7 @@ export function AuthenticatedNavbar({
   }, [user]);
 
   const handleClick = () => {
-    if (isSignedIn) {
+    if (hasMounted && isSignedIn) {
       setIsUserMenuOpen(true);
     } else {
       setIsAuthModalOpen(true);
@@ -104,7 +109,7 @@ export function AuthenticatedNavbar({
         hideIcon={hideIcon}
         hideMobileMenu={hideMobileMenu}
         pathname={pathname}
-        userImageUrl={user?.imageUrl}
+        userImageUrl={hasMounted ? user?.imageUrl : undefined}
         onClick={handleClick}
         content={content}
       />

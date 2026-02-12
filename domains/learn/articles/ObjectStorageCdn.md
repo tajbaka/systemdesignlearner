@@ -68,7 +68,7 @@ That's it. No tables, no schemas, no joins. Just keys and values.
 | **Access pattern**  | Random reads/writes    | Whole-object read/write  |
 | **Durability**      | You manage replication | 99.999999999% (11 nines) |
 
-**Key takeaway:** Object storage is 5-15x cheaper per GB and scales to petabytes without you lifting a finger. But you can't query it -- you can only fetch by key.
+**Key takeaway:** Object storage is 5-15x cheaper per GB and scales to petabytes without you lifting a finger. But you can't query it; you can only fetch by key.
 
 ### When to Use Object Storage
 
@@ -157,8 +157,8 @@ Client → S3 directly: Downloads content
 **When this matters:**
 
 - Large files (images, videos, big pastes)
-- High traffic -- takes load off your servers
-- Upload scenarios -- clients can upload directly to S3
+- High traffic: takes load off your servers
+- Upload scenarios: clients can upload directly to S3
 
 **When to skip it:**
 

@@ -122,7 +122,7 @@ Most URL shorteners use 302 for analytics.
 
 Here's the overall architecture:
 
-![URL Shortener High-level Design](/high-level-design.png)
+![URL Shortener High-level Design](diagram:url-shortener)
 
 ### Key Components
 

@@ -47,7 +47,7 @@ That's the core. Three operations. Don't overcomplicate it.
 
 **Low latency reads**
 
-- Paste retrieval should be fast -- target p95 under 150ms
+- Paste retrieval should be fast, targeting p95 under 150ms
 - This is a read-heavy service, so read performance is critical
 
 **High availability**
@@ -60,7 +60,7 @@ That's the core. Three operations. Don't overcomplicate it.
 
 - Support millions of pastes
 - Handle thousands of reads per second
-- Read-to-write ratio is high (10:1 or more) -- way more people view pastes than create them
+- Read-to-write ratio is high (10:1 or more), since way more people view pastes than create them
 
 **Storage efficiency**
 
@@ -120,16 +120,18 @@ Unlike a URL shortener, we're not redirecting the user anywhere. We're returning
 
 **Error cases:**
 
-- `400` -- Invalid content or missing required fields
-- `404` -- Paste not found
-- `410` -- Paste has expired
-- `429` -- Rate limit exceeded
+- `400`: Invalid content or missing required fields
+- `404`: Paste not found
+- `410`: Paste has expired
+- `429`: Rate limit exceeded
 
 ---
 
 ## High Level Design
 
-Here's the architecture:
+Here's the overall architecture:
+
+![Pastebin High-level Design](diagram:pastebin)
 
 ### Key Components
 

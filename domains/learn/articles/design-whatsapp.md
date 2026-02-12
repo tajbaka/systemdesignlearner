@@ -19,7 +19,7 @@ Here's how to design one that actually holds up in an interview.
 - Users send text messages to each other in real-time
 - Messages are delivered instantly when both users are online
 - Messages are stored and delivered when the recipient comes back online
-- This requires persistent connections -- HTTP polling doesn't work at this scale. Use WebSockets.
+- This requires persistent connections because HTTP polling doesn't work at this scale. Use WebSockets.
 
 **2. Group chat**
 
@@ -46,7 +46,7 @@ For a deep dive on WebSockets vs HTTP and how real-time connections work, see [W
 
 - Messages must arrive in under 200ms for a conversational experience
 - Minimize network hops between sender and receiver
-- WebSocket connections eliminate HTTP overhead -- no repeated handshakes
+- WebSocket connections eliminate HTTP overhead, with no repeated handshakes
 
 **Message ordering**
 
@@ -100,8 +100,8 @@ Status: 200 OK
 
 **Why two protocols?**
 
-- WebSockets for live messaging -- instant, bidirectional, low overhead
-- REST for history -- cursor-based pagination, loads old messages when opening a chat
+- WebSockets for live messaging: instant, bidirectional, low overhead
+- REST for history: cursor-based pagination, loads old messages when opening a chat
 - Real-time messages go through WebSocket; historical messages are fetched via REST
 
 **Cursor-based pagination:**
@@ -114,33 +114,49 @@ Status: 200 OK
 
 ## High Level Design
 
-Architecture: Client -> Load Balancer -> WebSocket Gateway -> Chat Service -> Cassandra (Message Store) + Presence Service -> Redis (Presence)
+Here's the overall architecture:
+
+![WhatsApp High-level Design](diagram:whatsapp)
 
 ### Key Components
 
-**1. WebSocket Gateway**
+**1. Load Balancer**
+
+- Distributes incoming client connections across WebSocket Gateway instances
+- Once a WebSocket connection is established, it stays on that gateway for its lifetime
+- Ensures even distribution of connections across available gateways
+
+**2. WebSocket Gateway**
 
 - Manages persistent WebSocket connections
 - Each gateway server holds thousands of active connections
 - Stateful: Alice's connection is on a specific gateway server
-- "Dumb pipe" -- just manages connections and routes messages. No business logic here.
+- "Dumb pipe" that just manages connections and routes messages. No business logic here.
 
-**2. Chat Service**
+**3. Chat Service**
 
 - Stateless service that handles message processing
 - Receives messages from the gateway, persists them, routes to recipients
 - Handles group chat fan-out: one incoming message -> N outgoing messages
+- Publishes messages to Redis Pub/Sub for cross-server delivery
 - Separated from the gateway so it can scale independently
 
-**3. Message Store (Cassandra)**
+**4. Message Store (Cassandra)**
 
 - Wide-column NoSQL database optimized for write-heavy workloads
-- Chat generates billions of small messages -- SQL databases struggle here
-- Partition key: `chatId` -- all messages in a conversation are co-located
-- Clustering key: `timestamp` -- messages sorted chronologically within each partition
+- Chat generates billions of small messages, and SQL databases struggle here
+- Partition key: `chatId`, so all messages in a conversation are co-located
+- Clustering key: `timestamp`, keeping messages sorted chronologically within each partition
 - For more on SQL vs NoSQL trade-offs, see [Databases & Caching](/learn/database-caching).
 
-**4. Presence Service + Redis**
+**5. Redis Pub/Sub**
+
+- Handles cross-server message routing between gateways
+- Each gateway subscribes to channels for its connected users
+- Chat Service publishes to the recipient's channel; the correct gateway receives and pushes to the client
+- Solves the core distributed problem: Alice is on Gateway A, Bob is on Gateway B
+
+**6. Presence Service + Redis**
 
 - Tracks which users are online using heartbeat + TTL pattern
 - User connects -> SET userId "online" with 60-second TTL in Redis
@@ -149,6 +165,10 @@ Architecture: Client -> Load Balancer -> WebSocket Gateway -> Chat Service -> Ca
 - Fast: checking presence = single Redis GET (~0.1ms)
 
 ### Why This Architecture
+
+**Why a Load Balancer in front of the Gateway?**
+
+With multiple gateway instances, clients need a way to connect to one of them. The load balancer distributes connections evenly. Once a WebSocket is established, the connection stays on that gateway for its lifetime, so the LB only matters at connection time.
 
 **Why WebSocket Gateway is separated from Chat Service?**
 
@@ -160,9 +180,13 @@ For more on horizontal vs vertical scaling patterns, see [Scaling](/learn/scalin
 
 Chat apps are extremely write-heavy. Billions of small messages per day. Cassandra handles this with distributed writes across nodes. PostgreSQL would need aggressive sharding, and single-node writes become a bottleneck. Cassandra is purpose-built for this access pattern.
 
+**Why Redis Pub/Sub for cross-server routing?**
+
+Alice is on Gateway A, Bob is on Gateway B. The Chat Service needs to get Alice's message to Bob's gateway. Redis Pub/Sub provides a lightweight publish/subscribe mechanism where each gateway subscribes to channels for its connected users. When the Chat Service publishes to Bob's channel, Gateway B picks it up and pushes to Bob's WebSocket.
+
 **Why Redis for presence (not the database)?**
 
-Presence is ephemeral -- it changes constantly and doesn't need durability. If Redis crashes, presence just rebuilds as users reconnect. Storing presence in a database would add unnecessary write load for data that's stale within seconds anyway.
+Presence is ephemeral. It changes constantly and doesn't need durability. If Redis crashes, presence just rebuilds as users reconnect. Storing presence in a database would add unnecessary write load for data that's stale within seconds anyway.
 
 ---
 
@@ -223,7 +247,7 @@ Option 2: Redis Pub/Sub
   Bob's gateway receives and pushes to Bob
 ```
 
-Both work. Connection registry is simpler for small scale. Pub/Sub scales better with many gateways. In an interview, mention both and explain the trade-off -- that's what separates strong answers from average ones.
+Both work. Connection registry is simpler for small scale. Pub/Sub scales better with many gateways. In an interview, mention both and explain the trade-off. That's what separates strong answers from average ones.
 
 ### Offline Message Handling
 
@@ -271,7 +295,7 @@ Table: messages
   chat-1  | 1002       | bob       | "Hi!"   | 12:00:02  | delivered
 ```
 
-All messages for a conversation are stored together (same partition). Reading chat history is a single partition scan -- extremely fast in Cassandra. This is exactly the access pattern Cassandra was designed for.
+All messages for a conversation are stored together (same partition). Reading chat history is a single partition scan, which is extremely fast in Cassandra. This is exactly the access pattern Cassandra was designed for.
 
 For a structured approach to covering these design decisions, see [System Design Structure](/learn/system-design-structure).
 

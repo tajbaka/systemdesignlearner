@@ -9,7 +9,9 @@ import path from "path";
 import Link from "next/link";
 import Image from "next/image";
 import type { Components } from "react-markdown";
+import type { Element } from "hast";
 import type { ArticleConfig, ArticlesData, ArticleCategory } from "./types";
+import { ArticleDiagram } from "./components/ArticleDiagram";
 
 // Load articles configuration
 export function loadArticlesConfig(): ArticlesData {
@@ -134,7 +136,7 @@ export function createMarkdownComponents(): Components {
         </a>
       );
     },
-    p: ({ children, ...props }) => {
+    p: ({ children, node, ...props }) => {
       const text = extractText(children);
       if (text === "[PRACTICE_BUTTON]") {
         return (
@@ -147,6 +149,20 @@ export function createMarkdownComponents(): Components {
             </Link>
           </div>
         );
+      }
+      // Check if this paragraph contains a single diagram image.
+      // Markdown wraps ![alt](diagram:x) in a <p>, but ArticleDiagram
+      // renders block-level divs that can't be nested inside <p>.
+      const imgChild = node?.children?.find(
+        (child): child is Element =>
+          child.type === "element" &&
+          child.tagName === "img" &&
+          typeof child.properties?.src === "string" &&
+          child.properties.src.startsWith("diagram:")
+      );
+      if (imgChild) {
+        const diagramId = (imgChild.properties.src as string).replace("diagram:", "");
+        return <ArticleDiagram diagramId={diagramId} />;
       }
       return <p {...props}>{children}</p>;
     },
@@ -168,4 +184,3 @@ export function createMarkdownComponents(): Components {
     },
   };
 }
-//

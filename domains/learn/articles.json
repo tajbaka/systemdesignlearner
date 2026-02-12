@@ -44,6 +44,34 @@
         {
           "id": "14",
           "slug": "websockets-realtime"
+        },
+        {
+          "id": "16",
+          "slug": "idempotency-deduplication"
+        },
+        {
+          "id": "17",
+          "slug": "fan-out-strategies"
+        },
+        {
+          "id": "18",
+          "slug": "wide-column-databases"
+        },
+        {
+          "id": "19",
+          "slug": "redis-sorted-sets"
+        },
+        {
+          "id": "20",
+          "slug": "data-structures"
+        },
+        {
+          "id": "21",
+          "slug": "sharding"
+        },
+        {
+          "id": "22",
+          "slug": "microservices"
         }
       ]
     },
@@ -71,6 +99,10 @@
         {
           "id": "15",
           "slug": "design-whatsapp"
+        },
+        {
+          "id": "23",
+          "slug": "design-leaderboard"
         }
       ]
     }
@@ -100,7 +132,7 @@
       "tableOfContents": [
         { "id": "what-is-system-design", "title": "What is system design?" },
         {
-          "id": "what-kinds-of-system-design-questions-are-there",
+          "id": "what-kinds-of-questions-are-there",
           "title": "What kinds of system design questions are there?"
         },
         {
@@ -638,6 +670,317 @@
         "presence system",
         "group chat",
         "message fan-out",
+        "scalable architecture",
+        "system design problem"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "idempotency-deduplication",
+      "title": "Idempotency & Deduplication",
+      "subtitle": "Preventing duplicate side effects in distributed systems",
+      "description": "Learn how idempotency keys and deduplication strategies prevent duplicate emails, double charges, and repeated webhook deliveries. Covers Redis SET NX, database unique constraints, and the at-least-once + idempotent consumer pattern.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-10",
+      "readTime": "10 min",
+      "markdownFile": "IdempotencyDeduplication.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "idempotency",
+        "deduplication",
+        "idempotency key",
+        "at-least-once delivery",
+        "exactly-once",
+        "Redis SET NX",
+        "duplicate prevention",
+        "retry safety",
+        "distributed systems",
+        "system design interview",
+        "message deduplication"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-idempotency", "title": "What Is Idempotency?" },
+        {
+          "id": "why-it-matters-in-distributed-systems",
+          "title": "Why It Matters in Distributed Systems"
+        },
+        { "id": "idempotency-keys", "title": "Idempotency Keys" },
+        { "id": "implementation-strategies", "title": "Implementation Strategies" },
+        {
+          "id": "at-least-once-idempotent-consumers-effective-exactly-once",
+          "title": "At-Least-Once + Idempotent Consumers = Effective Exactly-Once"
+        },
+        { "id": "real-world-examples", "title": "Real-World Examples" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "fan-out-strategies",
+      "title": "Fan-Out Strategies",
+      "subtitle": "Distributing events to many recipients at scale",
+      "description": "Learn fan-out-on-write vs fan-out-on-read, the celebrity problem, and the hybrid approach used by Twitter and Instagram. Covers feed generation, group chat delivery, notification fan-out, and webhook distribution.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-10",
+      "readTime": "10 min",
+      "markdownFile": "FanOutStrategies.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "fan-out",
+        "fan-out-on-write",
+        "fan-out-on-read",
+        "push vs pull",
+        "news feed",
+        "activity feed",
+        "celebrity problem",
+        "hybrid fan-out",
+        "message distribution",
+        "system design interview",
+        "feed generation"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        {
+          "id": "the-core-concept-one-event-many-recipients",
+          "title": "The Core Concept: One Event, Many Recipients"
+        },
+        { "id": "fan-out-on-write-push-model", "title": "Fan-Out-On-Write (Push Model)" },
+        { "id": "fan-out-on-read-pull-model", "title": "Fan-Out-On-Read (Pull Model)" },
+        { "id": "comparison-table", "title": "Comparison Table" },
+        { "id": "the-hybrid-approach", "title": "The Hybrid Approach" },
+        { "id": "fan-out-in-practice", "title": "Fan-Out in Practice" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "wide-column-databases",
+      "title": "Wide-Column Databases",
+      "subtitle": "Understanding Cassandra, partition keys, and write-heavy workloads",
+      "description": "Learn how wide-column databases like Cassandra organize data by partition key and clustering key, why LSM trees make writes fast, and how to design schemas query-first. Covers Cassandra vs DynamoDB vs MongoDB and when to choose each.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-10",
+      "readTime": "12 min",
+      "markdownFile": "WideColumnDatabases.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "wide-column database",
+        "Cassandra",
+        "HBase",
+        "DynamoDB",
+        "partition key",
+        "clustering key",
+        "LSM tree",
+        "write-heavy workloads",
+        "NoSQL",
+        "system design interview",
+        "time-series data",
+        "schema design"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-a-wide-column-database", "title": "What Is a Wide-Column Database?" },
+        { "id": "how-data-is-organized", "title": "How Data Is Organized" },
+        {
+          "id": "why-wide-column-stores-excel-at-write-heavy-workloads",
+          "title": "Why Wide-Column Stores Excel at Write-Heavy Workloads"
+        },
+        { "id": "schema-design-queries-first", "title": "Schema Design: Queries First" },
+        {
+          "id": "cassandra-vs-dynamodb-vs-mongodb",
+          "title": "Cassandra vs DynamoDB vs MongoDB"
+        },
+        {
+          "id": "when-not-to-use-wide-column-databases",
+          "title": "When NOT to Use Wide-Column Databases"
+        },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "redis-sorted-sets",
+      "title": "Redis Sorted Sets",
+      "subtitle": "How Redis keeps millions of scores ranked in real time",
+      "description": "Learn how Redis Sorted Sets (ZSET) power real-time leaderboards with O(log n) operations. Covers ZADD, ZRANGE, ZRANK commands, the skip list data structure underneath, handling ties, sharding sorted sets, and when to use alternatives.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-10",
+      "readTime": "10 min",
+      "markdownFile": "RedisSortedSets.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "Redis sorted sets",
+        "ZSET",
+        "leaderboard",
+        "ZADD",
+        "ZRANGE",
+        "ZRANK",
+        "skip list",
+        "real-time ranking",
+        "Redis",
+        "system design interview",
+        "gaming leaderboard"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-a-sorted-set", "title": "What Is a Sorted Set" },
+        { "id": "how-redis-keeps-things-sorted", "title": "How Redis Keeps Things Sorted" },
+        { "id": "core-leaderboard-operations", "title": "Core Leaderboard Operations" },
+        { "id": "handling-ties-and-score-expiry", "title": "Handling Ties and Score Expiry" },
+        {
+          "id": "when-a-single-redis-instance-isnt-enough",
+          "title": "When a Single Redis Instance Isnt Enough"
+        },
+        { "id": "redis-sorted-sets-vs-alternatives", "title": "Redis Sorted Sets vs Alternatives" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "data-structures",
+      "title": "Data Structures for System Design",
+      "subtitle": "The structures that actually show up in distributed systems interviews",
+      "description": "Learn the data structures that matter for system design: hash tables for caching, skip lists powering Redis, LSM trees in Cassandra, B-trees in PostgreSQL, and bloom filters for reducing disk reads. Not LeetCode -- system-level data structures.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-10",
+      "readTime": "12 min",
+      "markdownFile": "DataStructures.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "data structures",
+        "skip list",
+        "LSM tree",
+        "B-tree",
+        "bloom filter",
+        "hash table",
+        "consistent hashing",
+        "SSTables",
+        "system design interview",
+        "Redis internals",
+        "Cassandra internals"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        {
+          "id": "the-data-structures-that-actually-come-up",
+          "title": "The Data Structures That Actually Come Up"
+        },
+        { "id": "hash-tables", "title": "Hash Tables" },
+        { "id": "skip-lists", "title": "Skip Lists" },
+        { "id": "lsm-trees-and-sstables", "title": "LSM Trees and SSTables" },
+        { "id": "b-trees-vs-lsm-trees", "title": "B-Trees vs LSM Trees" },
+        { "id": "bloom-filters", "title": "Bloom Filters" },
+        { "id": "comparison-table", "title": "Comparison Table" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "sharding",
+      "title": "Sharding",
+      "subtitle": "Splitting data across machines when one database isn't enough",
+      "description": "Learn how to shard databases for scale: shard key selection, range-based vs hash-based partitioning, consistent hashing, cross-shard queries, rebalancing, and hotspot mitigation. Essential for designing systems with billions of rows.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-10",
+      "readTime": "10 min",
+      "markdownFile": "Sharding.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "sharding",
+        "database partitioning",
+        "horizontal partitioning",
+        "shard key",
+        "consistent hashing",
+        "range sharding",
+        "hash sharding",
+        "hotspots",
+        "rebalancing",
+        "system design interview",
+        "distributed database"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-sharding", "title": "What Is Sharding" },
+        { "id": "shard-key-selection", "title": "Shard Key Selection" },
+        { "id": "sharding-strategies", "title": "Sharding Strategies" },
+        { "id": "consistent-hashing", "title": "Consistent Hashing" },
+        { "id": "cross-shard-queries-and-joins", "title": "Cross-Shard Queries and Joins" },
+        { "id": "rebalancing-and-hotspots", "title": "Rebalancing and Hotspots" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "microservices",
+      "title": "Microservices",
+      "subtitle": "When to split services and how to keep them talking",
+      "description": "Learn when microservices make sense vs a monolith, how to define service boundaries, sync vs async communication patterns, stateless services for horizontal scaling, service discovery, and the real downsides nobody warns you about.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-10",
+      "readTime": "10 min",
+      "markdownFile": "Microservices.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "microservices",
+        "monolith vs microservices",
+        "service boundaries",
+        "gRPC",
+        "REST",
+        "service discovery",
+        "stateless services",
+        "distributed systems",
+        "system design interview",
+        "horizontal scaling",
+        "communication patterns"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "monolith-vs-microservices", "title": "Monolith vs Microservices" },
+        { "id": "service-boundaries", "title": "Service Boundaries" },
+        { "id": "communication-patterns", "title": "Communication Patterns" },
+        {
+          "id": "stateless-services-and-horizontal-scaling",
+          "title": "Stateless Services and Horizontal Scaling"
+        },
+        {
+          "id": "service-discovery-and-load-balancing",
+          "title": "Service Discovery and Load Balancing"
+        },
+        { "id": "the-downsides", "title": "The Downsides" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-leaderboard",
+      "title": "Design a Real-Time Leaderboard",
+      "subtitle": "Building a scalable leaderboard with Redis Sorted Sets",
+      "description": "Learn how to design a production-ready real-time leaderboard. This guide covers Redis Sorted Sets for O(log n) ranking, the skip list data structure underneath, dual-write persistence, handling ties with compound scores, and scaling to millions of players.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-12",
+      "readTime": "15 min",
+      "markdownFile": "design-leaderboard.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "leaderboard",
+        "real-time leaderboard",
+        "system design interview",
+        "Redis sorted sets",
+        "ZSET",
+        "ZADD",
+        "ZREVRANGE",
+        "ZREVRANK",
+        "skip list",
+        "gaming leaderboard",
         "scalable architecture",
         "system design problem"
       ],

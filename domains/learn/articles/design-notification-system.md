@@ -17,7 +17,7 @@ Here's how to design one that actually holds up under pressure.
 **1. Multi-channel support**
 
 - Support Email (SendGrid/SES), SMS (Twilio), Push Notifications (FCM/APNS)
-- Pluggable provider architecture -- swap Twilio for another SMS provider without changing core logic
+- Pluggable provider architecture. Swap Twilio for another SMS provider without changing core logic
 - We don't build email servers or cell towers. We integrate with vendors.
 
 **2. Notification prioritization**
@@ -29,7 +29,7 @@ Here's how to design one that actually holds up under pressure.
 **3. User preferences and opt-out**
 
 - Check user settings before sending (DND hours, channel preferences, opt-out)
-- Legal compliance (CAN-SPAM, GDPR) -- users must be able to unsubscribe
+- Legal compliance (CAN-SPAM, GDPR): users must be able to unsubscribe
 - Respect "email only" or "no marketing" preferences
 
 That's the core. A notification system accepts a request and ensures it reaches the user through the right channel, at the right priority, respecting their preferences.
@@ -55,7 +55,7 @@ That's the core. A notification system accepts a request and ensures it reaches 
 **Scalability**
 
 - The system must handle load spikes gracefully. A marketing campaign might trigger 5 million emails in an hour, while normal traffic is 50,000.
-- Workers should be horizontally scalable -- spin up more during peak, scale down during quiet hours
+- Workers should be horizontally scalable: spin up more during peak, scale down during quiet hours
 - The message queue absorbs bursts so the workers can process at a steady pace
 - See [Scaling](/learn/scaling) for details on horizontal vs vertical scaling strategies.
 
@@ -90,14 +90,14 @@ Status: 202 Accepted
 
 **Why 202 and not 200?**
 
-The notification isn't sent yet -- it's queued for processing. The API responds immediately, and the actual delivery happens asynchronously. This decouples the caller from the delivery pipeline. If we waited for the email to actually send, the API would be blocked for seconds.
+The notification isn't sent yet. It's queued for processing. The API responds immediately, and the actual delivery happens asynchronously. This decouples the caller from the delivery pipeline. If we waited for the email to actually send, the API would be blocked for seconds.
 
 **Key fields:**
 
-- `userId` -- Who to notify
-- `channel` -- How to reach them (email, sms, push)
-- `priority` -- How urgent (high = OTP, low = marketing)
-- `content` -- What to send (templated or raw)
+- `userId`: Who to notify
+- `channel`: How to reach them (email, sms, push)
+- `priority`: How urgent (high = OTP, low = marketing)
+- `content`: What to send (templated or raw)
 
 **Error cases:**
 
@@ -109,7 +109,9 @@ The notification isn't sent yet -- it's queued for processing. The API responds 
 
 ## High Level Design
 
-Here's the architecture: internal services (like Order Service) call the Notification Service, which validates the request, checks user preferences against a User Prefs DB, and publishes valid messages to Kafka. From there, Notification Workers pull messages and call third-party providers (Twilio, SendGrid, FCM).
+Here's the overall architecture:
+
+![Notification System High-level Design](diagram:notification-system)
 
 ### Key Components
 
@@ -124,7 +126,7 @@ Here's the architecture: internal services (like Order Service) call the Notific
 **2. User Preferences Database**
 
 - Stores per-user settings: preferred channels, DND hours, opt-out lists
-- Queried before publishing to the queue -- filter early, not late
+- Queried before publishing to the queue. Filter early, not late
 - Can be cached in Redis for hot users
 
 For more on when to use caches vs databases, see [Databases & Caching](/learn/database-caching).
@@ -152,6 +154,13 @@ For more on when to use caches vs databases, see [Databases & Caching](/learn/da
 - Each has its own rate limits and failure modes
 - Workers must respect vendor rate limits to avoid getting blocked
 
+**6. Dead Letter Queue (DLQ)**
+
+- Messages that fail after max retries land here instead of being lost
+- Poison messages that can't be processed are also routed here from Kafka
+- Operations team can inspect, debug, and replay failed messages
+- Prevents stuck messages from blocking the main queue and consuming worker capacity
+
 ### Why This Architecture
 
 **Why Kafka (not direct API calls)?**
@@ -165,6 +174,10 @@ One queue = one bottleneck. A marketing blast of 5 million emails blocks every O
 **Why check preferences before queuing?**
 
 Filter early. Don't waste queue space and worker time on notifications the user doesn't want. Check DND and opt-out at the API layer, before the message hits Kafka.
+
+**Why a Dead Letter Queue?**
+
+Without a DLQ, a message that fails repeatedly stays in the retry loop forever, consuming worker capacity and never succeeding. The DLQ is a safety valve. After max retries, the message moves to the DLQ where the operations team can inspect it, fix the issue, and replay it. It also catches poison messages, malformed messages that crash workers every time they're processed.
 
 ---
 
@@ -189,7 +202,7 @@ Filter early. Don't waste queue space and worker time on notifications the user 
 11. After N failures: move to Dead Letter Queue (DLQ)
 ```
 
-The key insight is that everything above the async boundary is fast and synchronous. The caller gets a response in milliseconds. Everything below is slow, unreliable, and retryable -- exactly where async processing shines.
+The key insight is that everything above the async boundary is fast and synchronous. The caller gets a response in milliseconds. Everything below is slow, unreliable, and retryable, which is exactly where async processing shines.
 
 ### Priority Queue Strategy
 
@@ -207,9 +220,9 @@ During marketing blast (5M emails):
   Low:  backlog grows, workers process at their pace
 ```
 
-This is the single most important design decision in the system. Without separate priority lanes, a marketing blast makes your login flow unusable. The interviewer will almost certainly ask about this scenario -- have a clear answer ready.
+This is the single most important design decision in the system. Without separate priority lanes, a marketing blast makes your login flow unusable. The interviewer will almost certainly ask about this scenario, so have a clear answer ready.
 
-You can also dynamically scale the low-priority pool during known campaigns. If marketing tells you a 5M email blast is happening Tuesday at 10am, you spin up 20 low-priority workers beforehand and scale back down after. The high-priority pool stays constant -- it should always have capacity to process OTPs within one second.
+You can also dynamically scale the low-priority pool during known campaigns. If marketing tells you a 5M email blast is happening Tuesday at 10am, you spin up 20 low-priority workers beforehand and scale back down after. The high-priority pool stays constant and should always have capacity to process OTPs within one second.
 
 ### Retry and Failure Handling
 
@@ -278,7 +291,7 @@ Flow:
 6. When SendGrid recovers, circuit breaker resets
 ```
 
-This is a detail that separates strong candidates from average ones. The interviewer wants to see that you've thought about what happens when things break -- not just the happy path.
+This is a detail that separates strong candidates from average ones. The interviewer wants to see that you've thought about what happens when things break, not just the happy path.
 
 For a structured approach to covering these edge cases, see [System Design Structure](/learn/system-design-structure).
 

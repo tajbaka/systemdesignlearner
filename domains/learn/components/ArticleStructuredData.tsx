@@ -1,4 +1,5 @@
 import { getBaseUrl } from "@/lib/getBaseUrl";
+import { ORGANIZATION_SCHEMA } from "@/lib/schemas";
 
 interface ArticleStructuredDataProps {
   title: string;
@@ -38,12 +39,10 @@ export function ArticleStructuredData({
       url: baseUrl,
     },
     publisher: {
-      "@type": "Organization",
-      name: "System Design Sandbox",
-      url: baseUrl,
+      ...ORGANIZATION_SCHEMA,
       logo: {
         "@type": "ImageObject",
-        url: `${baseUrl}/logo-512x512.png`,
+        url: ORGANIZATION_SCHEMA.logo,
       },
     },
     mainEntityOfPage: {
@@ -93,10 +92,12 @@ export function ArticleStructuredData({
   return (
     <>
       <script
+        id="article-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
       <script
+        id="breadcrumb-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />

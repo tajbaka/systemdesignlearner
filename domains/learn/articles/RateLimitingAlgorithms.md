@@ -17,7 +17,7 @@ Before we get into algorithms, here's why this matters:
 - **Prevent abuse:** Stop bots, scrapers, and malicious users from overwhelming your service
 - **Protect resources:** Your servers, databases, and third-party APIs all have capacity limits
 - **Fair usage:** Ensure one user can't monopolize the system at the expense of others
-- **Protect vendor quotas:** If you're calling Twilio or SendGrid, they have rate limits too -- exceed them and you get blocked
+- **Protect vendor quotas:** If you're calling Twilio or SendGrid, they have rate limits too. Exceed them and you get blocked
 
 Rate limiting isn't just about bad actors. Even legitimate traffic spikes (Black Friday, viral content) can take down a system without proper throttling.
 

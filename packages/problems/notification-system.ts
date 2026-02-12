@@ -15,6 +15,8 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
       "message-queues",
       "rate-limiting-algorithms",
       "database-caching",
+      "idempotency-deduplication",
+      "fan-out-strategies",
       "scaling",
       "system-design-structure",
     ]),
@@ -270,6 +272,12 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 name: "Twilio/SendGrid",
                 icon: "service",
               },
+              {
+                id: "DLQ",
+                type: "dead-letter-queue",
+                name: "Dead Letter Queue",
+                icon: "queue",
+              },
             ],
             edges: [
               {
@@ -349,6 +357,38 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                     title: "Final Delivery",
                     text: "The actual transmission happens via external vendors.",
                     href: "/learn/design-notification-system#provider-failover",
+                  },
+                ],
+              },
+              {
+                id: "Workers-DLQ",
+                from: "Workers",
+                to: "DLQ",
+                description:
+                  "Messages that fail after max retries are moved to the Dead Letter Queue for inspection and replay.",
+                weight: 5,
+                hints: [
+                  {
+                    id: "hint-dlq-worker",
+                    title: "Dead Letter Queue",
+                    text: "After exhausting retries, failed messages go to a DLQ instead of being lost. Operations can inspect and replay them.",
+                    href: "/learn/design-notification-system#retry-and-failure-handling",
+                  },
+                ],
+              },
+              {
+                id: "Queue-DLQ",
+                from: "Queue-Kafka",
+                to: "DLQ",
+                description:
+                  "Poison messages that can't be processed are routed from Kafka to the Dead Letter Queue.",
+                weight: 3,
+                hints: [
+                  {
+                    id: "hint-dlq-kafka",
+                    title: "Poison Messages",
+                    text: "Messages that repeatedly fail processing are moved to the DLQ to prevent them from blocking the queue.",
+                    href: "/learn/design-notification-system#retry-and-failure-handling",
                   },
                 ],
               },

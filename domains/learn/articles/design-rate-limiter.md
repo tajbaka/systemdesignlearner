@@ -4,7 +4,7 @@ The interviewer says: "Design a distributed rate limiter."
 
 You think, "Just count requests and block when they exceed the limit." Simple, right?
 
-Then they follow up: "You have 50 API servers. How do you share counters across all of them? What algorithm do you use? What happens when Redis goes down -- does your entire API stop working?"
+Then they follow up: "You have 50 API servers. How do you share counters across all of them? What algorithm do you use? What happens when Redis goes down? Does your entire API stop working?"
 
 And now you realize that rate limiting isn't about counting. It's about distributed coordination, atomicity, and failure tolerance.
 
@@ -46,14 +46,14 @@ That's the core. A rate limiter decides one thing: is this request allowed or de
 **High availability**
 
 - If the rate limiter goes down, what happens to your API?
-- Default strategy: **fail-open** -- allow requests through when the limiter is unavailable
+- Default strategy: **fail-open**. Allow requests through when the limiter is unavailable
 - This trades temporary rate limit enforcement for API availability
 - For security-critical systems (login endpoints), consider fail-closed instead
 
 **Distributed consistency**
 
 - Counters must be shared across all API servers
-- Local in-memory counters don't work -- if you have 10 servers, users get 10x the limit
+- Local in-memory counters don't work. If you have 10 servers, users get 10x the limit
 - Need a shared store (Redis) for counter synchronization
 
 For more on availability vs consistency trade-offs, see [CAP Theorem](/learn/cap-theorem).
@@ -100,10 +100,10 @@ Headers:
 
 **The key fields:**
 
-- `key` -- Who are we limiting? (user ID, IP address, API key)
-- `cost` -- How much does this request "cost"? (usually 1, but expensive operations can cost more)
-- `remaining` -- How many requests the client has left in this window
-- `resetAt` -- When the rate limit window resets
+- `key`: Who are we limiting? (user ID, IP address, API key)
+- `cost`: How much does this request "cost"? (usually 1, but expensive operations can cost more)
+- `remaining`: How many requests the client has left in this window
+- `resetAt`: When the rate limit window resets
 
 In practice, this often isn't a separate HTTP call. The rate limiter runs as middleware in the API Gateway, checking Redis directly. But the logical interface is the same.
 
@@ -111,7 +111,9 @@ In practice, this often isn't a separate HTTP call. The rate limiter runs as mid
 
 ## High Level Design
 
-Here's the architecture:
+Here's the overall architecture:
+
+![Rate Limiter High-level Design](diagram:rate-limiter)
 
 ### Key Components
 
@@ -125,7 +127,7 @@ Here's the architecture:
 
 - The core logic: check counter, allow or deny, update counter
 - Can be embedded in the gateway or run as a separate service
-- Stateless -- all state lives in Redis
+- Stateless: all state lives in Redis
 
 **3. Redis Cache**
 
@@ -238,9 +240,9 @@ if count == 1 then
   redis.call('EXPIRE', KEYS[1], window_size)
 end
 if count > limit then
-  return {0, 0, ttl}  -- DENIED, 0 remaining
+  return {0, 0, ttl}  // DENIED, 0 remaining
 end
-return {1, limit - count, ttl}  -- ALLOWED, remaining, reset time
+return {1, limit - count, ttl}  // ALLOWED, remaining, reset time
 ```
 
 Lua scripts execute as a single atomic operation in Redis. No other command can run between the `INCR` and the limit check. This eliminates the race condition entirely.

@@ -83,7 +83,7 @@ You post on social media. Your friend in another region might not see it for a f
 ### Partition Tolerance (P)
 
 **What it means:**
-The system keeps working even when the network is screwed up -- messages dropped, delayed, or nodes can't talk to each other.
+The system keeps working even when the network is screwed up: messages dropped, delayed, or nodes can't talk to each other.
 
 **Here's the reality:**
 Network failures WILL happen. Cables get cut. Data centers go down. AWS regions have outages.
@@ -281,7 +281,7 @@ Don't just say "We'll use a CP system." Explain WHY and what happens during fail
 "We'll use Cassandra because availability is more critical than immediate consistency for our use case. During a network partition, we'd rather serve slightly stale data than block user requests. Once the partition heals, the system will converge to a consistent state through its eventual consistency model."
 
 **Great answer:**
-"For user profiles, we'll prioritize consistency -- if there's a partition, we'll reject writes rather than risk conflicting profile updates. But for the activity feed, we'll prioritize availability -- users can still scroll their feed even if the latest posts haven't replicated yet. We're making different CAP trade-offs for different parts of the system based on their requirements."
+"For user profiles, we'll prioritize consistency. If there's a partition, we'll reject writes rather than risk conflicting profile updates. But for the activity feed, we'll prioritize availability. Users can still scroll their feed even if the latest posts haven't replicated yet. We're making different CAP trade-offs for different parts of the system based on their requirements."
 
 ---
 

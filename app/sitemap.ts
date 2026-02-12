@@ -9,21 +9,60 @@ const PRACTICE_SLUGS = [
   "rate-limiter",
   "notification-system",
   "whatsapp",
+  "leaderboard",
 ];
 // Only include intro pages — non-intro steps are gated behind user progress
 // and will redirect crawlers back to intro (access control)
 const PRACTICE_STEPS = ["intro"];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
+  // Fixed date for pages that rarely change — avoids a new lastModified on every build
+  const staticDate = new Date("2025-06-01");
 
   const staticPages: MetadataRoute.Sitemap = [
-    { url: `${BASE_URL}`, lastModified: now, changeFrequency: "daily", priority: 1.0 },
-    { url: `${BASE_URL}/practice`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${BASE_URL}/privacy`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/terms`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/cookies`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${BASE_URL}/feedback`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${BASE_URL}`, lastModified: staticDate, changeFrequency: "daily", priority: 1.0 },
+    {
+      url: `${BASE_URL}/practice`,
+      lastModified: staticDate,
+      changeFrequency: "daily",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/about`,
+      lastModified: staticDate,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/contact`,
+      lastModified: staticDate,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+    {
+      url: `${BASE_URL}/privacy`,
+      lastModified: staticDate,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE_URL}/terms`,
+      lastModified: staticDate,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE_URL}/cookies`,
+      lastModified: staticDate,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE_URL}/feedback`,
+      lastModified: staticDate,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
   ];
 
   const learnPages: MetadataRoute.Sitemap = articlesData.articles.map((article) => ({
@@ -36,7 +75,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const practicePages: MetadataRoute.Sitemap = PRACTICE_SLUGS.flatMap((slug) =>
     PRACTICE_STEPS.map((step) => ({
       url: `${BASE_URL}/practice/${slug}/${step}`,
-      lastModified: now,
+      lastModified: staticDate,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     }))
