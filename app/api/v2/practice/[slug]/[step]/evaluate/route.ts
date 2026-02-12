@@ -13,7 +13,7 @@ import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
 import { EVALUATION_STRATEGIES } from "@/app/api/v2/practice/(evaluation)/registry";
 import {
-  apiStrategy,
+  apiStrategy, 
   type ExtractedApiInfo,
 } from "@/app/api/v2/practice/(evaluation)/strategies/api";
 import { validateMatchedEndpoint } from "@/app/api/v2/practice/(evaluation)/assertions/api";
@@ -84,6 +84,7 @@ export async function POST(
 
     // 2. Get and validate params
     const { slug, step } = await params;
+    logger.info("POST /api/v2/practice/[slug]/[step]/evaluate - Request received", { slug, step });
 
     if (!isValidStep(step)) {
       return NextResponse.json(
@@ -592,11 +593,14 @@ export async function POST(
       .where(eq(userProblems.id, userProblemRecord.id));
 
     // 14. Return evaluation result with rounded score
+    logger.info("POST /api/v2/practice/[slug]/[step]/evaluate - Response sent", {
+      data: evaluation,
+    });
     return NextResponse.json({
       ...evaluation,
     });
   } catch (error) {
-    logger.error("POST /api/v2/practice/[slug]/[step]/evaluate error:", error);
+    logger.error("POST /api/v2/practice/[slug]/[step]/evaluate - Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

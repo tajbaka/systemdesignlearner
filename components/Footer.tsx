@@ -120,6 +120,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <Link
+                  prefetch={false}
                   href="/practice"
                   className="text-zinc-400 hover:text-white transition-colors text-sm"
                 >

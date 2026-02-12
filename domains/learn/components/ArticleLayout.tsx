@@ -104,6 +104,7 @@ export function ArticleLayout({
             {/* Practice Button */}
             <div className="flex pt-6">
               <Link
+                prefetch={false}
                 href="/practice"
                 className="inline-flex items-center justify-center h-12 rounded-md px-6 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base transition-all no-underline hover:no-underline"
               >

@@ -189,6 +189,7 @@ export function SidebarMobile({ config }: SidebarMobileProps) {
 
                 return (
                   <Link
+                    prefetch={false}
                     key={btn.id}
                     href={btn.href}
                     onClick={() => setIsExpanded(false)}

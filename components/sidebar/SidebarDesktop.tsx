@@ -187,6 +187,7 @@ export function SidebarDesktop({ config }: SidebarDesktopProps) {
 
                 const buttonContent = (
                   <Link
+                    prefetch={false}
                     href={btn.href}
                     className={`flex items-center h-10 rounded-lg transition-colors bg-emerald-500 hover:bg-emerald-600 text-white ${
                       isExpanded ? "gap-2 px-2" : "w-10 justify-center"

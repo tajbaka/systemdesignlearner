@@ -18,7 +18,6 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-
     // 1. Fetch problem with current version
     const problem = await db.query.problems.findFirst({
       where: eq(problems.slug, slug),
@@ -78,9 +77,10 @@ export async function GET(
       },
     };
 
+    logger.info("GET /api/v2/practice/[slug] - Response sent", { data: response });
     return NextResponse.json(response);
   } catch (error) {
-    logger.error("GET /api/v2/practice/[slug] error:", error);
+    logger.error("GET /api/v2/practice/[slug] - Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

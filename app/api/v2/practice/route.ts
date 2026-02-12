@@ -77,9 +77,10 @@ export async function GET() {
       data: responseData,
     };
 
+    logger.info("GET /api/v2/practice - Response sent", { data: responseData });
     return NextResponse.json(response);
   } catch (error) {
-    logger.error("GET /api/v2/problems error:", error);
+    logger.error("GET /api/v2/practice - Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

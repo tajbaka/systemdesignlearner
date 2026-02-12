@@ -17,7 +17,6 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-
     // 1. Fetch problem by slug
     const problem = await db.query.problems.findFirst({
       where: eq(problems.slug, slug),
@@ -101,11 +100,12 @@ export async function GET(
     });
 
     // 5. Return response
+    logger.info("GET /api/v2/practice/[slug]/steps - Response sent", { data: stepsWithUserStep });
     return NextResponse.json({
       data: stepsWithUserStep,
     });
   } catch (error) {
-    logger.error("GET /api/v2/practice/[slug]/steps error:", error);
+    logger.error("GET /api/v2/practice/[slug]/steps - Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

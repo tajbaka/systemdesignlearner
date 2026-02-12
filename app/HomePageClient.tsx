@@ -238,6 +238,7 @@ export function HomePageClient() {
                 className="px-10 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
               >
                 <Link
+                  prefetch={false}
                   href="/practice/url-shortener/intro"
                   aria-label="Try URL Shortener Scenario"
                   onClick={() => {
@@ -254,6 +255,7 @@ export function HomePageClient() {
                 className="px-10 py-6 border-2 border-zinc-600 hover:border-emerald-500/50 text-zinc-300 hover:text-white font-semibold text-lg transition-all duration-300"
               >
                 <Link
+                  prefetch={false}
                   href="/practice"
                   aria-label="Explore All Scenarios"
                   onClick={() => track("homepage_explore_scenarios_clicked")}
@@ -880,6 +882,7 @@ export function HomePageClient() {
                 className="bg-emerald-500 hover:bg-emerald-400 text-white px-8 py-6 shadow-lg hover:shadow-emerald-500/50 transition-all"
               >
                 <Link
+                  prefetch={false}
                   href="/practice/url-shortener/intro"
                   onClick={() => track("cta_after_how_it_works_start_practicing_clicked")}
                 >
@@ -895,6 +898,7 @@ export function HomePageClient() {
                 className="border-zinc-600 text-emerald-300 hover:text-white hover:border-emerald-400 px-6 py-6"
               >
                 <Link
+                  prefetch={false}
                   href="/practice"
                   onClick={() => track("cta_after_how_it_works_see_all_scenarios_clicked")}
                 >
@@ -928,7 +932,11 @@ export function HomePageClient() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Card 1: Available Practice Problems */}
-            <Link href="/practice" onClick={() => track("homepage_scenario_practice_clicked")}>
+            <Link
+              prefetch={false}
+              href="/practice"
+              onClick={() => track("homepage_scenario_practice_clicked")}
+            >
               <Card className="bg-zinc-800/40 border-zinc-700 hover:border-emerald-500/50 transition-all cursor-pointer h-full">
                 <CardHeader>
                   <CardTitle className="text-xl">Available Now</CardTitle>
@@ -1168,6 +1176,7 @@ export function HomePageClient() {
                 className="px-10 py-6 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-lg shadow-lg hover:shadow-emerald-500/50 transition-all duration-300"
               >
                 <Link
+                  prefetch={false}
                   href="/practice/url-shortener/intro"
                   aria-label="Start Practicing Now"
                   onClick={() => track("homepage_cta_practice_clicked")}
@@ -1182,6 +1191,7 @@ export function HomePageClient() {
                 className="px-10 py-6 border-2 border-zinc-600 hover:border-emerald-500/50 text-zinc-300 hover:text-white font-semibold text-lg transition-all duration-300"
               >
                 <Link
+                  prefetch={false}
                   href="/practice"
                   aria-label="Browse Scenarios"
                   onClick={() => track("homepage_cta_browse_clicked")}

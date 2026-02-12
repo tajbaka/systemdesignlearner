@@ -14,7 +14,11 @@ function ArticleFooterContent() {
               Home
             </Link>
             <span>·</span>
-            <Link href="/practice" className="hover:text-zinc-900 transition-colors">
+            <Link
+              prefetch={false}
+              href="/practice"
+              className="hover:text-zinc-900 transition-colors"
+            >
               Practice
             </Link>
             <span>·</span>

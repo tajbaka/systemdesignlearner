@@ -92,6 +92,7 @@ export function NavbarMobile({
           {/* Menu Content */}
           <div className="p-4 space-y-2">
             <Link
+              prefetch={false}
               href={content.links.practice.href}
               className={`block px-3 py-3 rounded-lg transition-colors text-base font-medium ${
                 pathname.startsWith(content.links.practice.href)
@@ -149,6 +150,7 @@ export function NavbarMobile({
 
             {content.cta && (
               <Link
+                prefetch={false}
                 href={content.cta.href}
                 className="flex items-center justify-center gap-2 h-11 rounded-lg px-4 bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm shadow-lg hover:shadow-emerald-500/50 transition-all duration-300 w-full"
                 onClick={closeMenu}

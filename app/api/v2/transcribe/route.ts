@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     // CORS check
     const referer = req.headers.get("referer");
 
-    logger.info("Transcribe API request", { origin, referer });
+    logger.info("POST /api/v2/transcribe - Request received", { origin, referer });
 
     // Allow requests from same origin (when origin header is not present)
     // or from localhost in development
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     const isAllowedOrigin = origin && allowedOrigins.some((allowed) => origin.startsWith(allowed));
 
     if (!isLocalhost && !isAllowedOrigin) {
-      logger.error("CORS blocked", { origin, referer });
+      logger.error("POST /api/v2/transcribe - CORS blocked", { origin, referer });
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403, headers: getCorsHeaders(origin) }
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      logger.error("Whisper API error:", errorText);
+      logger.error("POST /api/v2/transcribe - Whisper API error:", errorText);
       return NextResponse.json(
         { error: "Transcription failed" },
         { status: 500, headers: getCorsHeaders(origin) }
@@ -124,9 +124,10 @@ export async function POST(req: NextRequest) {
 
     const data = (await response.json()) as WhisperResponse;
 
+    logger.info("POST /api/v2/transcribe - Response sent", { data: { text: data.text } });
     return NextResponse.json({ text: data.text }, { headers: getCorsHeaders(origin) });
   } catch (error) {
-    logger.error("Transcription error:", error);
+    logger.error("POST /api/v2/transcribe - Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500, headers: getCorsHeaders(origin) }

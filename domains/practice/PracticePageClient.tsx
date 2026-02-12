@@ -112,6 +112,7 @@ export function PracticePageClient({ problems }: PracticePageClientProps) {
                   <Link
                     key={problem.id}
                     href={buttonConfig.href}
+                    prefetch={false}
                     onClick={() =>
                       track("practice_problem_selected", {
                         slug: problem.slug,

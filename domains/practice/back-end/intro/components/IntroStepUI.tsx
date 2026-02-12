@@ -46,6 +46,7 @@ export function IntroStepUI({
       {/* Header */}
       <header className="border-b border-zinc-800 px-4 py-3 sm:px-6">
         <Link
+          prefetch={false}
           href="/practice"
           className="inline-flex items-center text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
         >
@@ -104,6 +105,7 @@ export function IntroStepUI({
                 <div className="flex flex-wrap gap-2">
                   {prerequisites.map((prerequisite, index) => (
                     <Link
+                      prefetch={false}
                       key={index}
                       href={prerequisite.href}
                       target="_blank"

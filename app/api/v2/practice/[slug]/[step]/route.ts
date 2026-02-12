@@ -45,7 +45,6 @@ export async function PATCH(
 
     // 2. Get and validate params
     const { slug, step } = await params;
-
     if (!isValidStep(step)) {
       return NextResponse.json(
         {
@@ -176,9 +175,10 @@ export async function PATCH(
       },
     };
 
+    logger.info("PATCH /api/v2/practice/[slug]/[step] - Response sent", { data: response });
     return NextResponse.json(response);
   } catch (error) {
-    logger.error("PATCH /api/v2/practice/[slug]/[step] error:", error);
+    logger.error("PATCH /api/v2/practice/[slug]/[step] - Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

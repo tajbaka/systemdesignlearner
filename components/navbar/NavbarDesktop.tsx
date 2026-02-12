@@ -21,6 +21,7 @@ export function NavbarDesktop({
   return (
     <div className="hidden md:flex items-center space-x-6">
       <Link
+        prefetch={false}
         href={content.links.practice.href}
         className={`px-3 py-2 transition-colors text-sm font-medium rounded-lg ${getNavLinkClasses(pathname.startsWith(content.links.practice.href), isLight)}`}
       >

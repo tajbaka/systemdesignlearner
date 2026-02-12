@@ -17,7 +17,6 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-
     // 1. Get authenticated user
     const profile = await getProfile();
     if (!profile) {
@@ -116,11 +115,12 @@ export async function GET(
     }
 
     // 8. Return step scores
+    logger.info("GET /api/v2/practice/[slug]/steps/evaluate - Response sent", { data: stepScores });
     return NextResponse.json({
       stepScores: stepScores,
     });
   } catch (error) {
-    logger.error("GET /api/v2/practice/[slug]/steps/evaluate error:", error);
+    logger.error("GET /api/v2/practice/[slug]/steps/evaluate - Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
