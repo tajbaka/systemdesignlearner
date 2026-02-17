@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 export function Navbar({
   variant = "dark",
   hideIcon = false,
-  hideMobileMenu = false,
+  hideOnMobile = false,
   pathname,
   userImageUrl,
   onClick,
@@ -18,8 +18,13 @@ export function Navbar({
   const isLight = variant === "light";
   const isMobile = useIsMobile();
 
-  // Render mobile menu if on mobile and not hidden
-  if (isMobile && !hideMobileMenu) {
+  // Hide navbar entirely on mobile when hideOnMobile
+  if (isMobile && hideOnMobile) {
+    return null;
+  }
+
+  // Render mobile menu on mobile
+  if (isMobile) {
     return (
       <NavbarMobile
         variant={variant}

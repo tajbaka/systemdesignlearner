@@ -287,7 +287,7 @@ export const WHATSAPP_PROBLEM = {
                 to: "LB",
                 description:
                   "Client connects through a Load Balancer that routes to the appropriate WebSocket Gateway instance.",
-                weight: 5,
+                weight: 3,
                 hints: [
                   {
                     id: "hint-lb",
@@ -303,7 +303,7 @@ export const WHATSAPP_PROBLEM = {
                 to: "WS-Gateway",
                 description:
                   "Load Balancer routes the connection to a WebSocket Gateway. The gateway manages long-lived, stateful connections.",
-                weight: 5,
+                weight: 3,
                 hints: [
                   {
                     id: "hint-stateful",
@@ -366,7 +366,7 @@ export const WHATSAPP_PROBLEM = {
                 from: "WS-Gateway",
                 to: "Presence-Svc",
                 description: "Gateway sends 'Heartbeats' to Presence Service when user is active.",
-                weight: 5,
+                weight: 4,
                 hints: [
                   {
                     id: "hint-status-update",

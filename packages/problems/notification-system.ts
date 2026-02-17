@@ -251,7 +251,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
         requirements: [
           {
             nodes: [
-              { id: "Service-A", type: "Client", name: "Client", icon: "client" },
+              { id: "Service-A", type: "client", name: "Client", icon: "client" },
               {
                 id: "Notif-Service",
                 type: "notification-service",
@@ -286,7 +286,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 to: "Notif-Service",
                 description:
                   "Internal services trigger notifications via API (e.g., 'Order Placed').",
-                weight: 5,
+                weight: 4,
                 hints: [
                   {
                     id: "hint-ingestion",
@@ -302,7 +302,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 to: "DB-Prefs",
                 description:
                   "Service validates request and checks User Preferences (Opt-in/out) before processing.",
-                weight: 5,
+                weight: 4,
                 hints: [
                   {
                     id: "hint-filtering",
@@ -318,7 +318,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 to: "Queue-Kafka",
                 description:
                   "Valid requests are pushed to a Message Queue to decouple ingestion from sending.",
-                weight: 10,
+                weight: 8,
                 hints: [
                   {
                     id: "hint-decoupling",
@@ -334,7 +334,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 to: "Workers",
                 description:
                   "Workers pull messages, format content (templates), and prepare for sending.",
-                weight: 5,
+                weight: 4,
                 hints: [
                   {
                     id: "hint-processing",
@@ -350,7 +350,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 to: "Third-Party",
                 description:
                   "Workers call external APIs (Twilio, SendGrid) to deliver the message. Handles retries.",
-                weight: 5,
+                weight: 4,
                 hints: [
                   {
                     id: "hint-external-call",
@@ -366,7 +366,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 to: "DLQ",
                 description:
                   "Messages that fail after max retries are moved to the Dead Letter Queue for inspection and replay.",
-                weight: 5,
+                weight: 4,
                 hints: [
                   {
                     id: "hint-dlq-worker",
@@ -382,7 +382,7 @@ export const NOTIFICATION_SYSTEM_PROBLEM = {
                 to: "DLQ",
                 description:
                   "Poison messages that can't be processed are routed from Kafka to the Dead Letter Queue.",
-                weight: 3,
+                weight: 2,
                 hints: [
                   {
                     id: "hint-dlq-kafka",

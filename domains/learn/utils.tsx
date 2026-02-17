@@ -167,6 +167,11 @@ export function createMarkdownComponents(): Components {
       }
       return <p {...props}>{children}</p>;
     },
+    table: ({ children, ...props }) => (
+      <div className="-mx-4 overflow-x-auto sm:mx-0">
+        <table {...props}>{children}</table>
+      </div>
+    ),
     img: ({ src, alt }) => {
       if (!src || typeof src !== "string") return null;
 

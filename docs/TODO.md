@@ -1,8 +1,10 @@
 Antonio
 
 High Priority:
-ingestion link in notification system plus bad feedback hints on many steps/
-More blogs
+System does not correctly pickup finished problems as completed the next day
+even with correct solution it does not let me go from step 1 to 2 if not made any changes (pass from yesterday)
+
+POSTHOG:
 
 Low priority:
 Bring back share link
@@ -10,7 +12,6 @@ Learn page should have same footer as the rest of the pages
 Sidebar in learn should not be laggy and showing all the main points already open if when i then open it many appear (not from 1 to many like now)
 mobile landing page diagram should be centered
 error in intro page link for system design structure
-
 
 Problems Plan:  
 1 Rate Limiter Redis + Lua Scripting "Race Conditions & Atomic Counters"

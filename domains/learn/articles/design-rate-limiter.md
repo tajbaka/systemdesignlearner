@@ -71,21 +71,21 @@ POST /api/v1/ratelimit/check
 
 Request Body:
 {
-  "key": "user-123",
-  "cost": 1
+  "key": string,       // client identifier (user ID, IP, API key)
+  "cost": number       // request cost (usually 1)
 }
 
 Response (Allowed):
 {
-  "allowed": true,
-  "remaining": 45,
-  "resetAt": "2024-01-15T12:01:00Z"
+  "allowed": bool,     // allow or deny decision
+  "remaining": number, // requests left in current window
+  "resetAt": timestamp // when the rate limit window resets
 }
 
 Status: 200 OK
 Headers:
-  X-RateLimit-Remaining: 45
-  X-RateLimit-Reset: 1705320060
+  X-RateLimit-Remaining: number
+  X-RateLimit-Reset: timestamp
 ```
 
 ```
@@ -120,13 +120,12 @@ Here's the overall architecture:
 **1. API Gateway**
 
 - Entry point for all client requests
-- Contains the rate limiting middleware
-- Checks the rate limiter before forwarding to backend services
+- Routes requests: checks with the Rate Limiter first, then forwards allowed requests to API Services
 
 **2. Rate Limiter Service**
 
 - The core logic: check counter, allow or deny, update counter
-- Can be embedded in the gateway or run as a separate service
+- Returns an allow/deny decision to the Gateway. Does not forward requests itself — the Gateway handles routing
 - Stateless: all state lives in Redis
 
 **3. Redis Cache**
@@ -137,7 +136,7 @@ Here's the overall architecture:
 - TTL support: keys auto-expire when the time window ends
 - This is the heart of the system
 
-**4. Backend Workers**
+**4. API Services**
 
 - Your actual API services
 - Only receive requests that passed rate limiting

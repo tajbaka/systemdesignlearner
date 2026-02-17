@@ -28,7 +28,7 @@ try {
     ORDER BY "order"
   `;
   console.log("\n✅ Steps:");
-  steps.forEach(s => console.log(`   ${s.order}. ${s.step} - ${s.title}`));
+  steps.forEach((s) => console.log(`   ${s.order}. ${s.step} - ${s.title}`));
 
   console.log("\n🎉 All data verified successfully!");
 } finally {

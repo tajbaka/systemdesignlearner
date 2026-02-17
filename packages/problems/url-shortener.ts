@@ -22,14 +22,14 @@ export const URL_SHORTENER_PROBLEM = {
       description: "Define what the URL shortener must do",
       required: true,
       data: {
-        scoreWeight: 60,
+        scoreWeight: 25,
         requirements: [
           {
             id: "url-shortening",
             label: "URL Shortening",
             description:
               "Accept a long URL and return a short, Users should be able to submit a long URL and receive a shortened version.",
-            weight: 20,
+            weight: 9,
             required: true,
             solutions: [
               {
@@ -53,7 +53,7 @@ export const URL_SHORTENER_PROBLEM = {
             id: "redirection",
             label: "URL Redirection",
             description: "Resolve a short URL and redirect the client to the original long URL.",
-            weight: 20,
+            weight: 8,
             required: true,
             solutions: [{ text: "Opening the short URL takes the user to the long URL." }],
             hints: [
@@ -73,7 +73,7 @@ export const URL_SHORTENER_PROBLEM = {
             id: "uniqueness",
             label: "Uniqueness Guarantee",
             description: "Each short URL is unique and maps to exactly one long URL.",
-            weight: 20,
+            weight: 8,
             required: true,
             solutions: [{ text: "Every short URL that gets generated is unique." }],
             hints: [
@@ -185,14 +185,14 @@ export const URL_SHORTENER_PROBLEM = {
       description: "Design the API endpoints for the URL shortener",
       required: true,
       data: {
-        scoreWeight: 50,
+        scoreWeight: 25,
         requirements: [
           {
             id: "create-url-endpoint",
             scope: "endpoint",
             label: "URL Creation Endpoint",
             description: "POST endpoint to create shortened URLs with documented request/response.",
-            weight: 25,
+            weight: 13,
             required: true,
             method: "POST",
             correctPath: "/api/v1/urls",
@@ -267,7 +267,7 @@ export const URL_SHORTENER_PROBLEM = {
             scope: "endpoint",
             label: "Redirect Endpoint",
             description: "GET endpoint to redirect short URLs with documented request/response.",
-            weight: 25,
+            weight: 12,
             required: true,
             method: "GET",
             correctPath: "/:slug",
@@ -347,7 +347,7 @@ export const URL_SHORTENER_PROBLEM = {
       description: "Design the system architecture and components",
       required: true,
       data: {
-        scoreWeight: 35,
+        scoreWeight: 30,
         requirements: [
           {
             nodes: [
@@ -397,7 +397,7 @@ export const URL_SHORTENER_PROBLEM = {
                 from: "API-Gateway-1",
                 to: "Service-2",
                 description: "API Gateway routes post requests to the shortening service",
-                weight: 4,
+                weight: 3,
                 hints: [
                   {
                     id: "hint-gateway-write-service",
@@ -412,7 +412,7 @@ export const URL_SHORTENER_PROBLEM = {
                 from: "Service-2",
                 to: "DB-1",
                 description: "Shortening service creates the URL mapping in the database",
-                weight: 4,
+                weight: 3,
                 hints: [
                   {
                     id: "hint-write-service-db",
@@ -459,7 +459,7 @@ export const URL_SHORTENER_PROBLEM = {
                 to: "DB-1",
                 description:
                   "Redirect service needs to query the the database when a cache miss occurs",
-                weight: 5,
+                weight: 4,
                 hints: [
                   {
                     id: "hint-service-db",
@@ -475,7 +475,7 @@ export const URL_SHORTENER_PROBLEM = {
                 to: "DB-2",
                 description:
                   "Background service pulls available urls from the pre-generated database",
-                weight: 4,
+                weight: 3,
                 hints: [
                   {
                     id: "hint-background-service-db-2",
@@ -491,7 +491,7 @@ export const URL_SHORTENER_PROBLEM = {
                 to: "DB-1",
                 description:
                   "Background service needs to check the main database for how many urls are left to use. If low it will write more urls to the main database.",
-                weight: 4,
+                weight: 3,
                 hints: [
                   {
                     id: "hint-background-service-db-1",

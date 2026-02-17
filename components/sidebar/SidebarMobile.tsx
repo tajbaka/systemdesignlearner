@@ -54,10 +54,10 @@ export function SidebarMobile({ config }: SidebarMobileProps) {
 
   return (
     <>
-      {/* Mobile Hamburger / Close Button — stays in the same spot */}
+      {/* Hamburger on the left when closed; close (X) on the right when open */}
       <button
         onClick={toggleExpanded}
-        className={`fixed right-4 top-2 z-[60] flex h-10 w-10 items-center justify-center rounded-lg border shadow-md transition-all ${buttonBgClass}`}
+        className={`fixed top-2 z-[60] flex h-10 w-10 items-center justify-center rounded-lg border shadow-md transition-all ${isExpanded ? "right-4" : "left-4"} ${buttonBgClass}`}
         aria-label={isExpanded ? "Close navigation" : "Toggle navigation"}
       >
         <svg

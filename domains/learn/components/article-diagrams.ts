@@ -279,8 +279,8 @@ const diagrams: Record<string, ArticleDiagramConfig> = {
       { id: "Cache-1", type: "redis", name: "Redis", icon: "cache", x: 840, y: 50 },
       {
         id: "Service-2",
-        type: "backend",
-        name: "Backend Services",
+        type: "api-service",
+        name: "API Services",
         icon: "service",
         x: 560,
         y: 280,

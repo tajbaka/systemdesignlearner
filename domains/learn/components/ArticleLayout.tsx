@@ -41,15 +41,15 @@ export function ArticleLayout({
         readTime={readTime}
         slug={slug}
       />
-      <AuthenticatedNavbar variant="light" hideIcon={true} hideMobileMenu={true} />
+      <AuthenticatedNavbar variant="light" hideIcon={true} hideOnMobile={true} />
 
       <Sidebar theme="light" />
 
       {/* Light mode wrapper for article */}
-      <div className="md:ml-16 bg-white text-zinc-900">
+      <div className="md:ml-16 min-w-0 overflow-x-hidden bg-white text-zinc-900">
         <main className="relative">
           {/* Article Header - Medium Style */}
-          <article className="mx-auto max-w-[760px] px-8 py-16 sm:px-12 md:py-20">
+          <article className="mx-auto min-w-0 max-w-[760px] px-8 py-16 sm:px-12 md:py-20">
             {/* Title - Serif font */}
             <h1 className="mb-4 font-serif text-[42px] font-extrabold leading-[1.1] tracking-tight text-zinc-800 sm:text-[48px] md:text-[56px]">
               {title}
@@ -100,7 +100,7 @@ export function ArticleLayout({
             )}
 
             {/* Article Content */}
-            <div className="article-content">{children}</div>
+            <div className="article-content min-w-0 overflow-x-hidden">{children}</div>
             {/* Practice Button */}
             <div className="flex pt-6">
               <Link

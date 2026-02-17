@@ -13,7 +13,7 @@ import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
 import { EVALUATION_STRATEGIES } from "@/app/api/v2/practice/(evaluation)/registry";
 import {
-  apiStrategy, 
+  apiStrategy,
   type ExtractedApiInfo,
 } from "@/app/api/v2/practice/(evaluation)/strategies/api";
 import { validateMatchedEndpoint } from "@/app/api/v2/practice/(evaluation)/assertions/api";

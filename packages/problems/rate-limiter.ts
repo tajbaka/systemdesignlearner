@@ -35,7 +35,7 @@ export const RATE_LIMITER_PROBLEM = {
             label: "Throttling Rules",
             description:
               "Limit requests based on various attributes (User ID, IP Address, API Key) and time windows.",
-            weight: 10,
+            weight: 15,
             required: true,
             solutions: [
               {
@@ -60,7 +60,7 @@ export const RATE_LIMITER_PROBLEM = {
             label: "Configurable Limits",
             description:
               "Support different rules for different endpoints or user tiers (e.g., 10 req/sec for free users, 100 req/sec for paid).",
-            weight: 10,
+            weight: 15,
             required: true,
             solutions: [
               {
@@ -80,31 +80,6 @@ export const RATE_LIMITER_PROBLEM = {
             feedbackOnMissing:
               "Do all users get the same limit? What about paid users or critical internal services?",
           },
-          {
-            id: "feedback-mechanism",
-            label: "Client Feedback",
-            description:
-              "Inform clients when they are throttled using standard HTTP status codes and headers.",
-            weight: 10,
-            required: true,
-            solutions: [
-              {
-                text: "Return HTTP 429 Too Many Requests. Include 'Retry-After' header to tell client when to try again.",
-              },
-            ],
-            hints: [
-              {
-                id: "hint-feedback",
-                title: "Response Handling",
-                text: "How does the client know they've been blocked? What HTTP status code is standard for this?",
-                href: "/learn/design-rate-limiter#response-headers",
-              },
-            ],
-            evaluationCriteria:
-              "User must mention returning HTTP 429 and helpful headers (Retry-After/X-RateLimit-Remaining).",
-            feedbackOnMissing:
-              "If a user is blocked, how do they know? We need to send a specific error code and maybe tell them when to come back.",
-          },
         ],
       },
     },
@@ -122,7 +97,7 @@ export const RATE_LIMITER_PROBLEM = {
             label: "Low Latency",
             description:
               "The rate limiter is middleware; it must add minimal overhead to the request path.",
-            weight: 10,
+            weight: 8,
             required: true,
             solutions: [
               {
@@ -147,7 +122,7 @@ export const RATE_LIMITER_PROBLEM = {
             label: "High Availability",
             description:
               "The system should be always up. Decide between 'Fail-Open' (allow traffic) or 'Fail-Closed' (block traffic) on failure.",
-            weight: 5,
+            weight: 6,
             required: true,
             solutions: [
               {
@@ -172,7 +147,7 @@ export const RATE_LIMITER_PROBLEM = {
             label: "Distributed Consistency",
             description:
               "Limits must be shared across multiple servers; local memory counters are insufficient.",
-            weight: 5,
+            weight: 6,
             required: true,
             solutions: [
               {
@@ -216,16 +191,16 @@ export const RATE_LIMITER_PROBLEM = {
             correctPath: "/api/v1/ratelimit/check",
             solutions: [
               {
-                overview: "POST endpoint to check if a request is allowed under rate limits",
-                request: '{ "key": "user-123", "cost": 1 }',
+                overview: "Middleware endpoint to check if a request is allowed under rate limits",
+                request: '{ "key": string, "cost": number }',
                 response: {
                   statusCode: "200",
-                  text: '{ "allowed": true, "remaining": 45, "resetAt": "2024-01-01T12:00:00Z" }',
+                  text: '{ "allowed": bool, "remaining": number, "resetAt": timestamp }',
                 },
                 errors: [
                   {
                     statusCode: "429",
-                    text: "Too Many Requests - Rate limit exceeded. Retry-After: 60",
+                    text: "Too Many Requests. Headers: Retry-After, X-RateLimit-Reset",
                   },
                   {
                     statusCode: "400",
@@ -238,30 +213,30 @@ export const RATE_LIMITER_PROBLEM = {
               {
                 id: "hint-check-method",
                 title: "Interface Design",
-                text: "What information does the rate limiter need to decide? (Identifier, Cost/Weight).",
-                href: "/learn/system-design-structure#api-design",
+                text: "The rate limiter is middleware. What does it need to make a decision? A client identifier (user ID, IP, API key) and a request cost.",
+                href: "/learn/design-rate-limiter#api-design",
               },
               {
                 id: "hint-check-response",
                 title: "Response Headers",
-                text: "What headers should be returned to help the client? (X-Ratelimit-Remaining, Reset-Time).",
-                href: "/learn/system-design-structure#api-design",
+                text: "Include standard rate limit headers: X-RateLimit-Remaining (requests left), Retry-After (seconds to wait), X-RateLimit-Reset (window reset time).",
+                href: "/learn/design-rate-limiter#response-headers",
               },
               {
                 id: "hint-check-decision",
                 title: "Decision Logic",
-                text: "The response is a simple boolean decision: Allow or Deny. How is this represented in HTTP?",
-                href: "/learn/system-design-structure#api-design",
+                text: "The rate limiter makes a boolean allow/deny decision. Allowed requests return 200 OK; denied requests return 429 Too Many Requests.",
+                href: "/learn/design-rate-limiter#api-design",
               },
             ],
             evaluationCriteria:
-              "Endpoint description must include: " +
-              "1) Request body format (accepts a key/identifier and optional cost), " +
-              "2) Response format (returns allow/deny decision with remaining quota), " +
-              "3) Success status code (200) and rate limit status code (429), " +
+              "Description must cover the middleware interface: " +
+              "1) Request inputs (client identifier like user ID/IP/API key, and optional cost), " +
+              "2) Response format (allow/deny decision with remaining quota and reset time), " +
+              "3) Status codes (200 for allowed, 429 for denied), " +
               "4) Rate limit headers (X-RateLimit-Remaining, Retry-After).",
             feedbackOnMissing:
-              "How does the App Server ask the Rate Limiter if a request is allowed?",
+              "Describe the rate limiter's middleware interface: what inputs does it need (client identifier, cost), what does it return (allow/deny, remaining quota), and what HTTP status codes and headers does it use?",
           },
         ],
       },
@@ -291,7 +266,12 @@ export const RATE_LIMITER_PROBLEM = {
                 icon: "service",
               },
               { id: "Cache-1", type: "cache", name: "Redis", icon: "cache" },
-              { id: "Workers-1", type: "worker-service", name: "Workers", icon: "service" },
+              {
+                id: "API-Services-1",
+                type: "api-service",
+                name: "API Services",
+                icon: "service",
+              },
             ],
             edges: [
               {
@@ -299,68 +279,30 @@ export const RATE_LIMITER_PROBLEM = {
                 from: "Client-1",
                 to: "API-Gateway-1",
                 description: "Client sends requests to the API Gateway",
-                weight: 3,
-                hints: [
-                  {
-                    id: "hint-client-gateway",
-                    title: "Entry Point",
-                    text: "Where do requests first land? Usually a Gateway or Load Balancer.",
-                    href: "/learn/scaling#api-gateway-load-balancer-the-traffic-cop",
-                  },
-                ],
+                weight: 5,
               },
               {
                 id: "Gateway-RateLimiter",
                 from: "API-Gateway-1",
                 to: "Rate-Limiter-1",
-                description:
-                  "Gateway (or Middleware) calls Rate Limiter Service to check eligibility before processing",
-                weight: 9,
-                hints: [
-                  {
-                    id: "hint-middleware",
-                    title: "Middleware Check",
-                    text: "Before doing the heavy work, the Gateway checks with the Rate Limiter.",
-                    href: "/learn/design-rate-limiter#high-level-design",
-                  },
-                ],
+                description: "Gateway checks if the request is within limits before processing.",
+                weight: 10,
               },
               {
                 id: "RateLimiter-Cache",
                 from: "Rate-Limiter-1",
                 to: "Cache-1",
                 description:
-                  "Rate Limiter reads/writes counters in Redis. Uses Lua scripts for atomicity.",
-                weight: 9,
-                hints: [
-                  {
-                    id: "hint-cache-redis",
-                    title: "Storage Engine",
-                    text: "We need fast shared storage for counters. Redis is the standard choice here.",
-                    href: "/learn/rate-limiting-algorithms#the-solution-redis",
-                  },
-                  {
-                    id: "hint-atomicity",
-                    title: "Race Conditions",
-                    text: "How do we prevent race conditions when two requests update the counter at the exact same time? (Lua Scripts).",
-                    href: "/learn/rate-limiting-algorithms#lua-scripts-for-atomicity",
-                  },
-                ],
+                  "Rate Limiter updates counters in Redis using Lua scripts for atomicity.",
+                weight: 10,
               },
               {
-                id: "Gateway-Workers",
+                id: "Gateway-APIServices",
                 from: "API-Gateway-1",
-                to: "Workers-1",
-                description: "If allowed (200 OK), Gateway forwards request to backend services.",
-                weight: 9,
-                hints: [
-                  {
-                    id: "hint-forwarding",
-                    title: "Happy Path",
-                    text: "If the limiter says 'Yes', where does the request go next?",
-                    href: "/learn/design-rate-limiter#high-level-design",
-                  },
-                ],
+                to: "API-Services-1",
+                description:
+                  "If allowed, Gateway forwards the request to the downstream API Services.",
+                weight: 5,
               },
             ],
           },

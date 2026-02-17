@@ -11,7 +11,7 @@ import { UserMenu } from "@/components/UserMenu";
 interface AuthenticatedNavbarProps {
   variant?: "dark" | "light";
   hideIcon?: boolean;
-  hideMobileMenu?: boolean;
+  hideOnMobile?: boolean;
   content?: NavbarContent;
 }
 
@@ -44,7 +44,7 @@ const defaultNavbarContent: NavbarContent = {
 export function AuthenticatedNavbar({
   variant = "dark",
   hideIcon = false,
-  hideMobileMenu = false,
+  hideOnMobile = false,
   content = defaultNavbarContent,
 }: AuthenticatedNavbarProps) {
   const pathname = usePathname();
@@ -107,7 +107,7 @@ export function AuthenticatedNavbar({
       <Navbar
         variant={variant}
         hideIcon={hideIcon}
-        hideMobileMenu={hideMobileMenu}
+        hideOnMobile={hideOnMobile}
         pathname={pathname}
         userImageUrl={hasMounted ? user?.imageUrl : undefined}
         onClick={handleClick}

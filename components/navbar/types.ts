@@ -27,7 +27,7 @@ export interface NavbarContent {
 export interface NavbarProps {
   variant?: "dark" | "light";
   hideIcon?: boolean;
-  hideMobileMenu?: boolean;
+  hideOnMobile?: boolean;
   pathname: string;
   userImageUrl?: string;
   onClick: () => void;

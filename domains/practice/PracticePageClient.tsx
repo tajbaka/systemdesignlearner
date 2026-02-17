@@ -71,7 +71,7 @@ type PracticePageClientProps = {
 export function PracticePageClient({ problems }: PracticePageClientProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
-      <AuthenticatedNavbar hideIcon={true} hideMobileMenu={true} />
+      <AuthenticatedNavbar hideIcon={true} hideOnMobile={true} />
       <Sidebar theme="dark" />
       <div className="md:ml-16">
         <main className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-4 py-8 sm:px-6 md:gap-10 md:py-12 lg:px-8">

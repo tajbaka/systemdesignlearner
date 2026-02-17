@@ -246,5 +246,5 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     logger.error("PATCH /api/v2/practice/session error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-  }//
+  } //
 }

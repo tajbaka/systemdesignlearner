@@ -43,11 +43,7 @@ export function Step({
         <span
           className={cn(
             "block text-[11px] font-medium uppercase tracking-wider",
-            isActive
-              ? "text-blue-300"
-              : isCompleted
-                ? "text-emerald-300"
-                : "text-zinc-500"
+            isActive ? "text-blue-300" : isCompleted ? "text-emerald-300" : "text-zinc-500"
           )}
         >
           {title}
@@ -55,11 +51,7 @@ export function Step({
         <span
           className={cn(
             "mt-0.5 block text-[10px]",
-            isActive
-              ? "text-blue-400/80"
-              : isCompleted
-                ? "text-emerald-400/80"
-                : "text-zinc-600"
+            isActive ? "text-blue-400/80" : isCompleted ? "text-emerald-400/80" : "text-zinc-600"
           )}
         >
           {description}
