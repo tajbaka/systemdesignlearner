@@ -1,6 +1,13 @@
 import { NextResponse } from "next/server";
-import { db, problems, problemVersions, userProblems } from "@/packages/drizzle";
-import { eq, and, inArray } from "drizzle-orm";
+import {
+  db,
+  problems,
+  problemVersions,
+  problemSteps,
+  userProblems,
+  userProblemSteps,
+} from "@/packages/drizzle";
+import { eq, and, inArray, count } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
 import type { GetProblemsResponse, ProblemSimpleResponse, ProblemLink } from "./schemas";
@@ -37,9 +44,25 @@ export async function GET() {
       },
     });
 
-    // 3. Optionally fetch userProblems status (if authenticated)
+    // 3. Total steps per problem (for progress bar)
+    const stepCounts = await db
+      .select({
+        problemId: problemSteps.problemId,
+        total: count(problemSteps.id),
+      })
+      .from(problemSteps)
+      .where(inArray(problemSteps.problemId, validProblemIds))
+      .groupBy(problemSteps.problemId);
+
+    const totalStepsMap = new Map<string, number>();
+    for (const row of stepCounts) {
+      totalStepsMap.set(row.problemId, row.total);
+    }
+
+    // 4. Optionally fetch userProblems status (if authenticated)
     const profile = await getProfile();
     const statusMap = new Map<string, "in_progress" | "completed">();
+    const completedStepsMap = new Map<string, number>();
 
     if (profile) {
       const problemIds = problemsWithVersions.map((p) => p.id);
@@ -54,11 +77,33 @@ export async function GET() {
       for (const up of userProblemsData) {
         statusMap.set(up.problemId, up.status);
       }
+
+      // Completed steps per user (for progress bar)
+      const completedStepCounts = await db
+        .select({
+          problemId: userProblems.problemId,
+          completedCount: count(userProblemSteps.id),
+        })
+        .from(userProblemSteps)
+        .innerJoin(userProblems, eq(userProblemSteps.userProblemId, userProblems.id))
+        .where(
+          and(
+            eq(userProblems.userId, profile.id),
+            inArray(userProblems.problemId, problemIds),
+            eq(userProblemSteps.status, "completed")
+          )
+        )
+        .groupBy(userProblems.problemId);
+
+      for (const row of completedStepCounts) {
+        completedStepsMap.set(row.problemId, row.completedCount);
+      }
     }
 
-    // 4. Build response
+    // 5. Build response
     const responseData: ProblemSimpleResponse[] = problemsWithVersions.map((problem) => {
       const currentVersion = problem.versions[0];
+      const status = statusMap.get(problem.id) ?? null;
       return {
         id: problem.id,
         slug: problem.slug,
@@ -69,7 +114,14 @@ export async function GET() {
         timeToComplete: currentVersion.timeToComplete,
         topic: currentVersion.topic,
         links: currentVersion.links as ProblemLink[] | null,
-        status: statusMap.get(problem.id) ?? null,
+        status,
+        totalSteps: totalStepsMap.get(problem.id) ?? null,
+        completedSteps:
+          status === "completed"
+            ? (totalStepsMap.get(problem.id) ?? null)
+            : status !== null
+              ? (completedStepsMap.get(problem.id) ?? 0)
+              : null,
       };
     });
 

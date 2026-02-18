@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import type { NavbarContent } from "./types";
+import { ReadinessPill } from "./ReadinessPill";
 
 interface NavbarMobileProps {
   variant: "dark" | "light";
@@ -117,21 +118,24 @@ export function NavbarMobile({
 
             {/* Mobile User Button / Sign In */}
             {userImageUrl ? (
-              <button
-                onClick={() => {
-                  onClick();
-                  closeMenu();
-                }}
-                className={`w-full flex items-center gap-3 px-2 py-2 rounded-lg `}
-              >
-                <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={userImageUrl} alt="Profile" className="w-full h-full object-cover" />
-                </div>
-                <span className={`text-sm font-medium ${textMutedClass}`}>
-                  {content.auth.accountLabel}
-                </span>
-              </button>
+              <div className="flex items-center gap-3 px-2 py-2">
+                <button
+                  onClick={() => {
+                    onClick();
+                    closeMenu();
+                  }}
+                  className="flex items-center gap-3 flex-1"
+                >
+                  <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={userImageUrl} alt="Profile" className="w-full h-full object-cover" />
+                  </div>
+                  <span className={`text-sm font-medium ${textMutedClass}`}>
+                    {content.auth.accountLabel}
+                  </span>
+                </button>
+                <ReadinessPill variant="mobile" theme={variant} />
+              </div>
             ) : (
               <button
                 onClick={() => {

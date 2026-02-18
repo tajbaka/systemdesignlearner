@@ -1139,6 +1139,49 @@ const diagrams: Record<string, ArticleDiagramConfig> = {
     ],
   },
 
+  // ── Job Scheduler problem ────────────────────────────────────────────
+
+  "job-scheduler": {
+    nodes: [
+      { id: "Client-1", type: "client", name: "Client", icon: "client", x: 0, y: 180 },
+      {
+        id: "API-Gateway-1",
+        type: "api-gateway",
+        name: "API Gateway",
+        icon: "api-gateway",
+        x: 280,
+        y: 180,
+      },
+      {
+        id: "Service-1",
+        type: "scheduler-service",
+        name: "Scheduler Service (Leader)",
+        icon: "service",
+        x: 560,
+        y: 180,
+      },
+      { id: "DB-1", type: "jobs-db", name: "Jobs Database", icon: "sql", x: 560, y: 0 },
+      { id: "Cache-1", type: "redis", name: "Redis", icon: "cache", x: 560, y: 360 },
+      { id: "Queue-1", type: "kafka", name: "Kafka Queue", icon: "queue", x: 840, y: 180 },
+      {
+        id: "Service-2",
+        type: "worker-pool",
+        name: "Worker Pool",
+        icon: "service",
+        x: 1120,
+        y: 180,
+      },
+    ],
+    edges: [
+      { id: "Client-1-API-Gateway-1", from: "Client-1", to: "API-Gateway-1" },
+      { id: "API-Gateway-1-Service-1", from: "API-Gateway-1", to: "Service-1" },
+      { id: "Service-1-DB-1", from: "Service-1", to: "DB-1" },
+      { id: "Service-1-Cache-1", from: "Service-1", to: "Cache-1" },
+      { id: "Service-1-Queue-1", from: "Service-1", to: "Queue-1" },
+      { id: "Queue-1-Service-2", from: "Queue-1", to: "Service-2" },
+    ],
+  },
+
   // ── Sharding: Consistent hashing (Batch 6) ───────────────────────────
 
   // ── Job Scheduler problem ────────────────────────────────────────────

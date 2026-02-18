@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Check } from "lucide-react";
 import { LinkBox } from "@/domains/practice/back-end/components/LinkBox";
+import { ProgressBar } from "@/domains/practice/components/ProgressBar";
 import type { ProblemSimpleResponse } from "@/app/api/v2/practice/schemas";
 import { capitalize } from "@/utils/capitalize";
 
@@ -78,7 +79,7 @@ export function PracticePageClient({ problems }: PracticePageClientProps) {
           {/* Header */}
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <header className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-200">
+              <div className="invisible md:visible inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-blue-200">
                 Guided tracks
               </div>
               <div>
@@ -164,6 +165,16 @@ export function PracticePageClient({ problems }: PracticePageClientProps) {
                             <CardDescription className="text-sm text-zinc-400 mb-3 leading-relaxed">
                               {problem.description ?? ""}
                             </CardDescription>
+
+                            {problem.status !== null &&
+                              problem.totalSteps !== null &&
+                              problem.completedSteps !== null && (
+                                <ProgressBar
+                                  completedSteps={problem.completedSteps}
+                                  totalSteps={problem.totalSteps}
+                                  className="mt-2 mb-1 max-w-xs"
+                                />
+                              )}
 
                             {/* Show links if available */}
                             {problem.links && problem.links.length > 0 && (

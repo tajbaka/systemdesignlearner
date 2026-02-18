@@ -81,9 +81,9 @@ export function Footer() {
   return (
     <footer className="border-t border-zinc-800 mt-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12 pb-8">
+        <div className="grid grid-cols-3 lg:grid-cols-12 gap-8 lg:gap-12 pb-8">
           {/* Brand Section */}
-          <div className="lg:col-span-4">
+          <div className="col-span-3 lg:col-span-4">
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SD</span>
@@ -115,7 +115,7 @@ export function Footer() {
           </div>
 
           {/* Product Column */}
-          <div className="lg:col-span-2">
+          <div className="col-span-1 lg:col-span-2">
             <h3 className="text-white font-semibold text-sm mb-4">Product</h3>
             <ul className="space-y-3">
               <li>
@@ -139,7 +139,7 @@ export function Footer() {
           </div>
 
           {/* Support Column */}
-          <div className="lg:col-span-2">
+          <div className="col-span-1 lg:col-span-2">
             <h3 className="text-white font-semibold text-sm mb-4">Support</h3>
             <ul className="space-y-3">
               <li>
@@ -170,7 +170,7 @@ export function Footer() {
           </div>
 
           {/* Legal Column */}
-          <div className="lg:col-span-2">
+          <div className="col-span-1 lg:col-span-2">
             <h3 className="text-white font-semibold text-sm mb-4">Legal</h3>
             <ul className="space-y-3">
               <li>

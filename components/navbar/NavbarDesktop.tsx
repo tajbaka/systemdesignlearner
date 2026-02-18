@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getNavLinkClasses, type NavbarContent } from "./types";
+import { ReadinessPill } from "./ReadinessPill";
 
 interface NavbarDesktopProps {
   variant: "dark" | "light";
@@ -33,6 +34,8 @@ export function NavbarDesktop({
       >
         {content.links.learn.label}
       </Link>
+
+      <ReadinessPill variant="desktop" theme={variant} />
 
       {userImageUrl ? (
         <button

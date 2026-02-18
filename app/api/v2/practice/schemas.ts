@@ -38,6 +38,8 @@ export const ProblemSimpleResponseSchema = z.object({
   topic: z.string().nullable(),
   links: z.array(ProblemLinkSchema).nullable(),
   status: UserProblemStatusSchema.nullable(),
+  totalSteps: z.number().nullable(),
+  completedSteps: z.number().nullable(),
 });
 
 export const ProblemResponseSchema = ProblemSimpleResponseSchema.extend({

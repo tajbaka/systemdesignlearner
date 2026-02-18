@@ -13,7 +13,6 @@ export type Endpoint = {
 
 interface TextAreaListProps {
   endpoints: Endpoint[];
-  minLength?: number;
   onMethodChange: (endpointId: string, method: HttpMethod) => void;
   onPathChange: (endpointId: string, path: string) => void;
   onDescriptionChange: (endpointId: string, event: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -23,7 +22,6 @@ interface TextAreaListProps {
 
 export function TextAreaList({
   endpoints,
-  minLength = 10,
   onMethodChange,
   onPathChange,
   onDescriptionChange,
@@ -33,13 +31,7 @@ export function TextAreaList({
   return (
     <>
       {endpoints.map((endpoint, index) => {
-        const currentLength = endpoint.description.trim().length;
-        const remaining = Math.max(0, minLength - currentLength);
-
-        const bottomText: string[] = [
-          ...(remaining > 0 ? [`Remaining characters needed: ${remaining}`] : []),
-          `Endpoint ${index + 1} of ${endpoints.length}`,
-        ];
+        const bottomText: string[] = [`Endpoint ${index + 1} of ${endpoints.length}`];
 
         return (
           <div key={endpoint.id} className="space-y-6">

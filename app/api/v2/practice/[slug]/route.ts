@@ -72,6 +72,8 @@ export async function GET(
         topic: currentVersion.topic,
         links: currentVersion.links as ProblemLink[] | null,
         status: userProblemData?.status ?? null,
+        totalSteps: null,
+        completedSteps: null,
         versionNumber: currentVersion.versionNumber,
         userProblem: userProblemData,
       },

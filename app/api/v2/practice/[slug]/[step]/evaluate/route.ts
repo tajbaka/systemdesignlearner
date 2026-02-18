@@ -474,27 +474,64 @@ export async function POST(
         },
       };
     } else {
-      // Other step types use single-shot evaluation
-      const prompt = strategy.buildPrompt(problemConfig, validatedInput);
-      logger.info("Built prompt for evaluation", {
-        slug,
-        step: stepType,
-        promptLength: prompt.length,
-      });
+      // Check for empty text submissions — skip LLM and return first requirement feedback
+      const textInput = validatedInput as { textField?: { id: string; value: string } };
+      const isEmptyText = textInput.textField && !textInput.textField.value.trim();
 
-      const model = getGeminiModel();
-      const result = await model.generateContent(prompt);
-      const responseText = result.response.text();
+      if (isEmptyText) {
+        const stepRequirements =
+          (requirements as Array<{
+            id: string;
+            feedbackOnMissing?: string;
+            hints?: Array<{ id: string }>;
+          }>) || [];
+        const firstReq = stepRequirements[0];
 
-      logger.info("Received AI response", {
-        slug,
-        step: stepType,
-        responseLength: responseText.length,
-        response: responseText,
-      });
+        evaluation = {
+          feedback:
+            firstReq?.feedbackOnMissing || "Try describing some requirements to get started.",
+          score: 0,
+          results: stepRequirements.map((req, index) => ({
+            id: req.id,
+            complete: false,
+            ...(index === 0
+              ? {
+                  feedback: firstReq?.feedbackOnMissing,
+                  hintId: req.hints?.[0]?.id,
+                  itemIds: [textInput.textField!.id],
+                }
+              : {}),
+          })),
+        };
 
-      // 12. Parse AI response into evaluation result
-      evaluation = strategy.parseResponse(responseText, problemConfig, validatedInput);
+        logger.info("Empty text submission — skipped LLM call", {
+          slug,
+          step: stepType,
+          requirementsCount: stepRequirements.length,
+        });
+      } else {
+        // Other step types use single-shot evaluation
+        const prompt = strategy.buildPrompt(problemConfig, validatedInput);
+        logger.info("Built prompt for evaluation", {
+          slug,
+          step: stepType,
+          promptLength: prompt.length,
+        });
+
+        const model = getGeminiModel();
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+
+        logger.info("Received AI response", {
+          slug,
+          step: stepType,
+          responseLength: responseText.length,
+          response: responseText,
+        });
+
+        // 12. Parse AI response into evaluation result
+        evaluation = strategy.parseResponse(responseText, problemConfig, validatedInput);
+      }
     }
 
     // Round the score before checking completion
