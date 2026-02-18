@@ -24,6 +24,7 @@ import { useStepTooltip } from "../hooks/useStepTooltip";
 import { PRACTICE_STEPS, STEPS } from "../constants";
 import { AuthModalDialog } from "@/domains/authentication/components/AuthModalDialog";
 import { usePracticeAuth } from "../hooks/usePracticeAuth";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 type CommonLayoutProps = {
   config: ProblemConfig;
@@ -109,6 +110,14 @@ export function CommonLayout({
       ? PRACTICE_STEPS[stepType as keyof typeof PRACTICE_STEPS]
       : null;
 
+  const isMobile = useIsMobile();
+  // On mobile: show step title when on a step; on desktop: always show problem title
+  const pageTitle = isMobile
+    ? (currentStepData?.title ?? (config.title ? config.title : null))
+    : config.title
+      ? config.title
+      : null;
+
   return (
     <>
       <Sidebar theme="dark" />
@@ -117,9 +126,11 @@ export function CommonLayout({
           {/* Title and Stepper */}
           <div className="bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80 mx-auto w-full flex-1 flex flex-col min-h-0">
             <div className="flex-shrink-0 md:px-[15%]">
-              {config.title && (
-                <div className="relative flex items-center justify-center pl-6 pr-16 md:pl-0 md:pr-0 pt-[22px] pb-[22px] md:pt-10 md:pb-0">
-                  <h2 className="text-xl font-semibold text-white sm:text-2xl">{config.title}</h2>
+              {pageTitle && (
+                <div className="relative flex items-center justify-center pl-6 pr-16 md:pl-0 md:pr-0 pt-[18px] pb-[18px] md:pt-10 md:pb-0">
+                  <h2 className="text-xl font-semibold text-white sm:text-2xl text-center max-w-[23ch] break-words ml-8 md:ml-0">
+                    {pageTitle}
+                  </h2>
                   {/* Tooltip button */}
                   {currentStepData && (
                     <div className="absolute right-6">
