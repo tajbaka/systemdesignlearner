@@ -3,10 +3,16 @@
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
+export type StepArticle = {
+  title: string;
+  href: string;
+};
+
 export type StepTooltipProps = {
   title: string;
   description: string;
   learnMoreLink?: string;
+  articles?: StepArticle[];
   open?: boolean;
   onClick?: (e: React.MouseEvent) => void;
   onClickOutside?: () => void;
@@ -16,6 +22,7 @@ export function StepTooltip({
   title,
   description,
   learnMoreLink,
+  articles,
   open,
   onClick,
   onClickOutside,
@@ -26,7 +33,7 @@ export function StepTooltip({
         <button
           type="button"
           onClick={onClick}
-          className={`inline-flex h-7 w-7 items-center justify-center rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-400/50 ${
             open
               ? "border-blue-400/60 bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 hover:border-blue-400/80"
               : "border-zinc-600/60 bg-zinc-800/40 text-zinc-400 hover:bg-zinc-700/60 hover:text-zinc-300 hover:border-zinc-500/60"
@@ -35,7 +42,7 @@ export function StepTooltip({
         >
           <svg
             viewBox="0 0 16 16"
-            className="h-4 w-4"
+            className="h-5 w-5"
             fill="none"
             stroke="currentColor"
             strokeWidth="1.5"
@@ -43,7 +50,7 @@ export function StepTooltip({
             strokeLinejoin="round"
           >
             <circle cx="8" cy="8" r="6" />
-            <path d="M8 11.5V8M8 5.5h.01" />
+            <path d="M6.2 6.2a2 2 0 0 1 3.5 1.1c0 1.2-1.7 1.2-1.7 2.2M8 11.5h.01" />
           </svg>
         </button>
       </TooltipTrigger>
@@ -83,6 +90,25 @@ export function StepTooltip({
               <path d="M6 3l5 5-5 5" />
             </svg>
           </Link>
+        )}
+        {articles && articles.length > 0 && (
+          <div className="mt-2.5 pt-2 border-t border-blue-400/30">
+            <h4 className="text-xs font-semibold mb-1.5 text-blue-100">Articles for this step:</h4>
+            <ul className="space-y-1">
+              {articles.map((article) => (
+                <li key={article.href}>
+                  <Link
+                    href={article.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-blue-100 hover:text-white underline transition-colors"
+                  >
+                    {article.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </TooltipContent>
     </Tooltip>
