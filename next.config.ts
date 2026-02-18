@@ -41,8 +41,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   typescript: {
-    // Use CI for type safety so local builds avoid duplicate work.
-    ignoreBuildErrors: !isCI,
+    ignoreBuildErrors: false,
   },
   outputFileTracingRoot: __dirname,
 
