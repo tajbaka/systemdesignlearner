@@ -128,7 +128,7 @@ export function CommonLayout({
             <div className="flex-shrink-0 md:px-[15%]">
               {pageTitle && (
                 <div className="relative flex items-center justify-center pl-6 pr-16 md:pl-0 md:pr-0 pt-[18px] pb-[18px] md:pt-10 md:pb-0">
-                  <h2 className="text-xl font-semibold text-white sm:text-2xl text-center max-w-[23ch] break-words ml-8 md:ml-0">
+                  <h2 className="text-xl font-semibold text-white sm:text-2xl text-center max-w-[60vw] break-words ml-12 md:ml-0">
                     {pageTitle}
                   </h2>
                   {/* Tooltip button */}
