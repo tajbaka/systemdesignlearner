@@ -53,8 +53,6 @@ export default function ApiStep({ config, handlers, stepType, slug }: ApiStepPro
     ? endpoints.find((ep) => ep.id === mobileEditingId)
     : null;
 
-  const minLength = 10;
-
   const handleMethodChange = (endpointId: string, method: HttpMethod) => {
     handlers[STEPS.API]("changeInput", endpointId, "method", method);
   };
@@ -91,11 +89,7 @@ export default function ApiStep({ config, handlers, stepType, slug }: ApiStepPro
     router.push(`/practice/${slug}/api?endpoint=${endpointId}`);
   };
 
-  // Check if all endpoints meet the minimum length requirement
-  const allEndpointsValid =
-    endpoints.length > 0 &&
-    endpoints.every((endpoint) => endpoint.description.value.trim().length >= minLength);
-  const isNextDisabled = !allEndpointsValid;
+  const isNextDisabled = endpoints.length === 0;
 
   return (
     <CommonLayout
@@ -112,13 +106,7 @@ export default function ApiStep({ config, handlers, stepType, slug }: ApiStepPro
         {/* Desktop layout */}
         <div className="hidden sm:block space-y-6">
           {endpoints.map((endpoint, index) => {
-            const currentLength = endpoint.description.value.trim().length;
-            const remaining = Math.max(0, minLength - currentLength);
-
-            const bottomText: string[] = [
-              ...(remaining > 0 ? [`Remaining characters needed: ${remaining}`] : []),
-              `Endpoint ${index + 1} of ${endpoints.length}`,
-            ];
+            const bottomText: string[] = [`Endpoint ${index + 1} of ${endpoints.length}`];
 
             return (
               <TextAreaInputCard
@@ -166,11 +154,6 @@ export default function ApiStep({ config, handlers, stepType, slug }: ApiStepPro
 
               {/* Editor using TextAreaCard */}
               {(() => {
-                const currentLength = mobileEditingEndpoint.description.value.trim().length;
-                const remaining = Math.max(0, minLength - currentLength);
-                const bottomText =
-                  remaining > 0 ? `Remaining characters needed: ${remaining}` : undefined;
-
                 return (
                   <TextAreaCard
                     title=""
@@ -178,7 +161,6 @@ export default function ApiStep({ config, handlers, stepType, slug }: ApiStepPro
                     value={mobileEditingEndpoint.description.value}
                     onChange={(event) => handleDescriptionChange(mobileEditingEndpoint.id, event)}
                     placeholder="Describe the request body, response format, status codes, and error handling. (The method and path are already captured above.)"
-                    bottomText={bottomText}
                     bottomRightSlot={
                       <VoiceInput
                         value={mobileEditingEndpoint.description.value}

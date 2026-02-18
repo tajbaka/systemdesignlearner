@@ -7,7 +7,7 @@ import { z } from "zod";
 export const TextRequirementSchema = z.object({
   textField: z.object({
     id: z.string(),
-    value: z.string().min(1, "Input cannot be empty"),
+    value: z.string(),
   }),
 });
 

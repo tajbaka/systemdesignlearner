@@ -72,6 +72,14 @@
         {
           "id": "22",
           "slug": "microservices"
+        },
+        {
+          "id": "24",
+          "slug": "leader-election"
+        },
+        {
+          "id": "25",
+          "slug": "cron-architecture"
         }
       ]
     },
@@ -103,6 +111,10 @@
         {
           "id": "23",
           "slug": "design-leaderboard"
+        },
+        {
+          "id": "26",
+          "slug": "design-job-scheduler"
         }
       ]
     }
@@ -981,6 +993,116 @@
         "ZREVRANK",
         "skip list",
         "gaming leaderboard",
+        "scalable architecture",
+        "system design problem"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "leader-election",
+      "title": "Leader Election",
+      "subtitle": "Choosing one coordinator in a distributed system",
+      "description": "Learn how leader election works in distributed systems: ZooKeeper ephemeral nodes, etcd leases with Raft consensus, Redis-based elections, split brain prevention, and when to use leader election vs message queues. Essential for designing job schedulers, database replication, and distributed locks.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-17",
+      "readTime": "10 min",
+      "markdownFile": "LeaderElection.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "leader election",
+        "distributed systems",
+        "ZooKeeper",
+        "etcd",
+        "Raft consensus",
+        "split brain",
+        "coordination",
+        "distributed locks",
+        "consensus algorithm",
+        "system design interview",
+        "fault tolerance"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-leader-election", "title": "What Is Leader Election?" },
+        { "id": "why-leader-election-matters", "title": "Why Leader Election Matters" },
+        { "id": "common-algorithms", "title": "Common Algorithms" },
+        { "id": "zookeeper-the-classic-approach", "title": "ZooKeeper: The Classic Approach" },
+        {
+          "id": "etcd-and-raft-the-modern-approach",
+          "title": "etcd and Raft: The Modern Approach"
+        },
+        { "id": "redis-lease-based-election", "title": "Redis Lease-Based Election" },
+        { "id": "comparison-table", "title": "Comparison Table" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "cron-architecture",
+      "title": "Cron Architecture",
+      "subtitle": "Running scheduled tasks reliably across distributed systems",
+      "description": "Learn how distributed cron systems work: exactly-once execution challenges, single leader polling with message queues, database row locking, partitioned scheduling, cron expression parsing, missed job handling, and real-world examples from Kubernetes and Airflow.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-17",
+      "readTime": "10 min",
+      "markdownFile": "CronArchitecture.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "cron",
+        "distributed cron",
+        "job scheduler",
+        "scheduled tasks",
+        "exactly-once execution",
+        "leader election",
+        "message queue",
+        "Kubernetes CronJob",
+        "Airflow",
+        "system design interview",
+        "task scheduling"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-a-distributed-cron", "title": "What Is a Distributed Cron?" },
+        {
+          "id": "the-core-challenge-exactly-once-execution",
+          "title": "The Core Challenge: Exactly-Once Execution"
+        },
+        { "id": "architecture-patterns", "title": "Architecture Patterns" },
+        { "id": "cron-expression-parsing", "title": "Cron Expression Parsing" },
+        { "id": "handling-missed-jobs", "title": "Handling Missed Jobs" },
+        { "id": "real-world-examples", "title": "Real-World Examples" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-job-scheduler",
+      "title": "Design a Distributed Job Scheduler",
+      "subtitle": "Building a reliable system for millions of scheduled tasks",
+      "description": "Learn how to design a production-ready distributed job scheduler. This guide covers leader election for coordinator failover, message queues for decoupled execution, pre-computed next_run_time for efficient polling, at-least-once delivery guarantees, and scaling to millions of scheduled jobs.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-17",
+      "readTime": "15 min",
+      "markdownFile": "design-job-scheduler.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "job scheduler",
+        "distributed scheduler",
+        "system design interview",
+        "cron",
+        "leader election",
+        "message queue",
+        "Kafka",
+        "task scheduling",
+        "at-least-once delivery",
         "scalable architecture",
         "system design problem"
       ],

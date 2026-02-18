@@ -31,13 +31,6 @@ export default function FunctionalStep({ config, handlers, stepType, slug }: Fun
     [handlers]
   );
 
-  // Calculate remaining characters
-  const minLength = 50;
-  const currentLength = textValue.trim().length;
-  const remaining = Math.max(0, minLength - currentLength);
-  const bottomText = remaining > 0 ? `Remaining characters needed: ${remaining}` : undefined;
-  const isNextDisabled = remaining > 0;
-
   // Check if this text field should be highlighted
   const shouldHighlight = incompleteRequirement?.itemId === textFieldId;
 
@@ -47,7 +40,7 @@ export default function FunctionalStep({ config, handlers, stepType, slug }: Fun
       handlers={handlers}
       stepType={stepType}
       slug={slug as string}
-      nextDisabled={isNextDisabled}
+      nextDisabled={false}
       leftAction="back"
       rightAction="next"
       showTooltip={true}
@@ -56,7 +49,6 @@ export default function FunctionalStep({ config, handlers, stepType, slug }: Fun
         title="Define key features and user actions"
         description="Describe what users can do and the core capabilities the system must provide."
         placeholder="Example: Users create and manage content, search across the platform, and receive real-time notifications about relevant activity."
-        bottomText={bottomText}
         value={textValue}
         onChange={handleTextChange}
         shouldHighlight={shouldHighlight}

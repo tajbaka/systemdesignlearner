@@ -36,13 +36,6 @@ export default function NonFunctionalStep({
     [handlers]
   );
 
-  // Calculate remaining characters
-  const minLength = 50;
-  const currentLength = textValue.trim().length;
-  const remaining = Math.max(0, minLength - currentLength);
-  const bottomText = remaining > 0 ? `Remaining characters needed: ${remaining}` : undefined;
-  const isNextDisabled = remaining > 0;
-
   // Check if this text field should be highlighted
   const shouldHighlight = incompleteRequirement?.itemId === textFieldId;
 
@@ -52,7 +45,7 @@ export default function NonFunctionalStep({
       handlers={handlers}
       stepType={stepType}
       slug={slug as string}
-      nextDisabled={isNextDisabled}
+      nextDisabled={false}
       leftAction="back"
       rightAction="next"
       showTooltip={true}
@@ -61,7 +54,6 @@ export default function NonFunctionalStep({
         title="Define performance and scale constraints"
         description="Think about latency, throughput, availability, and scale."
         placeholder="Example: Low latency responses (sub-second). High availability (99.9%+). Scale to handle millions of requests per day and traffic spikes."
-        bottomText={bottomText}
         value={textValue}
         onChange={handleTextChange}
         shouldHighlight={shouldHighlight}
