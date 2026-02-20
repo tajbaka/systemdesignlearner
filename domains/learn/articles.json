@@ -80,6 +80,18 @@
         {
           "id": "25",
           "slug": "cron-architecture"
+        },
+        {
+          "id": "27",
+          "slug": "double-entry"
+        },
+        {
+          "id": "28",
+          "slug": "distributed-transactions"
+        },
+        {
+          "id": "29",
+          "slug": "consistency-patterns"
         }
       ]
     },
@@ -115,6 +127,10 @@
         {
           "id": "26",
           "slug": "design-job-scheduler"
+        },
+        {
+          "id": "30",
+          "slug": "design-payment-system"
         }
       ]
     }
@@ -1103,6 +1119,169 @@
         "Kafka",
         "task scheduling",
         "at-least-once delivery",
+        "scalable architecture",
+        "system design problem"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "double-entry",
+      "title": "Double-Entry Bookkeeping",
+      "subtitle": "The accounting pattern behind every reliable payment system",
+      "description": "Learn how double-entry bookkeeping ensures every payment is auditable and self-balancing. Covers debit/credit pairs, ledger immutability, the fundamental accounting equation, reconciliation, and when to use double-entry in system design interviews.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-19",
+      "readTime": "12 min",
+      "markdownFile": "DoubleEntry.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "double-entry bookkeeping",
+        "ledger",
+        "debit credit",
+        "payment system",
+        "accounting",
+        "reconciliation",
+        "append-only ledger",
+        "financial systems",
+        "ACID transactions",
+        "system design interview",
+        "auditable transactions"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-double-entry-bookkeeping", "title": "What Is Double-Entry Bookkeeping?" },
+        { "id": "why-it-matters-in-payment-systems", "title": "Why It Matters in Payment Systems" },
+        { "id": "the-fundamental-equation", "title": "The Fundamental Equation" },
+        {
+          "id": "the-double-entry-pattern-in-software",
+          "title": "The Double-Entry Pattern in Software"
+        },
+        { "id": "example-user-pays-for-an-order", "title": "Example: User Pays for an Order" },
+        { "id": "example-handling-refunds", "title": "Example: Handling Refunds" },
+        { "id": "ledger-immutability", "title": "Ledger Immutability" },
+        { "id": "reconciliation", "title": "Reconciliation" },
+        { "id": "writing-entries-safely", "title": "Writing Entries Safely" },
+        { "id": "performance-considerations", "title": "Performance Considerations" },
+        {
+          "id": "when-to-use-double-entry-and-when-not-to",
+          "title": "When to Use Double-Entry (and When Not To)"
+        },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "distributed-transactions",
+      "title": "Distributed Transactions",
+      "subtitle": "Keeping data consistent across multiple services",
+      "description": "Learn how to coordinate transactions across microservices with Two-Phase Commit (2PC) and the Saga pattern. Covers compensating transactions, choreography vs orchestration, and when to use each approach in system design interviews.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-19",
+      "readTime": "12 min",
+      "markdownFile": "DistributedTransactions.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "distributed transactions",
+        "two-phase commit",
+        "2PC",
+        "saga pattern",
+        "compensating transactions",
+        "choreography",
+        "orchestration",
+        "microservices consistency",
+        "distributed systems",
+        "system design interview",
+        "data consistency"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        {
+          "id": "the-problem-operations-that-span-multiple-services",
+          "title": "The Problem: Operations That Span Multiple Services"
+        },
+        { "id": "two-phase-commit-2pc", "title": "Two-Phase Commit (2PC)" },
+        { "id": "the-saga-pattern", "title": "The Saga Pattern" },
+        { "id": "choreography-vs-orchestration", "title": "Choreography vs Orchestration" },
+        { "id": "2pc-vs-saga-when-to-use-each", "title": "2PC vs Saga: When to Use Each" },
+        { "id": "real-world-examples", "title": "Real-World Examples" },
+        { "id": "handling-edge-cases", "title": "Handling Edge Cases" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "consistency-patterns",
+      "title": "Consistency Patterns",
+      "subtitle": "Choosing the right consistency model for each piece of data",
+      "description": "Learn the spectrum of consistency models from strong to eventual, practical patterns like read-your-writes and causal consistency, reconciliation strategies, and how to choose the right consistency level for financial data, social feeds, and user profiles.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-19",
+      "readTime": "10 min",
+      "markdownFile": "ConsistencyPatterns.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "consistency patterns",
+        "strong consistency",
+        "eventual consistency",
+        "read-your-writes",
+        "causal consistency",
+        "linearizability",
+        "reconciliation",
+        "CAP theorem",
+        "distributed systems",
+        "system design interview",
+        "consistency models"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "the-consistency-spectrum", "title": "The Consistency Spectrum" },
+        { "id": "strong-consistency", "title": "Strong Consistency" },
+        { "id": "eventual-consistency", "title": "Eventual Consistency" },
+        { "id": "read-your-writes-consistency", "title": "Read-Your-Writes Consistency" },
+        { "id": "causal-consistency", "title": "Causal Consistency" },
+        { "id": "comparison-table", "title": "Comparison Table" },
+        { "id": "practical-patterns", "title": "Practical Patterns" },
+        {
+          "id": "reconciliation-repairing-consistency",
+          "title": "Reconciliation: Repairing Consistency"
+        },
+        {
+          "id": "how-to-choose-a-decision-framework",
+          "title": "How to Choose: A Decision Framework"
+        },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-payment-system",
+      "title": "Design a Payment System",
+      "subtitle": "Building an auditable payment service with PSP integration and double-entry ledger",
+      "description": "Learn how to design a production-ready payment system. This guide covers PSP integration (Stripe/PayPal), double-entry bookkeeping for audit trails, idempotency keys to prevent double charges, webhook handling, reconciliation batch jobs, and scaling financial infrastructure.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-19",
+      "readTime": "15 min",
+      "markdownFile": "design-payment-system.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "payment system",
+        "system design interview",
+        "Stripe",
+        "PayPal",
+        "PSP",
+        "double-entry bookkeeping",
+        "idempotency",
+        "webhooks",
+        "reconciliation",
+        "ledger",
         "scalable architecture",
         "system design problem"
       ],

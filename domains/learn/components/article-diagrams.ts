@@ -1139,6 +1139,108 @@ const diagrams: Record<string, ArticleDiagramConfig> = {
     ],
   },
 
+  // ── Job Scheduler problem ─────────────────────────────────────────────
+
+  "job-scheduler": {
+    nodes: [
+      { id: "Client-1", type: "client", name: "Client", icon: "client", x: 0, y: 180 },
+      {
+        id: "API-Svc",
+        type: "api-service",
+        name: "Scheduler API",
+        icon: "service",
+        x: 280,
+        y: 180,
+      },
+      {
+        id: "DB-Jobs",
+        type: "job-database",
+        name: "Job DB (SQL)",
+        icon: "sql",
+        x: 560,
+        y: 60,
+      },
+      {
+        id: "Coordinator",
+        type: "coordinator",
+        name: "Coordinator/Leader",
+        icon: "service",
+        x: 560,
+        y: 300,
+      },
+      {
+        id: "Message-Queue",
+        type: "queue",
+        name: "Kafka/SQS",
+        icon: "queue",
+        x: 840,
+        y: 300,
+      },
+      {
+        id: "Workers",
+        type: "worker-pool",
+        name: "Worker Pool",
+        icon: "service",
+        x: 1120,
+        y: 300,
+      },
+    ],
+    edges: [
+      { id: "Client-API", from: "Client-1", to: "API-Svc" },
+      { id: "API-DB", from: "API-Svc", to: "DB-Jobs" },
+      { id: "Coordinator-DB", from: "Coordinator", to: "DB-Jobs" },
+      { id: "Coordinator-Queue", from: "Coordinator", to: "Message-Queue" },
+      { id: "Queue-Workers", from: "Message-Queue", to: "Workers" },
+    ],
+  },
+
+  // ── Payment System problem ──────────────────────────────────────────
+
+  "payment-system": {
+    nodes: [
+      { id: "Client-1", type: "client", name: "Client", icon: "client", x: 0, y: 150 },
+      {
+        id: "Payment-Svc",
+        type: "payment-service",
+        name: "Payment Service",
+        icon: "service",
+        x: 280,
+        y: 150,
+      },
+      {
+        id: "Ledger-DB",
+        type: "ledger-database",
+        name: "Ledger DB (SQL)",
+        icon: "sql",
+        x: 560,
+        y: 50,
+      },
+      {
+        id: "PSP",
+        type: "psp",
+        name: "Stripe/PayPal",
+        icon: "service",
+        x: 560,
+        y: 280,
+      },
+      {
+        id: "Reconciler",
+        type: "reconciliation",
+        name: "Reconciliation Job",
+        icon: "service",
+        x: 840,
+        y: 50,
+      },
+    ],
+    edges: [
+      { id: "Client-Payment", from: "Client-1", to: "Payment-Svc" },
+      { id: "Payment-Ledger", from: "Payment-Svc", to: "Ledger-DB" },
+      { id: "Payment-PSP", from: "Payment-Svc", to: "PSP" },
+      { id: "PSP-Payment", from: "PSP", to: "Payment-Svc" },
+      { id: "Reconciler-DB", from: "Reconciler", to: "Ledger-DB" },
+    ],
+  },
+
   // ── Sharding: Consistent hashing (Batch 6) ───────────────────────────
 
   "shard-consistent-hashing": {

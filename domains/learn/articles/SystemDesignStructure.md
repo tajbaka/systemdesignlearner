@@ -66,7 +66,6 @@ This phase translates the system's goals (functional requirements) into structur
 
 #### Communication Flow Analysis
 
-- This phase is about translating the system's goals (functional requirements) into structured data and communication interfaces.
 - Is our communication **one directional**? If that's the case, which API are we using (**REST**, **RPC**, **GraphQL**)?
 - Is communication **bi-directional**? Are we using **WebSockets** or **Server-Sent Events**?
 

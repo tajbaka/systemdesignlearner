@@ -41,7 +41,7 @@ That's it. Two main operations. Don't overcomplicate it in the interview.
 
 **Low latency for redirects**
 
-- Nobody wants to wait more than half a second for a redirect, redirect.
+- Nobody wants to wait more than half a second for a redirect.
 - This is the critical path that affects user experience so our target is under 100ms for the lookup
 
 **High read traffic**
