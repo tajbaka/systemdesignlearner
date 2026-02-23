@@ -1,6 +1,7 @@
 # All crawlers
 User-agent: *
 Allow: /
+Disallow: /_next/static/
 
 # AI Crawlers — explicitly allowed
 User-agent: GPTBot
