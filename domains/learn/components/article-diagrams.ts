@@ -1366,6 +1366,75 @@ const diagrams: Record<string, ArticleDiagramConfig> = {
 
   // ── Sharding: Consistent hashing (Batch 6) ───────────────────────────
 
+  // ── Web Crawler problem ───────────────────────────────────────────
+
+  "web-crawler": {
+    nodes: [
+      {
+        id: "Frontier",
+        type: "url-frontier",
+        name: "URL Frontier",
+        icon: "queue",
+        x: 0,
+        y: 180,
+      },
+      {
+        id: "Fetcher",
+        type: "fetcher-workers",
+        name: "HTML Fetcher Workers",
+        icon: "service",
+        x: 280,
+        y: 180,
+      },
+      {
+        id: "DNS",
+        type: "dns-resolver",
+        name: "Custom DNS Resolver",
+        icon: "cache",
+        x: 280,
+        y: 0,
+      },
+      {
+        id: "Parser",
+        type: "extractor-parser",
+        name: "Extractor / Parser",
+        icon: "service",
+        x: 560,
+        y: 180,
+      },
+      {
+        id: "BloomFilter",
+        type: "bloom-filter",
+        name: "Bloom Filter",
+        icon: "cache",
+        x: 560,
+        y: 360,
+      },
+      {
+        id: "Storage",
+        type: "content-storage",
+        name: "Blob Storage + DB",
+        icon: "bucket",
+        x: 840,
+        y: 60,
+      },
+    ],
+    edges: [
+      { id: "Frontier-Fetcher", from: "Frontier", to: "Fetcher" },
+      { id: "Fetcher-DNS", from: "Fetcher", to: "DNS" },
+      { id: "Fetcher-Parser", from: "Fetcher", to: "Parser" },
+      { id: "Parser-Bloom", from: "Parser", to: "BloomFilter" },
+      {
+        id: "Parser-Frontier",
+        from: "Parser",
+        to: "Frontier",
+        sourceHandle: "bottom",
+        targetHandle: "bottom",
+      },
+      { id: "Parser-Storage", from: "Parser", to: "Storage" },
+    ],
+  },
+
   "shard-consistent-hashing": {
     nodes: [
       { id: "N1", type: "database", name: "Shard A", icon: "sql", x: 200, y: 0 },
