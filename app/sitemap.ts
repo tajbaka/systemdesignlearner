@@ -8,8 +8,12 @@ const PRACTICE_SLUGS = [
   "pastebin",
   "rate-limiter",
   "notification-system",
-  "whatsapp",
+  "design-whatsapp",
   "leaderboard",
+  "job-scheduler",
+  "payment-system",
+  "design-dropbox",
+  "design-web-crawler",
 ];
 // Only include intro pages — non-intro steps are gated behind user progress
 // and will redirect crawlers back to intro (access control)
