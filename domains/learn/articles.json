@@ -92,6 +92,18 @@
         {
           "id": "29",
           "slug": "consistency-patterns"
+        },
+        {
+          "id": "31",
+          "slug": "storage-types"
+        },
+        {
+          "id": "32",
+          "slug": "delta-sync"
+        },
+        {
+          "id": "33",
+          "slug": "presigned-urls"
         }
       ]
     },
@@ -131,6 +143,10 @@
         {
           "id": "30",
           "slug": "design-payment-system"
+        },
+        {
+          "id": "34",
+          "slug": "design-dropbox"
         }
       ]
     }
@@ -1282,6 +1298,142 @@
         "webhooks",
         "reconciliation",
         "ledger",
+        "scalable architecture",
+        "system design problem"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "storage-types",
+      "title": "Block Storage vs Object Storage",
+      "subtitle": "Understanding storage options and when to use each in distributed systems",
+      "description": "Learn the differences between block storage (EBS), object storage (S3), and file storage (EFS). Covers when to use each, the metadata-content separation pattern, durability guarantees, and cost trade-offs for system design interviews.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-24",
+      "readTime": "10 min",
+      "markdownFile": "StorageTypes.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "block storage",
+        "object storage",
+        "S3",
+        "EBS",
+        "file storage",
+        "storage comparison",
+        "metadata separation",
+        "durability",
+        "system design interview",
+        "cloud storage"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-block-storage", "title": "What Is Block Storage" },
+        { "id": "what-is-object-storage", "title": "What Is Object Storage" },
+        {
+          "id": "block-vs-object-storage-comparison",
+          "title": "Block vs Object Storage Comparison"
+        },
+        { "id": "when-to-use-each-in-system-design", "title": "When to Use Each in System Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "delta-sync",
+      "title": "Delta Sync & Merkle Trees",
+      "subtitle": "Syncing file changes efficiently with chunking and hash trees",
+      "description": "Learn how delta sync works: file chunking, content-defined chunking (CDC), hash-based change detection, Merkle trees for efficient diff, and the rsync algorithm. Essential for designing Dropbox, Google Drive, and any file synchronization system.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-24",
+      "readTime": "10 min",
+      "markdownFile": "DeltaSync.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "delta sync",
+        "file chunking",
+        "Merkle tree",
+        "content-defined chunking",
+        "rsync",
+        "hash tree",
+        "file synchronization",
+        "bandwidth optimization",
+        "system design interview",
+        "Dropbox sync"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "the-problem-syncing-large-files", "title": "The Problem: Syncing Large Files" },
+        { "id": "file-chunking", "title": "File Chunking" },
+        { "id": "content-defined-chunking", "title": "Content-Defined Chunking" },
+        { "id": "detecting-changes-with-hashes", "title": "Detecting Changes with Hashes" },
+        { "id": "merkle-trees-for-efficient-diff", "title": "Merkle Trees for Efficient Diff" },
+        { "id": "the-complete-sync-flow", "title": "The Complete Sync Flow" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "presigned-urls",
+      "title": "Presigned URLs",
+      "subtitle": "Secure, direct-to-storage uploads and downloads without proxying through your servers",
+      "description": "Learn how presigned URLs enable clients to upload and download files directly to S3 without exposing credentials. Covers upload and download flows, security considerations, expiration policies, and when to use presigned URLs in system design.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-24",
+      "readTime": "10 min",
+      "markdownFile": "PresignedUrls.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "presigned URLs",
+        "S3 presigned",
+        "direct upload",
+        "signed URLs",
+        "secure upload",
+        "object storage",
+        "file upload",
+        "system design interview",
+        "AWS S3",
+        "CloudFront"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-are-presigned-urls", "title": "What Are Presigned URLs" },
+        { "id": "how-they-work", "title": "How They Work" },
+        { "id": "upload-flow-with-presigned-urls", "title": "Upload Flow with Presigned URLs" },
+        { "id": "download-flow-with-presigned-urls", "title": "Download Flow with Presigned URLs" },
+        { "id": "security-considerations", "title": "Security Considerations" },
+        { "id": "when-to-use-presigned-urls", "title": "When to Use Presigned URLs" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-dropbox",
+      "title": "Design Dropbox (Google Drive)",
+      "subtitle": "Building a cloud file sync service with chunking, presigned URLs, and real-time notifications",
+      "description": "Learn how to design a production-ready file sync service like Dropbox or Google Drive. This guide covers file chunking and delta sync for bandwidth efficiency, presigned URLs for direct-to-S3 uploads, content-addressable storage for deduplication, and real-time cross-device synchronization.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-24",
+      "readTime": "15 min",
+      "markdownFile": "design-dropbox.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "Dropbox",
+        "Google Drive",
+        "file sync",
+        "system design interview",
+        "presigned URLs",
+        "delta sync",
+        "file chunking",
+        "object storage",
+        "real-time sync",
         "scalable architecture",
         "system design problem"
       ],
