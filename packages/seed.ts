@@ -7,15 +7,18 @@
  *   npm run seed -- --update url-shortener          # Update specific problem, preserves user data
  *   npm run seed -- --update url-shortener,pastebin # Update multiple problems, preserves user data
  *   npm run seed -- --force                         # Force: overwrites ALL problems, deletes ALL user data
+ *   npm run seed -- --update web-crawler --notify   # Update + send PostHog events for new problems
  *
  * Or directly:
  *   npx tsx packages/seed.ts
  *   npx tsx packages/seed.ts --update url-shortener
+ *   npx tsx packages/seed.ts --update web-crawler --notify
  *   npx tsx packages/seed.ts --force
  */
 
 import { config } from "dotenv";
 import { resolve } from "path";
+import { PostHog } from "posthog-node";
 import { URL_SHORTENER_PROBLEM } from "./problems/url-shortener";
 import { PASTEBIN_PROBLEM } from "./problems/pastebin";
 import { RATE_LIMITER_PROBLEM } from "./problems/rate-limiter";
@@ -243,12 +246,67 @@ async function seedProblem(
   console.log(`  Steps: ${problemData.steps.length}`);
   console.log("─────────────────────────────────────────\n");
 
-  return { slug: problemData.slug, isNew: !existingProblem, updated: true };
+  return {
+    slug: problemData.slug,
+    title: problemData.version.title,
+    difficulty: problemData.version.difficulty,
+    description: problemData.version.description,
+    isNew: !existingProblem,
+    updated: true,
+  };
+}
+
+async function notifyUsersOfNewProblems(
+  newProblems: { slug: string; title: string; difficulty: string; description: string }[]
+) {
+  const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
+
+  if (!posthogKey) {
+    console.log("⚠️  NEXT_PUBLIC_POSTHOG_KEY not set — skipping PostHog notifications");
+    return;
+  }
+
+  const posthog = new PostHog(posthogKey, { host: posthogHost });
+
+  try {
+    const { db, profiles } = await import("./drizzle");
+    const { and, isNotNull, isNull } = await import("drizzle-orm");
+
+    const users = await db
+      .select({ email: profiles.email })
+      .from(profiles)
+      .where(and(isNotNull(profiles.email), isNull(profiles.deletedAt)));
+
+    console.log(`\n📧 Sending new_problem_available events to ${users.length} user(s)...`);
+
+    for (const user of users) {
+      for (const problem of newProblems) {
+        posthog.capture({
+          distinctId: user.email!,
+          event: "new_problem_available",
+          properties: {
+            problem_slug: problem.slug,
+            problem_title: problem.title,
+            problem_difficulty: problem.difficulty,
+            problem_description: problem.description,
+          },
+        });
+      }
+    }
+
+    await posthog.shutdown();
+    console.log(`✅ Sent ${users.length * newProblems.length} new_problem_available event(s)`);
+  } catch (error) {
+    console.error("❌ Error sending PostHog notifications:", error);
+    await posthog.shutdown();
+  }
 }
 
 async function seedDatabase() {
   const args = process.argv.slice(2);
   const forceMode = args.includes("--force");
+  const notifyMode = args.includes("--notify");
 
   // Parse --update flag
   const updateFlagIndex = args.findIndex((arg) => arg === "--update");
@@ -294,7 +352,10 @@ async function seedDatabase() {
       results.push(result);
     }
 
-    const newProblems = results.filter((r) => r.isNew);
+    const newProblems = results.filter(
+      (r): r is typeof r & { isNew: true; title: string; difficulty: string; description: string } =>
+        !!r.isNew
+    );
     const updatedProblems = results.filter((r) => !r.isNew && r.updated);
 
     console.log("\n🎉 Database seed complete!");
@@ -311,6 +372,13 @@ async function seedDatabase() {
       console.log(`  ℹ️  User progress preserved`);
     }
     console.log("─────────────────────────────────────────");
+
+    // Send PostHog events for new problems so workflows can trigger emails
+    if (notifyMode && newProblems.length > 0) {
+      await notifyUsersOfNewProblems(newProblems);
+    } else if (notifyMode && newProblems.length === 0) {
+      console.log("\n📧 --notify: No new problems to notify about");
+    }
   } catch (error) {
     console.error("❌ Error seeding database:", error);
     throw error;

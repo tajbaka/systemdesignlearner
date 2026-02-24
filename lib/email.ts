@@ -2,7 +2,9 @@ import { Resend } from "resend";
 import { render } from "@react-email/components";
 import FeedbackConfirmationEmail from "@/emails/feedback-confirmation";
 import NewsletterConfirmationEmail from "@/emails/newsletter-confirmation";
+import NewProblemEmail from "@/emails/new-problem";
 import { logger } from "@/lib/logger";
+import { getUnsubscribeUrl } from "@/lib/unsubscribe";
 
 // Default sender email (configure this in your Resend dashboard)
 const FROM_EMAIL = process.env.EMAIL_FROM || "onboarding@resend.dev";
@@ -29,6 +31,15 @@ export interface SendFeedbackConfirmationParams {
 
 export interface SendNewsletterConfirmationParams {
   to: string;
+}
+
+export interface SendNewProblemNotificationParams {
+  to: string;
+  problemTitle: string;
+  problemDescription: string;
+  problemDifficulty: "easy" | "medium" | "hard";
+  problemSlug: string;
+  timeToComplete: string;
 }
 
 /**
@@ -99,6 +110,62 @@ export async function sendNewsletterConfirmation({ to }: SendNewsletterConfirmat
     return { success: true, data };
   } catch (error) {
     logger.error("Error sending newsletter confirmation email:", error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Sends a new problem notification email to the user
+ */
+export async function sendNewProblemNotification({
+  to,
+  problemTitle,
+  problemDescription,
+  problemDifficulty,
+  problemSlug,
+  timeToComplete,
+}: SendNewProblemNotificationParams) {
+  try {
+    const resend = getResendClient();
+    if (!resend) {
+      logger.warn("RESEND_API_KEY not configured. Skipping email send.");
+      return { success: false, error: "Email service not configured" };
+    }
+
+    const unsubscribeUrl = getUnsubscribeUrl(to);
+
+    const emailHtml = await render(
+      NewProblemEmail({
+        problemTitle,
+        problemDescription,
+        problemDifficulty,
+        problemSlug,
+        timeToComplete,
+        recipientEmail: to,
+        unsubscribeUrl,
+      })
+    );
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [to],
+      subject: `New Challenge: ${problemTitle} - System Design Sandbox`,
+      html: emailHtml,
+      headers: {
+        "List-Unsubscribe": `<${unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
+
+    if (error) {
+      logger.error("Failed to send new problem notification email:", error);
+      return { success: false, error: error.message };
+    }
+
+    logger.log("New problem notification email sent:", data);
+    return { success: true, data };
+  } catch (error) {
+    logger.error("Error sending new problem notification email:", error);
     return { success: false, error: String(error) };
   }
 }
