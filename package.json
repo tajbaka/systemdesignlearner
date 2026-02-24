@@ -56,7 +56,7 @@
     "next": "^16.1.1",
     "pako": "^2.1.0",
     "postgres": "^3.4.7",
-    "posthog-js": "^1.284.0",
+    "posthog-js": "^1.353.0",
     "posthog-node": "^5.9.5",
     "react": "^19.1.2",
     "react-dom": "^19.1.2",
