@@ -251,13 +251,20 @@ async function seedProblem(
     title: problemData.version.title,
     difficulty: problemData.version.difficulty,
     description: problemData.version.description,
+    timeToComplete: problemData.version.timeToComplete,
     isNew: !existingProblem,
     updated: true,
   };
 }
 
 async function notifyUsersOfNewProblems(
-  newProblems: { slug: string; title: string; difficulty: string; description: string }[]
+  newProblems: {
+    slug: string;
+    title: string;
+    difficulty: string;
+    description: string;
+    timeToComplete?: string;
+  }[]
 ) {
   const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
   const posthogHost = process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com";
@@ -286,10 +293,12 @@ async function notifyUsersOfNewProblems(
           distinctId: user.email!,
           event: "new_problem_available",
           properties: {
+            email: user.email!,
             problem_slug: problem.slug,
             problem_title: problem.title,
             problem_difficulty: problem.difficulty,
             problem_description: problem.description,
+            time_to_complete: problem.timeToComplete || "45 minutes",
           },
         });
       }
