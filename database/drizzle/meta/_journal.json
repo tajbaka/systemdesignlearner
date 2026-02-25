@@ -8,6 +8,13 @@
       "when": 1768570346724,
       "tag": "0000_initial_problems_schema",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771945327187,
+      "tag": "0001_gigantic_riptide",
+      "breakpoints": true
     }
   ]
 }

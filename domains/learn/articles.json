@@ -104,6 +104,18 @@
         {
           "id": "33",
           "slug": "presigned-urls"
+        },
+        {
+          "id": "35",
+          "slug": "graph-traversal"
+        },
+        {
+          "id": "36",
+          "slug": "bloom-filters"
+        },
+        {
+          "id": "37",
+          "slug": "dns"
         }
       ]
     },
@@ -147,6 +159,10 @@
         {
           "id": "34",
           "slug": "design-dropbox"
+        },
+        {
+          "id": "38",
+          "slug": "design-web-crawler"
         }
       ]
     }
@@ -1434,6 +1450,145 @@
         "file chunking",
         "object storage",
         "real-time sync",
+        "scalable architecture",
+        "system design problem"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "functional-requirements", "title": "Functional Requirements" },
+        { "id": "non-functional-requirements", "title": "Non-Functional Requirements" },
+        { "id": "api-design", "title": "API Design" },
+        { "id": "high-level-design", "title": "High Level Design" },
+        { "id": "detailed-design", "title": "Detailed Design" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" }
+      ]
+    },
+    {
+      "slug": "graph-traversal",
+      "title": "Graph Traversal (BFS)",
+      "subtitle": "How web crawlers explore billions of pages using breadth-first search",
+      "description": "Learn how BFS and DFS apply to web crawling, why BFS is preferred for discovering pages layer by layer, queue-based traversal, cycle detection with visited sets, priority-based crawling, and considerations for billion-node graphs.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-24",
+      "readTime": "10 min",
+      "markdownFile": "GraphTraversal.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "graph traversal",
+        "BFS",
+        "breadth-first search",
+        "DFS",
+        "web crawling",
+        "directed graph",
+        "cycle detection",
+        "priority crawling",
+        "URL frontier",
+        "system design interview"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "the-web-as-a-directed-graph", "title": "The Web as a Directed Graph" },
+        { "id": "bfs-vs-dfs-for-crawling", "title": "BFS vs DFS for Crawling" },
+        { "id": "queue-based-bfs-traversal", "title": "Queue-Based BFS Traversal" },
+        { "id": "cycle-detection", "title": "Cycle Detection" },
+        { "id": "priority-based-crawling", "title": "Priority-Based Crawling" },
+        { "id": "scaling-to-billions-of-nodes", "title": "Scaling to Billions of Nodes" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "bloom-filters",
+      "title": "Bloom Filters",
+      "subtitle": "Space-efficient probabilistic data structures for membership testing",
+      "description": "Learn how Bloom filters use multiple hash functions and a bit array to test set membership in constant time and minimal space. Covers false positive rates, tuning parameters (m bits, k hashes), counting Bloom filters, and real-world use cases like URL deduplication and cache checks.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-24",
+      "readTime": "10 min",
+      "markdownFile": "BloomFilters.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "Bloom filter",
+        "probabilistic data structure",
+        "hash functions",
+        "bit array",
+        "false positive",
+        "URL deduplication",
+        "membership testing",
+        "space-efficient",
+        "system design interview",
+        "web crawler"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-a-bloom-filter", "title": "What Is a Bloom Filter?" },
+        { "id": "how-bloom-filters-work", "title": "How Bloom Filters Work" },
+        {
+          "id": "false-positives-and-no-false-negatives",
+          "title": "False Positives and No False Negatives"
+        },
+        { "id": "tuning-parameters", "title": "Tuning Parameters" },
+        { "id": "counting-bloom-filters", "title": "Counting Bloom Filters" },
+        { "id": "bloom-filters-vs-hash-sets", "title": "Bloom Filters vs Hash Sets" },
+        { "id": "real-world-use-cases", "title": "Real-World Use Cases" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "dns",
+      "title": "DNS & DNS Caching",
+      "subtitle": "How domain name resolution works and why it matters at scale",
+      "description": "Learn how DNS resolves domain names to IP addresses through recursive and iterative queries, the DNS hierarchy from root servers to authoritative nameservers, TTL and caching layers, DNS as a bottleneck at crawler scale, custom resolvers, and DNS round-robin for load distribution.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-24",
+      "readTime": "10 min",
+      "markdownFile": "Dns.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "DNS",
+        "domain name system",
+        "DNS resolution",
+        "DNS caching",
+        "TTL",
+        "recursive DNS",
+        "authoritative nameserver",
+        "DNS round-robin",
+        "custom resolver",
+        "system design interview"
+      ],
+      "tableOfContents": [
+        { "id": "introduction", "title": "Introduction" },
+        { "id": "what-is-dns", "title": "What Is DNS?" },
+        { "id": "the-dns-hierarchy", "title": "The DNS Hierarchy" },
+        { "id": "recursive-vs-iterative-resolution", "title": "Recursive vs Iterative Resolution" },
+        { "id": "ttl-and-caching-layers", "title": "TTL and Caching Layers" },
+        { "id": "dns-as-a-bottleneck-at-scale", "title": "DNS as a Bottleneck at Scale" },
+        { "id": "custom-dns-resolvers", "title": "Custom DNS Resolvers" },
+        { "id": "dns-round-robin", "title": "DNS Round-Robin" },
+        { "id": "common-interview-mistakes", "title": "Common Interview Mistakes" },
+        { "id": "summary-what-to-remember", "title": "Summary: What to Remember" }
+      ]
+    },
+    {
+      "slug": "design-web-crawler",
+      "title": "Design a Distributed Web Crawler",
+      "subtitle": "Building a scalable system to crawl billions of web pages",
+      "description": "Learn how to design a production-ready distributed web crawler. This guide covers BFS-based URL frontier, politeness policies with per-host rate limiting, Bloom filters for URL deduplication, custom DNS resolution, distributed worker pools, and scaling to billions of pages.",
+      "author": "System Design Sandbox",
+      "date": "2026-02-24",
+      "readTime": "15 min",
+      "markdownFile": "design-web-crawler.md",
+      "removeFirstHeading": true,
+      "keywords": [
+        "web crawler",
+        "distributed crawler",
+        "system design interview",
+        "BFS",
+        "URL frontier",
+        "Bloom filter",
+        "DNS resolution",
+        "politeness policy",
         "scalable architecture",
         "system design problem"
       ],
