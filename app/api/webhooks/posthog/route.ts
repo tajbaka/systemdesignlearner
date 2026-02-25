@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db, profiles } from "@/packages/drizzle";
-import { sendNewProblemNotification, sendProblemReminder } from "@/lib/email";
+import {
+  sendNewProblemNotification,
+  sendProblemReminder,
+  sendProblemLastReminder,
+} from "@/lib/email";
 import { logger } from "@/lib/logger";
 
 const newProblemSchema = z.object({
@@ -25,7 +29,20 @@ const problemReminderSchema = z.object({
   problemSlug: z.string().min(1),
 });
 
-const webhookSchema = z.discriminatedUnion("event", [newProblemSchema, problemReminderSchema]);
+const problemLastReminderSchema = z.object({
+  secret: z.string().min(1, "Secret is required"),
+  event: z.literal("problem_last_reminder"),
+  email: z.string().email("Valid email is required"),
+  problemTitle: z.string().min(1),
+  problemDifficulty: z.enum(["easy", "medium", "hard"]),
+  problemSlug: z.string().min(1),
+});
+
+const webhookSchema = z.discriminatedUnion("event", [
+  newProblemSchema,
+  problemReminderSchema,
+  problemLastReminderSchema,
+]);
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,8 +82,15 @@ export async function POST(request: NextRequest) {
         problemSlug: parsed.data.problemSlug,
         timeToComplete: parsed.data.timeToComplete,
       });
-    } else {
+    } else if (parsed.data.event === "problem_reminder") {
       result = await sendProblemReminder({
+        to: email,
+        problemTitle: parsed.data.problemTitle,
+        problemDifficulty: parsed.data.problemDifficulty,
+        problemSlug: parsed.data.problemSlug,
+      });
+    } else {
+      result = await sendProblemLastReminder({
         to: email,
         problemTitle: parsed.data.problemTitle,
         problemDifficulty: parsed.data.problemDifficulty,

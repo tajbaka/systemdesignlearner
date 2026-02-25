@@ -4,6 +4,7 @@ import FeedbackConfirmationEmail from "@/emails/feedback-confirmation";
 import NewsletterConfirmationEmail from "@/emails/newsletter-confirmation";
 import NewProblemEmail from "@/emails/new-problem";
 import ProblemReminderEmail from "@/emails/problem-reminder";
+import ProblemLastReminderEmail from "@/emails/problem-last-reminder";
 import { logger } from "@/lib/logger";
 import { getUnsubscribeUrl } from "@/lib/unsubscribe";
 
@@ -44,6 +45,13 @@ export interface SendNewProblemNotificationParams {
 }
 
 export interface SendProblemReminderParams {
+  to: string;
+  problemTitle: string;
+  problemDifficulty: "easy" | "medium" | "hard";
+  problemSlug: string;
+}
+
+export interface SendProblemLastReminderParams {
   to: string;
   problemTitle: string;
   problemDifficulty: "easy" | "medium" | "hard";
@@ -226,6 +234,58 @@ export async function sendProblemReminder({
     return { success: true, data };
   } catch (error) {
     logger.error("Error sending problem reminder email:", error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Sends a final reminder email for a problem the user hasn't tried yet
+ */
+export async function sendProblemLastReminder({
+  to,
+  problemTitle,
+  problemDifficulty,
+  problemSlug,
+}: SendProblemLastReminderParams) {
+  try {
+    const resend = getResendClient();
+    if (!resend) {
+      logger.warn("RESEND_API_KEY not configured. Skipping email send.");
+      return { success: false, error: "Email service not configured" };
+    }
+
+    const unsubscribeUrl = getUnsubscribeUrl(to);
+
+    const emailHtml = await render(
+      ProblemLastReminderEmail({
+        problemTitle,
+        problemDifficulty,
+        problemSlug,
+        recipientEmail: to,
+        unsubscribeUrl,
+      })
+    );
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [to],
+      subject: `Last chance: ${problemTitle} - System Design Sandbox`,
+      html: emailHtml,
+      headers: {
+        "List-Unsubscribe": `<${unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
+
+    if (error) {
+      logger.error("Failed to send problem last reminder email:", error);
+      return { success: false, error: error.message };
+    }
+
+    logger.log("Problem last reminder email sent:", data);
+    return { success: true, data };
+  } catch (error) {
+    logger.error("Error sending problem last reminder email:", error);
     return { success: false, error: String(error) };
   }
 }
