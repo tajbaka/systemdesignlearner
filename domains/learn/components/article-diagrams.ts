@@ -1243,6 +1243,129 @@ const diagrams: Record<string, ArticleDiagramConfig> = {
 
   // ── Sharding: Consistent hashing (Batch 6) ───────────────────────────
 
+  // ── Delta Sync: Merkle tree ───────────────────────────────────────
+
+  "merkle-tree": {
+    nodes: [
+      { id: "Root", type: "service", name: "h(ABCD)", icon: "cache", x: 280, y: 0 },
+      { id: "L-AB", type: "service", name: "h(AB)", icon: "cache", x: 120, y: 150 },
+      { id: "R-CD", type: "service", name: "h(CD)", icon: "cache", x: 440, y: 150 },
+      { id: "L-C0", type: "service", name: "h(chunk0)", icon: "cache", x: 30, y: 300 },
+      { id: "L-C1", type: "service", name: "h(chunk1)", icon: "cache", x: 210, y: 300 },
+      { id: "R-C2", type: "service", name: "h(chunk2)", icon: "cache", x: 390, y: 300 },
+      { id: "R-C3", type: "service", name: "h(chunk3)", icon: "cache", x: 570, y: 300 },
+      {
+        id: "T0",
+        type: "textNode",
+        name: "chunk0 (4MB)",
+        icon: "",
+        x: 30,
+        y: 420,
+        width: 140,
+        height: 36,
+      },
+      {
+        id: "T1",
+        type: "textNode",
+        name: "chunk1 (4MB)",
+        icon: "",
+        x: 210,
+        y: 420,
+        width: 140,
+        height: 36,
+      },
+      {
+        id: "T2",
+        type: "textNode",
+        name: "chunk2 (4MB)",
+        icon: "",
+        x: 390,
+        y: 420,
+        width: 140,
+        height: 36,
+      },
+      {
+        id: "T3",
+        type: "textNode",
+        name: "chunk3 (4MB)",
+        icon: "",
+        x: 570,
+        y: 420,
+        width: 140,
+        height: 36,
+      },
+    ],
+    edges: [
+      { id: "Root-LAB", from: "Root", to: "L-AB", sourceHandle: "left", targetHandle: "top" },
+      { id: "Root-RCD", from: "Root", to: "R-CD", sourceHandle: "right", targetHandle: "top" },
+      { id: "LAB-C0", from: "L-AB", to: "L-C0" },
+      { id: "LAB-C1", from: "L-AB", to: "L-C1" },
+      { id: "RCD-C2", from: "R-CD", to: "R-C2" },
+      { id: "RCD-C3", from: "R-CD", to: "R-C3" },
+      { id: "C0-T0", from: "L-C0", to: "T0", edgeType: "dashed" as const },
+      { id: "C1-T1", from: "L-C1", to: "T1", edgeType: "dashed" as const },
+      { id: "C2-T2", from: "R-C2", to: "T2", edgeType: "dashed" as const },
+      { id: "C3-T3", from: "R-C3", to: "T3", edgeType: "dashed" as const },
+    ],
+  },
+
+  // ── Dropbox problem ────────────────────────────────────────────────
+
+  dropbox: {
+    nodes: [
+      { id: "Client-1", type: "client", name: "Client (Watcher)", icon: "client", x: 0, y: 180 },
+      {
+        id: "API-Svc",
+        type: "metadata-api",
+        name: "Metadata API",
+        icon: "service",
+        x: 280,
+        y: 180,
+      },
+      {
+        id: "Block-Store",
+        type: "object-storage",
+        name: "Object Storage (S3)",
+        icon: "bucket",
+        x: 280,
+        y: 0,
+      },
+      {
+        id: "Meta-DB",
+        type: "metadata-db",
+        name: "Metadata DB (SQL)",
+        icon: "sql",
+        x: 560,
+        y: 60,
+      },
+      {
+        id: "Message-Queue",
+        type: "queue",
+        name: "Kafka/RabbitMQ",
+        icon: "queue",
+        x: 560,
+        y: 300,
+      },
+      {
+        id: "Sync-Svc",
+        type: "sync-service",
+        name: "Notification/Sync Svc",
+        icon: "service",
+        x: 840,
+        y: 180,
+      },
+    ],
+    edges: [
+      { id: "Client-BlockStore", from: "Client-1", to: "Block-Store" },
+      { id: "Client-API", from: "Client-1", to: "API-Svc" },
+      { id: "API-DB", from: "API-Svc", to: "Meta-DB" },
+      { id: "API-Queue", from: "API-Svc", to: "Message-Queue" },
+      { id: "Queue-Sync", from: "Message-Queue", to: "Sync-Svc" },
+    ],
+  },
+
+  // ── Sharding: Consistent hashing (Batch 6) ───────────────────────────
+
   "shard-consistent-hashing": {
     nodes: [
       { id: "N1", type: "database", name: "Shard A", icon: "sql", x: 200, y: 0 },

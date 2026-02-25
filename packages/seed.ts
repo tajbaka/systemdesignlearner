@@ -24,6 +24,7 @@ import { WHATSAPP_PROBLEM } from "./problems/whatsapp";
 import { LEADERBOARD_PROBLEM } from "./problems/leaderboard";
 import { JOB_SCHEDULER_PROBLEM } from "./problems/job-scheduler";
 import { PAYMENT_SYSTEM_PROBLEM } from "./problems/payment-system";
+import { DROPBOX_PROBLEM } from "./problems/dropbox";
 
 // Load environment variables - check both root and packages folder
 const rootEnvPath = resolve(process.cwd(), ".env.local");
@@ -61,6 +62,7 @@ const PROBLEMS = [
   LEADERBOARD_PROBLEM,
   JOB_SCHEDULER_PROBLEM,
   PAYMENT_SYSTEM_PROBLEM,
+  DROPBOX_PROBLEM,
 ];
 
 async function seedProblem(
