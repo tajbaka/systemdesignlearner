@@ -30,19 +30,19 @@ import { PAYMENT_SYSTEM_PROBLEM } from "./problems/payment-system";
 import { DROPBOX_PROBLEM } from "./problems/dropbox";
 import { WEB_CRAWLER_PROBLEM } from "./problems/web-crawler";
 
-// Load environment variables - check both root and packages folder
-const rootEnvPath = resolve(process.cwd(), ".env.local");
+// Load environment variables - .env.local first (overrides), then .env (defaults)
+const rootEnvLocalPath = resolve(process.cwd(), ".env.local");
+const rootEnvPath = resolve(process.cwd(), ".env");
 
-let result = config({ path: rootEnvPath });
-if (result.error) {
-  result = config({ path: rootEnvPath });
-}
-
+const result = config({ path: rootEnvLocalPath });
 if (result.error) {
   console.error("Error loading .env.local:", result.error);
-  console.log("Tried paths:", rootEnvPath);
+  console.log("Tried paths:", rootEnvLocalPath);
   process.exit(1);
 }
+
+// Also load .env for keys not in .env.local (e.g. NEXT_PUBLIC_POSTHOG_KEY)
+config({ path: rootEnvPath });
 
 if (!process.env.POSTGRES_URL) {
   console.error("❌ POSTGRES_URL not found in .env.local");
@@ -353,7 +353,9 @@ async function seedDatabase() {
     }
 
     const newProblems = results.filter(
-      (r): r is typeof r & { isNew: true; title: string; difficulty: string; description: string } =>
+      (
+        r
+      ): r is typeof r & { isNew: true; title: string; difficulty: string; description: string } =>
         !!r.isNew
     );
     const updatedProblems = results.filter((r) => !r.isNew && r.updated);
@@ -373,11 +375,30 @@ async function seedDatabase() {
     }
     console.log("─────────────────────────────────────────");
 
-    // Send PostHog events for new problems so workflows can trigger emails
-    if (notifyMode && newProblems.length > 0) {
-      await notifyUsersOfNewProblems(newProblems);
-    } else if (notifyMode && newProblems.length === 0) {
-      console.log("\n📧 --notify: No new problems to notify about");
+    // Send PostHog events so workflows can trigger emails
+    if (notifyMode) {
+      // Notify for new problems, or for updated problems if no new ones
+      const problemsToNotify: {
+        slug: string;
+        title: string;
+        difficulty: string;
+        description: string;
+      }[] =
+        newProblems.length > 0
+          ? newProblems
+          : updatedProblems
+              .filter((r) => "title" in r && r.title)
+              .map((r) => ({
+                slug: r.slug,
+                title: (r as { title: string }).title,
+                difficulty: (r as { difficulty: string }).difficulty,
+                description: (r as { description: string }).description,
+              }));
+      if (problemsToNotify.length > 0) {
+        await notifyUsersOfNewProblems(problemsToNotify);
+      } else {
+        console.log("\n📧 --notify: No problems to notify about");
+      }
     }
   } catch (error) {
     console.error("❌ Error seeding database:", error);
