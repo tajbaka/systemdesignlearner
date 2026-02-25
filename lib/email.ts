@@ -3,6 +3,7 @@ import { render } from "@react-email/components";
 import FeedbackConfirmationEmail from "@/emails/feedback-confirmation";
 import NewsletterConfirmationEmail from "@/emails/newsletter-confirmation";
 import NewProblemEmail from "@/emails/new-problem";
+import ProblemReminderEmail from "@/emails/problem-reminder";
 import { logger } from "@/lib/logger";
 import { getUnsubscribeUrl } from "@/lib/unsubscribe";
 
@@ -40,6 +41,13 @@ export interface SendNewProblemNotificationParams {
   problemDifficulty: "easy" | "medium" | "hard";
   problemSlug: string;
   timeToComplete: string;
+}
+
+export interface SendProblemReminderParams {
+  to: string;
+  problemTitle: string;
+  problemDifficulty: "easy" | "medium" | "hard";
+  problemSlug: string;
 }
 
 /**
@@ -166,6 +174,58 @@ export async function sendNewProblemNotification({
     return { success: true, data };
   } catch (error) {
     logger.error("Error sending new problem notification email:", error);
+    return { success: false, error: String(error) };
+  }
+}
+
+/**
+ * Sends a reminder email for a problem the user hasn't tried yet
+ */
+export async function sendProblemReminder({
+  to,
+  problemTitle,
+  problemDifficulty,
+  problemSlug,
+}: SendProblemReminderParams) {
+  try {
+    const resend = getResendClient();
+    if (!resend) {
+      logger.warn("RESEND_API_KEY not configured. Skipping email send.");
+      return { success: false, error: "Email service not configured" };
+    }
+
+    const unsubscribeUrl = getUnsubscribeUrl(to);
+
+    const emailHtml = await render(
+      ProblemReminderEmail({
+        problemTitle,
+        problemDifficulty,
+        problemSlug,
+        recipientEmail: to,
+        unsubscribeUrl,
+      })
+    );
+
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [to],
+      subject: `Reminder: ${problemTitle} is waiting for you - System Design Sandbox`,
+      html: emailHtml,
+      headers: {
+        "List-Unsubscribe": `<${unsubscribeUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
+
+    if (error) {
+      logger.error("Failed to send problem reminder email:", error);
+      return { success: false, error: error.message };
+    }
+
+    logger.log("Problem reminder email sent:", data);
+    return { success: true, data };
+  } catch (error) {
+    logger.error("Error sending problem reminder email:", error);
     return { success: false, error: String(error) };
   }
 }

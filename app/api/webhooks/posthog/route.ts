@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db, profiles } from "@/packages/drizzle";
-import { sendNewProblemNotification } from "@/lib/email";
+import { sendNewProblemNotification, sendProblemReminder } from "@/lib/email";
 import { logger } from "@/lib/logger";
 
-const posthogWebhookSchema = z.object({
+const newProblemSchema = z.object({
   secret: z.string().min(1, "Secret is required"),
   event: z.literal("new_problem_available"),
   email: z.string().email("Valid email is required"),
@@ -16,17 +16,28 @@ const posthogWebhookSchema = z.object({
   timeToComplete: z.string().min(1),
 });
 
+const problemReminderSchema = z.object({
+  secret: z.string().min(1, "Secret is required"),
+  event: z.literal("problem_reminder"),
+  email: z.string().email("Valid email is required"),
+  problemTitle: z.string().min(1),
+  problemDifficulty: z.enum(["easy", "medium", "hard"]),
+  problemSlug: z.string().min(1),
+});
+
+const webhookSchema = z.discriminatedUnion("event", [newProblemSchema, problemReminderSchema]);
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const parsed = posthogWebhookSchema.safeParse(body);
+    const parsed = webhookSchema.safeParse(body);
 
     if (!parsed.success) {
       const errors = parsed.error.issues.map((issue) => issue.message).join(", ");
       return NextResponse.json({ error: errors }, { status: 400 });
     }
 
-    const { secret, email, ...problemData } = parsed.data;
+    const { secret, email } = parsed.data;
 
     const webhookSecret = process.env.POSTHOG_WEBHOOK_SECRET;
     if (!webhookSecret || secret !== webhookSecret) {
@@ -43,14 +54,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ skipped: true, reason: "unsubscribed" }, { status: 200 });
     }
 
-    const result = await sendNewProblemNotification({
-      to: email,
-      problemTitle: problemData.problemTitle,
-      problemDescription: problemData.problemDescription,
-      problemDifficulty: problemData.problemDifficulty,
-      problemSlug: problemData.problemSlug,
-      timeToComplete: problemData.timeToComplete,
-    });
+    let result;
+
+    if (parsed.data.event === "new_problem_available") {
+      result = await sendNewProblemNotification({
+        to: email,
+        problemTitle: parsed.data.problemTitle,
+        problemDescription: parsed.data.problemDescription,
+        problemDifficulty: parsed.data.problemDifficulty,
+        problemSlug: parsed.data.problemSlug,
+        timeToComplete: parsed.data.timeToComplete,
+      });
+    } else {
+      result = await sendProblemReminder({
+        to: email,
+        problemTitle: parsed.data.problemTitle,
+        problemDifficulty: parsed.data.problemDifficulty,
+        problemSlug: parsed.data.problemSlug,
+      });
+    }
 
     if (!result.success) {
       logger.error("PostHog webhook: failed to send email:", result.error);
