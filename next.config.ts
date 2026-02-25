@@ -87,12 +87,16 @@ const nextConfig: NextConfig = {
 };
 
 // PostHog sourcemap upload: wraps config so PostHog receives sourcemaps before Sentry deletes them
+// Only enable when both the API key and environment ID are present to avoid failing builds
+const hasPostHogSourcemapKeys =
+  Boolean(process.env.POSTHOG_PERSONAL_API_KEY) && Boolean(process.env.POSTHOG_ENV_ID);
+
 const withPostHog = withPostHogConfig(nextConfig, {
   personalApiKey: process.env.POSTHOG_PERSONAL_API_KEY ?? "",
   envId: process.env.POSTHOG_ENV_ID ?? "",
   host: "https://us.i.posthog.com",
   sourcemaps: {
-    enabled: isCI,
+    enabled: isCI && hasPostHogSourcemapKeys,
     // Let Sentry handle deletion — PostHog should not delete since it runs first
     deleteAfterUpload: false,
   },
