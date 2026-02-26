@@ -48,7 +48,6 @@ export default function NonFunctionalStep({
       nextDisabled={false}
       leftAction="back"
       rightAction="next"
-      showTooltip={true}
     >
       <TextAreaCard
         title="Define performance and scale constraints"

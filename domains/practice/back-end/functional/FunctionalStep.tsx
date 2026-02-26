@@ -43,7 +43,6 @@ export default function FunctionalStep({ config, handlers, stepType, slug }: Fun
       nextDisabled={false}
       leftAction="back"
       rightAction="next"
-      showTooltip={true}
     >
       <TextAreaCard
         title="Define key features and user actions"

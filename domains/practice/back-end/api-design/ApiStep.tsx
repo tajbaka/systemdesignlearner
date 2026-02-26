@@ -100,7 +100,6 @@ export default function ApiStep({ config, handlers, stepType, slug }: ApiStepPro
       nextDisabled={isNextDisabled}
       leftAction="back"
       rightAction="next"
-      showTooltip={true}
     >
       <div className="relative h-full sm:h-auto">
         {/* Desktop layout */}

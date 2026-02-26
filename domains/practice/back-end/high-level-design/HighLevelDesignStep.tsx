@@ -67,7 +67,6 @@ export default function HighLevelDesignStep({
       fullWidth={true}
       leftAction="back"
       rightAction="next"
-      showTooltip={true}
     >
       <TooltipProvider>
         <DesignBoard
