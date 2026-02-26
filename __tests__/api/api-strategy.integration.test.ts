@@ -3,7 +3,7 @@ import {
   apiStrategy,
   type ExtractedApiInfo,
 } from "@/app/api/v2/practice/(evaluation)/strategies/api";
-import { getGeminiModel, getGeminiModelForExtraction } from "@/lib/gemini";
+import { generateEvaluation, generateExtraction } from "@/lib/gemini";
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
 
 // Helper to strip markdown code blocks if the LLM wraps JSON
@@ -142,15 +142,11 @@ describeOrSkip("API Evaluation Strategy - Gemini Integration", () => {
       }>;
     }
   ) {
-    const extractionModel = getGeminiModelForExtraction();
-    const evaluationModel = getGeminiModel();
-
     // Step 1: Extract structured data from EACH endpoint's description IN PARALLEL
     const extractionPromises = endpoints.endpoints.map(async (endpoint) => {
       const extractionPrompt = apiStrategy.buildExtractionPrompt(endpoint);
       try {
-        const result = await extractionModel.generateContent(extractionPrompt);
-        const rawText = result.response.text();
+        const rawText = await generateExtraction(extractionPrompt);
         const extracted = JSON.parse(cleanJson(rawText)) as ExtractedApiInfo;
         return { endpointId: endpoint.id, extracted, error: null };
       } catch (e) {
@@ -181,8 +177,7 @@ describeOrSkip("API Evaluation Strategy - Gemini Integration", () => {
       extractions
     );
 
-    const evalResult = await evaluationModel.generateContent(evaluationPrompt);
-    const responseText = evalResult.response.text();
+    const responseText = await generateEvaluation(evaluationPrompt);
 
     return {
       evaluation: apiStrategy.parseResponse(responseText, config, endpoints),

@@ -1,41 +1,61 @@
-import {
-  GoogleGenerativeAI,
-  SchemaType,
-  type Schema, // <--- Import the Schema type
-} from "@google/generative-ai";
+import { GoogleGenAI as PostHogGoogleGenAI } from "@posthog/ai";
+import { GoogleGenAI, Type } from "@google/genai";
+import { PostHog } from "posthog-node";
 
-let genAI: GoogleGenerativeAI | null = null;
+// Server-side PostHog client (singleton)
+let phClient: PostHog | null = null;
 
-function getGenAI() {
+function getPostHogClient(): PostHog | null {
+  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+  if (!key) return null;
+
+  if (!phClient) {
+    phClient = new PostHog(key, {
+      host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
+    });
+  }
+  return phClient;
+}
+
+// Gemini client with PostHog LLM analytics (singleton)
+let client: GoogleGenAI | PostHogGoogleGenAI | null = null;
+
+function getClient(): GoogleGenAI | PostHogGoogleGenAI {
   if (!process.env.GEMINI_API_KEY) {
     throw new Error(
       "GEMINI_API_KEY environment variable is not set. Please add it to your .env file."
     );
   }
 
-  if (!genAI) {
-    genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+  if (!client) {
+    const posthog = getPostHogClient();
+    client = posthog
+      ? new PostHogGoogleGenAI({ apiKey: process.env.GEMINI_API_KEY, posthog })
+      : new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   }
 
-  return genAI;
+  return client;
 }
+
+const MODEL = "gemini-2.0-flash";
+const TEMPERATURE = 0.1;
 
 /**
  * Schema for Functional & Non-Functional evaluation.
  * These steps use a simple met/not-met boolean.
  */
-const functionalEvaluationSchema: Schema = {
-  type: SchemaType.OBJECT,
+const functionalEvaluationSchema = {
+  type: Type.OBJECT,
   properties: {
     results: {
-      type: SchemaType.ARRAY,
+      type: Type.ARRAY,
       items: {
-        type: SchemaType.OBJECT,
+        type: Type.OBJECT,
         properties: {
-          id: { type: SchemaType.STRING },
-          feedback: { type: SchemaType.STRING },
-          relatedHintId: { type: SchemaType.STRING, nullable: true },
-          met: { type: SchemaType.BOOLEAN },
+          id: { type: Type.STRING },
+          feedback: { type: Type.STRING },
+          relatedHintId: { type: Type.STRING, nullable: true },
+          met: { type: Type.BOOLEAN },
         },
         required: ["id", "feedback", "met"],
       },
@@ -48,22 +68,22 @@ const functionalEvaluationSchema: Schema = {
  * Schema for API evaluation with strict field requirements.
  * All correctness fields are REQUIRED to ensure consistent responses.
  */
-const apiEvaluationSchema: Schema = {
-  type: SchemaType.OBJECT,
+const apiEvaluationSchema = {
+  type: Type.OBJECT,
   properties: {
     results: {
-      type: SchemaType.ARRAY,
+      type: Type.ARRAY,
       items: {
-        type: SchemaType.OBJECT,
+        type: Type.OBJECT,
         properties: {
-          id: { type: SchemaType.STRING },
-          feedback: { type: SchemaType.STRING },
-          relatedHintId: { type: SchemaType.STRING, nullable: true },
-          found: { type: SchemaType.BOOLEAN },
-          correctMethod: { type: SchemaType.BOOLEAN },
-          correctPath: { type: SchemaType.BOOLEAN },
-          correctDescription: { type: SchemaType.BOOLEAN },
-          matchedEndpointId: { type: SchemaType.STRING, nullable: true },
+          id: { type: Type.STRING },
+          feedback: { type: Type.STRING },
+          relatedHintId: { type: Type.STRING, nullable: true },
+          found: { type: Type.BOOLEAN },
+          correctMethod: { type: Type.BOOLEAN },
+          correctPath: { type: Type.BOOLEAN },
+          correctDescription: { type: Type.BOOLEAN },
+          matchedEndpointId: { type: Type.STRING, nullable: true },
         },
         required: ["id", "feedback", "found", "correctMethod", "correctPath", "correctDescription"],
       },
@@ -73,67 +93,79 @@ const apiEvaluationSchema: Schema = {
 };
 
 /**
- * Get Gemini 2.0 Flash for Functional/Non-Functional evaluation
- */
-export function getGeminiModel() {
-  const ai = getGenAI();
-  return ai.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: {
-      temperature: 0.1,
-      responseMimeType: "application/json",
-      responseSchema: functionalEvaluationSchema,
-    },
-  });
-}
-
-/**
- * Get Gemini 2.0 Flash for API evaluation with strict schema
- * All correctness fields (found, correctMethod, correctPath, correctDescription) are required
- */
-export function getGeminiModelForApiEvaluation() {
-  const ai = getGenAI();
-  return ai.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: {
-      temperature: 0.1,
-      responseMimeType: "application/json",
-      responseSchema: apiEvaluationSchema,
-    },
-  });
-}
-
-/**
  * Schema for API extraction - flat structure with 5 fields
  */
-const extractionSchema: Schema = {
-  type: SchemaType.OBJECT,
+const extractionSchema = {
+  type: Type.OBJECT,
   properties: {
-    mainAction: { type: SchemaType.STRING },
-    requestBody: { type: SchemaType.STRING },
-    responseFormat: { type: SchemaType.STRING },
-    successStatusCode: { type: SchemaType.STRING },
+    mainAction: { type: Type.STRING },
+    requestBody: { type: Type.STRING },
+    responseFormat: { type: Type.STRING },
+    successStatusCode: { type: Type.STRING },
     errorCases: {
-      type: SchemaType.ARRAY,
-      items: { type: SchemaType.STRING },
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
     },
   },
   required: ["mainAction", "requestBody", "responseFormat", "successStatusCode", "errorCases"],
 };
 
 /**
- * Get Gemini 2.0 Flash with JSON Mode for extraction (different schema)
+ * Generate a Functional/Non-Functional evaluation using Gemini.
  */
-export function getGeminiModelForExtraction() {
-  const ai = getGenAI();
-  return ai.getGenerativeModel({
-    model: "gemini-2.0-flash",
-    generationConfig: {
-      temperature: 0.1,
+export async function generateEvaluation(
+  prompt: string,
+  posthogDistinctId?: string
+): Promise<string> {
+  const response = await getClient().models.generateContent({
+    model: MODEL,
+    contents: prompt,
+    config: {
+      temperature: TEMPERATURE,
+      responseMimeType: "application/json",
+      responseSchema: functionalEvaluationSchema,
+    },
+    posthogDistinctId,
+  });
+  return response.text ?? "";
+}
+
+/**
+ * Generate an API evaluation using Gemini with strict schema.
+ */
+export async function generateApiEvaluation(
+  prompt: string,
+  posthogDistinctId?: string
+): Promise<string> {
+  const response = await getClient().models.generateContent({
+    model: MODEL,
+    contents: prompt,
+    config: {
+      temperature: TEMPERATURE,
+      responseMimeType: "application/json",
+      responseSchema: apiEvaluationSchema,
+    },
+    posthogDistinctId,
+  });
+  return response.text ?? "";
+}
+
+/**
+ * Generate an API extraction using Gemini.
+ */
+export async function generateExtraction(
+  prompt: string,
+  posthogDistinctId?: string
+): Promise<string> {
+  const response = await getClient().models.generateContent({
+    model: MODEL,
+    contents: prompt,
+    config: {
+      temperature: TEMPERATURE,
       responseMimeType: "application/json",
       responseSchema: extractionSchema,
     },
+    posthogDistinctId,
   });
+  return response.text ?? "";
 }
-
-export { getGenAI };

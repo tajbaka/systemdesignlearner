@@ -29,6 +29,7 @@ import { JOB_SCHEDULER_PROBLEM } from "./problems/job-scheduler";
 import { PAYMENT_SYSTEM_PROBLEM } from "./problems/payment-system";
 import { DROPBOX_PROBLEM } from "./problems/dropbox";
 import { WEB_CRAWLER_PROBLEM } from "./problems/web-crawler";
+import { YOUTUBE_PROBLEM } from "./problems/youtube";
 
 // Load environment variables - .env.local first (overrides), then .env (defaults)
 const rootEnvLocalPath = resolve(process.cwd(), ".env.local");
@@ -68,6 +69,7 @@ const PROBLEMS = [
   PAYMENT_SYSTEM_PROBLEM,
   DROPBOX_PROBLEM,
   WEB_CRAWLER_PROBLEM,
+  YOUTUBE_PROBLEM,
 ];
 
 async function seedProblem(
@@ -385,28 +387,15 @@ async function seedDatabase() {
     console.log("─────────────────────────────────────────");
 
     // Send PostHog events so workflows can trigger emails
+    // IMPORTANT: Only notify for genuinely NEW problems to prevent duplicate emails.
+    // If you re-run --update --notify for an existing problem, no emails will be sent.
     if (notifyMode) {
-      // Notify for new problems, or for updated problems if no new ones
-      const problemsToNotify: {
-        slug: string;
-        title: string;
-        difficulty: string;
-        description: string;
-      }[] =
-        newProblems.length > 0
-          ? newProblems
-          : updatedProblems
-              .filter((r) => "title" in r && r.title)
-              .map((r) => ({
-                slug: r.slug,
-                title: (r as { title: string }).title,
-                difficulty: (r as { difficulty: string }).difficulty,
-                description: (r as { description: string }).description,
-              }));
-      if (problemsToNotify.length > 0) {
-        await notifyUsersOfNewProblems(problemsToNotify);
+      if (newProblems.length > 0) {
+        await notifyUsersOfNewProblems(newProblems);
       } else {
-        console.log("\n📧 --notify: No problems to notify about");
+        console.log(
+          "\n📧 --notify: No NEW problems to notify about (updated problems don't trigger emails)"
+        );
       }
     }
   } catch (error) {

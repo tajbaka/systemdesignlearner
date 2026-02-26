@@ -18,11 +18,7 @@ import {
 } from "@/app/api/v2/practice/(evaluation)/strategies/api";
 import { validateMatchedEndpoint } from "@/app/api/v2/practice/(evaluation)/assertions/api";
 import type { ApiDefinitionInput } from "@/app/api/v2/practice/(evaluation)/validation";
-import {
-  getGeminiModel,
-  getGeminiModelForExtraction,
-  getGeminiModelForApiEvaluation,
-} from "@/lib/gemini";
+import { generateEvaluation, generateApiEvaluation, generateExtraction } from "@/lib/gemini";
 import type {
   EvaluationResult,
   APIEvaluationResult,
@@ -236,8 +232,7 @@ export async function POST(
     } else if (stepType === "api") {
       // API step uses two-step evaluation: extraction then evaluation
       const apiInput = validatedInput as ApiDefinitionInput;
-      const extractionModel = getGeminiModelForExtraction();
-      const evaluationModel = getGeminiModelForApiEvaluation();
+      const distinctId = profile.email ?? undefined;
 
       // Check if we can use cached extractions (version must match)
       const canUseCachedExtractions =
@@ -292,8 +287,7 @@ export async function POST(
       const extractionPromises = endpointsNeedingExtraction.map(async (endpoint) => {
         const extractionPrompt = apiStrategy.buildExtractionPrompt(endpoint);
         try {
-          const result = await extractionModel.generateContent(extractionPrompt);
-          const rawText = result.response.text();
+          const rawText = await generateExtraction(extractionPrompt, distinctId);
           const extracted = JSON.parse(cleanJson(rawText)) as ExtractedApiInfo;
           return { endpointId: endpoint.id, extracted, error: null };
         } catch (e) {
@@ -351,8 +345,7 @@ export async function POST(
         promptLength: evaluationPrompt.length,
       });
 
-      const evalResult = await evaluationModel.generateContent(evaluationPrompt);
-      const responseText = evalResult.response.text();
+      const responseText = await generateApiEvaluation(evaluationPrompt, distinctId);
 
       logger.info("Received AI evaluation response", {
         slug,
@@ -518,9 +511,7 @@ export async function POST(
           promptLength: prompt.length,
         });
 
-        const model = getGeminiModel();
-        const result = await model.generateContent(prompt);
-        const responseText = result.response.text();
+        const responseText = await generateEvaluation(prompt, profile.email ?? undefined);
 
         logger.info("Received AI response", {
           slug,

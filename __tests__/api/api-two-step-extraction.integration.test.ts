@@ -4,7 +4,7 @@ import {
   type ExtractedApiInfo,
 } from "@/app/api/v2/practice/(evaluation)/strategies/api";
 import { validateMatchedEndpoint } from "@/app/api/v2/practice/(evaluation)/assertions/api";
-import { getGeminiModel, getGeminiModelForExtraction } from "@/lib/gemini";
+import { generateEvaluation, generateExtraction } from "@/lib/gemini";
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
 
 /**
@@ -69,10 +69,8 @@ describeOrSkip("Two-Step Extraction - Arian's Failing Cases", () => {
     const endpoint = {
       description: { value: description },
     };
-    const model = getGeminiModelForExtraction();
     const extractionPrompt = apiStrategy.buildExtractionPrompt(endpoint);
-    const result = await model.generateContent(extractionPrompt);
-    const rawText = result.response.text();
+    const rawText = await generateExtraction(extractionPrompt);
     return JSON.parse(cleanJson(rawText)) as ExtractedApiInfo;
   }
 
@@ -88,15 +86,11 @@ describeOrSkip("Two-Step Extraction - Arian's Failing Cases", () => {
       }>;
     }
   ) {
-    const extractionModel = getGeminiModelForExtraction();
-    const evaluationModel = getGeminiModel();
-
     // Step 1: Extract from all endpoints in parallel
     const extractionPromises = endpoints.endpoints.map(async (endpoint) => {
       const extractionPrompt = apiStrategy.buildExtractionPrompt(endpoint);
       try {
-        const result = await extractionModel.generateContent(extractionPrompt);
-        const rawText = result.response.text();
+        const rawText = await generateExtraction(extractionPrompt);
         const extracted = JSON.parse(cleanJson(rawText)) as ExtractedApiInfo;
         return { endpointId: endpoint.id, extracted };
       } catch {
@@ -124,8 +118,7 @@ describeOrSkip("Two-Step Extraction - Arian's Failing Cases", () => {
       endpoints,
       extractions
     );
-    const evalResult = await evaluationModel.generateContent(evaluationPrompt);
-    const responseText = evalResult.response.text();
+    const responseText = await generateEvaluation(evaluationPrompt);
 
     const evaluation = apiStrategy.parseResponse(responseText, config, endpoints);
 
