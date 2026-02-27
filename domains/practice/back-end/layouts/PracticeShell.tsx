@@ -101,7 +101,9 @@ function ShellContent({ children }: ShellContentProps) {
 
   return (
     <SidepanelContext.Provider value={{ openMobilePanel }}>
-      <Sidebar theme="dark" />
+      <div className={mobilePanelOpen ? "hidden md:block" : ""}>
+        <Sidebar theme="dark" />
+      </div>
       <TooltipProvider>
         <div className="flex h-full w-full flex-1 flex-col md:flex-row md:min-h-0 md:pl-16">
           {/* Desktop: left panel as sibling */}

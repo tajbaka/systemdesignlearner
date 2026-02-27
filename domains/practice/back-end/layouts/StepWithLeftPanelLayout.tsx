@@ -2,18 +2,18 @@
 
 import { type ReactNode, useState, useCallback } from "react";
 
-export const LEFT_PANEL_TABS = ["question", "assistance", "solution", "discussion"] as const;
+export const LEFT_PANEL_TABS = ["overview", "assistance"] as const;
 export type LeftPanelTab = (typeof LEFT_PANEL_TABS)[number];
 
 const STORAGE_KEY = "sidepanel-tab";
 
 function readPersistedTab(): LeftPanelTab {
-  if (typeof window === "undefined") return "question";
+  if (typeof window === "undefined") return "overview";
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored && (LEFT_PANEL_TABS as readonly string[]).includes(stored)) {
     return stored as LeftPanelTab;
   }
-  return "question";
+  return "overview";
 }
 
 type StepWithLeftPanelProps = {
