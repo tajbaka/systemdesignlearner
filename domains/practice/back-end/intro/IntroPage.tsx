@@ -2,12 +2,12 @@
 
 import { STEPS } from "../constants";
 import { IntroStepUI } from "./components/IntroStepUI";
-import type { StepComponentProps } from "../types";
+import { usePractice } from "../context/PracticeContext";
 
-export default function IntroStep({ config, handlers }: StepComponentProps) {
+export function IntroPage() {
+  const { config, handlers } = usePractice();
   const hints = config.articles || [];
 
-  // Check if user has started practice by checking if any steps are completed
   const hasStarted = Object.values(config.steps).some((step) => step.completed === true);
 
   return (

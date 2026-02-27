@@ -52,7 +52,7 @@ export function useActionHandler(slug: string): StepHandlers {
           // If user has started, use continue=true to redirect to appropriate step
           // Otherwise, navigate to first step (functional)
           if (hasStarted) {
-            router.push(`/practice/${slug}/intro?continue=true`);
+            router.push(`/practice/${slug}?continue=true`);
           } else {
             router.push(`/practice/${slug}/functional`);
           }
@@ -60,7 +60,7 @@ export function useActionHandler(slug: string): StepHandlers {
       },
       [STEPS.FUNCTIONAL]: async (action, ...args) => {
         if (action === "back") {
-          router.push(`/practice/${slug}/intro`);
+          router.push(`/practice/${slug}`);
         } else if (action === "next") {
           try {
             // Check if results already exist

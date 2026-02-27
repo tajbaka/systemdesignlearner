@@ -15,12 +15,6 @@ function Placeholder({ label }: { label: string }) {
 }
 
 const PANEL_CONTENT: Record<string, Partial<Record<LeftPanelTab, ReactNode>>> = {
-  [STEPS.INTRO]: {
-    question: <Placeholder label="Intro – Question" />,
-    assistance: <Placeholder label="Intro – Assistance" />,
-    solution: <Placeholder label="Intro – Solution" />,
-    discussion: <Placeholder label="Intro – Discussion" />,
-  },
   [STEPS.FUNCTIONAL]: {
     question: <Placeholder label="Functional – Question" />,
     assistance: <Placeholder label="Functional – Assistance" />,
@@ -44,6 +38,12 @@ const PANEL_CONTENT: Record<string, Partial<Record<LeftPanelTab, ReactNode>>> = 
     assistance: <Placeholder label="High-Level Design – Assistance" />,
     solution: <Placeholder label="High-Level Design – Solution" />,
     discussion: <Placeholder label="High-Level Design – Discussion" />,
+  },
+  [STEPS.SCORE]: {
+    question: <Placeholder label="Score – Question" />,
+    assistance: <Placeholder label="Score – Assistance" />,
+    solution: <Placeholder label="Score – Solution" />,
+    discussion: <Placeholder label="Score – Discussion" />,
   },
 };
 
