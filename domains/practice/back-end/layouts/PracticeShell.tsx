@@ -1,14 +1,14 @@
 "use client";
 
-import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-import { useParams } from "next/navigation";
+import { createContext, useCallback, useContext, type ReactNode } from "react";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
 import type { ProblemResponse, ProblemStepWithUserStep } from "@/app/api/v2/practice/schemas";
 import useStore from "../store/useStore";
 import { useActionHandler } from "../hooks/useActionHandler";
 import { useTransformData } from "../hooks/useTransformData";
 import { useLoadUserData } from "../hooks/useLoadUserData";
 import { usePanelLoader } from "../hooks/usePanelLoader";
-import { PracticeFooter, LeftArrowIcon } from "../components/PracticeFooter";
+import { ChevronLeft } from "lucide-react";
 import { Sidebar } from "@/components/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SLUGS_TO_STEPS } from "../constants";
@@ -85,12 +85,24 @@ type ShellContentProps = {
   children: ReactNode;
 };
 
+const PANEL_PARAM = "panel";
+
 function ShellContent({ children }: ShellContentProps) {
   const { config, stepType } = usePractice();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  const [mobilePanelOpen, setMobilePanelOpen] = useState(false);
-  const openMobilePanel = useCallback(() => setMobilePanelOpen(true), []);
-  const closeMobilePanel = useCallback(() => setMobilePanelOpen(false), []);
+  const mobilePanelOpen = searchParams.get(PANEL_PARAM) === "open";
+
+  const openMobilePanel = useCallback(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(PANEL_PARAM, "open");
+    router.push(`?${params.toString()}`, { scroll: false });
+  }, [searchParams, router]);
+
+  const closeMobilePanel = useCallback(() => {
+    router.back();
+  }, [router]);
 
   const { panelContent } = usePanelLoader({ step: stepType ?? "" });
   const hasPanel = !!panelContent;
@@ -120,7 +132,7 @@ function ShellContent({ children }: ShellContentProps) {
           <div className="min-w-0 flex-1 flex flex-col overflow-hidden md:contents">
             <div
               className={`flex flex-1 min-h-0 transition-transform duration-300 ease-in-out md:contents ${
-                mobilePanelOpen ? "-translate-x-full" : "translate-x-0"
+                mobilePanelOpen ? "-translate-x-full z-[70]" : "translate-x-0"
               }`}
             >
               <div className="w-full flex-shrink-0 flex flex-col overflow-hidden md:contents">
@@ -129,21 +141,18 @@ function ShellContent({ children }: ShellContentProps) {
 
               {panelElement && (
                 <div
-                  className="flex w-full flex-shrink-0 flex-col bg-zinc-950 md:hidden"
+                  className="relative flex w-full flex-shrink-0 flex-col bg-zinc-950 md:hidden"
                   aria-label="Step information panel"
                 >
+                  <button
+                    type="button"
+                    onClick={closeMobilePanel}
+                    className="absolute left-0 top-1/2 z-10 -translate-y-1/2 flex h-10 w-6 items-center justify-center rounded-r-md bg-zinc-800/80 text-zinc-400 hover:bg-zinc-700 hover:text-white transition-colors"
+                    aria-label="Back to main view"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
                   <div className="flex-1 overflow-y-auto min-h-0">{panelElement}</div>
-                  <footer className="bg-black border-t border-zinc-800 flex-shrink-0">
-                    <div className="mx-auto w-full px-4">
-                      <PracticeFooter
-                        leftButton={{
-                          show: true,
-                          onClick: closeMobilePanel,
-                          icon: <LeftArrowIcon />,
-                        }}
-                      />
-                    </div>
-                  </footer>
                 </div>
               )}
             </div>
