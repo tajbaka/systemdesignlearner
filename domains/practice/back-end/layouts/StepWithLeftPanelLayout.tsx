@@ -1,25 +1,32 @@
 "use client";
 
-import { type ReactNode } from "react";
-import { create } from "zustand";
+import { type ReactNode, useState, useCallback } from "react";
 
 export const LEFT_PANEL_TABS = ["question", "assistance", "solution", "discussion"] as const;
 export type LeftPanelTab = (typeof LEFT_PANEL_TABS)[number];
 
-const usePanelTabStore = create<{
-  activeTab: LeftPanelTab;
-  setActiveTab: (tab: LeftPanelTab) => void;
-}>((set) => ({
-  activeTab: "question",
-  setActiveTab: (tab) => set({ activeTab: tab }),
-}));
+const STORAGE_KEY = "sidepanel-tab";
+
+function readPersistedTab(): LeftPanelTab {
+  if (typeof window === "undefined") return "question";
+  const stored = localStorage.getItem(STORAGE_KEY);
+  if (stored && (LEFT_PANEL_TABS as readonly string[]).includes(stored)) {
+    return stored as LeftPanelTab;
+  }
+  return "question";
+}
 
 type StepWithLeftPanelProps = {
   children: Partial<Record<LeftPanelTab, ReactNode>>;
 };
 
 export function StepWithLeftPanel({ children }: StepWithLeftPanelProps) {
-  const { activeTab, setActiveTab } = usePanelTabStore();
+  const [activeTab, setActiveTabState] = useState<LeftPanelTab>(readPersistedTab);
+
+  const setActiveTab = useCallback((tab: LeftPanelTab) => {
+    setActiveTabState(tab);
+    localStorage.setItem(STORAGE_KEY, tab);
+  }, []);
 
   return (
     <div className="flex h-full flex-col min-w-0">

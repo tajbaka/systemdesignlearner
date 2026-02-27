@@ -47,6 +47,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+import { PracticeSidepanelWrapper } from "@/domains/practice/back-end/layouts/PracticeSidepanelWrapper";
+
 export default function PracticeSlugLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return <PracticeSidepanelWrapper>{children}</PracticeSidepanelWrapper>;
 }

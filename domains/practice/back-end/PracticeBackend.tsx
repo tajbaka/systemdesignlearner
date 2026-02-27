@@ -4,13 +4,10 @@ import type { ProblemConfig } from "./types";
 import type { ProblemResponse, ProblemStepWithUserStep } from "@/app/api/v2/practice/schemas";
 import { useActionHandler } from "./hooks/useActionHandler";
 import { useStepLoader } from "./hooks/useStepLoader";
-import { usePanelLoader } from "./hooks/usePanelLoader";
 import { useTransformData } from "./hooks/useTransformData";
 import { useLoadUserData } from "./hooks/useLoadUserData";
 import useStepStore from "./store/useStore";
-import { SLUGS_TO_STEPS, STEPS } from "./constants";
-import { SidepanelLayout } from "./layouts/SidepanelLayout";
-import { StepWithLeftPanel } from "./layouts/StepWithLeftPanelLayout";
+import { SLUGS_TO_STEPS } from "./constants";
 
 type RawProblemData = {
   problem: ProblemResponse;
@@ -32,7 +29,6 @@ export default function PracticeBackend({ slug, step, data, children }: Practice
   const { loading: stepStateLoading } = useStepStore(slug);
   const stepType = SLUGS_TO_STEPS[step as keyof typeof SLUGS_TO_STEPS] || step;
   const { StepComponent, error } = useStepLoader({ step: stepType });
-  const { panelContent } = usePanelLoader({ step: stepType });
 
   // Load user's saved data from database into store
   useLoadUserData(slug, data.steps);
@@ -81,20 +77,7 @@ export default function PracticeBackend({ slug, step, data, children }: Practice
 
   // Render step component with config and handlers
   if (StepComponent && config) {
-    const stepEl = (
-      <StepComponent slug={slug} config={config} stepType={stepType} handlers={handlers} />
-    );
-
-    if (stepType === STEPS.SCORE) {
-      return stepEl;
-    }
-
-    return (
-      <SidepanelLayout>
-        <StepWithLeftPanel>{panelContent ?? {}}</StepWithLeftPanel>
-        {stepEl}
-      </SidepanelLayout>
-    );
+    return <StepComponent slug={slug} config={config} stepType={stepType} handlers={handlers} />;
   }
 
   // Fallback if no component or config
