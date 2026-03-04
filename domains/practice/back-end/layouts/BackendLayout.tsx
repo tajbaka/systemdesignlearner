@@ -15,45 +15,13 @@ import { CheckCircle2 } from "lucide-react";
 import { FeedbackModal } from "../components/FeedbackModal";
 import { PracticeModalContent } from "../PracticeModalContent";
 import { useFeedbackModal } from "../hooks/useFeedbackModal";
-import { PRACTICE_STEPS, STEPS } from "../constants";
+import { PRACTICE_STEPS } from "../constants";
 import { AuthModalDialog } from "@/domains/authentication/components/AuthModalDialog";
 import { usePracticeAuth } from "../hooks/usePracticeAuth";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useStepConfigStore } from "../stores/useStepConfigStore";
 import { usePractice } from "../context/PracticeContext";
 import { useSidepanel } from "./PracticeShell";
-import type { Hint, DesignSolution, ProblemConfig } from "../types";
-
-function getArticlesForStep(
-  config: ProblemConfig,
-  stepType: string | null
-): Array<{ title: string; href: string }> {
-  if (!stepType || stepType === STEPS.SCORE) return [];
-
-  const stepKey = stepType as keyof ProblemConfig["steps"];
-  const stepData = config.steps[stepKey];
-  if (!stepData?.requirements) return [];
-
-  let hints: Hint[];
-
-  if (stepType === STEPS.HIGH_LEVEL_DESIGN) {
-    const solutions = stepData.requirements as DesignSolution[];
-    hints = solutions.flatMap((sol) => sol.edges.flatMap((edge) => edge.hints ?? []));
-  } else {
-    const requirements = stepData.requirements as Array<{ hints?: Hint[] }>;
-    hints = requirements.flatMap((req) => req.hints ?? []);
-  }
-
-  const seen = new Set<string>();
-  return hints
-    .filter((h): h is Hint & { href: string; title: string } => Boolean(h.href && h.title))
-    .filter((h) => {
-      if (seen.has(h.href)) return false;
-      seen.add(h.href);
-      return true;
-    })
-    .map((h) => ({ title: h.title, href: h.href }));
-}
 
 type BackendLayoutProps = {
   children: ReactNode;
@@ -118,8 +86,6 @@ export function BackendLayout({ children }: BackendLayoutProps) {
   const showMobilePanelButton = isMobile && sidepanel;
 
   const currentStepData = stepType ? PRACTICE_STEPS[stepType as keyof typeof PRACTICE_STEPS] : null;
-
-  const _stepArticles = getArticlesForStep(config, stepType);
 
   const pageTitle = isMobile
     ? (currentStepData?.title ?? (config.title ? config.title : null))
