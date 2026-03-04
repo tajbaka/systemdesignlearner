@@ -169,3 +169,32 @@ export async function generateExtraction(
   });
   return response.text ?? "";
 }
+
+const ASSISTANCE_TEMPERATURE = 0.3;
+
+type AssistanceMessage = { role: "user" | "model"; content: string };
+
+/**
+ * Stream a conversational assistance response from Gemini.
+ * Returns an async generator that yields text chunks.
+ */
+export async function generateAssistanceStream(
+  systemInstruction: string,
+  messages: AssistanceMessage[],
+  posthogDistinctId?: string
+) {
+  const contents = messages.map((m) => ({
+    role: m.role,
+    parts: [{ text: m.content }],
+  }));
+
+  return getClient().models.generateContentStream({
+    model: MODEL,
+    contents,
+    config: {
+      temperature: ASSISTANCE_TEMPERATURE,
+      systemInstruction,
+    },
+    posthogDistinctId,
+  });
+}
