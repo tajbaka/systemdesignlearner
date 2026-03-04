@@ -97,6 +97,7 @@ export function BackendLayout({ children }: BackendLayoutProps) {
   const { activeStep, maxVisitedStep, steps } = useStepper({
     stepType,
     config,
+    slug,
   });
 
   const { handleStepClick, handleBack, handleNext } = useNavigation({
