@@ -10,7 +10,6 @@ export const STEPS = {
 };
 
 export const SLUGS_TO_STEPS = {
-  intro: STEPS.INTRO,
   functional: STEPS.FUNCTIONAL,
   "non-functional": STEPS.NON_FUNCTIONAL,
   api: STEPS.API,

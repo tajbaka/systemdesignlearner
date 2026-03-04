@@ -1,16 +1,15 @@
+"use client";
+
 import { type ComponentType } from "react";
 import { STEPS } from "../constants";
 import type { StepComponentProps } from "../types";
-import IntroStep from "../intro/IntroStep";
 import FunctionalStep from "../functional/FunctionalStep";
 import NonFunctionalStep from "../non-functional/NonFunctionalStep";
 import ApiStep from "../api-design/ApiStep";
 import HighLevelDesignStep from "../high-level-design/HighLevelDesignStep";
 import ScoreStep from "../score/ScoreStep";
 
-// Map step types to their components
 const STEP_COMPONENTS: Record<string, ComponentType<StepComponentProps>> = {
-  [STEPS.INTRO]: IntroStep,
   [STEPS.FUNCTIONAL]: FunctionalStep,
   [STEPS.NON_FUNCTIONAL]: NonFunctionalStep,
   [STEPS.API]: ApiStep,

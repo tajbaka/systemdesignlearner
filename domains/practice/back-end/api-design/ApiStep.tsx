@@ -8,13 +8,13 @@ import { ItemCard } from "./components/ItemCard";
 import { AddItemButton } from "./components/AddItemButton";
 import { MethodPathInput } from "./components/MethodPathInput";
 import { TextAreaCard } from "../components/TextAreaCard";
-import { CommonLayout } from "../layouts/CommonLayout";
 import useStepStore from "../store/useStore";
 import { EndpointItem } from "../store/store";
 import { STEPS } from "../constants";
 import type { HttpMethod } from "./components/MethodSelect";
 import { useIncompleteRequirement } from "../hooks/useIncompleteRequirement";
 import { VoiceInput } from "@/domains/practice/components/voice";
+import { useStepConfig } from "../hooks/useStepConfig";
 
 type ApiStepProps = StepComponentProps;
 
@@ -38,16 +38,17 @@ const createEndpoint = (): EndpointItem => {
   };
 };
 
-export default function ApiStep({ config, handlers, stepType, slug }: ApiStepProps) {
+export default function ApiStep({ config: _config, handlers, stepType, slug }: ApiStepProps) {
   const { apiDesign } = useStepStore(slug as string);
   const router = useRouter();
   const searchParams = useSearchParams();
   const incompleteRequirement = useIncompleteRequirement(stepType, slug as string);
 
-  // Get endpoints from apiDesign
   const endpoints = apiDesign.endpoints || [];
+  const isNextDisabled = endpoints.length === 0;
 
-  // Get endpoint ID from query params (for mobile editor)
+  useStepConfig({ leftAction: "back", rightAction: "next", nextDisabled: isNextDisabled });
+
   const mobileEditingId = searchParams.get("endpoint");
   const mobileEditingEndpoint = mobileEditingId
     ? endpoints.find((ep) => ep.id === mobileEditingId)
@@ -68,7 +69,6 @@ export default function ApiStep({ config, handlers, stepType, slug }: ApiStepPro
     handlers[STEPS.API]("changeTextBox", endpointId, "description", event.target.value);
   };
 
-  // Handle voice input for endpoint descriptions
   const handleVoiceDescriptionChange = useCallback(
     (endpointId: string, value: string) => {
       handlers[STEPS.API]("changeTextBox", endpointId, "description", value);
@@ -89,110 +89,93 @@ export default function ApiStep({ config, handlers, stepType, slug }: ApiStepPro
     router.push(`/practice/${slug}/api?endpoint=${endpointId}`);
   };
 
-  const isNextDisabled = endpoints.length === 0;
-
   return (
-    <CommonLayout
-      config={config}
-      handlers={handlers}
-      stepType={stepType}
-      slug={slug as string}
-      nextDisabled={isNextDisabled}
-      leftAction="back"
-      rightAction="next"
-      showTooltip={true}
-    >
-      <div className="relative h-full sm:h-auto">
-        {/* Desktop layout */}
-        <div className="hidden sm:block space-y-6">
-          {endpoints.map((endpoint, index) => {
-            const bottomText: string[] = [`Endpoint ${index + 1} of ${endpoints.length}`];
+    <div className="relative h-full sm:h-auto">
+      {/* Desktop layout */}
+      <div className="hidden sm:block space-y-6">
+        {endpoints.map((endpoint, index) => {
+          const bottomText: string[] = [`Endpoint ${index + 1} of ${endpoints.length}`];
 
-            return (
-              <TextAreaInputCard
-                key={endpoint.id}
-                showCloseButton={index > 0}
-                onClose={() => handleDeleteEndpoint(endpoint.id)}
-                method={endpoint.method.value}
-                shouldHighlightSelectBox={incompleteRequirement?.itemId === endpoint.method.id}
-                shouldHighlightInput={incompleteRequirement?.itemId === endpoint.path.id}
-                shouldHighlightTextArea={incompleteRequirement?.itemId === endpoint.description.id}
-                path={endpoint.path.value}
-                notes={endpoint.description.value}
-                onMethodChange={(method) => handleMethodChange(endpoint.id, method)}
-                onPathChange={(path) => handlePathChange(endpoint.id, path)}
-                onNotesChange={(event) => handleDescriptionChange(endpoint.id, event)}
-                placeholder="Describe the request body, response format, status codes, and error handling. (The method and path are already captured above.)"
-                bottomText={bottomText}
-                bottomRightSlot={
-                  <VoiceInput
-                    value={endpoint.description.value}
-                    onChange={(value) => handleVoiceDescriptionChange(endpoint.id, value)}
-                  />
-                }
-              />
-            );
-          })}
-          <AddItemButton onAddItem={handleAddEndpoint} />
-        </div>
-
-        {/* Mobile layout - list view or editor */}
-        <div className="sm:hidden h-full flex flex-col">
-          {mobileEditingEndpoint ? (
-            /* Mobile Editor */
-            <div className="h-full flex flex-col">
-              {/* Header with Method and Path */}
-              <div className="flex items-center gap-2 p-4 border-b border-zinc-800">
-                <MethodPathInput
-                  method={mobileEditingEndpoint.method.value}
-                  path={mobileEditingEndpoint.path.value}
-                  onMethodChange={(method) => handleMethodChange(mobileEditingEndpoint.id, method)}
-                  onPathChange={(path) => handlePathChange(mobileEditingEndpoint.id, path)}
-                  className="flex-1"
+          return (
+            <TextAreaInputCard
+              key={endpoint.id}
+              showCloseButton={index > 0}
+              onClose={() => handleDeleteEndpoint(endpoint.id)}
+              method={endpoint.method.value}
+              shouldHighlightSelectBox={incompleteRequirement?.itemId === endpoint.method.id}
+              shouldHighlightInput={incompleteRequirement?.itemId === endpoint.path.id}
+              shouldHighlightTextArea={incompleteRequirement?.itemId === endpoint.description.id}
+              path={endpoint.path.value}
+              notes={endpoint.description.value}
+              onMethodChange={(method) => handleMethodChange(endpoint.id, method)}
+              onPathChange={(path) => handlePathChange(endpoint.id, path)}
+              onNotesChange={(event) => handleDescriptionChange(endpoint.id, event)}
+              placeholder="Describe the request body, response format, status codes, and error handling. (The method and path are already captured above.)"
+              bottomText={bottomText}
+              bottomRightSlot={
+                <VoiceInput
+                  value={endpoint.description.value}
+                  onChange={(value) => handleVoiceDescriptionChange(endpoint.id, value)}
                 />
-              </div>
-
-              {/* Editor using TextAreaCard */}
-              {(() => {
-                return (
-                  <TextAreaCard
-                    title=""
-                    description=""
-                    value={mobileEditingEndpoint.description.value}
-                    onChange={(event) => handleDescriptionChange(mobileEditingEndpoint.id, event)}
-                    placeholder="Describe the request body, response format, status codes, and error handling. (The method and path are already captured above.)"
-                    bottomRightSlot={
-                      <VoiceInput
-                        value={mobileEditingEndpoint.description.value}
-                        onChange={(value) =>
-                          handleVoiceDescriptionChange(mobileEditingEndpoint.id, value)
-                        }
-                      />
-                    }
-                  />
-                );
-              })()}
-            </div>
-          ) : (
-            /* Mobile List View */
-            <div className="flex-1 overflow-y-auto pb-20">
-              <div className="space-y-3 p-4">
-                {endpoints.map((endpoint) => (
-                  <ItemCard
-                    key={endpoint.id}
-                    method={endpoint.method.value}
-                    path={endpoint.path.value}
-                    notes={endpoint.description.value}
-                    onClick={() => handleMobileEditorOpen(endpoint.id)}
-                    onDelete={() => handleDeleteEndpoint(endpoint.id)}
-                  />
-                ))}
-                <AddItemButton onAddItem={handleAddEndpoint} />
-              </div>
-            </div>
-          )}
-        </div>
+              }
+            />
+          );
+        })}
+        <AddItemButton onAddItem={handleAddEndpoint} />
       </div>
-    </CommonLayout>
+
+      {/* Mobile layout - list view or editor */}
+      <div className="sm:hidden h-full flex flex-col">
+        {mobileEditingEndpoint ? (
+          <div className="h-full flex flex-col">
+            <div className="flex items-center gap-2 p-4 border-b border-zinc-800">
+              <MethodPathInput
+                method={mobileEditingEndpoint.method.value}
+                path={mobileEditingEndpoint.path.value}
+                onMethodChange={(method) => handleMethodChange(mobileEditingEndpoint.id, method)}
+                onPathChange={(path) => handlePathChange(mobileEditingEndpoint.id, path)}
+                className="flex-1"
+              />
+            </div>
+
+            {(() => {
+              return (
+                <TextAreaCard
+                  title=""
+                  description=""
+                  value={mobileEditingEndpoint.description.value}
+                  onChange={(event) => handleDescriptionChange(mobileEditingEndpoint.id, event)}
+                  placeholder="Describe the request body, response format, status codes, and error handling. (The method and path are already captured above.)"
+                  bottomRightSlot={
+                    <VoiceInput
+                      value={mobileEditingEndpoint.description.value}
+                      onChange={(value) =>
+                        handleVoiceDescriptionChange(mobileEditingEndpoint.id, value)
+                      }
+                    />
+                  }
+                />
+              );
+            })()}
+          </div>
+        ) : (
+          <div className="flex-1 overflow-y-auto pb-20">
+            <div className="space-y-3 p-4">
+              {endpoints.map((endpoint) => (
+                <ItemCard
+                  key={endpoint.id}
+                  method={endpoint.method.value}
+                  path={endpoint.path.value}
+                  notes={endpoint.description.value}
+                  onClick={() => handleMobileEditorOpen(endpoint.id)}
+                  onDelete={() => handleDeleteEndpoint(endpoint.id)}
+                />
+              ))}
+              <AddItemButton onAddItem={handleAddEndpoint} />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

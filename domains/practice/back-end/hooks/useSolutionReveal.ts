@@ -5,8 +5,9 @@ import { stepStateStore } from "../store/store";
 import useStepStore from "../store/useStore";
 import { useActionHandler } from "./useActionHandler";
 import type { HttpMethod } from "../api-design/components/MethodSelect";
-import type { ProblemConfig, ApiSolution, EndpointApiRequirement, DesignSolution } from "../types";
+import type { ProblemConfig, EndpointApiRequirement, DesignSolution } from "../types";
 import type { PracticeDesignState, PlacedNode, Edge } from "../high-level-design/types";
+import { isApiSolution, formatApiSolution } from "../utils/solutionHelpers";
 
 type UseSolutionRevealProps = {
   slug: string;
@@ -15,18 +16,6 @@ type UseSolutionRevealProps = {
   onInsertComplete?: () => void;
 };
 
-// Helper to check if a solution is an ApiSolution
-function isApiSolution(solution: unknown): solution is ApiSolution {
-  return (
-    !!solution &&
-    typeof solution === "object" &&
-    "overview" in solution &&
-    "request" in solution &&
-    "response" in solution
-  );
-}
-
-// Helper to check if a requirement is an EndpointApiRequirement
 function isEndpointApiRequirement(requirement: unknown): requirement is EndpointApiRequirement {
   return (
     !!requirement &&
@@ -38,35 +27,8 @@ function isEndpointApiRequirement(requirement: unknown): requirement is Endpoint
   );
 }
 
-// Helper to check if a method string is a valid HttpMethod
 function isValidHttpMethod(method: string): method is HttpMethod {
   return ["GET", "POST", "PATCH", "DELETE"].includes(method);
-}
-
-// Helper to format API solution into readable text
-function formatApiSolution(solution: ApiSolution): string {
-  const parts: string[] = [];
-
-  if (solution.overview) {
-    parts.push(solution.overview);
-  }
-
-  if (solution.request) {
-    parts.push(`\nRequest: ${solution.request}`);
-  }
-
-  if (solution.response) {
-    parts.push(`\nResponse (${solution.response.statusCode}): ${solution.response.text}`);
-  }
-
-  if (solution.errors && solution.errors.length > 0) {
-    parts.push("\nError Codes:");
-    solution.errors.forEach((error) => {
-      parts.push(`- ${error.statusCode}: ${error.text}`);
-    });
-  }
-
-  return parts.join("\n");
 }
 
 export function useSolutionReveal({

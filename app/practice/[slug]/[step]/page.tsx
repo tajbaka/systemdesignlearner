@@ -1,20 +1,17 @@
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import PracticeBackend from "@/domains/practice/back-end/PracticeBackend";
-import type { ProblemResponse, ProblemStepWithUserStep } from "@/app/api/v2/practice/schemas";
 import { getBaseUrl } from "@/lib/getBaseUrl";
 import { PRACTICE_STEPS, SLUGS_TO_STEPS } from "@/domains/practice/back-end/constants";
 import { calculateMaxVisitedStep } from "@/domains/practice/utils/access-control";
+import { fetchSteps } from "@/domains/practice/data/fetchPracticeData";
+import { StepRenderer } from "@/domains/practice/back-end/StepRenderer";
 
 type Props = {
   params: Promise<{ slug: string; step: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 const STEP_DESCRIPTIONS: Record<string, string> = {
-  intro:
-    "Begin the {scenario} system design practice. Define scope, understand the problem, and prepare for an interactive design exercise.",
   functional:
     "Define the functional requirements for {scenario}. Identify core features, user actions, and system capabilities with AI-guided feedback.",
   "non-functional":
@@ -32,13 +29,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const canonicalUrl = `${baseUrl}/practice/${slug}/${step}`;
   const ogImage = `${baseUrl}/desktop-url-shortener-practice.gif`;
 
-  // Format slug for display
   const scenarioName = slug
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-  // Format step for display
   const stepName = step
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -48,10 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     STEP_DESCRIPTIONS[step]?.replace("{scenario}", scenarioName) ??
     `Complete the ${stepName} step for ${scenarioName} system design practice.`;
 
-  const pageTitle =
-    step === "intro"
-      ? `${scenarioName} - System Design Practice`
-      : `${stepName} - ${scenarioName} Practice`;
+  const pageTitle = `${stepName} - ${scenarioName} Practice`;
 
   return {
     title: pageTitle,
@@ -77,74 +69,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function Page({ params, searchParams }: Props) {
+export default async function Page({ params }: Props) {
   const { slug, step } = await params;
-  const query = await searchParams;
 
-  // Get cookies to forward authentication to internal API calls
-  const cookieStore = await cookies();
-  const cookieHeader = cookieStore.toString();
-
-  const baseUrl = getBaseUrl();
-
-  // Validate that the step is a valid route
   const validStepRoutes = Object.keys(SLUGS_TO_STEPS);
 
   if (!validStepRoutes.includes(step)) {
-    redirect(`/practice/${slug}/intro`);
+    redirect(`/practice/${slug}`);
   }
 
-  // Fetch problem and steps in parallel
-  const [problem, steps] = await Promise.all([
-    fetch(`${baseUrl}/api/v2/practice/${slug}`, {
-      next: { revalidate: 60 * 5 },
-      headers: { Cookie: cookieHeader },
-    }).then(async (response) => {
-      if (response.ok) {
-        const data = await response.json();
-        return (data?.data ?? null) as ProblemResponse | null;
-      }
-      return null;
-    }),
-    fetch(`${baseUrl}/api/v2/practice/${slug}/steps`, {
-      cache: "no-store",
-      headers: { Cookie: cookieHeader },
-    }).then(async (response) => {
-      if (response.ok) {
-        const data = await response.json();
-        return (data?.data ?? null) as ProblemStepWithUserStep[] | null;
-      }
-      return null;
-    }),
-  ]);
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
 
-  if (!problem) {
-    return <div>Problem not found</div>;
-  }
+  const steps = await fetchSteps(slug, cookieHeader);
 
-  if (!steps) {
-    return <div>Steps not found</div>;
-  }
-
-  // If continue parameter is present and we're on intro, redirect to maxVisitedStep
-  if (query.continue === "true" && step === "intro") {
+  if (steps) {
     const maxVisitedStep = calculateMaxVisitedStep(
       steps,
-      (step) => step.userStep?.status === "completed"
-    );
-
-    const targetStep = Object.values(PRACTICE_STEPS).find((s) => s.order === maxVisitedStep);
-
-    if (targetStep) {
-      redirect(`/practice/${slug}/${targetStep.route}`);
-    }
-  }
-
-  // Access control: Calculate maxVisitedStep from completed steps (skip for intro)
-  if (step !== "intro") {
-    const maxVisitedStep = calculateMaxVisitedStep(
-      steps,
-      (step) => step.userStep?.status === "completed"
+      (s) => s.userStep?.status === "completed"
     );
 
     const currentStepConfig = Object.values(PRACTICE_STEPS).find((s) => s.route === step);
@@ -157,5 +99,5 @@ export default async function Page({ params, searchParams }: Props) {
     }
   }
 
-  return <PracticeBackend slug={slug} step={step} data={{ problem, steps }} />;
+  return <StepRenderer />;
 }
