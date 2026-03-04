@@ -56,7 +56,7 @@ export function PracticeShell({ rawData, children }: PracticeShellProps) {
   if (!stepSlug) {
     if (!config) return null;
     return (
-      <PracticeProvider value={{ config, handlers, slug, stepType: null, loading }}>
+      <PracticeProvider value={{ config, handlers, slug, stepSlug: null, stepType: null, loading }}>
         <Sidebar theme="dark" />
         <div className="flex h-full w-full flex-1 flex-col overflow-hidden">{children}</div>
       </PracticeProvider>
@@ -75,7 +75,9 @@ export function PracticeShell({ rawData, children }: PracticeShellProps) {
   }
 
   return (
-    <PracticeProvider value={{ config, handlers, slug, stepType, loading }}>
+    <PracticeProvider
+      value={{ config, handlers, slug, stepSlug: stepSlug ?? null, stepType, loading }}
+    >
       <ShellContent>{children}</ShellContent>
     </PracticeProvider>
   );

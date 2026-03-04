@@ -41,6 +41,9 @@ function persistMessages(slug: string, step: string, messages: Message[]) {
 export type UseAssistanceChatReturn = {
   messages: Message[];
   send: (content: string) => void;
+  stop: () => void;
+  clearMessages: () => void;
+  retry: () => void;
   isStreaming: boolean;
   error: string | null;
 };
@@ -85,6 +88,51 @@ export function useAssistanceChat(slug: string, step: string): UseAssistanceChat
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [isStreaming, slug, step]
   );
+
+  const stop = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setMessages((prev) => {
+      const last = prev[prev.length - 1];
+      if (last?.role === "assistant" && !last.content) {
+        return prev.slice(0, -1);
+      }
+      return prev;
+    });
+    setIsStreaming(false);
+  }, []);
+
+  const clearMessages = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setMessages([]);
+    setIsStreaming(false);
+    setError(null);
+    persistMessages(slug, step, []);
+  }, [slug, step]);
+
+  const retry = useCallback(() => {
+    if (isStreaming) return;
+    setMessages((prev) => {
+      // Remove trailing empty assistant placeholder if present
+      const cleaned =
+        prev.length > 0 &&
+        prev[prev.length - 1].role === "assistant" &&
+        !prev[prev.length - 1].content
+          ? prev.slice(0, -1)
+          : prev;
+      // Find last user message
+      const lastUserIdx = cleaned.reduce((acc, msg, i) => (msg.role === "user" ? i : acc), -1);
+      if (lastUserIdx === -1) return prev;
+
+      const assistantPlaceholder: Message = { role: "assistant", content: "" };
+      const next = [...cleaned, assistantPlaceholder];
+      setError(null);
+      streamResponse(next);
+      return next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isStreaming, slug, step]);
 
   async function streamResponse(currentMessages: Message[]) {
     setIsStreaming(true);
@@ -169,5 +217,5 @@ export function useAssistanceChat(slug: string, step: string): UseAssistanceChat
     }
   }
 
-  return { messages, send, isStreaming, error };
+  return { messages, send, stop, clearMessages, retry, isStreaming, error };
 }

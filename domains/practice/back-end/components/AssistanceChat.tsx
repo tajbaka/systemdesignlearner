@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowUp, Square } from "lucide-react";
+import { ArrowUp, Square, Trash2, RotateCcw } from "lucide-react";
 import { usePractice } from "../context/PracticeContext";
 import { useAssistanceChat, type Message } from "../hooks/useAssistanceChat";
 
@@ -74,10 +74,13 @@ function MessageBubble({
 }
 
 export function AssistanceChat() {
-  const { slug, stepType } = usePractice();
-  const step = stepType ?? "";
+  const { slug, stepSlug } = usePractice();
+  const step = stepSlug ?? "";
 
-  const { messages, send, isStreaming, error } = useAssistanceChat(slug, step);
+  const { messages, send, stop, clearMessages, retry, isStreaming, error } = useAssistanceChat(
+    slug,
+    step
+  );
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
@@ -123,7 +126,7 @@ export function AssistanceChat() {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3" role="log" aria-live="polite">
         {messages.length === 0 ? (
           <EmptyState />
         ) : (
@@ -142,13 +145,32 @@ export function AssistanceChat() {
       </div>
 
       {error && (
-        <div className="flex-shrink-0 px-4 pb-1">
+        <div className="flex-shrink-0 px-4 pb-1 flex items-center gap-2">
           <p className="text-xs text-red-400">{error}</p>
+          <button
+            type="button"
+            onClick={retry}
+            className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors"
+            aria-label="Retry last message"
+          >
+            <RotateCcw className="h-3 w-3" />
+            Retry
+          </button>
         </div>
       )}
 
       <div className="flex-shrink-0 border-t border-zinc-800 p-3">
         <div className="flex items-end gap-2">
+          {messages.length > 0 && !isStreaming && (
+            <button
+              type="button"
+              onClick={clearMessages}
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
+              aria-label="Clear conversation"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          )}
           <textarea
             ref={textareaRef}
             value={input}
@@ -156,12 +178,14 @@ export function AssistanceChat() {
             onKeyDown={handleKeyDown}
             placeholder="Ask a question..."
             rows={1}
+            aria-label="Chat message input"
             className="flex-1 resize-none rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 focus:border-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-600 leading-5"
           />
           <button
             type="button"
-            disabled={!canSend}
-            onClick={handleSend}
+            disabled={isStreaming ? false : !canSend}
+            onClick={isStreaming ? stop : handleSend}
+            aria-label={isStreaming ? "Stop generating" : "Send message"}
             className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white transition-colors hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600"
           >
             {isStreaming ? <Square className="h-3 w-3" /> : <ArrowUp className="h-4 w-4" />}

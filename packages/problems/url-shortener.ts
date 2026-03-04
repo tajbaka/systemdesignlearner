@@ -293,7 +293,7 @@ export const URL_SHORTENER_PROBLEM = {
             ],
             hints: [
               {
-                id: "hint-redirect-missing",
+                id: "hint-redirect-endpoint-missing",
                 title: "System API Design",
                 text: "Endpoint is missing, how do we redirect a user to the original long URL?",
               },

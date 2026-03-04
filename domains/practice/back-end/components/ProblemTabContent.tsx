@@ -192,7 +192,7 @@ export function ProblemTabContent() {
             <div className="space-y-1.5 pt-1">
               {hints.map((hint, i) => (
                 <CollapsibleHint
-                  key={hint.id}
+                  key={`${hint.id}-${i}`}
                   hint={hint}
                   index={i}
                   showHref={hintIdsWithHref.has(hint.id)}

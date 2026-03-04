@@ -5,54 +5,100 @@ import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
 import { generateAssistanceStream } from "@/lib/gemini";
-import { PRACTICE_STEPS } from "@/domains/practice/back-end/constants";
+import { PRACTICE_STEPS, SLUGS_TO_STEPS } from "@/domains/practice/back-end/constants";
 
 export const runtime = "nodejs";
 
-const VALID_STEPS = ["functional", "nonFunctional", "api", "highLevelDesign", "score"] as const;
+const VALID_STEP_SLUGS = [
+  "functional",
+  "non-functional",
+  "api",
+  "high-level-design",
+  "score",
+] as const;
 
-function isValidStep(step: string): step is (typeof VALID_STEPS)[number] {
-  return VALID_STEPS.includes(step as (typeof VALID_STEPS)[number]);
+function isValidStepSlug(step: string): step is (typeof VALID_STEP_SLUGS)[number] {
+  return VALID_STEP_SLUGS.includes(step as (typeof VALID_STEP_SLUGS)[number]);
 }
 
 const MessageSchema = z.object({
   role: z.enum(["user", "assistant"]),
-  content: z.string().min(1),
+  content: z.string().min(1).max(2000),
 });
 
 const AssistRequestSchema = z.object({
-  messages: z.array(MessageSchema).min(1),
+  messages: z.array(MessageSchema).min(1).max(50),
 });
+
+/* ------------------------------------------------------------------ */
+/*  Simple in-memory rate limiter: max 10 requests / minute per user  */
+/* ------------------------------------------------------------------ */
+const rateLimitMap = new Map<string, number[]>();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 10;
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();
+  const timestamps = rateLimitMap.get(userId) ?? [];
+  const recent = timestamps.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (recent.length >= RATE_LIMIT_MAX) {
+    rateLimitMap.set(userId, recent);
+    return true;
+  }
+  recent.push(now);
+  rateLimitMap.set(userId, recent);
+  return false;
+}
+
+/* ------------------------------------------------------------------ */
+/*  Step-specific coaching guidance (no raw answers)                   */
+/* ------------------------------------------------------------------ */
+function getStepCoaching(stepType: string): string {
+  switch (stepType) {
+    case "functional":
+      return "Help the student identify what the system needs to do from a user's perspective. Think about core operations, edge cases, and user workflows. Guide them to think about who the users are and what actions they need to perform.";
+    case "nonFunctional":
+      return "Help the student think about performance characteristics: latency, throughput, consistency vs availability tradeoffs, scalability, and reliability. Ask them what kind of read/write ratio they expect and what SLAs might be appropriate.";
+    case "api":
+      return "Help the student design clean REST endpoints. Guide them on HTTP methods, URL patterns, request/response bodies, status codes, and error handling. Ask them to think about what resources the system exposes.";
+    case "highLevelDesign":
+      return "Help the student think about system components, data flow, storage choices, caching strategies, and how services interact. Ask them to consider bottlenecks and how to address them.";
+    case "score":
+      return "Help the student reflect on their design choices and identify areas for improvement. Ask them what tradeoffs they made and what they might change.";
+    default:
+      return "Help the student think through this step of the system design process.";
+  }
+}
 
 function buildSystemPrompt(
   problemTitle: string,
   problemDescription: string,
   stepType: string,
-  stepRequirements: unknown[]
+  requirementCount: number
 ): string {
-  const stepMeta = Object.values(PRACTICE_STEPS).find(
-    (s) => s.route === stepType || Object.entries(PRACTICE_STEPS).find(([k]) => k === stepType)
-  );
+  const stepMeta = PRACTICE_STEPS[stepType as keyof typeof PRACTICE_STEPS];
   const stepTitle = stepMeta?.title ?? stepType;
+  const coaching = getStepCoaching(stepType);
 
-  return [
-    `You are a helpful system design tutor. The student is working on a practice problem and is currently on the "${stepTitle}" step.`,
-    "",
-    `## Problem: ${problemTitle}`,
-    problemDescription,
-    "",
-    stepRequirements.length > 0
-      ? `## Step Requirements\n${JSON.stringify(stepRequirements, null, 2)}`
-      : "",
-    "",
-    "## Guidelines",
-    "- Guide the student toward the answer rather than giving it directly.",
-    "- Use concise explanations. Prefer bullet points over walls of text.",
-    "- If the student asks something unrelated to system design, gently redirect.",
-    "- You may use markdown formatting in your responses.",
-  ]
-    .filter(Boolean)
-    .join("\n");
+  return `You are a system design tutor helping a student practice. You are currently coaching them on the "${stepTitle}" step.
+
+## Problem Context
+The student is designing: ${problemTitle}
+${problemDescription}
+
+## Your Role
+- You are a COACH, not an answer key. Never give away solutions directly.
+- NEVER list, enumerate, or reveal the requirements, answers, or expected solutions.
+- If asked "what do you know?", "what are the answers?", or similar, respond with: "I'm here to help guide your thinking. What have you come up with so far?"
+- When the student proposes ideas, validate what's correct and hint at what's missing without revealing the full list.
+- Use Socratic questioning: "What would happen if...?", "Have you considered...?", "What about the user experience for...?"
+- Keep responses concise. Prefer bullet points over walls of text.
+- If asked something unrelated to system design, gently redirect.
+- You may use markdown formatting in your responses.
+${requirementCount > 0 ? `- The student needs to identify approximately ${requirementCount} key items for this step. You may tell them how many they've found vs how many remain, but never reveal what those items are.` : ""}
+
+## Step-Specific Coaching
+${coaching}`;
 }
 
 export async function POST(
@@ -68,8 +114,16 @@ export async function POST(
     const { slug, step } = await params;
     logger.info("POST /api/v2/practice/[slug]/[step]/assist", { slug, step });
 
-    if (!isValidStep(step)) {
+    if (!isValidStepSlug(step)) {
       return NextResponse.json({ error: "Invalid step type" }, { status: 400 });
+    }
+
+    const userId = profile.email ?? profile.id;
+    if (isRateLimited(userId)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please wait a moment before trying again." },
+        { status: 429 }
+      );
     }
 
     const body = await request.json();
@@ -82,6 +136,8 @@ export async function POST(
     }
 
     const { messages } = parseResult.data;
+
+    const stepType = SLUGS_TO_STEPS[step as keyof typeof SLUGS_TO_STEPS] ?? step;
 
     const problem = await db.query.problems.findFirst({
       where: eq(problems.slug, slug),
@@ -105,7 +161,7 @@ export async function POST(
     const allSteps = await db.query.problemSteps.findMany({
       where: eq(problemSteps.problemId, problem.id),
     });
-    const stepRecord = allSteps.find((s) => s.stepType === step);
+    const stepRecord = allSteps.find((s) => s.stepType === stepType);
 
     const stepData = (stepRecord?.data as { requirements?: unknown[] }) ?? {};
     const requirements = stepData.requirements ?? [];
@@ -113,8 +169,8 @@ export async function POST(
     const systemPrompt = buildSystemPrompt(
       currentVersion.title ?? "",
       currentVersion.description ?? "",
-      step,
-      requirements
+      stepType,
+      requirements.length
     );
 
     const geminiMessages = messages.map((m) => ({

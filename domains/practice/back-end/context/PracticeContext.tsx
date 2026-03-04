@@ -7,6 +7,7 @@ type PracticeContextValue = {
   config: ProblemConfig;
   handlers: StepHandlers;
   slug: string;
+  stepSlug: string | null;
   stepType: string | null;
   loading: boolean;
 };
