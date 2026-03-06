@@ -126,6 +126,7 @@ export async function generateEvaluation(
       responseSchema: functionalEvaluationSchema,
     },
     posthogDistinctId,
+    posthogProperties: { llm_feature: "feedback", feedback_type: "functional" },
   });
   return response.text ?? "";
 }
@@ -146,6 +147,7 @@ export async function generateApiEvaluation(
       responseSchema: apiEvaluationSchema,
     },
     posthogDistinctId,
+    posthogProperties: { llm_feature: "feedback", feedback_type: "api" },
   });
   return response.text ?? "";
 }
@@ -166,6 +168,7 @@ export async function generateExtraction(
       responseSchema: extractionSchema,
     },
     posthogDistinctId,
+    posthogProperties: { llm_feature: "feedback", feedback_type: "extraction" },
   });
   return response.text ?? "";
 }
@@ -196,5 +199,6 @@ export async function generateAssistanceStream(
       systemInstruction,
     },
     posthogDistinctId,
+    posthogProperties: { llm_feature: "chat" },
   });
 }
