@@ -33,7 +33,7 @@ const defaultNavbarContent: NavbarContent = {
   },
   cta: {
     label: "Try Url Shortener Scenario",
-    href: "/practice/url-shortener/intro",
+    href: "/practice/url-shortener",
   },
   auth: {
     signInLabel: "Sign In",

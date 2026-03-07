@@ -239,7 +239,7 @@ export function HomePageClient() {
               >
                 <Link
                   prefetch={false}
-                  href="/practice/url-shortener/intro"
+                  href="/practice/url-shortener"
                   aria-label="Try URL Shortener Scenario"
                   onClick={() => {
                     track("homepage_try_url_shortener_clicked");
@@ -883,7 +883,7 @@ export function HomePageClient() {
               >
                 <Link
                   prefetch={false}
-                  href="/practice/url-shortener/intro"
+                  href="/practice/url-shortener"
                   onClick={() => track("cta_after_how_it_works_start_practicing_clicked")}
                 >
                   Start practicing
@@ -1177,7 +1177,7 @@ export function HomePageClient() {
               >
                 <Link
                   prefetch={false}
-                  href="/practice/url-shortener/intro"
+                  href="/practice/url-shortener"
                   aria-label="Start Practicing Now"
                   onClick={() => track("homepage_cta_practice_clicked")}
                 >

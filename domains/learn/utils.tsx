@@ -143,7 +143,7 @@ export function createMarkdownComponents(): Components {
           <div className="mt-8 flex">
             <Link
               prefetch={false}
-              href="/practice/url-shortener/intro"
+              href="/practice/url-shortener"
               className="inline-flex items-center justify-center h-9 rounded-md px-4 bg-emerald-500 hover:bg-emerald-600  text-white font-semibold text-sm transition-all no-underline hover:no-underline"
             >
               Try Practice

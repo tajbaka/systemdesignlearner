@@ -1,5 +1,4 @@
 import path from "path";
-import { withSentryConfig } from "@sentry/nextjs";
 import { withPostHogConfig } from "@posthog/nextjs-config";
 import type { NextConfig } from "next";
 
@@ -86,8 +85,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-// PostHog sourcemap upload: wraps config so PostHog receives sourcemaps before Sentry deletes them
-// Only enable when both the API key and environment ID are present to avoid failing builds
+// PostHog sourcemap upload: only enable when both the API key and environment ID are present
 const hasPostHogSourcemapKeys =
   Boolean(process.env.POSTHOG_PERSONAL_API_KEY) && Boolean(process.env.POSTHOG_ENV_ID);
 
@@ -97,39 +95,8 @@ const withPostHog = withPostHogConfig(nextConfig, {
   host: "https://us.i.posthog.com",
   sourcemaps: {
     enabled: isCI && hasPostHogSourcemapKeys,
-    // Let Sentry handle deletion — PostHog should not delete since it runs first
-    deleteAfterUpload: false,
+    deleteAfterUpload: true,
   },
 });
 
-export default withSentryConfig(withPostHog, {
-  // For all available options, see:
-  // https://www.npmjs.com/package/@sentry/webpack-plugin#options
-
-  org: "antoniocoppe",
-
-  project: "system-design-sandbox",
-
-  // Only print logs for uploading source maps in CI
-  silent: !process.env.CI,
-
-  // For all available options, see:
-  // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
-
-  // Upload a larger set of source maps for prettier stack traces (increases build time)
-  widenClientFileUpload: isCI,
-
-  // Route browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers.
-  // This can increase your server load as well as your hosting bill.
-  // Note: Check that the configured route will not match with your Next.js middleware, otherwise reporting of client-
-  // side errors will fail.
-  tunnelRoute: "/monitoring",
-
-  // Configure source map handling
-  sourcemaps: {
-    // Ignore third-party library source maps to reduce noise and processing time
-    ignore: ["node_modules"],
-    // Delete source maps after upload for security
-    deleteSourcemapsAfterUpload: true,
-  },
-});
+export default withPostHog;

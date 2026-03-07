@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { AuthenticatedNavbar } from "@/domains/authentication/AuthenticatedNavbar";
@@ -20,7 +19,7 @@ export function ErrorPage({ error, reset, homeHref = "/" }: ErrorPageProps) {
     error.message?.includes("Loading chunk");
 
   useEffect(() => {
-    Sentry.captureException(error);
+    console.error("ErrorPage:", error);
   }, [error]);
 
   const handleReload = () => {

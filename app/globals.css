@@ -281,16 +281,15 @@ body {
 
 /* React Flow Controls Styling */
 .react-flow__controls {
-  background: rgba(0, 0, 0, 0.8) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 8px !important;
-  backdrop-filter: blur(8px) !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .react-flow__controls button {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  color: rgba(255, 255, 255, 0.9) !important;
+  background: transparent !important;
+  border: none !important;
+  color: rgba(255, 255, 255, 0.7) !important;
   border-radius: 6px !important;
   width: 36px !important;
   height: 36px !important;
@@ -303,20 +302,23 @@ body {
 }
 
 .react-flow__controls button:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgba(255, 255, 255, 1) !important;
   transform: scale(1.05) !important;
 }
 
 .react-flow__controls button:active {
   transform: scale(0.95) !important;
-  background: rgba(255, 255, 255, 0.3) !important;
 }
 
 .react-flow__controls button svg {
   width: 16px !important;
   height: 16px !important;
   stroke-width: 2.5 !important;
+}
+
+.react-flow__controls button svg.lucide {
+  fill: none !important;
 }
 
 /* Safari-specific mobile panel fixes */
