@@ -42,9 +42,8 @@ export function IntroStepUI({
   onStartPractice,
 }: IntroStepUIProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-950">
-      {/* Header */}
-      <header className="border-b border-zinc-800 px-4 py-3 sm:px-6">
+    <div className="flex min-h-screen flex-col bg-zinc-950 md:pl-16">
+      <header className="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/90 backdrop-blur px-4 py-3 md:hidden">
         <Link
           prefetch={false}
           href="/practice"
@@ -57,6 +56,15 @@ export function IntroStepUI({
       {/* Content - Centered */}
       <main className="flex flex-1 items-center justify-center px-4 py-8 sm:px-6">
         <div className="w-full max-w-3xl space-y-8">
+          <div className="hidden md:block pb-12">
+            <Link
+              prefetch={false}
+              href="/practice"
+              className="inline-flex items-center text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+            >
+              ← Back
+            </Link>
+          </div>
           <div className="space-y-8">
             {/* Problem */}
             <div className="space-y-3">
