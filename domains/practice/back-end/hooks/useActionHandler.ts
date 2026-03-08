@@ -62,6 +62,10 @@ export function useActionHandler(slug: string): StepHandlers {
         if (action === "back") {
           router.push(`/practice/${slug}`);
         } else if (action === "next") {
+          track("practice_functional_attempted", {
+            slug: slug,
+          });
+
           try {
             // Check if results already exist
             if (functionalRequirements.submission) {
@@ -163,6 +167,10 @@ export function useActionHandler(slug: string): StepHandlers {
         if (action === "back") {
           router.push(`/practice/${slug}/functional`);
         } else if (action === "next") {
+          track("practice_non_functional_attempted", {
+            slug: slug,
+          });
+
           try {
             // Check if results already exist
             if (nonFunctionalRequirements.submission) {
@@ -269,6 +277,10 @@ export function useActionHandler(slug: string): StepHandlers {
             router.push(`/practice/${slug}/non-functional`);
           }
         } else if (action === "next") {
+          track("practice_api_attempted", {
+            slug: slug,
+          });
+
           try {
             // Get FRESH state directly from store (not stale closure)
             // This ensures we always send the latest user data to the backend
@@ -508,6 +520,10 @@ export function useActionHandler(slug: string): StepHandlers {
         if (action === "back") {
           router.push(`/practice/${slug}/api`);
         } else if (action === "next") {
+          track("practice_high_level_design_attempted", {
+            slug: slug,
+          });
+
           try {
             // Check if results already exist
             if (highLevelDesign.submission) {
