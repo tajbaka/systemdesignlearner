@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
+import { track } from "@/lib/analytics";
 import type { SidebarInternalConfig } from "./types";
 import { getCategoryIcon } from "./utils";
 
@@ -192,7 +193,10 @@ export function SidebarMobile({ config }: SidebarMobileProps) {
                     prefetch={false}
                     key={btn.id}
                     href={btn.href}
-                    onClick={() => setIsExpanded(false)}
+                    onClick={() => {
+                      track("sidebar_practice_clicked");
+                      setIsExpanded(false);
+                    }}
                     className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors bg-emerald-500 hover:bg-emerald-600 text-white"
                   >
                     {IconComponent && <IconComponent className="flex-shrink-0 h-5 w-5" />}

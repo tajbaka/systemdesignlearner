@@ -8,7 +8,7 @@ import { ItemCard } from "./components/ItemCard";
 import { AddItemButton } from "./components/AddItemButton";
 import { MethodPathInput } from "./components/MethodPathInput";
 import { TextAreaCard } from "../components/TextAreaCard";
-import useStepStore from "../store/useStore";
+import useStepStore from "../hooks/useStore";
 import { EndpointItem } from "../store/store";
 import { STEPS } from "../constants";
 import type { HttpMethod } from "./components/MethodSelect";

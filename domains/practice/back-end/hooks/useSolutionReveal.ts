@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { stepStateStore } from "../store/store";
-import useStepStore from "../store/useStore";
+import useStepStore from "./useStore";
 import { useActionHandler } from "./useActionHandler";
 import type { HttpMethod } from "../api-design/components/MethodSelect";
 import type { ProblemConfig, EndpointApiRequirement, DesignSolution } from "../types";

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import useStore from "../store/useStore";
+import useStore from "./useStore";
 import type { EvaluationResult } from "@/app/api/v2/practice/(evaluation)/types";
 
 export function useIncompleteRequirement(stepType: string | null, slug: string) {

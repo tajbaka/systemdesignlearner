@@ -5,7 +5,7 @@ import { getBaseUrl } from "@/lib/getBaseUrl";
 import { PRACTICE_STEPS, SLUGS_TO_STEPS } from "@/domains/practice/back-end/constants";
 import { calculateMaxVisitedStep } from "@/domains/practice/utils/access-control";
 import { fetchSteps } from "@/domains/practice/data/fetchPracticeData";
-import { StepRenderer } from "@/domains/practice/back-end/StepRenderer";
+import { BackendStepRenderer } from "@/domains/practice/back-end/BackendStepRenderer";
 
 type Props = {
   params: Promise<{ slug: string; step: string }>;
@@ -99,5 +99,5 @@ export default async function Page({ params }: Props) {
     }
   }
 
-  return <StepRenderer />;
+  return <BackendStepRenderer />;
 }

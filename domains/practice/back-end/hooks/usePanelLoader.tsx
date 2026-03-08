@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import { STEPS } from "../constants";
-import type { LeftPanelTab } from "../layouts/StepWithLeftPanelLayout";
+import type { LeftPanelTab } from "../components/StepWithLeftPanel";
 import { ProblemTabContent } from "../components/ProblemTabContent";
 import { AssistanceChat } from "../components/AssistanceChat";
 

@@ -9,19 +9,19 @@ import {
   LoadingSpinnerIcon,
 } from "../components/PracticeFooter";
 import { useNavigation } from "../hooks/useNavigation";
-import useStore from "../store/useStore";
+import useStore from "../hooks/useStore";
 import { useStepper } from "../hooks/useStepper";
 import { CheckCircle2 } from "lucide-react";
 import { FeedbackModal } from "../components/FeedbackModal";
-import { PracticeModalContent } from "../PracticeModalContent";
+import { StepFeedbackModal } from "../StepFeedbackModal";
 import { useFeedbackModal } from "../hooks/useFeedbackModal";
 import { PRACTICE_STEPS } from "../constants";
 import { AuthModalDialog } from "@/domains/authentication/components/AuthModalDialog";
 import { usePracticeAuth } from "../hooks/usePracticeAuth";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { useStepConfigStore } from "../stores/useStepConfigStore";
+import { useStepConfigStore } from "../store/stepConfigStore";
 import { usePractice } from "../context/PracticeContext";
-import { useSidepanel } from "./PracticeShell";
+import { useSidepanel } from "../../PracticeShell";
 
 type BackendLayoutProps = {
   children: ReactNode;
@@ -154,7 +154,7 @@ export function BackendLayout({ children }: BackendLayoutProps) {
           onButtonClick={onButtonClick}
           buttonLabel={buttonText}
         >
-          <PracticeModalContent
+          <StepFeedbackModal
             slug={slug}
             stepType={stepType}
             config={config}

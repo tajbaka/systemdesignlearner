@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { track } from "@/lib/analytics";
 import { STEPS } from "../constants";
 import type { StepHandlers } from "../types";
-import useStepStateStore from "../store/useStore";
+import useStepStateStore from "./useStore";
 import { stepStateStore, type EndpointItem } from "../store/store";
 import type { PracticeDesignState } from "../high-level-design/types";
 import type { HttpMethod } from "../api-design/components/MethodSelect";

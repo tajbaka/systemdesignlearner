@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { cookies } from "next/headers";
 import { getBaseUrl } from "@/lib/getBaseUrl";
 import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/domains/practice/back-end/constants";
-import { PracticeShell } from "@/domains/practice/back-end/layouts/PracticeShell";
+import { PracticeShell } from "@/domains/practice/PracticeShell";
 import { fetchProblem, fetchSteps } from "@/domains/practice/data/fetchPracticeData";
 
 type Props = {

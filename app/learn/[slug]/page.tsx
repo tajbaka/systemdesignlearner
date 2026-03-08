@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getBaseUrl } from "@/lib/getBaseUrl";
 import { VALID_SLUGS, PRACTICE_IMAGE_URLS } from "@/domains/practice/back-end/constants";
 import { loadArticlesConfig, getArticleBySlug } from "@/domains/learn/utils";
-import { LearnArticlePageClient } from "@/domains/learn/containers/LearnArticlePageClient";
+import { LearnArticlePageClient } from "@/domains/learn/LearnArticlePageClient";
 
 // Pre-render all article pages at build time (SSG)
 export async function generateStaticParams() {

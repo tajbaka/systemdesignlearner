@@ -2,6 +2,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { NavbarContent } from "./types";
 import { ReadinessPill } from "./ReadinessPill";
+import { track } from "@/lib/analytics";
 
 interface NavbarMobileProps {
   variant: "dark" | "light";
@@ -100,7 +101,10 @@ export function NavbarMobile({
                   ? `${activeBgClass} ${activeTextClass}`
                   : `${textMutedClass} ${bgHoverClass}`
               }`}
-              onClick={closeMenu}
+              onClick={() => {
+                track("navbar_practice_clicked");
+                closeMenu();
+              }}
             >
               {content.links.practice.label}
             </Link>

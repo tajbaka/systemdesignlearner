@@ -9,7 +9,7 @@ import { DisplayCard } from "./components/DisplayCard";
 import { WarningCard } from "./components/WarningCard";
 import { LoadingCard } from "./components/LoadingCard";
 import { useScoreCard } from "./hooks/useScoreCard";
-import useStepStateStore from "../store/useStore";
+import useStepStateStore from "../hooks/useStore";
 import { STEPS } from "../constants";
 import { useStepConfig } from "../hooks/useStepConfig";
 

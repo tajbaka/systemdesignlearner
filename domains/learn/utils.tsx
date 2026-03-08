@@ -11,7 +11,6 @@ import Image from "next/image";
 import type { Components } from "react-markdown";
 import type { Element } from "hast";
 import type { ArticleConfig, ArticlesData, ArticleCategory } from "./types";
-import { ArticleDiagram } from "./components/ArticleDiagram";
 
 // Load articles configuration
 export function loadArticlesConfig(): ArticlesData {
@@ -76,7 +75,14 @@ export function processMarkdownContent(
 }
 
 // Create ReactMarkdown components
-export function createMarkdownComponents(): Components {
+interface CreateMarkdownComponentsOptions {
+  DiagramComponent?: React.ComponentType<{ diagramId: string }>;
+}
+
+export function createMarkdownComponents(
+  options: CreateMarkdownComponentsOptions = {}
+): Components {
+  const { DiagramComponent } = options;
   // Helper to extract text from React children for ID generation
   const extractText = (children: React.ReactNode): string => {
     if (typeof children === "string") return children.trim();
@@ -161,9 +167,9 @@ export function createMarkdownComponents(): Components {
           typeof child.properties?.src === "string" &&
           child.properties.src.startsWith("diagram:")
       );
-      if (imgChild) {
+      if (imgChild && DiagramComponent) {
         const diagramId = (imgChild.properties.src as string).replace("diagram:", "");
-        return <ArticleDiagram diagramId={diagramId} />;
+        return <DiagramComponent diagramId={diagramId} />;
       }
       return <p {...props}>{children}</p>;
     },

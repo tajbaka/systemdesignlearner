@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import useStepStateStore from "../../store/useStore";
+import useStepStateStore from "../../hooks/useStore";
 
 type UseScoreCardProps = {
   slug: string;

@@ -1,36 +1,19 @@
 "use client";
 
-import { type ReactNode, useState, useCallback } from "react";
+import type { ReactNode } from "react";
 
 export const LEFT_PANEL_TABS = ["overview", "assistance"] as const;
 export type LeftPanelTab = (typeof LEFT_PANEL_TABS)[number];
 
-const STORAGE_KEY = "sidepanel-tab";
-
-function readPersistedTab(): LeftPanelTab {
-  if (typeof window === "undefined") return "overview";
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored && (LEFT_PANEL_TABS as readonly string[]).includes(stored)) {
-    return stored as LeftPanelTab;
-  }
-  return "overview";
-}
-
 type StepWithLeftPanelProps = {
-  children: Partial<Record<LeftPanelTab, ReactNode>>;
+  activeTab: LeftPanelTab;
+  onTabChange: (tab: LeftPanelTab) => void;
+  children: ReactNode;
 };
 
-export function StepWithLeftPanel({ children }: StepWithLeftPanelProps) {
-  const [activeTab, setActiveTabState] = useState<LeftPanelTab>(readPersistedTab);
-
-  const setActiveTab = useCallback((tab: LeftPanelTab) => {
-    setActiveTabState(tab);
-    localStorage.setItem(STORAGE_KEY, tab);
-  }, []);
-
+export function StepWithLeftPanel({ activeTab, onTabChange, children }: StepWithLeftPanelProps) {
   return (
     <div className="flex h-full flex-col min-w-0">
-      {/* Tabs — horizontal scroll when items don't fit, no vertical scroll */}
       <div
         className="flex flex-shrink-0 items-stretch border-b border-zinc-800 min-w-0 overflow-y-hidden"
         role="tablist"
@@ -45,7 +28,7 @@ export function StepWithLeftPanel({ children }: StepWithLeftPanelProps) {
               aria-selected={activeTab === tab}
               aria-controls={`panel-${tab}`}
               id={`tab-${tab}`}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => onTabChange(tab)}
               className={`flex-1 flex-shrink-0 min-w-[4.5rem] px-2 py-4 text-xs font-medium capitalize transition-colors border-b-2 -mb-px lg:px-4 lg:py-4 ${
                 activeTab === tab
                   ? "border-emerald-500 text-emerald-400"
@@ -57,14 +40,13 @@ export function StepWithLeftPanel({ children }: StepWithLeftPanelProps) {
           ))}
         </div>
       </div>
-      {/* Tab content */}
       <div
         id={`panel-${activeTab}`}
         role="tabpanel"
         aria-labelledby={`tab-${activeTab}`}
         className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
       >
-        {children[activeTab]}
+        {children}
       </div>
     </div>
   );

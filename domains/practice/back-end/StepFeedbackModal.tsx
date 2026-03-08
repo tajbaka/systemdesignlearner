@@ -6,7 +6,7 @@ import { useSolutionReveal } from "./hooks/useSolutionReveal";
 import { useFeedbackModal } from "./hooks/useFeedbackModal";
 import type { ProblemConfig, StepHandlers } from "./types";
 
-type PracticeModalContentProps = {
+type StepFeedbackModalProps = {
   slug: string;
   stepType: string | null;
   config: ProblemConfig;
@@ -14,13 +14,13 @@ type PracticeModalContentProps = {
   onInsertComplete?: () => void;
 };
 
-export function PracticeModalContent({
+export function StepFeedbackModal({
   slug,
   stepType,
   config,
   handlers,
   onInsertComplete,
-}: PracticeModalContentProps) {
+}: StepFeedbackModalProps) {
   const { completedItems, hint, feedback } = useFeedbackModal(stepType, config, handlers, slug);
 
   const { isRevealed, shouldShow, solutionText, handleReveal, handleInsert } = useSolutionReveal({

@@ -5,7 +5,7 @@ import type { StepComponentProps } from "../types";
 import { DesignBoard } from "./components/design-board";
 import { useDesignBoard } from "./hooks/useDesignBoard";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import useStepStore from "../store/useStore";
+import useStepStore from "../hooks/useStore";
 import { STEPS } from "../constants";
 import type { PlacedNode, Edge } from "./types";
 import { useStepConfig } from "../hooks/useStepConfig";

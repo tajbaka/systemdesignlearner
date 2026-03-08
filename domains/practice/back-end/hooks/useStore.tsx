@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { stepStateStore, type ProblemState } from "./store";
+import { stepStateStore, type ProblemState } from "../store/store";
 import { useStore } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 

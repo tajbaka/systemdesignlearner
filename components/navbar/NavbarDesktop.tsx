@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { track } from "@/lib/analytics";
 import { getNavLinkClasses, type NavbarContent } from "./types";
 import { ReadinessPill } from "./ReadinessPill";
 
@@ -24,6 +25,9 @@ export function NavbarDesktop({
       <Link
         prefetch={false}
         href={content.links.practice.href}
+        onClick={() => {
+          track("navbar_practice_clicked");
+        }}
         className={`px-3 py-2 transition-colors text-sm font-medium rounded-lg ${getNavLinkClasses(pathname.startsWith(content.links.practice.href), isLight)}`}
       >
         {content.links.practice.label}

@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import useStore from "../store/useStore";
+import useStore from "./useStore";
 import type { ProblemConfig } from "../types";
 import type { StepHandlers } from "../types";
 import type { EvaluationResult } from "@/app/api/v2/practice/(evaluation)/types";

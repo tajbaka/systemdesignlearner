@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useStepConfigStore, type StepConfig } from "../stores/useStepConfigStore";
+import { useStepConfigStore, type StepConfig } from "../store/stepConfigStore";
 
 /**
  * Registers per-step footer/layout configuration.

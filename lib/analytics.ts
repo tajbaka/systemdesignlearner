@@ -35,7 +35,7 @@ declare global {
 export const track = (event: string, properties: Record<string, unknown> = {}): void => {
   // Skip tracking in development
   if (process.env.NODE_ENV === "development") {
-    return;
+    // return;
   }
 
   if (!isClient()) {

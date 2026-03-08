@@ -7,7 +7,7 @@ import {
   computeBezierPath,
   NODE_W,
   NODE_H,
-} from "./article-diagrams";
+} from "./utils";
 
 export function ArticleDiagram({ diagramId }: { diagramId: string }) {
   const config = getDiagramConfig(diagramId);

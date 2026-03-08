@@ -5,7 +5,7 @@ import { ChevronRight, ExternalLink } from "lucide-react";
 import { Lock } from "lucide-react";
 import { PRACTICE_STEPS, STEPS } from "../constants";
 import { usePractice } from "../context/PracticeContext";
-import useStepStore from "../store/useStore";
+import useStepStore from "../hooks/useStore";
 import type { Hint, Solution, ProblemConfig, DesignSolution } from "../types";
 import { formatSolution } from "../utils/solutionHelpers";
 

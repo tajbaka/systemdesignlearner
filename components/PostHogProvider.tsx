@@ -10,7 +10,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Skip PostHog initialization in development
     if (process.env.NODE_ENV === "development") {
-      return;
+      // return;
     }
 
     // Only initialize PostHog on the client side

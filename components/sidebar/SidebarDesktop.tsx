@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useRef, useCallback } from "react";
+import { track } from "@/lib/analytics";
 import type { SidebarInternalConfig } from "./types";
 import { getCategoryIcon } from "./utils";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
@@ -189,6 +190,9 @@ export function SidebarDesktop({ config }: SidebarDesktopProps) {
                   <Link
                     prefetch={false}
                     href={btn.href}
+                    onClick={() => {
+                      track("sidebar_practice_clicked");
+                    }}
                     className={`flex items-center h-10 rounded-lg transition-colors bg-emerald-500 hover:bg-emerald-600 text-white ${
                       isExpanded ? "gap-2 px-2" : "w-10 justify-center"
                     }`}

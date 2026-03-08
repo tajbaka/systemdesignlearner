@@ -3,7 +3,7 @@
 import { usePractice } from "./context/PracticeContext";
 import { useStepLoader } from "./hooks/useStepLoader";
 
-export function StepRenderer() {
+export function BackendStepRenderer() {
   const { config, handlers, slug, stepType, loading } = usePractice();
   const { StepComponent, error } = useStepLoader({ step: stepType ?? "" });
 

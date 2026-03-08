@@ -3,8 +3,9 @@ import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import fs from "fs";
 import path from "path";
-import { ArticleLayout } from "../components/ArticleLayout";
-import { getArticleBySlug, processMarkdownContent, createMarkdownComponents } from "../utils";
+import { ArticleLayout } from "./ArticleLayout";
+import { getArticleBySlug, processMarkdownContent, createMarkdownComponents } from "./utils";
+import { ArticleDiagram } from "./article-diagram/ArticleDiagram";
 
 type LearnArticlePageClientProps = {
   slug: string;
@@ -25,7 +26,7 @@ export async function LearnArticlePageClient({ slug }: LearnArticlePageClientPro
   markdownContent = processMarkdownContent(markdownContent, config.removeFirstHeading);
 
   // Create markdown components
-  const components = createMarkdownComponents();
+  const components = createMarkdownComponents({ DiagramComponent: ArticleDiagram });
 
   return (
     <ArticleLayout

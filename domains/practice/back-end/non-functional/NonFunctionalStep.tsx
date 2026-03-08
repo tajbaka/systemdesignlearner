@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import type { StepComponentProps } from "../types";
 import { TextAreaCard } from "../components/TextAreaCard";
-import useStepStore from "../store/useStore";
+import useStepStore from "../hooks/useStore";
 import { STEPS } from "../constants";
 import { useIncompleteRequirement } from "../hooks/useIncompleteRequirement";
 import { VoiceInput } from "@/domains/practice/components/voice";

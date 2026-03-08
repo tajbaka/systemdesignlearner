@@ -1,10 +1,12 @@
 import { ReactNode } from "react";
-import Link from "next/link";
 import { Sidebar } from "@/components/sidebar";
 import { AuthenticatedNavbar } from "@/domains/authentication/AuthenticatedNavbar";
-import { ArticleFooter } from "./ArticleFooter";
+import { FooterNav } from "./components/FooterNav";
+import { PracticeNowButton } from "./components/PracticeNowButton";
 import { TableOfContents } from "./TableOfContents";
 import { ArticleStructuredData } from "./ArticleStructuredData";
+// import { TextSelectionPopup } from "./TextSelectionPopup";
+// import { ChatWidget } from "./ChatWidget";
 
 interface ArticleLayoutProps {
   title: string;
@@ -100,22 +102,31 @@ export function ArticleLayout({
             )}
 
             {/* Article Content */}
+            {/* <TextSelectionPopup articleTitle={title} slug={slug}> */}
             <div className="article-content min-w-0 overflow-x-hidden">{children}</div>
+            {/* </TextSelectionPopup> */}
             {/* Practice Button */}
             <div className="flex pt-6">
-              <Link
-                prefetch={false}
-                href="/practice"
-                className="inline-flex items-center justify-center h-12 rounded-md px-6 bg-emerald-500 hover:bg-emerald-600 text-white font-semibold text-base transition-all no-underline hover:no-underline"
-              >
-                Practice Now
-              </Link>
+              <PracticeNowButton slug={slug} />
             </div>
           </article>
         </main>
 
-        <ArticleFooter />
+        <FooterNav
+          className="hidden md:block"
+          leftLinks={[
+            { href: "/", label: "Home" },
+            { href: "/practice", label: "Practice", prefetch: false },
+            { href: "/feedback", label: "Feedback" },
+          ]}
+          rightLinks={[
+            { href: "/privacy", label: "Privacy" },
+            { href: "/terms", label: "Terms" },
+          ]}
+        />
       </div>
+
+      {/* <ChatWidget slug={slug} /> */}
     </div>
   );
 }
