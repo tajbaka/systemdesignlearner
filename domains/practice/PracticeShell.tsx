@@ -51,11 +51,15 @@ export function PracticeShell({ rawData, children }: PracticeShellProps) {
 
   const loading = stepStateLoading;
 
-  if (!stepSlug) {
+  const isIntroStep = !stepSlug;
+
+  if (isIntroStep) {
     if (!config) return null;
     return (
       <PracticeProvider value={{ config, handlers, slug, stepSlug: null, stepType: null, loading }}>
-        <Sidebar theme="dark" />
+        <div className="hidden md:block">
+          <Sidebar theme="dark" />
+        </div>
         <div className="flex h-full w-full flex-1 flex-col overflow-hidden">{children}</div>
       </PracticeProvider>
     );
