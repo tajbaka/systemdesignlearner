@@ -2,14 +2,20 @@
 
 import { type ReactNode, useState, useCallback } from "react";
 import { ChevronLeft } from "lucide-react";
-import { usePanelLoader } from "./back-end/hooks/usePanelLoader";
 import {
   StepWithLeftPanel,
   LEFT_PANEL_TABS,
   type LeftPanelTab,
 } from "./back-end/components/StepWithLeftPanel";
+import { ProblemTabContent } from "./back-end/components/ProblemTabContent";
+import { AssistanceChat } from "./back-end/AssistanceChat";
 
 const STORAGE_KEY = "sidepanel-tab";
+
+const LEFT_PANEL_CONTENT: Record<LeftPanelTab, ReactNode> = {
+  overview: <ProblemTabContent />,
+  assistance: <AssistanceChat />,
+};
 
 function readPersistedTab(): LeftPanelTab {
   if (typeof window === "undefined") return "overview";
@@ -33,8 +39,7 @@ export function PracticeLeftPanel({
   onCloseMobilePanel,
   children,
 }: PracticeLeftPanelProps) {
-  const { panelContent } = usePanelLoader({ step });
-  const hasPanel = !!panelContent;
+  const hasPanel = !!step;
   const [activeTab, setActiveTabState] = useState<LeftPanelTab>(readPersistedTab);
 
   const setActiveTab = useCallback((tab: LeftPanelTab) => {
@@ -44,7 +49,7 @@ export function PracticeLeftPanel({
 
   const panel = hasPanel ? (
     <StepWithLeftPanel activeTab={activeTab} onTabChange={setActiveTab}>
-      {panelContent[activeTab]}
+      {LEFT_PANEL_CONTENT[activeTab]}
     </StepWithLeftPanel>
   ) : null;
 

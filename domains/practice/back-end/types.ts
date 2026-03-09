@@ -9,7 +9,8 @@ export type FunctionalStepActions =
   | "changeTextBox"
   | "continue"
   | "revise"
-  | "insert";
+  | "insert"
+  | "assistanceQuestion";
 
 export type NonFunctionalStepActions =
   | "back"
@@ -17,7 +18,8 @@ export type NonFunctionalStepActions =
   | "changeTextBox"
   | "continue"
   | "revise"
-  | "insert";
+  | "insert"
+  | "assistanceQuestion";
 
 export type ApiStepActions =
   | "back"
@@ -28,7 +30,8 @@ export type ApiStepActions =
   | "deleteEndpoint"
   | "continue"
   | "revise"
-  | "insert";
+  | "insert"
+  | "assistanceQuestion";
 
 export type HighLevelDesignStepActions =
   | "back"
@@ -36,9 +39,10 @@ export type HighLevelDesignStepActions =
   | "updateDiagram"
   | "continue"
   | "revise"
-  | "insert";
+  | "insert"
+  | "assistanceQuestion";
 
-export type ScoreStepActions = "back" | "home" | "getScore";
+export type ScoreStepActions = "back" | "home" | "getScore" | "assistanceQuestion";
 
 export type StepActions = {
   [STEPS.INTRO]: IntroStepActions;

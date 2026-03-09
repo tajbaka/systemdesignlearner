@@ -161,6 +161,11 @@ export function useActionHandler(slug: string): StepHandlers {
             submission: undefined, // Clear results when user inserts solution
           };
           setFunctionalRequirements(updatedRequirements);
+        } else if (action === "assistanceQuestion") {
+          track("assistance_question_submitted", {
+            slug,
+            step: STEPS.FUNCTIONAL,
+          });
         }
       },
       [STEPS.NON_FUNCTIONAL]: async (action, ...args) => {
@@ -265,6 +270,11 @@ export function useActionHandler(slug: string): StepHandlers {
             submission: undefined, // Clear results when user inserts solution
           };
           setNonFunctionalRequirements(updatedRequirements);
+        } else if (action === "assistanceQuestion") {
+          track("assistance_question_submitted", {
+            slug,
+            step: STEPS.NON_FUNCTIONAL,
+          });
         }
       },
       [STEPS.API]: async (action, ...args) => {
@@ -514,6 +524,11 @@ export function useActionHandler(slug: string): StepHandlers {
             endpoints: updatedEndpoints,
             submission: undefined, // Clear results when user inserts solution
           });
+        } else if (action === "assistanceQuestion") {
+          track("assistance_question_submitted", {
+            slug,
+            step: STEPS.API,
+          });
         }
       },
       [STEPS.HIGH_LEVEL_DESIGN]: async (action, ...args) => {
@@ -597,6 +612,11 @@ export function useActionHandler(slug: string): StepHandlers {
             design: diagramData,
             submission: undefined, // Clear results when user inserts solution
           });
+        } else if (action === "assistanceQuestion") {
+          track("assistance_question_submitted", {
+            slug,
+            step: STEPS.HIGH_LEVEL_DESIGN,
+          });
         }
       },
       [STEPS.SCORE]: async (action) => {
@@ -654,6 +674,11 @@ export function useActionHandler(slug: string): StepHandlers {
             });
             // TODO: Handle error display
           }
+        } else if (action === "assistanceQuestion") {
+          track("assistance_question_submitted", {
+            slug,
+            step: STEPS.SCORE,
+          });
         }
       },
       // Add more step handlers here as needed

@@ -4,8 +4,7 @@ import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from "re
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowUp, Square, Trash2, RotateCcw } from "lucide-react";
-import { usePractice } from "../context/PracticeContext";
-import { useAssistanceChat, type Message } from "../hooks/useAssistanceChat";
+import type { Message } from "../hooks/useAssistanceChat";
 
 const MAX_TEXTAREA_ROWS = 7;
 const LINE_HEIGHT_PX = 20;
@@ -73,14 +72,27 @@ function MessageBubble({
   );
 }
 
-export function AssistanceChat() {
-  const { slug, stepSlug } = usePractice();
-  const step = stepSlug ?? "";
+export type ChatViewProps = {
+  messages: Message[];
+  onSend: (content: string) => void;
+  onStop: () => void;
+  onClearMessages: () => void;
+  onRetry: () => void;
+  isStreaming: boolean;
+  error: string | null;
+  onQuestionSubmit?: (message: string) => void;
+};
 
-  const { messages, send, stop, clearMessages, retry, isStreaming, error } = useAssistanceChat(
-    slug,
-    step
-  );
+export function ChatView({
+  messages,
+  onSend,
+  onStop,
+  onClearMessages,
+  onRetry,
+  isStreaming,
+  error,
+  onQuestionSubmit,
+}: ChatViewProps) {
   const [input, setInput] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const scrollAnchorRef = useRef<HTMLDivElement>(null);
@@ -102,12 +114,13 @@ export function AssistanceChat() {
 
   const handleSend = useCallback(() => {
     if (!canSend) return;
-    send(trimmed);
+    onQuestionSubmit?.(trimmed);
+    onSend(trimmed);
     setInput("");
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
     }
-  }, [canSend, trimmed, send]);
+  }, [canSend, trimmed, onSend, onQuestionSubmit]);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent<HTMLTextAreaElement>) => {
@@ -149,7 +162,7 @@ export function AssistanceChat() {
           <p className="text-xs text-red-400">{error}</p>
           <button
             type="button"
-            onClick={retry}
+            onClick={onRetry}
             className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors"
             aria-label="Retry last message"
           >
@@ -164,7 +177,7 @@ export function AssistanceChat() {
           {messages.length > 0 && !isStreaming && (
             <button
               type="button"
-              onClick={clearMessages}
+              onClick={onClearMessages}
               className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors"
               aria-label="Clear conversation"
             >
@@ -184,7 +197,7 @@ export function AssistanceChat() {
           <button
             type="button"
             disabled={isStreaming ? false : !canSend}
-            onClick={isStreaming ? stop : handleSend}
+            onClick={isStreaming ? onStop : handleSend}
             aria-label={isStreaming ? "Stop generating" : "Send message"}
             className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white transition-colors hover:bg-emerald-500 disabled:opacity-40 disabled:hover:bg-emerald-600"
           >
