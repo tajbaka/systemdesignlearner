@@ -7,6 +7,7 @@ import {
   LEFT_PANEL_TABS,
   type LeftPanelTab,
 } from "./back-end/components/StepWithLeftPanel";
+import { STEPS } from "./back-end/constants";
 import { ProblemTabContent } from "./back-end/components/ProblemTabContent";
 import { AssistanceChat } from "./back-end/AssistanceChat";
 
@@ -39,7 +40,7 @@ export function PracticeLeftPanel({
   onCloseMobilePanel,
   children,
 }: PracticeLeftPanelProps) {
-  const hasPanel = !!step;
+  const hasPanel = !!step && step !== STEPS.SCORE;
   const [activeTab, setActiveTabState] = useState<LeftPanelTab>(readPersistedTab);
 
   const setActiveTab = useCallback((tab: LeftPanelTab) => {
