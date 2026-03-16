@@ -29,3 +29,10 @@ export const ORGANIZATION_SCHEMA = {
   foundingDate: "2025",
   sameAs: [...SOCIAL_LINKS],
 };
+
+export const AUTHOR_SCHEMA = {
+  "@type": "Person" as const,
+  name: "Antonio Coppe",
+  url: "https://www.linkedin.com/in/antonio-coppe",
+  jobTitle: "Software Engineer",
+} as const;

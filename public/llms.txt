@@ -23,6 +23,12 @@ Interactive system design interview simulations:
 - [Rate Limiter](https://www.systemdesignsandbox.com/practice/rate-limiter/intro): Design a distributed rate limiting service with Redis and Lua scripts
 - [Notification System](https://www.systemdesignsandbox.com/practice/notification-system/intro): Design a multi-channel notification service (Email, SMS, Push)
 - [WhatsApp](https://www.systemdesignsandbox.com/practice/whatsapp/intro): Design a real-time chat application with presence and group messaging
+- [Leaderboard](https://www.systemdesignsandbox.com/practice/leaderboard/intro): Design a real-time leaderboard with Redis Sorted Sets
+- [Job Scheduler](https://www.systemdesignsandbox.com/practice/job-scheduler/intro): Design a distributed job scheduler for millions of scheduled tasks
+- [Payment System](https://www.systemdesignsandbox.com/practice/payment-system/intro): Design an auditable payment service with PSP integration and double-entry ledger
+- [Dropbox](https://www.systemdesignsandbox.com/practice/dropbox/intro): Design a cloud file sync service with chunking and delta sync
+- [Web Crawler](https://www.systemdesignsandbox.com/practice/web-crawler/intro): Design a distributed web crawler to crawl billions of pages
+- [YouTube](https://www.systemdesignsandbox.com/practice/youtube/intro): Design a video platform with upload, transcoding, and adaptive streaming
 
 ## Learn — Core Concepts
 
@@ -38,6 +44,27 @@ Tutorials covering fundamental distributed systems topics:
 - [Rate Limiting Algorithms](https://www.systemdesignsandbox.com/learn/rate-limiting-algorithms): Fixed window, sliding window, token bucket, distributed rate limiting
 - [Message Queues](https://www.systemdesignsandbox.com/learn/message-queues): Kafka vs RabbitMQ, async processing, dead letter queues
 - [WebSockets & Real-Time Communication](https://www.systemdesignsandbox.com/learn/websockets-realtime): Persistent connections, polling vs SSE vs WebSockets, presence systems
+- [Idempotency & Deduplication](https://www.systemdesignsandbox.com/learn/idempotency-deduplication): Preventing duplicate side effects in distributed systems
+- [Fan-Out Strategies](https://www.systemdesignsandbox.com/learn/fan-out-strategies): Distributing events to many recipients at scale
+- [Wide-Column Databases](https://www.systemdesignsandbox.com/learn/wide-column-databases): Cassandra, partition keys, and write-heavy workloads
+- [Redis Sorted Sets](https://www.systemdesignsandbox.com/learn/redis-sorted-sets): How Redis keeps millions of scores ranked in real time
+- [Data Structures for System Design](https://www.systemdesignsandbox.com/learn/data-structures): Skip lists, LSM trees, B-trees, bloom filters
+- [Sharding](https://www.systemdesignsandbox.com/learn/sharding): Splitting data across machines when one database isn't enough
+- [Microservices](https://www.systemdesignsandbox.com/learn/microservices): When to split services and how to keep them talking
+- [Leader Election](https://www.systemdesignsandbox.com/learn/leader-election): Choosing one coordinator in a distributed system
+- [Cron Architecture](https://www.systemdesignsandbox.com/learn/cron-architecture): Running scheduled tasks reliably across distributed systems
+- [Double-Entry Bookkeeping](https://www.systemdesignsandbox.com/learn/double-entry): The accounting pattern behind every reliable payment system
+- [Distributed Transactions](https://www.systemdesignsandbox.com/learn/distributed-transactions): Keeping data consistent across multiple services
+- [Consistency Patterns](https://www.systemdesignsandbox.com/learn/consistency-patterns): Choosing the right consistency model for each piece of data
+- [Block Storage vs Object Storage](https://www.systemdesignsandbox.com/learn/storage-types): Understanding storage options and when to use each
+- [Delta Sync & Merkle Trees](https://www.systemdesignsandbox.com/learn/delta-sync): Syncing file changes efficiently with chunking and hash trees
+- [Presigned URLs](https://www.systemdesignsandbox.com/learn/presigned-urls): Secure, direct-to-storage uploads and downloads
+- [Graph Traversal (BFS)](https://www.systemdesignsandbox.com/learn/graph-traversal): How web crawlers explore billions of pages using breadth-first search
+- [Bloom Filters](https://www.systemdesignsandbox.com/learn/bloom-filters): Space-efficient probabilistic data structures for membership testing
+- [DNS & DNS Caching](https://www.systemdesignsandbox.com/learn/dns): How domain name resolution works and why it matters at scale
+- [Content Delivery Networks (CDN)](https://www.systemdesignsandbox.com/learn/cdn): How CDNs cache and serve content at the edge
+- [Adaptive Bitrate Streaming (HLS/DASH)](https://www.systemdesignsandbox.com/learn/video-streaming): How video platforms deliver smooth playback across devices
+- [Asynchronous Processing & DAGs](https://www.systemdesignsandbox.com/learn/async-processing): Orchestrating multi-step workflows with directed acyclic graphs
 
 ## Learn — Design Problems
 
@@ -48,6 +75,12 @@ Step-by-step system design solutions:
 - [Design a Distributed Rate Limiter](https://www.systemdesignsandbox.com/learn/design-rate-limiter): Redis-based counting, Lua scripts, fail-open strategies
 - [Design a Notification System](https://www.systemdesignsandbox.com/learn/design-notification-system): Message queues, priority delivery, retry strategies
 - [Design WhatsApp](https://www.systemdesignsandbox.com/learn/design-whatsapp): WebSocket messaging, Cassandra storage, presence systems
+- [Design a Real-Time Leaderboard](https://www.systemdesignsandbox.com/learn/design-leaderboard): Redis Sorted Sets, skip list internals, dual-write persistence
+- [Design a Distributed Job Scheduler](https://www.systemdesignsandbox.com/learn/design-job-scheduler): Leader election, message queues, at-least-once delivery
+- [Design a Payment System](https://www.systemdesignsandbox.com/learn/design-payment-system): PSP integration, double-entry bookkeeping, idempotency keys
+- [Design Dropbox (Google Drive)](https://www.systemdesignsandbox.com/learn/design-dropbox): File chunking, delta sync, presigned URLs, real-time sync
+- [Design a Distributed Web Crawler](https://www.systemdesignsandbox.com/learn/design-web-crawler): BFS frontier, Bloom filters, politeness policies, DNS resolution
+- [Design YouTube](https://www.systemdesignsandbox.com/learn/design-youtube): Presigned uploads, DAG transcoding, adaptive streaming, CDN delivery
 
 ## Links
 

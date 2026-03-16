@@ -1,5 +1,5 @@
 import { getBaseUrl } from "@/lib/getBaseUrl";
-import { ORGANIZATION_SCHEMA } from "@/lib/schemas";
+import { ORGANIZATION_SCHEMA, AUTHOR_SCHEMA } from "@/lib/schemas";
 
 interface ArticleStructuredDataProps {
   title: string;
@@ -9,16 +9,17 @@ interface ArticleStructuredDataProps {
   date?: string;
   readTime?: string;
   slug: string;
+  keywords?: string[];
 }
 
 export function ArticleStructuredData({
   title,
   subtitle,
   description,
-  author = "System Design Sandbox",
   date,
   readTime,
   slug,
+  keywords,
 }: ArticleStructuredDataProps) {
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}/learn/${slug}`;
@@ -27,17 +28,13 @@ export function ArticleStructuredData({
   // Article schema for rich snippets
   const articleSchema = {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "TechArticle",
     headline: title,
     description: description || subtitle,
     image: imageUrl,
-    datePublished: date || new Date().toISOString(),
-    dateModified: date || new Date().toISOString(),
-    author: {
-      "@type": "Organization",
-      name: author,
-      url: baseUrl,
-    },
+    ...(date && { datePublished: date }),
+    ...(date && { dateModified: date }),
+    author: AUTHOR_SCHEMA,
     publisher: {
       ...ORGANIZATION_SCHEMA,
       logo: {
@@ -50,14 +47,7 @@ export function ArticleStructuredData({
       "@id": url,
     },
     articleSection: "System Design",
-    keywords: [
-      "system design",
-      "distributed systems",
-      "software architecture",
-      "scalability",
-      "system design interview",
-      "backend engineering",
-    ],
+    ...(keywords?.length && { keywords }),
     ...(readTime && {
       timeRequired: readTime,
     }),

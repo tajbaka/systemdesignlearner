@@ -148,18 +148,6 @@ export default function HomePage() {
         name: "Home",
         item: BASE_URL,
       },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: "Practice",
-        item: `${BASE_URL}/practice`,
-      },
-      {
-        "@type": "ListItem",
-        position: 3,
-        name: "Learn",
-        item: `${BASE_URL}/learn`,
-      },
     ],
   };
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { PracticePageClient } from "@/domains/practice/PracticePageClient";
 import { getBaseUrl } from "@/lib/getBaseUrl";
+import { BASE_URL } from "@/lib/schemas";
 
 const canonicalUrl = `${getBaseUrl()}/practice`;
 const ogImage = `${getBaseUrl()}/desktop-url-shortener-practice.gif`;
@@ -57,5 +58,55 @@ export default async function Page() {
     return [];
   });
 
-  return <PracticePageClient problems={problems} />;
+  const itemListSchema = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "System Design Practice Scenarios",
+    description: "Interactive system design interview simulations with AI-powered feedback",
+    numberOfItems: problems.length,
+    itemListElement: problems.map(
+      (p: { title: string; slug: string; description: string }, i: number) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        name: p.title,
+        url: `${BASE_URL}/practice/${p.slug}/intro`,
+        description: p.description,
+      })
+    ),
+  };
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: BASE_URL,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "Practice",
+        item: `${BASE_URL}/practice`,
+      },
+    ],
+  };
+
+  return (
+    <>
+      <script
+        id="itemlist-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+      />
+      <script
+        id="breadcrumb-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <PracticePageClient problems={problems} />
+    </>
+  );
 }

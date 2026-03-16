@@ -17,6 +17,7 @@ interface ArticleLayoutProps {
   description?: string;
   tableOfContents?: Array<{ id: string; title: string }>;
   slug: string;
+  keywords?: string[];
   children: ReactNode;
 }
 
@@ -29,6 +30,7 @@ export function ArticleLayout({
   description,
   tableOfContents,
   slug,
+  keywords,
   children,
 }: ArticleLayoutProps) {
   return (
@@ -38,10 +40,10 @@ export function ArticleLayout({
         title={title}
         subtitle={subtitle}
         description={description}
-        author={author}
         date={date}
         readTime={readTime}
         slug={slug}
+        keywords={keywords}
       />
       <AuthenticatedNavbar variant="light" hideIcon={true} hideOnMobile={true} />
 

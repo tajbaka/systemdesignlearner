@@ -16,6 +16,10 @@ User-agent: Google-Extended
 User-agent: Applebot-Extended
 User-agent: cohere-ai
 User-agent: Meta-ExternalAgent
+User-agent: ClaudeBot
+User-agent: CCBot
+User-agent: OAI-SearchBot
+User-agent: Amazonbot
 Allow: /
 
 # LLM context files

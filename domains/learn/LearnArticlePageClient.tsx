@@ -38,6 +38,7 @@ export async function LearnArticlePageClient({ slug }: LearnArticlePageClientPro
       description={config.description}
       tableOfContents={config.tableOfContents}
       slug={slug}
+      keywords={config.keywords}
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}

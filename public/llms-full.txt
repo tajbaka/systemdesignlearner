@@ -17,7 +17,7 @@ The platform is designed for:
 - Interactive Architecture Canvas: Drag-and-drop components (load balancers, databases, caches, message queues, API gateways, CDNs, object storage) to design systems visually on an infinite canvas
 - Step-by-Step Practice: Each scenario walks through the real interview flow — functional requirements, non-functional requirements, API design, capacity planning, and high-level architecture design
 - AI-Powered Feedback: After completing a design, get instant AI analysis and scoring with specific feedback on what you did well and what to improve
-- Learn Articles: 15 in-depth tutorials covering core distributed systems concepts and step-by-step design problem solutions
+- Learn Articles: 42 in-depth tutorials covering core distributed systems concepts and step-by-step design problem solutions
 - Free to Use: No paywall, no credit card required, no account needed to read articles
 
 ## Practice Scenarios
@@ -49,6 +49,30 @@ Interactive system design interview simulations. Each scenario includes these st
 ### WhatsApp
 - URL: https://www.systemdesignsandbox.com/practice/whatsapp/intro
 - Description: Design a real-time chat application like WhatsApp. Implement WebSocket-based messaging, Cassandra for write-heavy message storage, presence systems with Redis, and group chat with message fan-out.
+
+### Leaderboard
+- URL: https://www.systemdesignsandbox.com/practice/leaderboard/intro
+- Description: Design a real-time leaderboard for a gaming platform. Use Redis Sorted Sets for O(log n) ranking, skip list data structure, dual-write persistence to PostgreSQL, compound scores for tie-breaking, and scaling to millions of players.
+
+### Job Scheduler
+- URL: https://www.systemdesignsandbox.com/practice/job-scheduler/intro
+- Description: Design a distributed job scheduler for millions of scheduled tasks. Implement leader election for coordinator failover, message queues for decoupled execution, pre-computed next_run_time for efficient polling, and at-least-once delivery guarantees.
+
+### Payment System
+- URL: https://www.systemdesignsandbox.com/practice/payment-system/intro
+- Description: Design an auditable payment system with PSP integration (Stripe/PayPal). Implement double-entry bookkeeping for audit trails, idempotency keys to prevent double charges, webhook handling, and reconciliation batch jobs.
+
+### Dropbox
+- URL: https://www.systemdesignsandbox.com/practice/dropbox/intro
+- Description: Design a cloud file sync service like Dropbox or Google Drive. Implement file chunking and delta sync for bandwidth efficiency, presigned URLs for direct-to-S3 uploads, content-addressable storage for deduplication, and real-time cross-device synchronization.
+
+### Web Crawler
+- URL: https://www.systemdesignsandbox.com/practice/web-crawler/intro
+- Description: Design a distributed web crawler to crawl billions of web pages. Implement BFS-based URL frontier, politeness policies with per-host rate limiting, Bloom filters for URL deduplication, custom DNS resolution, and distributed worker pools.
+
+### YouTube
+- URL: https://www.systemdesignsandbox.com/practice/youtube/intro
+- Description: Design a video sharing platform like YouTube. Implement presigned URL uploads, DAG-based transcoding pipelines, adaptive bitrate streaming (HLS/DASH), CDN architecture for global delivery, and batched view count aggregation.
 
 ## Learn — Core Concepts
 
@@ -112,6 +136,132 @@ Interactive system design interview simulations. Each scenario includes these st
 - Topics: HTTP vs WebSockets, how WebSockets work, polling alternatives (and why they lose), scaling WebSockets (the hard part), presence systems (is the user online), common interview mistakes
 - Read time: 12 min
 
+### Idempotency & Deduplication
+- URL: https://www.systemdesignsandbox.com/learn/idempotency-deduplication
+- Description: Learn how idempotency keys and deduplication strategies prevent duplicate emails, double charges, and repeated webhook deliveries. Covers Redis SET NX, database unique constraints, and the at-least-once + idempotent consumer pattern.
+- Topics: What is idempotency, idempotency keys, Redis SET NX, database unique constraints, at-least-once + idempotent consumer, common interview mistakes
+- Read time: 10 min
+
+### Fan-Out Strategies
+- URL: https://www.systemdesignsandbox.com/learn/fan-out-strategies
+- Description: Learn fan-out-on-write vs fan-out-on-read, the celebrity problem, and the hybrid approach used by Twitter and Instagram. Covers feed generation, group chat delivery, notification fan-out, and webhook distribution.
+- Topics: Fan-out-on-write, fan-out-on-read, the celebrity problem, hybrid approach, feed generation, group chat delivery, notification fan-out
+- Read time: 10 min
+
+### Wide-Column Databases
+- URL: https://www.systemdesignsandbox.com/learn/wide-column-databases
+- Description: Learn how wide-column databases like Cassandra organize data by partition key and clustering key, why LSM trees make writes fast, and how to design schemas query-first. Covers Cassandra vs DynamoDB vs MongoDB and when to choose each.
+- Topics: Partition keys and clustering keys, LSM trees, query-first schema design, Cassandra vs DynamoDB vs MongoDB, when to choose wide-column
+- Read time: 12 min
+
+### Redis Sorted Sets
+- URL: https://www.systemdesignsandbox.com/learn/redis-sorted-sets
+- Description: Learn how Redis Sorted Sets (ZSET) power real-time leaderboards with O(log n) operations. Covers ZADD, ZRANGE, ZRANK commands, the skip list data structure underneath, handling ties, sharding sorted sets, and when to use alternatives.
+- Topics: ZADD, ZRANGE, ZRANK, skip list data structure, handling ties, sharding sorted sets, alternatives
+- Read time: 10 min
+
+### Data Structures for System Design
+- URL: https://www.systemdesignsandbox.com/learn/data-structures
+- Description: Learn the data structures that matter for system design: hash tables for caching, skip lists powering Redis, LSM trees in Cassandra, B-trees in PostgreSQL, and bloom filters for reducing disk reads. Not LeetCode -- system-level data structures.
+- Topics: Hash tables, skip lists, LSM trees, B-trees, bloom filters, consistent hashing
+- Read time: 12 min
+
+### Sharding
+- URL: https://www.systemdesignsandbox.com/learn/sharding
+- Description: Learn how to shard databases for scale: shard key selection, range-based vs hash-based partitioning, consistent hashing, cross-shard queries, rebalancing, and hotspot mitigation. Essential for designing systems with billions of rows.
+- Topics: Shard key selection, range-based vs hash-based partitioning, consistent hashing, cross-shard queries, rebalancing, hotspot mitigation
+- Read time: 10 min
+
+### Microservices
+- URL: https://www.systemdesignsandbox.com/learn/microservices
+- Description: Learn when microservices make sense vs a monolith, how to define service boundaries, sync vs async communication patterns, stateless services for horizontal scaling, service discovery, and the real downsides nobody warns you about.
+- Topics: Monolith vs microservices, service boundaries, sync vs async communication, stateless services, service discovery, downsides
+- Read time: 10 min
+
+### Leader Election
+- URL: https://www.systemdesignsandbox.com/learn/leader-election
+- Description: Learn how leader election works in distributed systems: ZooKeeper ephemeral nodes, etcd leases with Raft consensus, Redis-based elections, split brain prevention, and when to use leader election vs message queues. Essential for designing job schedulers, database replication, and distributed locks.
+- Topics: ZooKeeper ephemeral nodes, etcd leases, Raft consensus, split brain prevention, leader election vs message queues
+- Read time: 10 min
+
+### Cron Architecture
+- URL: https://www.systemdesignsandbox.com/learn/cron-architecture
+- Description: Learn how distributed cron systems work: exactly-once execution challenges, single leader polling with message queues, database row locking, partitioned scheduling, cron expression parsing, missed job handling, and real-world examples from Kubernetes and Airflow.
+- Topics: Exactly-once execution, single leader polling, database row locking, partitioned scheduling, cron expression parsing, missed job handling
+- Read time: 10 min
+
+### Double-Entry Bookkeeping
+- URL: https://www.systemdesignsandbox.com/learn/double-entry
+- Description: Learn how double-entry bookkeeping ensures every payment is auditable and self-balancing. Covers debit/credit pairs, ledger immutability, the fundamental accounting equation, reconciliation, and when to use double-entry in system design interviews.
+- Topics: Debit/credit pairs, ledger immutability, fundamental accounting equation, reconciliation, when to use double-entry
+- Read time: 12 min
+
+### Distributed Transactions
+- URL: https://www.systemdesignsandbox.com/learn/distributed-transactions
+- Description: Learn how to coordinate transactions across microservices with Two-Phase Commit (2PC) and the Saga pattern. Covers compensating transactions, choreography vs orchestration, and when to use each approach in system design interviews.
+- Topics: Two-Phase Commit (2PC), Saga pattern, compensating transactions, choreography vs orchestration
+- Read time: 12 min
+
+### Consistency Patterns
+- URL: https://www.systemdesignsandbox.com/learn/consistency-patterns
+- Description: Learn the spectrum of consistency models from strong to eventual, practical patterns like read-your-writes and causal consistency, reconciliation strategies, and how to choose the right consistency level for financial data, social feeds, and user profiles.
+- Topics: Strong consistency, eventual consistency, read-your-writes, causal consistency, reconciliation strategies, choosing consistency levels
+- Read time: 10 min
+
+### Block Storage vs Object Storage
+- URL: https://www.systemdesignsandbox.com/learn/storage-types
+- Description: Learn the differences between block storage (EBS), object storage (S3), and file storage (EFS). Covers when to use each, the metadata-content separation pattern, durability guarantees, and cost trade-offs for system design interviews.
+- Topics: Block storage (EBS), object storage (S3), file storage (EFS), metadata-content separation, durability, cost trade-offs
+- Read time: 10 min
+
+### Delta Sync & Merkle Trees
+- URL: https://www.systemdesignsandbox.com/learn/delta-sync
+- Description: Learn how delta sync works: file chunking, content-defined chunking (CDC), hash-based change detection, Merkle trees for efficient diff, and the rsync algorithm. Essential for designing Dropbox, Google Drive, and any file synchronization system.
+- Topics: File chunking, content-defined chunking (CDC), hash-based change detection, Merkle trees, rsync algorithm
+- Read time: 10 min
+
+### Presigned URLs
+- URL: https://www.systemdesignsandbox.com/learn/presigned-urls
+- Description: Learn how presigned URLs enable clients to upload and download files directly to S3 without exposing credentials. Covers upload and download flows, security considerations, expiration policies, and when to use presigned URLs in system design.
+- Topics: Upload and download flows, security considerations, expiration policies, when to use presigned URLs
+- Read time: 10 min
+
+### Graph Traversal (BFS)
+- URL: https://www.systemdesignsandbox.com/learn/graph-traversal
+- Description: Learn how BFS and DFS apply to web crawling, why BFS is preferred for discovering pages layer by layer, queue-based traversal, cycle detection with visited sets, priority-based crawling, and considerations for billion-node graphs.
+- Topics: BFS vs DFS, queue-based traversal, cycle detection, priority-based crawling, billion-node graphs
+- Read time: 10 min
+
+### Bloom Filters
+- URL: https://www.systemdesignsandbox.com/learn/bloom-filters
+- Description: Learn how Bloom filters use multiple hash functions and a bit array to test set membership in constant time and minimal space. Covers false positive rates, tuning parameters (m bits, k hashes), counting Bloom filters, and real-world use cases like URL deduplication and cache checks.
+- Topics: Hash functions and bit array, false positive rates, tuning parameters, counting Bloom filters, URL deduplication
+- Read time: 10 min
+
+### DNS & DNS Caching
+- URL: https://www.systemdesignsandbox.com/learn/dns
+- Description: Learn how DNS resolves domain names to IP addresses through recursive and iterative queries, the DNS hierarchy from root servers to authoritative nameservers, TTL and caching layers, DNS as a bottleneck at crawler scale, custom resolvers, and DNS round-robin for load distribution.
+- Topics: Recursive and iterative queries, DNS hierarchy, TTL and caching, DNS at crawler scale, custom resolvers, DNS round-robin
+- Read time: 10 min
+
+### Content Delivery Networks (CDN)
+- URL: https://www.systemdesignsandbox.com/learn/cdn
+- Description: Learn how Content Delivery Networks work: edge servers, Points of Presence, pull vs push CDN, cache invalidation strategies (TTL, versioned URLs, purge APIs), CDN for video streaming, and when to use a CDN in system design interviews.
+- Topics: Edge servers, Points of Presence, pull vs push CDN, cache invalidation (TTL, versioned URLs, purge APIs), CDN for video streaming
+- Read time: 12 min
+
+### Adaptive Bitrate Streaming (HLS/DASH)
+- URL: https://www.systemdesignsandbox.com/learn/video-streaming
+- Description: Learn how adaptive bitrate streaming works: chunk-based delivery, HLS vs DASH protocols, manifest files (.m3u8/.mpd), bitrate ladders, transcoding pipelines, and the full upload-to-playback flow. Essential for system design interviews involving video platforms.
+- Topics: Chunk-based delivery, HLS vs DASH, manifest files, bitrate ladders, transcoding pipelines, upload-to-playback flow
+- Read time: 12 min
+
+### Asynchronous Processing & DAGs
+- URL: https://www.systemdesignsandbox.com/learn/async-processing
+- Description: Learn how to model complex async workflows as DAGs (Directed Acyclic Graphs): task dependencies, fan-out and fan-in patterns, parallel execution, DAG orchestrators (Airflow, Temporal, Step Functions), event-driven pipelines, and when to use DAGs vs simple message queues.
+- Topics: Task dependencies, fan-out and fan-in, parallel execution, DAG orchestrators (Airflow, Temporal, Step Functions), event-driven pipelines
+- Read time: 12 min
+
 ## Learn — Design Problems
 
 ### Design a URL Shortener
@@ -141,6 +291,42 @@ Interactive system design interview simulations. Each scenario includes these st
 ### Design WhatsApp
 - URL: https://www.systemdesignsandbox.com/learn/design-whatsapp
 - Description: Learn how to design a production-ready chat application like WhatsApp. This guide covers WebSocket-based real-time messaging, Cassandra for write-heavy message storage, presence systems with Redis, and scaling stateful connections across servers.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design a Real-Time Leaderboard
+- URL: https://www.systemdesignsandbox.com/learn/design-leaderboard
+- Description: Learn how to design a production-ready real-time leaderboard. This guide covers Redis Sorted Sets for O(log n) ranking, the skip list data structure underneath, dual-write persistence, handling ties with compound scores, and scaling to millions of players.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design a Distributed Job Scheduler
+- URL: https://www.systemdesignsandbox.com/learn/design-job-scheduler
+- Description: Learn how to design a production-ready distributed job scheduler. This guide covers leader election for coordinator failover, message queues for decoupled execution, pre-computed next_run_time for efficient polling, at-least-once delivery guarantees, and scaling to millions of scheduled jobs.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design a Payment System
+- URL: https://www.systemdesignsandbox.com/learn/design-payment-system
+- Description: Learn how to design a production-ready payment system. This guide covers PSP integration (Stripe/PayPal), double-entry bookkeeping for audit trails, idempotency keys to prevent double charges, webhook handling, reconciliation batch jobs, and scaling financial infrastructure.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design Dropbox (Google Drive)
+- URL: https://www.systemdesignsandbox.com/learn/design-dropbox
+- Description: Learn how to design a production-ready file sync service like Dropbox or Google Drive. This guide covers file chunking and delta sync for bandwidth efficiency, presigned URLs for direct-to-S3 uploads, content-addressable storage for deduplication, and real-time cross-device synchronization.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design a Distributed Web Crawler
+- URL: https://www.systemdesignsandbox.com/learn/design-web-crawler
+- Description: Learn how to design a production-ready distributed web crawler. This guide covers BFS-based URL frontier, politeness policies with per-host rate limiting, Bloom filters for URL deduplication, custom DNS resolution, distributed worker pools, and scaling to billions of pages.
+- Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
+- Read time: 15 min
+
+### Design YouTube
+- URL: https://www.systemdesignsandbox.com/learn/design-youtube
+- Description: Learn how to design a production-ready video sharing platform. This guide covers presigned URL uploads, DAG-based transcoding pipelines, adaptive bitrate streaming (HLS/DASH), CDN architecture for global delivery, and batched view count aggregation for viral-scale traffic.
 - Topics: Functional requirements, non-functional requirements, API design, high level design, detailed design, common interview mistakes
 - Read time: 15 min
 
