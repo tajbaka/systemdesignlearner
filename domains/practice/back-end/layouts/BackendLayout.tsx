@@ -29,7 +29,7 @@ type BackendLayoutProps = {
 
 export function BackendLayout({ children }: BackendLayoutProps) {
   const { config, handlers, slug, stepType } = usePractice();
-  const { isActionLoading } = useStore(slug);
+  const { isActionLoading, actionError, setActionError } = useStore(slug);
 
   const {
     showBack,
@@ -162,6 +162,24 @@ export function BackendLayout({ children }: BackendLayoutProps) {
             onInsertComplete={closeModal}
           />
         </FeedbackModal>
+
+        {actionError && (
+          <div className="flex-shrink-0 mx-auto w-full max-w-5xl px-4 md:max-w-none md:px-[8%] pb-3">
+            <div className="flex items-center justify-between gap-3 rounded-lg border border-red-500/30 bg-red-950/40 px-4 py-3 text-sm text-red-200">
+              <span>{actionError}</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setActionError(null);
+                  handleNext();
+                }}
+                className="flex-shrink-0 rounded-md bg-red-600/80 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600 transition-colors"
+              >
+                Try again
+              </button>
+            </div>
+          </div>
+        )}
 
         <footer className="bg-black border-t border-zinc-800 flex-shrink-0">
           <div className="mx-auto w-full max-w-5xl px-4 md:max-w-none md:px-[8%]">

@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db, profiles } from "@/packages/drizzle";
 import { verifyUnsubscribeToken } from "@/lib/unsubscribe";
 import { logger } from "@/lib/logger";
+import { captureServerError } from "@/lib/posthog-server";
 
 /**
  * Handles both:
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     logger.error("Unsubscribe error:", error);
+    captureServerError(error, { route: "POST /api/unsubscribe" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

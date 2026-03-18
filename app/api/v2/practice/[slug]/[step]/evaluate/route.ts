@@ -18,13 +18,19 @@ import {
 } from "@/app/api/v2/practice/(evaluation)/strategies/api";
 import { validateMatchedEndpoint } from "@/app/api/v2/practice/(evaluation)/assertions/api";
 import type { ApiDefinitionInput } from "@/app/api/v2/practice/(evaluation)/validation";
-import { generateEvaluation, generateApiEvaluation, generateExtraction } from "@/lib/gemini";
+import {
+  generateEvaluation,
+  generateApiEvaluation,
+  generateExtraction,
+  GeminiError,
+} from "@/lib/gemini";
 import type {
   EvaluationResult,
   APIEvaluationResult,
 } from "@/app/api/v2/practice/(evaluation)/types";
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
 import { calculateMaxVisitedStep } from "@/domains/practice/utils/access-control";
+import { captureServerError } from "@/lib/posthog-server";
 
 // Helper to strip markdown code blocks if the LLM wraps JSON
 const cleanJson = (raw: string) => raw.replace(/```json|```/g, "").trim();
@@ -629,6 +635,39 @@ export async function POST(
     });
   } catch (error) {
     logger.error("POST /api/v2/practice/[slug]/[step]/evaluate - Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    captureServerError(error, { route: "POST /api/v2/practice/[slug]/[step]/evaluate" });
+
+    if (error instanceof GeminiError) {
+      switch (error.code) {
+        case "RATE_LIMIT":
+          return NextResponse.json(
+            {
+              error: "AI service is temporarily busy. Please try again in a moment.",
+              retryable: true,
+            },
+            { status: 503 }
+          );
+        case "TIMEOUT":
+          return NextResponse.json(
+            { error: "Evaluation timed out. Please try again.", retryable: true },
+            { status: 504 }
+          );
+        case "UNAVAILABLE":
+          return NextResponse.json(
+            { error: "AI service is temporarily unavailable. Please try again.", retryable: true },
+            { status: 503 }
+          );
+        default:
+          return NextResponse.json(
+            { error: "Something went wrong. Please try again.", retryable: true },
+            { status: 500 }
+          );
+      }
+    }
+
+    return NextResponse.json(
+      { error: "Something went wrong. Please try again.", retryable: true },
+      { status: 500 }
+    );
   }
 }

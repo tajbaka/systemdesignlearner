@@ -1,4 +1,5 @@
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
+import { captureServerError } from "@/lib/posthog-server";
 import type { EvaluationStrategy, APIEvaluationResult } from "../types";
 import { ApiDefinitionSchema, type ApiDefinitionInput } from "../validation";
 
@@ -461,6 +462,7 @@ Do NOT use "met", "complete", "pass", or any other field names.`;
       aiResults = parsed.results || [];
     } catch (e) {
       console.error("Failed to parse AI response:", e);
+      captureServerError(e, { route: "api-strategy", step: "parseResponse" });
       // Return error result with fallback itemIds for highlighting
       return {
         feedback: "Evaluation failed: Unable to parse AI response. Please try again.",

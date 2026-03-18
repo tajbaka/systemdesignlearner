@@ -8,6 +8,7 @@ import {
   sendProblemLastReminder,
 } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { captureServerError } from "@/lib/posthog-server";
 
 const newProblemSchema = z.object({
   secret: z.string().min(1, "Secret is required"),
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     logger.error("PostHog webhook error:", error);
+    captureServerError(error, { route: "POST /api/webhooks/posthog" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

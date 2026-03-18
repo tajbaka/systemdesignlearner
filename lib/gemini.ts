@@ -1,21 +1,6 @@
 import { GoogleGenAI as PostHogGoogleGenAI } from "@posthog/ai";
 import { GoogleGenAI, Type } from "@google/genai";
-import { PostHog } from "posthog-node";
-
-// Server-side PostHog client (singleton)
-let phClient: PostHog | null = null;
-
-function getPostHogClient(): PostHog | null {
-  const key = process.env.NEXT_PUBLIC_POSTHOG_KEY;
-  if (!key) return null;
-
-  if (!phClient) {
-    phClient = new PostHog(key, {
-      host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "https://us.i.posthog.com",
-    });
-  }
-  return phClient;
-}
+import { getPostHogClient } from "@/lib/posthog-server";
 
 // Gemini client with PostHog LLM analytics (singleton)
 let client: GoogleGenAI | PostHogGoogleGenAI | null = null;
@@ -39,6 +24,76 @@ function getClient(): GoogleGenAI | PostHogGoogleGenAI {
 
 const MODEL = "gemini-2.0-flash";
 const TEMPERATURE = 0.1;
+
+// Custom error class for classified Gemini failures
+export class GeminiError extends Error {
+  constructor(
+    message: string,
+    public readonly code: "RATE_LIMIT" | "TIMEOUT" | "UNAVAILABLE" | "UNKNOWN"
+  ) {
+    super(message);
+    this.name = "GeminiError";
+  }
+}
+
+function isTransientError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("429") || msg.includes("rate limit") || msg.includes("resource exhausted"))
+      return true;
+    if (msg.includes("503") || msg.includes("unavailable") || msg.includes("overloaded"))
+      return true;
+    if (msg.includes("timeout") || msg.includes("aborted") || error.name === "AbortError")
+      return true;
+  }
+  return false;
+}
+
+function classifyError(error: unknown): GeminiError {
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("429") || msg.includes("rate limit") || msg.includes("resource exhausted")) {
+      return new GeminiError("AI service rate limited", "RATE_LIMIT");
+    }
+    if (msg.includes("timeout") || msg.includes("aborted") || error.name === "AbortError") {
+      return new GeminiError("AI service timed out", "TIMEOUT");
+    }
+    if (msg.includes("503") || msg.includes("unavailable") || msg.includes("overloaded")) {
+      return new GeminiError("AI service temporarily unavailable", "UNAVAILABLE");
+    }
+  }
+  return new GeminiError(
+    error instanceof Error ? error.message : "Unknown Gemini error",
+    "UNKNOWN"
+  );
+}
+
+const MAX_RETRIES = 2;
+const BASE_DELAY_MS = 1000;
+const TIMEOUT_MS = 30_000;
+
+async function retryWithBackoff<T>(fn: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const signal = AbortSignal.timeout(TIMEOUT_MS);
+      return await fn(signal);
+    } catch (error) {
+      lastError = error;
+
+      if (attempt < MAX_RETRIES && isTransientError(error)) {
+        const delay = BASE_DELAY_MS * Math.pow(2, attempt);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      break;
+    }
+  }
+
+  throw classifyError(lastError);
+}
 
 /**
  * Schema for Functional & Non-Functional evaluation.
@@ -117,18 +172,20 @@ export async function generateEvaluation(
   prompt: string,
   posthogDistinctId?: string
 ): Promise<string> {
-  const response = await getClient().models.generateContent({
-    model: MODEL,
-    contents: prompt,
-    config: {
-      temperature: TEMPERATURE,
-      responseMimeType: "application/json",
-      responseSchema: functionalEvaluationSchema,
-    },
-    posthogDistinctId,
-    posthogProperties: { llm_feature: "feedback", feedback_type: "functional" },
+  return retryWithBackoff(async () => {
+    const response = await getClient().models.generateContent({
+      model: MODEL,
+      contents: prompt,
+      config: {
+        temperature: TEMPERATURE,
+        responseMimeType: "application/json",
+        responseSchema: functionalEvaluationSchema,
+      },
+      posthogDistinctId,
+      posthogProperties: { llm_feature: "feedback", feedback_type: "functional" },
+    });
+    return response.text ?? "";
   });
-  return response.text ?? "";
 }
 
 /**
@@ -138,18 +195,20 @@ export async function generateApiEvaluation(
   prompt: string,
   posthogDistinctId?: string
 ): Promise<string> {
-  const response = await getClient().models.generateContent({
-    model: MODEL,
-    contents: prompt,
-    config: {
-      temperature: TEMPERATURE,
-      responseMimeType: "application/json",
-      responseSchema: apiEvaluationSchema,
-    },
-    posthogDistinctId,
-    posthogProperties: { llm_feature: "feedback", feedback_type: "api" },
+  return retryWithBackoff(async () => {
+    const response = await getClient().models.generateContent({
+      model: MODEL,
+      contents: prompt,
+      config: {
+        temperature: TEMPERATURE,
+        responseMimeType: "application/json",
+        responseSchema: apiEvaluationSchema,
+      },
+      posthogDistinctId,
+      posthogProperties: { llm_feature: "feedback", feedback_type: "api" },
+    });
+    return response.text ?? "";
   });
-  return response.text ?? "";
 }
 
 /**
@@ -159,18 +218,20 @@ export async function generateExtraction(
   prompt: string,
   posthogDistinctId?: string
 ): Promise<string> {
-  const response = await getClient().models.generateContent({
-    model: MODEL,
-    contents: prompt,
-    config: {
-      temperature: TEMPERATURE,
-      responseMimeType: "application/json",
-      responseSchema: extractionSchema,
-    },
-    posthogDistinctId,
-    posthogProperties: { llm_feature: "feedback", feedback_type: "extraction" },
+  return retryWithBackoff(async () => {
+    const response = await getClient().models.generateContent({
+      model: MODEL,
+      contents: prompt,
+      config: {
+        temperature: TEMPERATURE,
+        responseMimeType: "application/json",
+        responseSchema: extractionSchema,
+      },
+      posthogDistinctId,
+      posthogProperties: { llm_feature: "feedback", feedback_type: "extraction" },
+    });
+    return response.text ?? "";
   });
-  return response.text ?? "";
 }
 
 const ASSISTANCE_TEMPERATURE = 0.3;

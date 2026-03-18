@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { captureServerError } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -128,6 +129,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ text: data.text }, { headers: getCorsHeaders(origin) });
   } catch (error) {
     logger.error("POST /api/v2/transcribe - Error:", error);
+    captureServerError(error, { route: "POST /api/v2/transcribe" });
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500, headers: getCorsHeaders(origin) }

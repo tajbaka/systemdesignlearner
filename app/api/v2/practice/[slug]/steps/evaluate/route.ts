@@ -3,6 +3,7 @@ import { db, problems, problemSteps, userProblems, userProblemSteps } from "@/pa
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
+import { captureServerError } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -121,6 +122,7 @@ export async function GET(
     });
   } catch (error) {
     logger.error("GET /api/v2/practice/[slug]/steps/evaluate - Error:", error);
+    captureServerError(error, { route: "GET /api/v2/practice/[slug]/steps/evaluate" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

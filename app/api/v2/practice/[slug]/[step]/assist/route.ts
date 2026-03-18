@@ -6,6 +6,7 @@ import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
 import { generateAssistanceStream } from "@/lib/gemini";
 import { PRACTICE_STEPS, SLUGS_TO_STEPS } from "@/domains/practice/back-end/constants";
+import { captureServerError } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -213,6 +214,7 @@ export async function POST(
     });
   } catch (error) {
     logger.error("POST /api/v2/practice/[slug]/[step]/assist - Error:", error);
+    captureServerError(error, { route: "POST /api/v2/practice/[slug]/[step]/assist" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

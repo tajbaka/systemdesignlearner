@@ -4,6 +4,7 @@ import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
 import { z } from "zod";
+import { captureServerError } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -179,6 +180,7 @@ export async function PATCH(
     return NextResponse.json(response);
   } catch (error) {
     logger.error("PATCH /api/v2/practice/[slug]/[step] - Error:", error);
+    captureServerError(error, { route: "PATCH /api/v2/practice/[slug]/[step]" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

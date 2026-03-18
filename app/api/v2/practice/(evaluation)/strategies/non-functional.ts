@@ -1,4 +1,5 @@
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
+import { captureServerError } from "@/lib/posthog-server";
 import type { EvaluationStrategy, EvaluationResult } from "../types";
 import { TextRequirementSchema, type TextRequirementInput } from "../validation";
 
@@ -86,6 +87,7 @@ Value: "${userInput.textField.value}"
       aiResults = parsed.results || [];
     } catch (e) {
       console.error("Failed to parse AI response:", e);
+      captureServerError(e, { route: "non-functional-strategy", step: "parseResponse" });
     }
 
     const results = requirements.map((req: { id: string; weight?: number }) => {

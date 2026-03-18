@@ -11,6 +11,7 @@ import { eq, and, inArray, count } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
 import type { GetProblemsResponse, ProblemSimpleResponse, ProblemLink } from "./schemas";
+import { captureServerError } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -133,6 +134,7 @@ export async function GET() {
     return NextResponse.json(response);
   } catch (error) {
     logger.error("GET /api/v2/practice - Error:", error);
+    captureServerError(error, { route: "GET /api/v2/practice" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

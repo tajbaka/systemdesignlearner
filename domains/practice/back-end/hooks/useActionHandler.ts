@@ -37,6 +37,7 @@ export function useActionHandler(slug: string): StepHandlers {
     setScore,
     setModalOpen,
     setIsActionLoading,
+    setActionError,
   } = useStepStateStore(slug);
 
   const handlers: StepHandlers = useMemo<StepHandlers>(
@@ -78,6 +79,7 @@ export function useActionHandler(slug: string): StepHandlers {
             functionalActions.saveFunctionalRequirements(slug, functionalRequirements);
 
             // Then, evaluate using AI
+            setActionError(null);
             setIsActionLoading(true);
 
             const evaluationResponse = await functionalActions.evaluate(
@@ -109,14 +111,15 @@ export function useActionHandler(slug: string): StepHandlers {
             setModalOpen(true);
           } catch (error) {
             console.error("Failed to save/evaluate functional requirements:", error);
-            // Track evaluation error
             track("practice_evaluation_error", {
               slug: slug,
               step: "functional",
               error: error instanceof Error ? error.message : "Unknown error",
             });
             setIsActionLoading(false);
-            // TODO: Handle error display
+            setActionError(
+              error instanceof Error ? error.message : "Something went wrong. Please try again."
+            );
           }
         } else if (action === "continue") {
           // Close modal and navigate to next step
@@ -188,6 +191,7 @@ export function useActionHandler(slug: string): StepHandlers {
             nonFunctionalActions.saveNonFunctionalRequirements(slug, nonFunctionalRequirements);
 
             // Then, evaluate using AI
+            setActionError(null);
             setIsActionLoading(true);
             const evaluationResponse = await nonFunctionalActions.evaluate(
               slug,
@@ -218,14 +222,15 @@ export function useActionHandler(slug: string): StepHandlers {
             setModalOpen(true);
           } catch (error) {
             console.error("Failed to save/evaluate non-functional requirements:", error);
-            // Track evaluation error
             track("practice_evaluation_error", {
               slug: slug,
               step: "non_functional",
               error: error instanceof Error ? error.message : "Unknown error",
             });
             setIsActionLoading(false);
-            // TODO: Handle error display
+            setActionError(
+              error instanceof Error ? error.message : "Something went wrong. Please try again."
+            );
           }
         } else if (action === "continue") {
           // Close modal and navigate to next step
@@ -365,6 +370,7 @@ export function useActionHandler(slug: string): StepHandlers {
             // Then, evaluate using AI (only send endpoints that need evaluation)
             // Pass cached extractions to skip LLM extraction calls for unchanged endpoints
             // Also pass changedEndpointIds so backend knows which extractions to invalidate
+            setActionError(null);
             setIsActionLoading(true);
             const evaluationResponse = await apiActions.evaluate(
               slug,
@@ -434,14 +440,15 @@ export function useActionHandler(slug: string): StepHandlers {
             setModalOpen(true);
           } catch (error) {
             console.error("Failed to save/evaluate API endpoints:", error);
-            // Track evaluation error
             track("practice_evaluation_error", {
               slug: slug,
               step: "api",
               error: error instanceof Error ? error.message : "Unknown error",
             });
             setIsActionLoading(false);
-            // TODO: Handle error display
+            setActionError(
+              error instanceof Error ? error.message : "Something went wrong. Please try again."
+            );
           }
         } else if (action === "continue") {
           // Close modal and navigate to next step
@@ -551,6 +558,7 @@ export function useActionHandler(slug: string): StepHandlers {
             highLevelDesignActions.saveHighLevelDesign(slug, highLevelDesign.design);
 
             // Then, evaluate
+            setActionError(null);
             setIsActionLoading(true);
             const evaluationResponse = await highLevelDesignActions.evaluate(
               slug,
@@ -581,14 +589,15 @@ export function useActionHandler(slug: string): StepHandlers {
             setModalOpen(true);
           } catch (error) {
             console.error("Failed to save/evaluate high-level design:", error);
-            // Track evaluation error
             track("practice_evaluation_error", {
               slug: slug,
               step: "high_level_design",
               error: error instanceof Error ? error.message : "Unknown error",
             });
             setIsActionLoading(false);
-            // TODO: Handle error display
+            setActionError(
+              error instanceof Error ? error.message : "Something went wrong. Please try again."
+            );
           }
         } else if (action === "continue") {
           // Close modal and navigate to next step
@@ -666,13 +675,14 @@ export function useActionHandler(slug: string): StepHandlers {
             }
           } catch (error) {
             console.error("Failed to fetch score:", error);
-            // Track score fetch error
             track("practice_evaluation_error", {
               slug: slug,
               step: "score",
               error: error instanceof Error ? error.message : "Unknown error",
             });
-            // TODO: Handle error display
+            setActionError(
+              error instanceof Error ? error.message : "Something went wrong. Please try again."
+            );
           }
         } else if (action === "assistanceQuestion") {
           track("assistance_question_submitted", {
@@ -698,6 +708,7 @@ export function useActionHandler(slug: string): StepHandlers {
       setScore,
       setModalOpen,
       setIsActionLoading,
+      setActionError,
     ]
   );
 

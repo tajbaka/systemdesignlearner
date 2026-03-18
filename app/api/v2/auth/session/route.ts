@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { currentUser } from "@clerk/nextjs/server";
 import { db, profiles } from "@/packages/drizzle";
 import { eq } from "drizzle-orm";
+import { captureServerError } from "@/lib/posthog-server";
 
 /**
  * POST /api/v2/auth/session
@@ -52,6 +53,7 @@ export async function POST(_: NextRequest) {
     );
   } catch (error) {
     console.error("[POST /api/v2/auth/session] Error:", error);
+    captureServerError(error, { route: "POST /api/v2/auth/session" });
     return NextResponse.json({ error: "Failed to initialize session" }, { status: 500 });
   }
 }

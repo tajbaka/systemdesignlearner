@@ -11,6 +11,8 @@ import Image from "next/image";
 import type { Components } from "react-markdown";
 import type { Element } from "hast";
 import type { ArticleConfig, ArticlesData, ArticleCategory } from "./types";
+import { HeadingLink } from "./components/HeadingLink";
+import { CopyCodeBlock } from "./components/CopyCodeBlock";
 
 // Load articles configuration
 export function loadArticlesConfig(): ArticlesData {
@@ -103,7 +105,9 @@ export function createMarkdownComponents(
       const id = headingToId(text);
       return (
         <section id={id}>
-          <h2 {...props}>{children}</h2>
+          <h2 {...props}>
+            <HeadingLink id={id}>{children}</HeadingLink>
+          </h2>
         </section>
       );
     },
@@ -112,7 +116,7 @@ export function createMarkdownComponents(
       const id = headingToId(text);
       return (
         <h3 id={id} {...props}>
-          {children}
+          <HeadingLink id={id}>{children}</HeadingLink>
         </h3>
       );
     },
@@ -172,6 +176,9 @@ export function createMarkdownComponents(
         return <DiagramComponent diagramId={diagramId} />;
       }
       return <p {...props}>{children}</p>;
+    },
+    pre: ({ children }) => {
+      return <CopyCodeBlock>{children}</CopyCodeBlock>;
     },
     table: ({ children, ...props }) => (
       <div className="-mx-4 overflow-x-auto sm:mx-0">

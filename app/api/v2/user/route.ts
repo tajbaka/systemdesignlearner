@@ -11,6 +11,7 @@ import {
   type StepRecord,
   STEP_TYPES,
 } from "@/domains/practice/lib/schemas/step-data";
+import { captureServerError } from "@/lib/posthog-server";
 
 export const runtime = "nodejs";
 
@@ -116,6 +117,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     logger.error("GET /api/v2/practice/session error:", error);
+    captureServerError(error, { route: "GET /api/v2/user" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -245,6 +247,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     logger.error("PATCH /api/v2/practice/session error:", error);
+    captureServerError(error, { route: "PATCH /api/v2/user" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   } //
 }
