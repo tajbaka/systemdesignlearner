@@ -1,18 +1,18 @@
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
 import { captureServerError } from "@/lib/posthog-server";
-import type { EvaluationStrategy, EvaluationResult } from "../types";
-import { TextRequirementSchema, type TextRequirementInput } from "../validation";
+import type { EvaluationStrategy, EvaluationResult } from "./types";
+import { TextRequirementSchema, type TextRequirementInput } from "./validation";
 
-export const nonFunctionalStrategy: EvaluationStrategy<TextRequirementInput> = {
+export const functionalService: EvaluationStrategy<TextRequirementInput> = {
   validate(input: unknown): TextRequirementInput {
     return TextRequirementSchema.parse(input);
   },
 
   buildPrompt(config: ProblemConfig, userInput: TextRequirementInput): string {
-    const requirements = config.steps.nonFunctional.requirements || [];
+    const requirements = config.steps.functional.requirements;
 
-    return `You are an expert system design interviewer. 
-Evaluate the candidate's non-functional requirements for a "${config.title}" system.
+    return `You are an expert system design interviewer.
+Evaluate the candidate's functional requirements for a "${config.title}" system.
 
 **Problem Description:**
 ${config.description}
@@ -26,13 +26,17 @@ ${requirements
       description: string;
       hints?: Array<{ id: string; text: string }>;
     }) => {
-      let base = `- ID: "${r.id}"\n   Criteria: ${r.evaluationCriteria || r.description}`;
-      if (r.hints?.length) {
+      let base = `- ID: "${r.id}"
+   Criteria: ${r.evaluationCriteria || r.description}`;
+
+      if (r.hints && r.hints.length > 0) {
         const hintList = r.hints
           .filter((h: { id: string }) => h.id)
-          .map((h: { id: string; text: string }) => `     * HintID: "${h.id}" -> "${h.text}" `)
+          .map((h: { id: string; text: string }) => `     * HintID: "${h.id}" -> "${h.text}"`)
           .join("\n");
-        if (hintList) base += `\n   Available Hints:\n${hintList}`;
+        if (hintList) {
+          base += `\n   Available Hints:\n${hintList}`;
+        }
       }
       return base;
     }
@@ -45,16 +49,21 @@ Value: "${userInput.textField.value}"
 
 **Instructions:**
 1. CRITICAL - DOMAIN RELEVANCE CHECK:
-   - Verify input is relevant to "${config.title}". If completely off-topic (e.g. pizza vs URL shortener), set "met": false.
-   
-2. For each requirement, determine if the input meets the criteria (set "met": true).
-   - Check for specific metrics (latency, throughput) if mentioned.
+   - First, verify the input is actually about designing a "${config.title}" system.
+   - If the input discusses a completely DIFFERENT domain (e.g., ice cream, pizza delivery, cooking, social media features when designing a URL shortener), mark ALL requirements as NOT met (met: false) with feedback explaining the input is off-topic.
+   - Keyword matches alone are INSUFFICIENT. The keyword must be used in the correct technical context for THIS specific system.
 
-3. If a requirement is NOT met:
-   - Include relevant "relatedHintId" if applicable.
+2. CONTEXTUAL MATCHING:
+   - For each requirement, the candidate must describe the technical concept as it applies to "${config.title}".
+   - If a keyword appears but in the wrong context, that requirement is NOT met.
+
+3. For each requirement ID, determine if the candidate's input meets the criteria. set "met": true if satisfied.
+
+4. If a requirement is NOT met or partially met:
+   - Look at the "Available Hints". If a specific hint is relevant to the failure, include its "HintID" as "relatedHintId".
    - MANDATORY: Include "incorrectFieldId" with the TextField ID provided above to highlight the text field.
 
-4. Return JSON in this format:
+5. Return JSON in this format:
 {
   "results": [
     {
@@ -71,9 +80,9 @@ Value: "${userInput.textField.value}"
   parseResponse(
     responseText: string,
     config: ProblemConfig,
-    userInput: TextRequirementInput
+    _userInput: TextRequirementInput
   ): EvaluationResult {
-    const requirements = config.steps.nonFunctional.requirements || [];
+    const requirements = config.steps.functional.requirements;
     let aiResults: {
       id: string;
       met?: boolean;
@@ -87,19 +96,16 @@ Value: "${userInput.textField.value}"
       aiResults = parsed.results || [];
     } catch (e) {
       console.error("Failed to parse AI response:", e);
-      captureServerError(e, { route: "non-functional-strategy", step: "parseResponse" });
+      captureServerError(e, { route: "functional-service", step: "parseResponse" });
     }
 
     const results = requirements.map((req: { id: string; weight?: number }) => {
       const aiResult = aiResults.find((r: { id: string }) => r.id === req.id);
       const isComplete = !!aiResult?.met;
 
-      // Fallback: If AI didn't provide incorrectFieldId but requirement is incomplete,
-      // use the textField id
       let itemIds: string[] | undefined;
-      if (!isComplete) {
-        const fieldId = aiResult?.incorrectFieldId || userInput.textField.id;
-        itemIds = fieldId ? [fieldId] : undefined;
+      if (!isComplete && aiResult?.incorrectFieldId) {
+        itemIds = [aiResult.incorrectFieldId];
       }
 
       return {
@@ -119,6 +125,10 @@ Value: "${userInput.textField.value}"
       return acc;
     }, 0);
 
-    return { feedback: "Evaluation complete.", score, results };
+    return {
+      feedback: "Evaluation complete.",
+      score,
+      results,
+    };
   },
 };

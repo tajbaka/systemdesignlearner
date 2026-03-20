@@ -66,7 +66,7 @@ export function StepFeedbackModal({
         ))}
 
       {/* Show "learn more" link until solution is revealed */}
-      {!isRevealed && hint?.href && hint?.title && (
+      {/* {!isRevealed && hint?.href && hint?.title && (
         <div className="mt-4">
           <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">
             learn more:
@@ -82,7 +82,7 @@ export function StepFeedbackModal({
             />
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 }

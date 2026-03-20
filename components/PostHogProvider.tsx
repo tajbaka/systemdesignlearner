@@ -29,6 +29,7 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       capture_pageview: true,
       capture_pageleave: false,
       autocapture: false,
+      capture_exceptions: true,
       disable_surveys: true, // Disable surveys to prevent script loading errors
       debug: (process.env.NODE_ENV as string) === "development",
       loaded: (posthogInstance) => {

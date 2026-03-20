@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
-  apiStrategy,
+  apiService,
+  validateMatchedEndpoint,
   type ExtractedApiInfo,
-} from "@/app/api/v2/practice/(evaluation)/strategies/api";
-import { validateMatchedEndpoint } from "@/app/api/v2/practice/(evaluation)/assertions/api";
+} from "@/server/domains/practice/services/evaluation/api.service";
 import { generateEvaluation, generateExtraction } from "@/lib/gemini";
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
 
@@ -69,7 +69,7 @@ describeOrSkip("Two-Step Extraction - Arian's Failing Cases", () => {
     const endpoint = {
       description: { value: description },
     };
-    const extractionPrompt = apiStrategy.buildExtractionPrompt(endpoint);
+    const extractionPrompt = apiService.buildExtractionPrompt(endpoint);
     const rawText = await generateExtraction(extractionPrompt);
     return JSON.parse(cleanJson(rawText)) as ExtractedApiInfo;
   }
@@ -88,7 +88,7 @@ describeOrSkip("Two-Step Extraction - Arian's Failing Cases", () => {
   ) {
     // Step 1: Extract from all endpoints in parallel
     const extractionPromises = endpoints.endpoints.map(async (endpoint) => {
-      const extractionPrompt = apiStrategy.buildExtractionPrompt(endpoint);
+      const extractionPrompt = apiService.buildExtractionPrompt(endpoint);
       try {
         const rawText = await generateExtraction(extractionPrompt);
         const extracted = JSON.parse(cleanJson(rawText)) as ExtractedApiInfo;
@@ -113,14 +113,14 @@ describeOrSkip("Two-Step Extraction - Arian's Failing Cases", () => {
     );
 
     // Step 2: Evaluate with extracted data
-    const evaluationPrompt = apiStrategy.buildEvaluationPromptWithExtractions(
+    const evaluationPrompt = apiService.buildEvaluationPromptWithExtractions(
       config,
       endpoints,
       extractions
     );
     const responseText = await generateEvaluation(evaluationPrompt);
 
-    const evaluation = apiStrategy.parseResponse(responseText, config, endpoints);
+    const evaluation = apiService.parseResponse(responseText, config, endpoints);
 
     // Step 3: Apply post-validation (mirrors route.ts behavior)
     const apiRequirements = (config.steps?.api?.requirements || []) as Array<{
@@ -513,7 +513,7 @@ describe("Two-Step Extraction - Prompt Building (Unit Tests)", () => {
       description: { value: "Creates a short URL from a long URL" },
     };
 
-    const prompt = apiStrategy.buildExtractionPrompt(endpoint);
+    const prompt = apiService.buildExtractionPrompt(endpoint);
 
     expect(prompt).toContain("Creates a short URL from a long URL");
     expect(prompt).toContain("Extract structured information");
@@ -527,7 +527,7 @@ describe("Two-Step Extraction - Prompt Building (Unit Tests)", () => {
       description: { value: "" },
     };
 
-    const prompt = apiStrategy.buildExtractionPrompt(endpoint);
+    const prompt = apiService.buildExtractionPrompt(endpoint);
 
     expect(prompt).toContain("(empty)");
   });
@@ -577,7 +577,7 @@ describe("Two-Step Extraction - Prompt Building (Unit Tests)", () => {
       ],
     ]);
 
-    const prompt = apiStrategy.buildEvaluationPromptWithExtractions(config, userInput, extractions);
+    const prompt = apiService.buildEvaluationPromptWithExtractions(config, userInput, extractions);
 
     // Should include extracted data
     expect(prompt).toContain("**Extracted from description:**");
@@ -616,7 +616,7 @@ describe("Two-Step Extraction - Prompt Building (Unit Tests)", () => {
     // Empty extractions map
     const extractions = new Map<string, ExtractedApiInfo>();
 
-    const prompt = apiStrategy.buildEvaluationPromptWithExtractions(config, userInput, extractions);
+    const prompt = apiService.buildEvaluationPromptWithExtractions(config, userInput, extractions);
 
     // Should indicate extraction failed
     expect(prompt).toContain("(extraction failed)");

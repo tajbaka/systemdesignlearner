@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { apiStrategy } from "@/app/api/v2/practice/(evaluation)/strategies/api";
+import { apiService } from "@/server/domains/practice/services/evaluation/api.service";
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
 
 describe("API Evaluation Strategy - itemId fallback", () => {
@@ -60,7 +60,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(
+    const result = apiService.parseResponse(
       aiResponseWithoutFieldId,
       mockProblemConfig,
       mockUserInput
@@ -100,7 +100,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(
+    const result = apiService.parseResponse(
       aiResponseWithSchemaFields,
       mockProblemConfig,
       mockUserInput
@@ -125,7 +125,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
 
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
     expect(createResult?.itemIds).toContain("method-1"); // Should highlight method
@@ -146,7 +146,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
 
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
     expect(createResult?.itemIds).toContain("desc-1"); // Should highlight description
@@ -169,7 +169,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(
+    const result = apiService.parseResponse(
       aiResponseInconsistent,
       mockProblemConfig,
       mockUserInput
@@ -219,7 +219,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, correctEndpointInput);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, correctEndpointInput);
 
     // create-url should be complete with no itemIds
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
@@ -243,7 +243,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponseComplete, mockProblemConfig, mockUserInput);
+    const result = apiService.parseResponse(aiResponseComplete, mockProblemConfig, mockUserInput);
 
     const completeResult = result.results.find((r) => r.complete);
     // Complete results should not have itemIds (or it should be undefined)
@@ -264,7 +264,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, emptyInput);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, emptyInput);
 
     // Should not crash with empty endpoints
     expect(result.results).toBeDefined();
@@ -279,7 +279,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
   it("should handle malformed AI response", () => {
     const malformedResponse = "not valid json";
 
-    const result = apiStrategy.parseResponse(malformedResponse, mockProblemConfig, mockUserInput);
+    const result = apiService.parseResponse(malformedResponse, mockProblemConfig, mockUserInput);
 
     // Should still return results for all requirements
     expect(result.results).toBeDefined();
@@ -323,7 +323,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, userInputWrongMethod);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, userInputWrongMethod);
 
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
     // Method is wrong (GET vs POST), so should highlight method field
@@ -354,7 +354,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, userInputWrongPath);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, userInputWrongPath);
 
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
     // Method is correct, path is wrong, so should highlight path field
@@ -385,7 +385,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(
+    const result = apiService.parseResponse(
       aiResponse,
       mockProblemConfig,
       userInputCorrectMethodPath
@@ -426,7 +426,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, multipleEndpoints);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, multipleEndpoints);
 
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
     // Should match endpoint-2 (exact method + path match) and highlight its description
@@ -448,7 +448,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(
+    const result = apiService.parseResponse(
       aiResponseWithInvalidEndpoint,
       mockProblemConfig,
       mockUserInput
@@ -484,7 +484,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, userInputWithParam);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, userInputWithParam);
 
     const redirectResult = result.results.find((r) => r.id === "redirect-endpoint");
     // Method (GET) is correct, path /:code matches /{shortCode} semantically
@@ -507,7 +507,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
 
     // Should contain BOTH method and path IDs
@@ -533,7 +533,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
 
     expect(createResult?.itemIds).toHaveLength(3);
@@ -575,7 +575,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, multiEndpointInput);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, multiEndpointInput);
     const createResult = result.results.find((r) => r.id === "create-url-endpoint");
 
     // Should highlight endpoint-2's fields, NOT endpoint-1's
@@ -597,7 +597,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
+    const result = apiService.parseResponse(aiResponse, mockProblemConfig, mockUserInput);
 
     // Should include snapshot of evaluated input
     expect(result.evaluatedInput).toBeDefined();
@@ -712,7 +712,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
     };
 
     // Test buildPrompt handles 6 endpoints
-    const prompt = apiStrategy.buildPrompt(sixEndpointConfig, sixEndpointInput);
+    const prompt = apiService.buildPrompt(sixEndpointConfig, sixEndpointInput);
     expect(prompt).toContain("ep-1");
     expect(prompt).toContain("ep-6");
     expect(prompt).toContain("POST");
@@ -779,7 +779,7 @@ describe("API Evaluation Strategy - itemId fallback", () => {
       ],
     });
 
-    const result = apiStrategy.parseResponse(aiResponse, sixEndpointConfig, sixEndpointInput);
+    const result = apiService.parseResponse(aiResponse, sixEndpointConfig, sixEndpointInput);
 
     // Should return results for all 6 requirements
     expect(result.results).toHaveLength(6);

@@ -15,7 +15,7 @@ const STORAGE_KEY = "sidepanel-tab";
 
 const LEFT_PANEL_CONTENT: Record<LeftPanelTab, ReactNode> = {
   overview: <ProblemTabContent />,
-  "ai tutor": <AssistanceChat />,
+  "AI Tutor": <AssistanceChat />,
 };
 
 function readPersistedTab(): LeftPanelTab {

@@ -7,7 +7,7 @@ import type { PracticeDesignState } from "../high-level-design/types";
 import type {
   EvaluationResult,
   APIEvaluationResult,
-} from "@/app/api/v2/practice/(evaluation)/types";
+} from "@/server/domains/practice/services/evaluation/types";
 
 // Step-specific data types with results
 export type FunctionalRequirements = {

@@ -4,7 +4,7 @@ import {
   getChangedFields,
   mergeEvaluationResults,
 } from "../changeDetection";
-import type { APIEvaluationResult } from "@/app/api/v2/practice/(evaluation)/types";
+import type { APIEvaluationResult } from "@/app/api/v2/practice/(services)/evaluation/types";
 import type { EndpointItem } from "@/domains/practice/back-end/store/store.tsx";
 
 describe("Change Detection", () => {
