@@ -23,6 +23,8 @@ export function ErrorPage({ error, reset, homeHref = "/" }: ErrorPageProps) {
   }, [error]);
 
   const handleReload = () => {
+    sessionStorage.removeItem("asset_retry");
+    sessionStorage.removeItem("clerk_retry");
     sessionStorage.removeItem("chunk_retry");
     window.location.reload();
   };

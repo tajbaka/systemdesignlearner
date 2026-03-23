@@ -4,10 +4,6 @@ import { eq } from "drizzle-orm";
 
 export type Profile = typeof profiles.$inferSelect;
 
-type GetProfileOptions = {
-  createIfMissing?: boolean;
-};
-
 async function findProfileByClerkUserId(clerkUserId: string) {
   return db.query.profiles.findFirst({
     where: eq(profiles.clerkUserId, clerkUserId),
@@ -49,22 +45,13 @@ async function createOrUpdateProfileFromCurrentUser(clerkUserId: string) {
   return profile;
 }
 
-/**
- * Get profile for authenticated user.
- * Returns null if not authenticated.
- */
-export async function getProfile({ createIfMissing = false }: GetProfileOptions = {}) {
+export async function getProfile() {
   const { userId } = await auth();
   if (!userId) {
     return null;
   }
 
-  const existingProfile = await findProfileByClerkUserId(userId);
-  if (existingProfile || !createIfMissing) {
-    return existingProfile;
-  }
-
-  return createOrUpdateProfileFromCurrentUser(userId);
+  return findProfileByClerkUserId(userId);
 }
 
 export async function getOrCreateProfile() {

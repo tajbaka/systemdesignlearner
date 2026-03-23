@@ -17,6 +17,49 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const assetRecoveryScript = String.raw`
+(() => {
+  const ASSET_RETRY_KEY = "asset_retry";
+  const CLERK_RETRY_KEY = "clerk_retry";
+  const recoverablePattern =
+    /ChunkLoadError|CSS_CHUNK_LOAD_FAILED|Loading chunk \d+ failed|Failed to load clerk\.browser\.js|Component spec missing|Failed to load scenario reference/i;
+
+  const reloadOnce = (storageKey) => {
+    if (sessionStorage.getItem(storageKey)) {
+      return false;
+    }
+
+    sessionStorage.setItem(storageKey, "1");
+    window.location.reload();
+    return true;
+  };
+
+  window.addEventListener(
+    "error",
+    (event) => {
+      const message = event.error?.message || event.message || "";
+      const target = event.target && "src" in event.target ? event.target : null;
+      const source = target?.src || "";
+      const isClerkError = /clerk\.browser\.js/i.test(message + source);
+
+      if (recoverablePattern.test(message) || (target && /clerk\.browser\.js/i.test(source))) {
+        reloadOnce(isClerkError ? CLERK_RETRY_KEY : ASSET_RETRY_KEY);
+      }
+    },
+    true
+  );
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason =
+      typeof event.reason === "string" ? event.reason : event.reason?.message || "";
+
+    if (recoverablePattern.test(reason) && reloadOnce(ASSET_RETRY_KEY)) {
+      event.preventDefault();
+    }
+  });
+})();
+`;
+
 // const fbPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 export const metadata: Metadata = {
@@ -216,10 +259,9 @@ export default function RootLayout({
     >
       <html lang="en" className="h-full dark" suppressHydrationWarning>
         <head>
-          {/* Recover once from stale deployment assets or Clerk script load failures. */}
           <script
             dangerouslySetInnerHTML={{
-              __html: `!function(){function t(t){return/ChunkLoadError|CSS_CHUNK_LOAD_FAILED|Loading chunk \\d+ failed|Failed to load clerk\\.browser\\.js|Component spec missing|Failed to load scenario reference/i.test(t||"")}function e(t,e){var o=e&&e.src||"",n=/clerk\\.browser\\.js/i.test((t||"")+o),r=n?"clerk_retry":"asset_retry";if(sessionStorage.getItem(r))return!1;sessionStorage.setItem(r,"1");window.location.reload();return!0}window.addEventListener("error",function(o){var n=o.error&&o.error.message||o.message||"",r=o.target&&"src"in o.target?o.target:null;(t(n)||r&&/clerk\\.browser\\.js/i.test(r.src||""))&&e(n,r)},!0);window.addEventListener("unhandledrejection",function(o){var n=o.reason&&("string"==typeof o.reason?o.reason:o.reason.message)||"";t(n)&&e(n,null)&&o.preventDefault()})}()`,
+              __html: assetRecoveryScript,
             }}
           />
           {/* Facebook Pixel - Commented out */}
