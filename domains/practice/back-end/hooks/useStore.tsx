@@ -10,6 +10,7 @@ export type ScopedProblemState = ProblemState & {
   loading: boolean;
   isModalOpen: boolean;
   isActionLoading: boolean;
+  actionError: string | null;
   setFunctionalRequirements: (data: Partial<ProblemState["functionalRequirements"]>) => void;
   setNonFunctionalRequirements: (data: Partial<ProblemState["nonFunctionalRequirements"]>) => void;
   setApiDesign: (data: Partial<ProblemState["apiDesign"]>) => void;
@@ -18,6 +19,7 @@ export type ScopedProblemState = ProblemState & {
   setLoading: (loading: boolean) => void;
   setModalOpen: (isOpen: boolean) => void;
   setIsActionLoading: (isLoading: boolean) => void;
+  setActionError: (error: string | null) => void;
   setViewedTooltip: (stepType: string) => void;
   resetState: () => void;
 };
@@ -34,6 +36,7 @@ export default function useStepStore(slug: string): ScopedProblemState {
         loading: s.loading,
         isModalOpen: s.isModalOpen,
         isActionLoading: s.isActionLoading,
+        actionError: s.actionError,
       };
     })
   );
@@ -60,6 +63,7 @@ export default function useStepStore(slug: string): ScopedProblemState {
       setLoading: store.setLoading,
       setModalOpen: store.setModalOpen,
       setIsActionLoading: store.setIsActionLoading,
+      setActionError: store.setActionError,
       setViewedTooltip: (stepType: string) =>
         stepStateStore.getState().setViewedTooltip(slug, stepType),
       resetState: () => stepStateStore.getState().resetState(slug),

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendNewProblemNotification } from "@/lib/email";
 import { logger } from "@/lib/logger";
+import { captureServerError } from "@/lib/posthog-server";
 
 const DEFAULT_PROBLEM = {
   problemTitle: "Design a Distributed Web Crawler",
@@ -43,6 +44,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, data: result.data }, { status: 200 });
   } catch (error) {
     logger.error("Test email error:", error);
+    captureServerError(error, { route: "POST /api/test-email" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

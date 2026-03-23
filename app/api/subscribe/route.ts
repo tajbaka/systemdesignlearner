@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { sendNewsletterConfirmation } from "@/lib/email";
 import { logger } from "@/lib/logger";
 import { subscribeSchema, parseRequest } from "@/app/api/types";
+import { captureServerError } from "@/lib/posthog-server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,6 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "Successfully subscribed!" }, { status: 200 });
   } catch (error) {
     logger.error("Subscription error:", error);
+    captureServerError(error, { route: "POST /api/subscribe" });
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

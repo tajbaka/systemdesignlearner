@@ -1,7 +1,6 @@
 import { SolutionRevealBox } from "./components/SolutionRevealBox";
 import { SolutionAnswerBox } from "./components/SolutionAnswerBox";
 import { ItemsBox } from "./components/ItemsBox";
-import { LinkBox } from "./components/LinkBox";
 import { useSolutionReveal } from "./hooks/useSolutionReveal";
 import { useFeedbackModal } from "./hooks/useFeedbackModal";
 import type { ProblemConfig, StepHandlers } from "./types";
@@ -66,7 +65,7 @@ export function StepFeedbackModal({
         ))}
 
       {/* Show "learn more" link until solution is revealed */}
-      {!isRevealed && hint?.href && hint?.title && (
+      {/* {!isRevealed && hint?.href && hint?.title && (
         <div className="mt-4">
           <p className="text-xs font-medium text-zinc-500 uppercase tracking-wide mb-2">
             learn more:
@@ -82,7 +81,7 @@ export function StepFeedbackModal({
             />
           </div>
         </div>
-      )}
+      )} */}
     </>
   );
 }

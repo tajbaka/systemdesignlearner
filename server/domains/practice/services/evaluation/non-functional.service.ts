@@ -1,8 +1,9 @@
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
-import type { EvaluationStrategy, EvaluationResult } from "../types";
-import { TextRequirementSchema, type TextRequirementInput } from "../validation";
+import { captureServerError } from "@/lib/posthog-server";
+import type { EvaluationStrategy, EvaluationResult } from "./types";
+import { TextRequirementSchema, type TextRequirementInput } from "./validation";
 
-export const nonFunctionalStrategy: EvaluationStrategy<TextRequirementInput> = {
+export const nonFunctionalService: EvaluationStrategy<TextRequirementInput> = {
   validate(input: unknown): TextRequirementInput {
     return TextRequirementSchema.parse(input);
   },
@@ -10,7 +11,7 @@ export const nonFunctionalStrategy: EvaluationStrategy<TextRequirementInput> = {
   buildPrompt(config: ProblemConfig, userInput: TextRequirementInput): string {
     const requirements = config.steps.nonFunctional.requirements || [];
 
-    return `You are an expert system design interviewer. 
+    return `You are an expert system design interviewer.
 Evaluate the candidate's non-functional requirements for a "${config.title}" system.
 
 **Problem Description:**
@@ -45,7 +46,7 @@ Value: "${userInput.textField.value}"
 **Instructions:**
 1. CRITICAL - DOMAIN RELEVANCE CHECK:
    - Verify input is relevant to "${config.title}". If completely off-topic (e.g. pizza vs URL shortener), set "met": false.
-   
+
 2. For each requirement, determine if the input meets the criteria (set "met": true).
    - Check for specific metrics (latency, throughput) if mentioned.
 
@@ -86,14 +87,13 @@ Value: "${userInput.textField.value}"
       aiResults = parsed.results || [];
     } catch (e) {
       console.error("Failed to parse AI response:", e);
+      captureServerError(e, { route: "non-functional-service", step: "parseResponse" });
     }
 
     const results = requirements.map((req: { id: string; weight?: number }) => {
       const aiResult = aiResults.find((r: { id: string }) => r.id === req.id);
       const isComplete = !!aiResult?.met;
 
-      // Fallback: If AI didn't provide incorrectFieldId but requirement is incomplete,
-      // use the textField id
       let itemIds: string[] | undefined;
       if (!isComplete) {
         const fieldId = aiResult?.incorrectFieldId || userInput.textField.id;

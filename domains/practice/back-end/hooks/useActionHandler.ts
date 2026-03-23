@@ -38,10 +38,14 @@ export function useActionHandler(slug: string): StepHandlers {
     setScore,
     setModalOpen,
     setIsActionLoading,
+    setActionError,
   } = useStepStateStore(slug);
 
   const reportActionError = useCallback(
     (step: string, error: unknown, message: string) => {
+      const errorMessage =
+        error instanceof Error ? error.message : "Something went wrong. Please try again.";
+
       if (!shouldIgnoreClientError(error)) {
         console.error(message, error);
         track("practice_evaluation_error", {
@@ -49,11 +53,14 @@ export function useActionHandler(slug: string): StepHandlers {
           step,
           error: error instanceof Error ? error.message : "Unknown error",
         });
+        setActionError(errorMessage);
+      } else {
+        setActionError(null);
       }
 
       setIsActionLoading(false);
     },
-    [slug, setIsActionLoading]
+    [slug, setActionError, setIsActionLoading]
   );
 
   const handlers: StepHandlers = useMemo<StepHandlers>(
@@ -95,6 +102,7 @@ export function useActionHandler(slug: string): StepHandlers {
             await functionalActions.saveFunctionalRequirements(slug, functionalRequirements);
 
             // Then, evaluate using AI
+            setActionError(null);
             setIsActionLoading(true);
 
             const evaluationResponse = await functionalActions.evaluate(
@@ -204,6 +212,7 @@ export function useActionHandler(slug: string): StepHandlers {
             );
 
             // Then, evaluate using AI
+            setActionError(null);
             setIsActionLoading(true);
             const evaluationResponse = await nonFunctionalActions.evaluate(
               slug,
@@ -377,6 +386,7 @@ export function useActionHandler(slug: string): StepHandlers {
             // Then, evaluate using AI (only send endpoints that need evaluation)
             // Pass cached extractions to skip LLM extraction calls for unchanged endpoints
             // Also pass changedEndpointIds so backend knows which extractions to invalidate
+            setActionError(null);
             setIsActionLoading(true);
             const evaluationResponse = await apiActions.evaluate(
               slug,
@@ -555,6 +565,7 @@ export function useActionHandler(slug: string): StepHandlers {
             await highLevelDesignActions.saveHighLevelDesign(slug, highLevelDesign.design);
 
             // Then, evaluate
+            setActionError(null);
             setIsActionLoading(true);
             const evaluationResponse = await highLevelDesignActions.evaluate(
               slug,
@@ -672,6 +683,9 @@ export function useActionHandler(slug: string): StepHandlers {
                 step: "score",
                 error: error instanceof Error ? error.message : "Unknown error",
               });
+              setActionError(
+                error instanceof Error ? error.message : "Something went wrong. Please try again."
+              );
             }
           }
         } else if (action === "assistanceQuestion") {
@@ -699,6 +713,7 @@ export function useActionHandler(slug: string): StepHandlers {
       setModalOpen,
       setIsActionLoading,
       reportActionError,
+      setActionError,
     ]
   );
 

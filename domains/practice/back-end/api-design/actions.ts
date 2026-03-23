@@ -1,6 +1,6 @@
 import type { SaveStepResponse } from "../../lib/schemas/step-data";
 import type { EndpointItem } from "../store/store";
-import type { CachedExtractions } from "@/app/api/v2/practice/(evaluation)/types";
+import type { CachedExtractions } from "@/server/domains/practice/services/evaluation/types";
 
 export type ApiEndpoints = EndpointItem[];
 

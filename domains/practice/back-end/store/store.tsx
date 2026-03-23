@@ -7,7 +7,7 @@ import type { PracticeDesignState } from "../high-level-design/types";
 import type {
   EvaluationResult,
   APIEvaluationResult,
-} from "@/app/api/v2/practice/(evaluation)/types";
+} from "@/server/domains/practice/services/evaluation/types";
 
 // Step-specific data types with results
 export type FunctionalRequirements = {
@@ -88,6 +88,7 @@ export interface StepStateStoreState {
   // Global modal state (not scoped to problem)
   isModalOpen: boolean;
   isActionLoading: boolean;
+  actionError: string | null;
 
   // Actions - now require slug parameter
   setFunctionalRequirements: (slug: string, data: Partial<FunctionalRequirements>) => void;
@@ -99,6 +100,7 @@ export interface StepStateStoreState {
   setLoading: (loading: boolean) => void;
   setModalOpen: (isOpen: boolean) => void;
   setIsActionLoading: (isLoading: boolean) => void;
+  setActionError: (error: string | null) => void;
   setViewedTooltip: (slug: string, stepType: string) => void;
   resetState: (slug: string) => void;
 
@@ -185,6 +187,7 @@ const initialState: Omit<
   | "setLoading"
   | "setModalOpen"
   | "setIsActionLoading"
+  | "setActionError"
   | "setViewedTooltip"
   | "resetState"
   | "getProblemState"
@@ -194,6 +197,7 @@ const initialState: Omit<
   loading: true,
   isModalOpen: false,
   isActionLoading: false,
+  actionError: null,
 };
 
 export const stepStateStore = create<StepStateStoreState>()(
@@ -317,6 +321,8 @@ export const stepStateStore = create<StepStateStoreState>()(
       },
 
       setIsActionLoading: (isLoading) => set({ isActionLoading: isLoading }),
+
+      setActionError: (error) => set({ actionError: error }),
 
       setViewedTooltip: (slug: string, stepType: string) => {
         const state = get();

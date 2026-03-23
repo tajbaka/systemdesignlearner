@@ -1,11 +1,9 @@
-import { ProblemConfig } from "@/domains/practice/back-end/types";
-import {
-  TextRequirementInput,
-  TextRequirementSchema,
-} from "@/app/api/v2/practice/(evaluation)/validation";
-import { EvaluationResult, EvaluationStrategy } from "@/app/api/v2/practice/(evaluation)/types";
+import type { ProblemConfig } from "@/domains/practice/back-end/types";
+import { captureServerError } from "@/lib/posthog-server";
+import type { EvaluationStrategy, EvaluationResult } from "./types";
+import { TextRequirementSchema, type TextRequirementInput } from "./validation";
 
-export const functionalStrategy: EvaluationStrategy<TextRequirementInput> = {
+export const functionalService: EvaluationStrategy<TextRequirementInput> = {
   validate(input: unknown): TextRequirementInput {
     return TextRequirementSchema.parse(input);
   },
@@ -13,7 +11,7 @@ export const functionalStrategy: EvaluationStrategy<TextRequirementInput> = {
   buildPrompt(config: ProblemConfig, userInput: TextRequirementInput): string {
     const requirements = config.steps.functional.requirements;
 
-    return `You are an expert system design interviewer. 
+    return `You are an expert system design interviewer.
 Evaluate the candidate's functional requirements for a "${config.title}" system.
 
 **Problem Description:**
@@ -94,18 +92,17 @@ Value: "${userInput.textField.value}"
     }[] = [];
 
     try {
-      // Direct JSON parsing - no regex needed thanks to Schema Mode
       const parsed = JSON.parse(responseText);
       aiResults = parsed.results || [];
     } catch (e) {
       console.error("Failed to parse AI response:", e);
+      captureServerError(e, { route: "functional-service", step: "parseResponse" });
     }
 
     const results = requirements.map((req: { id: string; weight?: number }) => {
       const aiResult = aiResults.find((r: { id: string }) => r.id === req.id);
       const isComplete = !!aiResult?.met;
 
-      // Only use AI-provided incorrectFieldId
       let itemIds: string[] | undefined;
       if (!isComplete && aiResult?.incorrectFieldId) {
         itemIds = [aiResult.incorrectFieldId];

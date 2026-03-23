@@ -1,5 +1,5 @@
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
-import type { EvaluationStrategy, EvaluationResult } from "../types";
+import type { EvaluationStrategy, EvaluationResult } from "./types";
 import {
   buildAdjacencyList,
   buildNodesMap,
@@ -19,7 +19,7 @@ const HighLevelDesignInputSchema = z.object({
 
 type HighLevelDesignInput = z.infer<typeof HighLevelDesignInputSchema>;
 
-export const highLevelDesignStrategy: EvaluationStrategy<HighLevelDesignInput> = {
+export const highLevelDesignService: EvaluationStrategy<HighLevelDesignInput> = {
   validate(input: unknown): HighLevelDesignInput {
     return HighLevelDesignInputSchema.parse(input);
   },
@@ -38,8 +38,6 @@ export const highLevelDesignStrategy: EvaluationStrategy<HighLevelDesignInput> =
 
     logger.info("[HLD Eval] Raw user diagram:", JSON.stringify(diagram, null, 2));
 
-    // Get solution from config - access as object property
-    // Note: config.steps is typed as array but actually used as object in configs
     const highLevelDesignStep = (config.steps as unknown as Record<string, unknown>)
       .highLevelDesign as { requirements?: unknown[] } | undefined;
     if (!highLevelDesignStep?.requirements?.[0]) {
@@ -56,7 +54,6 @@ export const highLevelDesignStrategy: EvaluationStrategy<HighLevelDesignInput> =
     const solutionAdjacencyList = buildAdjacencyList(solution);
     const solutionNodesMap = buildNodesMap(solution);
 
-    // Debug logging
     logger.info(
       "[HLD Eval] User nodes:",
       Object.entries(userNodesMap).map(([id, node]) => ({ id, type: node.type }))
@@ -136,7 +133,6 @@ export const highLevelDesignStrategy: EvaluationStrategy<HighLevelDesignInput> =
       missingNodes: result.missingNodes,
     });
 
-    // Transform to standardized EvaluationResult format
     const results: {
       id: string;
       complete: boolean;
@@ -145,7 +141,6 @@ export const highLevelDesignStrategy: EvaluationStrategy<HighLevelDesignInput> =
       itemIds?: string[];
     }[] = [];
 
-    // Get all solution edges with their metadata from the original solution
     const solutionEdgesData =
       (
         solution as {
@@ -159,14 +154,12 @@ export const highLevelDesignStrategy: EvaluationStrategy<HighLevelDesignInput> =
         }
       ).edges || [];
 
-    // Create a set of missing connection keys for quick lookup
     const missingConnectionKeys = new Set(
       result.missingConnections?.map((conn) => `${conn.from}-${conn.to}`) || []
     );
 
     logger.info("[HLD Eval] Missing connection keys:", Array.from(missingConnectionKeys));
 
-    // Add result items for each solution edge (either complete or incomplete)
     solutionEdgesData.forEach((edge) => {
       const fromType = (solutionNodesMap[edge.from]?.type || edge.from).toLowerCase();
       const toType = (solutionNodesMap[edge.to]?.type || edge.to).toLowerCase();
@@ -193,8 +186,6 @@ export const highLevelDesignStrategy: EvaluationStrategy<HighLevelDesignInput> =
       });
     });
 
-    // Add extra connections as incomplete result items
-    // Extra connections don't have hints since they're not in the solution
     if (result.extraConnections && result.extraConnections.length > 0) {
       result.extraConnections.forEach((connection, index) => {
         results.push({
@@ -206,8 +197,6 @@ export const highLevelDesignStrategy: EvaluationStrategy<HighLevelDesignInput> =
       });
     }
 
-    // Add missing nodes as incomplete result items
-    // Missing nodes indicate structural problems
     if (result.missingNodes && result.missingNodes.length > 0) {
       result.missingNodes.forEach((node, index) => {
         results.push({

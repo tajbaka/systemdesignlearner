@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
-  apiStrategy,
+  apiService,
   type ExtractedApiInfo,
-} from "@/app/api/v2/practice/(evaluation)/strategies/api";
+} from "@/server/domains/practice/services/evaluation/api.service";
 import { generateEvaluation, generateExtraction } from "@/lib/gemini";
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
 
@@ -144,7 +144,7 @@ describeOrSkip("API Evaluation Strategy - Gemini Integration", () => {
   ) {
     // Step 1: Extract structured data from EACH endpoint's description IN PARALLEL
     const extractionPromises = endpoints.endpoints.map(async (endpoint) => {
-      const extractionPrompt = apiStrategy.buildExtractionPrompt(endpoint);
+      const extractionPrompt = apiService.buildExtractionPrompt(endpoint);
       try {
         const rawText = await generateExtraction(extractionPrompt);
         const extracted = JSON.parse(cleanJson(rawText)) as ExtractedApiInfo;
@@ -171,7 +171,7 @@ describeOrSkip("API Evaluation Strategy - Gemini Integration", () => {
     );
 
     // Step 2: Evaluate with extracted data
-    const evaluationPrompt = apiStrategy.buildEvaluationPromptWithExtractions(
+    const evaluationPrompt = apiService.buildEvaluationPromptWithExtractions(
       config,
       endpoints,
       extractions
@@ -180,7 +180,7 @@ describeOrSkip("API Evaluation Strategy - Gemini Integration", () => {
     const responseText = await generateEvaluation(evaluationPrompt);
 
     return {
-      evaluation: apiStrategy.parseResponse(responseText, config, endpoints),
+      evaluation: apiService.parseResponse(responseText, config, endpoints),
       rawResponse: responseText,
       extractions,
     };

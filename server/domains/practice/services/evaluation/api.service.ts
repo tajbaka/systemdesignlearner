@@ -1,8 +1,12 @@
 import type { ProblemConfig } from "@/domains/practice/back-end/types";
-import type { EvaluationStrategy, APIEvaluationResult } from "../types";
-import { ApiDefinitionSchema, type ApiDefinitionInput } from "../validation";
+import { captureServerError } from "@/lib/posthog-server";
+import type { EvaluationStrategy, APIEvaluationResult } from "./types";
+import { ApiDefinitionSchema, type ApiDefinitionInput } from "./validation";
 
-// Type for extracted API information from user's description
+// ============================================================================
+// Types
+// ============================================================================
+
 export interface ExtractedApiInfo {
   mainAction: string;
   requestBody: string;
@@ -11,13 +15,17 @@ export interface ExtractedApiInfo {
   errorCases: string[];
 }
 
+type AssertionResult = {
+  passed: boolean;
+  failedReason?: string;
+};
+
 interface AIResultItem {
   id: string;
   found?: boolean;
-  met?: boolean; // Alias for found - AI sometimes uses this
+  met?: boolean;
   feedback?: string;
   relatedHintId?: string;
-  // Schema-enforced fields for field highlighting
   correctMethod?: boolean;
   correctPath?: boolean;
   correctDescription?: boolean;
@@ -32,7 +40,122 @@ type ApiRequirement = {
   correctPath?: string;
 };
 
-// Helper: Check if paths are semantically similar
+// ============================================================================
+// Assertion Helpers (Post-LLM Validation)
+// ============================================================================
+
+function requirementMentions(requirementText: string, ...keywords: string[]): boolean {
+  const reqLower = requirementText.toLowerCase();
+  return keywords.some((kw) => reqLower.includes(kw.toLowerCase()));
+}
+
+function isUnspecified(value: string | undefined | null): boolean {
+  if (!value) return true;
+  const normalized = value.trim().toLowerCase();
+  return (
+    normalized === "" ||
+    normalized === "not specified" ||
+    normalized === "not_specified" ||
+    normalized === "none" ||
+    normalized === "n/a" ||
+    normalized === "null" ||
+    normalized === "undefined"
+  );
+}
+
+function assertExtractionMeetsRequirement(
+  extraction: ExtractedApiInfo,
+  requirementText: string
+): AssertionResult {
+  if (requirementMentions(requirementText, "request body", "payload", "request format")) {
+    if (isUnspecified(extraction.requestBody)) {
+      return {
+        passed: false,
+        failedReason: "Requirement mentions request body/payload but extraction found none",
+      };
+    }
+  }
+
+  if (
+    requirementMentions(
+      requirementText,
+      "response format",
+      "response body",
+      "in the response",
+      "returns"
+    )
+  ) {
+    if (isUnspecified(extraction.responseFormat)) {
+      return {
+        passed: false,
+        failedReason: "Requirement mentions response format but extraction found none",
+      };
+    }
+  }
+
+  if (requirementMentions(requirementText, "status code", "http code", "status")) {
+    if (
+      requirementMentions(requirementText, "status code", "http code") &&
+      isUnspecified(extraction.successStatusCode)
+    ) {
+      return {
+        passed: false,
+        failedReason: "Requirement mentions status codes but extraction found none",
+      };
+    }
+  }
+
+  if (
+    requirementMentions(
+      requirementText,
+      "error handling",
+      "error cases",
+      "error case",
+      "error response"
+    )
+  ) {
+    if (!extraction.errorCases || extraction.errorCases.length === 0) {
+      return {
+        passed: false,
+        failedReason: "Requirement mentions error handling but extraction found none",
+      };
+    }
+  }
+
+  if (
+    extraction.mainAction === "extraction failed" ||
+    (isUnspecified(extraction.mainAction) &&
+      isUnspecified(extraction.requestBody) &&
+      isUnspecified(extraction.responseFormat) &&
+      isUnspecified(extraction.successStatusCode) &&
+      (!extraction.errorCases || extraction.errorCases.length === 0))
+  ) {
+    return {
+      passed: false,
+      failedReason: "Extraction is empty or failed - description appears to be missing content",
+    };
+  }
+
+  return { passed: true };
+}
+
+export function validateMatchedEndpoint(
+  extraction: ExtractedApiInfo | undefined,
+  requirementText: string
+): AssertionResult {
+  if (!extraction) {
+    return {
+      passed: false,
+      failedReason: "No extraction data for matched endpoint",
+    };
+  }
+  return assertExtractionMeetsRequirement(extraction, requirementText);
+}
+
+// ============================================================================
+// Path Matching Helpers
+// ============================================================================
+
 function pathsSimilar(userPath: string, expectedPath: string): boolean {
   const normalize = (p: string) =>
     p
@@ -47,30 +170,25 @@ function pathsSimilar(userPath: string, expectedPath: string): boolean {
   );
 }
 
-// Helper: Find best matching endpoint for a requirement
 function findBestMatchingEndpoint(
   endpoints: ApiDefinitionInput["endpoints"],
   expectedMethod: string,
   expectedPath: string
 ): ApiDefinitionInput["endpoints"][0] | null {
-  // Priority 1: Exact method + similar path
   const exactMatch = endpoints.find(
     (ep) => ep.method.value === expectedMethod && pathsSimilar(ep.path.value, expectedPath)
   );
   if (exactMatch) return exactMatch;
 
-  // Priority 2: Similar path (any method)
   const pathMatch = endpoints.find((ep) => pathsSimilar(ep.path.value, expectedPath));
   if (pathMatch) return pathMatch;
 
-  // Priority 3: Same method
   const methodMatch = endpoints.find((ep) => ep.method.value === expectedMethod);
   if (methodMatch) return methodMatch;
 
   return null;
 }
 
-// Helper: Determine which field is incorrect based on requirement
 function determineIncorrectFieldId(
   requirement: { method?: string; correctPath?: string },
   endpoints: ApiDefinitionInput["endpoints"]
@@ -90,7 +208,11 @@ function determineIncorrectFieldId(
   return ep.description.id;
 }
 
-export const apiStrategy: EvaluationStrategy<ApiDefinitionInput, APIEvaluationResult> & {
+// ============================================================================
+// API Evaluation Service
+// ============================================================================
+
+export const apiService: EvaluationStrategy<ApiDefinitionInput, APIEvaluationResult> & {
   buildExtractionPrompt: (endpoint: { description: { value: string } }) => string;
   buildEvaluationPromptWithExtractions: (
     config: ProblemConfig,
@@ -102,7 +224,6 @@ export const apiStrategy: EvaluationStrategy<ApiDefinitionInput, APIEvaluationRe
     return ApiDefinitionSchema.parse(input);
   },
 
-  // Step 1: Extract structured information from a single endpoint's description
   buildExtractionPrompt(endpoint: { description: { value: string } }): string {
     return `Extract structured information from this API endpoint description.
 
@@ -173,7 +294,6 @@ Return ONLY the JSON object below (no markdown, no explanation, no "results" wra
 {"mainAction":"string","requestBody":"string","responseFormat":"string","successStatusCode":"string","errorCases":[]}`;
   },
 
-  // Step 2: Evaluation prompt that uses pre-extracted data
   buildEvaluationPromptWithExtractions(
     config: ProblemConfig,
     userInput: ApiDefinitionInput,
@@ -181,7 +301,6 @@ Return ONLY the JSON object below (no markdown, no explanation, no "results" wra
   ): string {
     const requirements = config.steps.api.requirements || [];
 
-    // Normalize paths by adding leading "/" if missing
     const normalizedEndpoints = userInput.endpoints.map((ep) => ({
       ...ep,
       path: {
@@ -329,11 +448,9 @@ CRITICAL: Use EXACTLY these field names: "found", "correctMethod", "correctPath"
 Do NOT use "met", "complete", "pass", or any other field names.`;
   },
 
-  // Original buildPrompt kept for backward compatibility (used when extractions not available)
   buildPrompt(config: ProblemConfig, userInput: ApiDefinitionInput): string {
     const requirements = config.steps.api.requirements || [];
 
-    // Normalize paths by adding leading "/" if missing
     const normalizedEndpoints = userInput.endpoints.map((ep) => ({
       ...ep,
       path: {
@@ -455,13 +572,12 @@ Do NOT use "met", "complete", "pass", or any other field names.`;
     let aiResults: AIResultItem[] = [];
 
     try {
-      // Clean markdown code blocks if present and parse
       const cleanedText = responseText.replace(/```json\n?|```\n?/g, "").trim();
       const parsed = JSON.parse(cleanedText);
       aiResults = parsed.results || [];
     } catch (e) {
       console.error("Failed to parse AI response:", e);
-      // Return error result with fallback itemIds for highlighting
+      captureServerError(e, { route: "api-service", step: "parseResponse" });
       return {
         feedback: "Evaluation failed: Unable to parse AI response. Please try again.",
         score: 0,
@@ -479,11 +595,8 @@ Do NOT use "met", "complete", "pass", or any other field names.`;
 
     const results = requirements.map((req: ApiRequirement) => {
       const aiResult = aiResults.find((r: AIResultItem) => r.id === req.id);
-
-      // Handle both "found" and "met" field names (AI sometimes uses "met")
       const aiFoundOrMet = aiResult?.found ?? aiResult?.met ?? false;
 
-      // Derive completion from granular correctness fields when available (safety net for inconsistent AI)
       let isComplete = !!aiFoundOrMet;
       if (
         aiResult &&
@@ -492,7 +605,6 @@ Do NOT use "met", "complete", "pass", or any other field names.`;
         aiResult.correctPath !== undefined &&
         aiResult.correctDescription !== undefined
       ) {
-        // For endpoint requirements, all three fields must be true
         isComplete = !!(
           aiResult.correctMethod &&
           aiResult.correctPath &&
@@ -500,14 +612,11 @@ Do NOT use "met", "complete", "pass", or any other field names.`;
         );
       }
 
-      // Collect ALL incorrect field IDs (not just the first one)
       const itemIds: string[] = [];
 
-      // Use AI-provided schema fields for field highlighting
       if (!isComplete && aiResult?.matchedEndpointId) {
         const matchedEp = userInput.endpoints.find((ep) => ep.id === aiResult.matchedEndpointId);
         if (matchedEp) {
-          // Collect ALL incorrect fields
           if (aiResult.correctMethod === false) {
             itemIds.push(matchedEp.method.id);
           }
@@ -520,9 +629,6 @@ Do NOT use "met", "complete", "pass", or any other field names.`;
         }
       }
 
-      // Fallback: determine field to highlight when AI doesn't provide matchedEndpointId
-      // BUT: only use fallback if AI didn't explicitly say "no endpoint matched"
-      // If matchedEndpointId is null, it means the endpoint is completely missing - don't highlight existing endpoints
       const aiIndicatesEndpointMissing = aiResult?.matchedEndpointId === null;
       if (!isComplete && itemIds.length === 0 && !aiIndicatesEndpointMissing) {
         const fallbackItemId = determineIncorrectFieldId(req, userInput.endpoints);
@@ -549,7 +655,6 @@ Do NOT use "met", "complete", "pass", or any other field names.`;
       return acc;
     }, 0);
 
-    // Store snapshot of what was evaluated for change detection / no-regression
     const evaluatedInput = {
       endpoints: userInput.endpoints.map((ep) => ({
         id: ep.id,

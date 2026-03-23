@@ -9,7 +9,7 @@
  * - `sortItemIdsByPriority()` - Ensures method → path → description priority for field highlighting
  */
 import type { EndpointItem } from "../store/store.tsx";
-import type { APIEvaluationResult } from "@/app/api/v2/practice/(evaluation)/types";
+import type { APIEvaluationResult } from "@/server/domains/practice/services/evaluation/types";
 
 type EvaluatedEndpoint = {
   id: string;

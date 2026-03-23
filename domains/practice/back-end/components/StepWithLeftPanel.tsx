@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 
-export const LEFT_PANEL_TABS = ["overview", "assistance"] as const;
+export const LEFT_PANEL_TABS = ["overview", "AI Tutor"] as const;
 export type LeftPanelTab = (typeof LEFT_PANEL_TABS)[number];
 
 type StepWithLeftPanelProps = {
