@@ -3,6 +3,7 @@ import { db, problems, problemVersions, userProblems, userProblemSteps } from "@
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
+import { ensureUserProblem } from "@/app/api/v2/practice/(services)/user-problem";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -92,29 +93,19 @@ export async function PATCH(
     }
 
     // 6. Get or create user problem record
-    let userProblem = await db.query.userProblems.findFirst({
-      where: and(eq(userProblems.userId, profile.id), eq(userProblems.problemId, problem.id)),
+    const now = new Date();
+    const userProblem = await ensureUserProblem({
+      userId: profile.id,
+      problemId: problem.id,
+      problemVersionId: currentVersion.id,
+      now,
     });
-
-    if (!userProblem) {
-      const [created] = await db
-        .insert(userProblems)
-        .values({
-          userId: profile.id,
-          problemId: problem.id,
-          problemVersionId: currentVersion.id,
-          status: "in_progress",
-        })
-        .returning();
-      userProblem = created;
-    }
 
     // 7. Get or create user problem step record
     const userProblemStep = await db.query.userProblemSteps.findFirst({
       where: eq(userProblemSteps.userProblemId, userProblem.id),
     });
 
-    const now = new Date();
     let updatedStep;
 
     if (userProblemStep) {

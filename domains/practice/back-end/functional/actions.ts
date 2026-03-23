@@ -39,33 +39,24 @@ async function saveFunctionalRequirements(
  * @returns Evaluation result
  */
 async function evaluate(scenarioSlug: string, functionalRequirements: FunctionalRequirements) {
-  try {
-    // Only send the textField, not the results
-    const input = {
-      textField: functionalRequirements.textField,
-    };
+  const input = {
+    textField: functionalRequirements.textField,
+  };
 
-    // Call the new evaluate API endpoint
-    const evaluateResponse = await fetch(`/api/v2/practice/${scenarioSlug}/functional/evaluate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        input,
-      }),
-    });
+  const evaluateResponse = await fetch(`/api/v2/practice/${scenarioSlug}/functional/evaluate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      input,
+    }),
+  });
 
-    if (!evaluateResponse.ok) {
-      const errorData = await evaluateResponse.json();
-      throw new Error(errorData.error || "Evaluation failed");
-    }
-
-    const results = await evaluateResponse.json();
-
-    return results;
-  } catch (error) {
-    console.error("Failed to evaluate:", error);
-    throw error;
+  if (!evaluateResponse.ok) {
+    const errorData = await evaluateResponse.json();
+    throw new Error(errorData.error || "Evaluation failed");
   }
+
+  return evaluateResponse.json();
 }
 
 const functionalActions = {

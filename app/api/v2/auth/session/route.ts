@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
-import { db, profiles } from "@/packages/drizzle";
-import { eq } from "drizzle-orm";
+import { getOrCreateProfile } from "@/app/api/v2/auth/(services)/auth";
 
 /**
  * POST /api/v2/auth/session
@@ -10,43 +8,15 @@ import { eq } from "drizzle-orm";
  */
 export async function POST(_: NextRequest) {
   try {
-    // 1. Validate Clerk authentication
-    const user = await currentUser();
-
-    if (!user) {
+    const profileResult = await getOrCreateProfile();
+    if (!profileResult) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // 2. Check if profile already exists
-    let profile = await db.query.profiles.findFirst({
-      where: eq(profiles.clerkUserId, user.id),
-    });
-
-    const isNewUser = !profile;
-
-    // 3. Create profile if it doesn't exist
-    if (!profile) {
-      const email = user.emailAddresses[0]?.emailAddress || "";
-      const displayName = user.firstName || user.username || email.split("@")[0] || "User";
-
-      const [newProfile] = await db
-        .insert(profiles)
-        .values({
-          clerkUserId: user.id,
-          email,
-          displayName,
-          avatarUrl: user.imageUrl,
-        })
-        .returning();
-
-      profile = newProfile;
-    }
-
-    // 4. Return profile data
     return NextResponse.json(
       {
-        profile,
-        isNewUser,
+        profile: profileResult.profile,
+        isNewUser: profileResult.isNew,
       },
       { status: 200 }
     );

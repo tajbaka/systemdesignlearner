@@ -1,5 +1,5 @@
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { track } from "@/lib/analytics";
 import { STEPS } from "../constants";
 import type { StepHandlers } from "../types";
@@ -13,6 +13,7 @@ import apiActions from "../api-design/actions";
 import highLevelDesignActions from "../high-level-design/actions";
 import scoreActions from "../score/actions";
 import { getChangedFields, mergeEvaluationResults } from "../api-design/changeDetection";
+import { shouldIgnoreClientError } from "@/lib/client-errors";
 
 /**
  * Hook that maps steps to their handler functions
@@ -38,6 +39,22 @@ export function useActionHandler(slug: string): StepHandlers {
     setModalOpen,
     setIsActionLoading,
   } = useStepStateStore(slug);
+
+  const reportActionError = useCallback(
+    (step: string, error: unknown, message: string) => {
+      if (!shouldIgnoreClientError(error)) {
+        console.error(message, error);
+        track("practice_evaluation_error", {
+          slug,
+          step,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
+
+      setIsActionLoading(false);
+    },
+    [slug, setIsActionLoading]
+  );
 
   const handlers: StepHandlers = useMemo<StepHandlers>(
     () => ({
@@ -75,7 +92,7 @@ export function useActionHandler(slug: string): StepHandlers {
             }
 
             // First, save the data with "submitted" status
-            functionalActions.saveFunctionalRequirements(slug, functionalRequirements);
+            await functionalActions.saveFunctionalRequirements(slug, functionalRequirements);
 
             // Then, evaluate using AI
             setIsActionLoading(true);
@@ -108,15 +125,11 @@ export function useActionHandler(slug: string): StepHandlers {
             // Open modal to show results
             setModalOpen(true);
           } catch (error) {
-            console.error("Failed to save/evaluate functional requirements:", error);
-            // Track evaluation error
-            track("practice_evaluation_error", {
-              slug: slug,
-              step: "functional",
-              error: error instanceof Error ? error.message : "Unknown error",
-            });
-            setIsActionLoading(false);
-            // TODO: Handle error display
+            reportActionError(
+              "functional",
+              error,
+              "Failed to save/evaluate functional requirements:"
+            );
           }
         } else if (action === "continue") {
           // Close modal and navigate to next step
@@ -185,7 +198,10 @@ export function useActionHandler(slug: string): StepHandlers {
             }
 
             // First, save the data with "submitted" status
-            nonFunctionalActions.saveNonFunctionalRequirements(slug, nonFunctionalRequirements);
+            await nonFunctionalActions.saveNonFunctionalRequirements(
+              slug,
+              nonFunctionalRequirements
+            );
 
             // Then, evaluate using AI
             setIsActionLoading(true);
@@ -217,15 +233,11 @@ export function useActionHandler(slug: string): StepHandlers {
             // Open modal to show results
             setModalOpen(true);
           } catch (error) {
-            console.error("Failed to save/evaluate non-functional requirements:", error);
-            // Track evaluation error
-            track("practice_evaluation_error", {
-              slug: slug,
-              step: "non_functional",
-              error: error instanceof Error ? error.message : "Unknown error",
-            });
-            setIsActionLoading(false);
-            // TODO: Handle error display
+            reportActionError(
+              "non_functional",
+              error,
+              "Failed to save/evaluate non-functional requirements:"
+            );
           }
         } else if (action === "continue") {
           // Close modal and navigate to next step
@@ -360,7 +372,7 @@ export function useActionHandler(slug: string): StepHandlers {
             }
 
             // First, save the data with "submitted" status
-            apiActions.saveApiEndpoints(slug, currentEndpoints, "submitted");
+            await apiActions.saveApiEndpoints(slug, currentEndpoints, "submitted");
 
             // Then, evaluate using AI (only send endpoints that need evaluation)
             // Pass cached extractions to skip LLM extraction calls for unchanged endpoints
@@ -433,15 +445,7 @@ export function useActionHandler(slug: string): StepHandlers {
             // Open modal to show results
             setModalOpen(true);
           } catch (error) {
-            console.error("Failed to save/evaluate API endpoints:", error);
-            // Track evaluation error
-            track("practice_evaluation_error", {
-              slug: slug,
-              step: "api",
-              error: error instanceof Error ? error.message : "Unknown error",
-            });
-            setIsActionLoading(false);
-            // TODO: Handle error display
+            reportActionError("api", error, "Failed to save/evaluate API endpoints:");
           }
         } else if (action === "continue") {
           // Close modal and navigate to next step
@@ -548,7 +552,7 @@ export function useActionHandler(slug: string): StepHandlers {
             }
 
             // First, save the data
-            highLevelDesignActions.saveHighLevelDesign(slug, highLevelDesign.design);
+            await highLevelDesignActions.saveHighLevelDesign(slug, highLevelDesign.design);
 
             // Then, evaluate
             setIsActionLoading(true);
@@ -580,15 +584,11 @@ export function useActionHandler(slug: string): StepHandlers {
             // Open modal to show results
             setModalOpen(true);
           } catch (error) {
-            console.error("Failed to save/evaluate high-level design:", error);
-            // Track evaluation error
-            track("practice_evaluation_error", {
-              slug: slug,
-              step: "high_level_design",
-              error: error instanceof Error ? error.message : "Unknown error",
-            });
-            setIsActionLoading(false);
-            // TODO: Handle error display
+            reportActionError(
+              "high_level_design",
+              error,
+              "Failed to save/evaluate high-level design:"
+            );
           }
         } else if (action === "continue") {
           // Close modal and navigate to next step
@@ -665,14 +665,14 @@ export function useActionHandler(slug: string): StepHandlers {
               });
             }
           } catch (error) {
-            console.error("Failed to fetch score:", error);
-            // Track score fetch error
-            track("practice_evaluation_error", {
-              slug: slug,
-              step: "score",
-              error: error instanceof Error ? error.message : "Unknown error",
-            });
-            // TODO: Handle error display
+            if (!shouldIgnoreClientError(error)) {
+              console.error("Failed to fetch score:", error);
+              track("practice_evaluation_error", {
+                slug: slug,
+                step: "score",
+                error: error instanceof Error ? error.message : "Unknown error",
+              });
+            }
           }
         } else if (action === "assistanceQuestion") {
           track("assistance_question_submitted", {
@@ -698,6 +698,7 @@ export function useActionHandler(slug: string): StepHandlers {
       setScore,
       setModalOpen,
       setIsActionLoading,
+      reportActionError,
     ]
   );
 

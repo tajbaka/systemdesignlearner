@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import posthog from "posthog-js";
 import { logger } from "@/lib/logger";
+import { shouldIgnorePostHogExceptionEvent } from "@/lib/client-errors";
 import PosthogTrackIdentity from "./PosthogTrackIdentity";
 import { UtmTracker } from "./UtmTracker";
 
@@ -29,8 +30,19 @@ export function PostHogProvider({ children }: { children: React.ReactNode }) {
       capture_pageview: true,
       capture_pageleave: false,
       autocapture: false,
+      capture_exceptions: {
+        capture_unhandled_errors: true,
+        capture_unhandled_rejections: true,
+        capture_console_errors: false,
+      },
+      error_tracking: {
+        captureExtensionExceptions: false,
+      },
       disable_surveys: true, // Disable surveys to prevent script loading errors
       debug: (process.env.NODE_ENV as string) === "development",
+      before_send: (captureResult) => {
+        return shouldIgnorePostHogExceptionEvent(captureResult) ? null : captureResult;
+      },
       loaded: (posthogInstance) => {
         // Expose PostHog to window for analytics.ts to use
         (window as unknown as { posthog: typeof posthogInstance }).posthog = posthogInstance;

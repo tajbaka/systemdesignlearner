@@ -11,6 +11,7 @@ import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { logger } from "@/lib/logger";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
+import { ensureUserProblem } from "@/app/api/v2/practice/(services)/user-problem";
 import { EVALUATION_STRATEGIES } from "@/app/api/v2/practice/(evaluation)/registry";
 import {
   apiStrategy,
@@ -537,25 +538,15 @@ export async function POST(
 
     // 13. Store evaluation result in database
     // Get or create user problem (re-fetch in case it was created during access check)
-    let userProblemRecord = await db.query.userProblems.findFirst({
-      where: and(eq(userProblems.userId, profile.id), eq(userProblems.problemId, problem.id)),
+    const now = new Date();
+    const userProblemRecord = await ensureUserProblem({
+      userId: profile.id,
+      problemId: problem.id,
+      problemVersionId: currentVersion.id,
+      now,
     });
 
-    if (!userProblemRecord) {
-      const [created] = await db
-        .insert(userProblems)
-        .values({
-          userId: profile.id,
-          problemId: problem.id,
-          problemVersionId: currentVersion.id,
-          status: "in_progress",
-        })
-        .returning();
-      userProblemRecord = created;
-    }
-
     // Update user problem step with evaluation
-    const now = new Date();
     const userProblemStepRecord = await db.query.userProblemSteps.findFirst({
       where: eq(userProblemSteps.userProblemId, userProblemRecord.id),
     });

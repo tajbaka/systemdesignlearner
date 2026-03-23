@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProfile } from "@/app/api/v2/auth/(services)/auth";
+import { ensureUserProblem } from "@/app/api/v2/practice/(services)/user-problem";
 import { db, problems, problemVersions, userProblems, userProblemSteps } from "@/packages/drizzle";
 import { eq, and } from "drizzle-orm";
 import { logger } from "@/lib/logger";
@@ -171,24 +172,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     // 5. Get or create user problem record
-    let userProblem = await db.query.userProblems.findFirst({
-      where: and(eq(userProblems.userId, profile.id), eq(userProblems.problemId, problem.id)),
-    });
-
     const now = new Date();
-
-    if (!userProblem) {
-      const [created] = await db
-        .insert(userProblems)
-        .values({
-          userId: profile.id,
-          problemId: problem.id,
-          problemVersionId: currentVersion.id,
-          status: "in_progress",
-        })
-        .returning();
-      userProblem = created;
-    }
+    const userProblem = await ensureUserProblem({
+      userId: profile.id,
+      problemId: problem.id,
+      problemVersionId: currentVersion.id,
+      now,
+    });
 
     // 6. Get or create user problem step to store metadata
     const userProblemStep = await db.query.userProblemSteps.findFirst({

@@ -42,36 +42,24 @@ async function evaluate(
   scenarioSlug: string,
   nonFunctionalRequirements: NonFunctionalRequirements
 ) {
-  try {
-    // Only send the textField, not the results
-    const input = {
-      textField: nonFunctionalRequirements.textField,
-    };
+  const input = {
+    textField: nonFunctionalRequirements.textField,
+  };
 
-    // Call the new evaluate API endpoint
-    const evaluateResponse = await fetch(
-      `/api/v2/practice/${scenarioSlug}/nonFunctional/evaluate`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input,
-        }),
-      }
-    );
+  const evaluateResponse = await fetch(`/api/v2/practice/${scenarioSlug}/nonFunctional/evaluate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      input,
+    }),
+  });
 
-    if (!evaluateResponse.ok) {
-      const errorData = await evaluateResponse.json();
-      throw new Error(errorData.error || "Evaluation failed");
-    }
-
-    const results = await evaluateResponse.json();
-
-    return results;
-  } catch (error) {
-    console.error("Failed to evaluate:", error);
-    throw error;
+  if (!evaluateResponse.ok) {
+    const errorData = await evaluateResponse.json();
+    throw new Error(errorData.error || "Evaluation failed");
   }
+
+  return evaluateResponse.json();
 }
 
 const nonFunctionalActions = {

@@ -38,31 +38,23 @@ async function saveHighLevelDesign(
  * @returns Evaluation result
  */
 async function evaluate(scenarioSlug: string, diagram: PracticeDesignState | null) {
-  try {
-    // Call the evaluate API endpoint
-    const evaluateResponse = await fetch(
-      `/api/v2/practice/${scenarioSlug}/highLevelDesign/evaluate`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input: { diagram },
-        }),
-      }
-    );
-
-    if (!evaluateResponse.ok) {
-      const errorData = await evaluateResponse.json();
-      throw new Error(errorData.error || "Evaluation failed");
+  const evaluateResponse = await fetch(
+    `/api/v2/practice/${scenarioSlug}/highLevelDesign/evaluate`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        input: { diagram },
+      }),
     }
+  );
 
-    const results = await evaluateResponse.json();
-
-    return results;
-  } catch (error) {
-    console.error("Failed to evaluate:", error);
-    throw error;
+  if (!evaluateResponse.ok) {
+    const errorData = await evaluateResponse.json();
+    throw new Error(errorData.error || "Evaluation failed");
   }
+
+  return evaluateResponse.json();
 }
 
 const highLevelDesignActions = {

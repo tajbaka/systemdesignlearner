@@ -110,6 +110,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      clerkJSVersion={process.env.NEXT_PUBLIC_CLERK_JS_VERSION ?? "5.118.0"}
       signUpFallbackRedirectUrl="/sso-callback"
       signInFallbackRedirectUrl="/sso-callback"
       appearance={{
@@ -213,12 +214,12 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" className="h-full dark">
+      <html lang="en" className="h-full dark" suppressHydrationWarning>
         <head>
-          {/* Auto-reload once on ChunkLoadError (stale deployment chunks) */}
+          {/* Recover once from stale deployment assets or Clerk script load failures. */}
           <script
             dangerouslySetInnerHTML={{
-              __html: `!function(){window.addEventListener("error",function(e){var n=e.error&&e.error.name||"";if(n==="ChunkLoadError"||n==="CSS_CHUNK_LOAD_FAILED"||(e.message&&e.message.indexOf("ChunkLoadError")!==-1)){if(!sessionStorage.getItem("chunk_retry")){sessionStorage.setItem("chunk_retry","1");window.location.reload()}}})}()`,
+              __html: `!function(){function t(t){return/ChunkLoadError|CSS_CHUNK_LOAD_FAILED|Loading chunk \\d+ failed|Failed to load clerk\\.browser\\.js|Component spec missing|Failed to load scenario reference/i.test(t||"")}function e(t,e){var o=e&&e.src||"",n=/clerk\\.browser\\.js/i.test((t||"")+o),r=n?"clerk_retry":"asset_retry";if(sessionStorage.getItem(r))return!1;sessionStorage.setItem(r,"1");window.location.reload();return!0}window.addEventListener("error",function(o){var n=o.error&&o.error.message||o.message||"",r=o.target&&"src"in o.target?o.target:null;(t(n)||r&&/clerk\\.browser\\.js/i.test(r.src||""))&&e(n,r)},!0);window.addEventListener("unhandledrejection",function(o){var n=o.reason&&("string"==typeof o.reason?o.reason:o.reason.message)||"";t(n)&&e(n,null)&&o.preventDefault()})}()`,
             }}
           />
           {/* Facebook Pixel - Commented out */}
@@ -253,7 +254,10 @@ export default function RootLayout({
             </>
           )} */}
         </head>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}
+          suppressHydrationWarning
+        >
           <ScrollToTop />
           <PostHogProvider>
             <ThemeProvider>{children}</ThemeProvider>

@@ -25,7 +25,8 @@ async function saveApiEndpoints(
   });
 
   if (!response.ok) {
-    throw new Error("Failed to save API endpoints");
+    const error = await response.json().catch(() => ({}) as { error?: string });
+    throw new Error(error.error || "Failed to save API endpoints");
   }
 
   return response.json();
@@ -45,47 +46,38 @@ async function evaluate(
   previousExtractions?: CachedExtractions,
   changedEndpointIds?: string[]
 ) {
-  try {
-    // Normalize endpoints to the expected API format
-    const normalizedEndpoints = apiEndpoints.map((endpoint) => ({
-      id: endpoint.id,
-      method: {
-        id: endpoint.method.id,
-        value: endpoint.method.value,
-      },
-      path: {
-        id: endpoint.path.id,
-        value: endpoint.path.value,
-      },
-      description: {
-        id: endpoint.description.id,
-        value: endpoint.description.value,
-      },
-    }));
+  const normalizedEndpoints = apiEndpoints.map((endpoint) => ({
+    id: endpoint.id,
+    method: {
+      id: endpoint.method.id,
+      value: endpoint.method.value,
+    },
+    path: {
+      id: endpoint.path.id,
+      value: endpoint.path.value,
+    },
+    description: {
+      id: endpoint.description.id,
+      value: endpoint.description.value,
+    },
+  }));
 
-    // Call the new evaluate API endpoint
-    const evaluateResponse = await fetch(`/api/v2/practice/${scenarioSlug}/api/evaluate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        input: { endpoints: normalizedEndpoints },
-        previousExtractions, // Send cached extractions to skip LLM calls
-        changedEndpointIds, // Tell backend which extractions to invalidate
-      }),
-    });
+  const evaluateResponse = await fetch(`/api/v2/practice/${scenarioSlug}/api/evaluate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      input: { endpoints: normalizedEndpoints },
+      previousExtractions,
+      changedEndpointIds,
+    }),
+  });
 
-    if (!evaluateResponse.ok) {
-      const errorData = await evaluateResponse.json();
-      throw new Error(errorData.error || "Evaluation failed");
-    }
-
-    const results = await evaluateResponse.json();
-
-    return results;
-  } catch (error) {
-    console.error("Failed to evaluate:", error);
-    throw error;
+  if (!evaluateResponse.ok) {
+    const errorData = await evaluateResponse.json();
+    throw new Error(errorData.error || "Evaluation failed");
   }
+
+  return evaluateResponse.json();
 }
 
 const apiActions = {
