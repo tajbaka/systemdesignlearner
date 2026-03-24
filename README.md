@@ -5,7 +5,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-15.5.2-black.svg)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.1.0-61dafb.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178c6.svg)](https://www.typescriptlang.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-3.x-6E9F18.svg)](https://vitest.dev/) 
+[![Vitest](https://img.shields.io/badge/Vitest-3.x-6E9F18.svg)](https://vitest.dev/)
 
 ## ✨ What Makes It Special
 
@@ -123,12 +123,19 @@ npm start
 # Run once
 npm test
 
+# Run DB-backed integration tests against a disposable Docker Postgres
+npm run test:integration
+
 # Watch mode
 npm run test:watch
 
 # Speech-to-text hooks
 npm test -- __tests__/hooks/useWhisperStt.test.tsx
 ```
+
+If you want to inspect the database after a failing integration run, use
+`KEEP_INTEGRATION_DB=1 npm run test:integration`, then clean up with
+`npm run test:integration:db:down`.
 
 ---
 
