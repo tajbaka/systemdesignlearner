@@ -21,8 +21,34 @@ const assetRecoveryScript = String.raw`
 (() => {
   const ASSET_RETRY_KEY = "asset_retry";
   const CLERK_RETRY_KEY = "clerk_retry";
+  const LEGACY_CHUNK_RETRY_KEY = "chunk_retry";
+  const STABLE_LOAD_WINDOW_MS = 5000;
   const recoverablePattern =
     /ChunkLoadError|CSS_CHUNK_LOAD_FAILED|Loading chunk \d+ failed|Failed to load clerk\.browser\.js|Component spec missing|Failed to load scenario reference/i;
+
+  const clearRetryKeys = () => {
+    sessionStorage.removeItem(ASSET_RETRY_KEY);
+    sessionStorage.removeItem(CLERK_RETRY_KEY);
+    sessionStorage.removeItem(LEGACY_CHUNK_RETRY_KEY);
+  };
+
+  const scheduleRetryReset = () => {
+    window.setTimeout(clearRetryKeys, STABLE_LOAD_WINDOW_MS);
+  };
+
+  // Keep the one-shot guard during the failing reload, then clear it once the page
+  // has loaded successfully for a few seconds so future deploy mismatches can recover too.
+  if (
+    sessionStorage.getItem(ASSET_RETRY_KEY) ||
+    sessionStorage.getItem(CLERK_RETRY_KEY) ||
+    sessionStorage.getItem(LEGACY_CHUNK_RETRY_KEY)
+  ) {
+    if (document.readyState === "complete") {
+      scheduleRetryReset();
+    } else {
+      window.addEventListener("load", scheduleRetryReset, { once: true });
+    }
+  }
 
   const reloadOnce = (storageKey) => {
     if (sessionStorage.getItem(storageKey)) {

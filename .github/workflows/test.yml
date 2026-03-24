@@ -33,6 +33,9 @@ jobs:
       - name: Run tests
         run: npm test
 
+      - name: Run integration tests
+        run: npm run test:integration
+
       - name: Upload test coverage
         if: always()
         uses: actions/upload-artifact@v4
