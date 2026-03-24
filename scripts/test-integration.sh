@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 
+# Local convenience wrapper: spins up a disposable integration Postgres,
+# runs migrations + integration tests via the core runner, then tears down.
+# Set KEEP_INTEGRATION_DB=1 to keep the container running after tests.
+
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 COMPOSE_FILE="$ROOT_DIR/docker-compose.integration.yml"
-POSTGRES_URL="${INTEGRATION_POSTGRES_URL:-postgresql://postgres:postgres@127.0.0.1:54329/system_design_sandbox_integration}"
+export POSTGRES_URL="${INTEGRATION_POSTGRES_URL:-postgresql://postgres:postgres@127.0.0.1:54329/system_design_sandbox_integration}"
 KEEP_DB="${KEEP_INTEGRATION_DB:-0}"
 
 cleanup() {
@@ -21,8 +25,4 @@ trap cleanup EXIT
 echo "Starting integration Postgres..."
 docker compose -f "$COMPOSE_FILE" up -d --wait
 
-echo "Running database migrations..."
-POSTGRES_URL="$POSTGRES_URL" npx tsx "$ROOT_DIR/scripts/run-migrations.ts"
-
-echo "Running integration tests..."
-POSTGRES_URL="$POSTGRES_URL" npx vitest run --config "$ROOT_DIR/vitest.integration.config.mts" "$@"
+"$ROOT_DIR/scripts/run-integration-tests.sh" "$@"
