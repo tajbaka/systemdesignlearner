@@ -12,7 +12,7 @@ type UseKeyboardShortcutsProps = {
   nodes: PlacedNode[];
   edges: Edge[];
   selectedNodeId: string | null;
-  onDiagramChange: (nodes: PlacedNode[], edges: Edge[]) => void;
+  onDesignChange: (nodes: PlacedNode[], edges: Edge[]) => void;
   isReadOnly?: boolean;
   typeToNameMap: Map<string, string>;
 };
@@ -21,7 +21,7 @@ export function useKeyboardShortcuts({
   nodes,
   edges,
   selectedNodeId,
-  onDiagramChange,
+  onDesignChange,
   isReadOnly = false,
   typeToNameMap,
 }: UseKeyboardShortcutsProps) {
@@ -92,8 +92,8 @@ export function useKeyboardShortcuts({
       y: clipboard.y + 50,
     };
 
-    onDiagramChange([...nodes, newNode], edges);
-  }, [isReadOnly, clipboard, nodes, edges, onDiagramChange, saveToHistory, typeToNameMap]);
+    onDesignChange([...nodes, newNode], edges);
+  }, [isReadOnly, clipboard, nodes, edges, onDesignChange, saveToHistory, typeToNameMap]);
 
   // Undo last action
   const handleUndo = useCallback(() => {
@@ -107,8 +107,8 @@ export function useKeyboardShortcuts({
 
     // Mark that we just undid to prevent saving this as new history
     justUndoneRef.current = true;
-    onDiagramChange(lastState.nodes, lastState.edges);
-  }, [isReadOnly, history, nodes, edges, onDiagramChange]);
+    onDesignChange(lastState.nodes, lastState.edges);
+  }, [isReadOnly, history, nodes, edges, onDesignChange]);
 
   // Redo last undone action
   const handleRedo = useCallback(() => {
@@ -122,8 +122,8 @@ export function useKeyboardShortcuts({
 
     // Mark that we just redid to prevent saving this as new history
     justRedoneRef.current = true;
-    onDiagramChange(nextState.nodes, nextState.edges);
-  }, [isReadOnly, redoHistory, nodes, edges, onDiagramChange]);
+    onDesignChange(nextState.nodes, nextState.edges);
+  }, [isReadOnly, redoHistory, nodes, edges, onDesignChange]);
 
   // Setup keyboard event listener
   useEffect(() => {

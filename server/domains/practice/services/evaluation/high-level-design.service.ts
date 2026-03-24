@@ -14,7 +14,7 @@ import { z } from "zod";
 import { logger } from "@/lib/logger";
 
 const HighLevelDesignInputSchema = z.object({
-  diagram: z.unknown().nullable(),
+  design: z.unknown().nullable(),
 });
 
 type HighLevelDesignInput = z.infer<typeof HighLevelDesignInputSchema>;
@@ -34,9 +34,9 @@ export const highLevelDesignService: EvaluationStrategy<HighLevelDesignInput> = 
     config: ProblemConfig,
     userInput: HighLevelDesignInput
   ): EvaluationResult {
-    const diagram = userInput.diagram as PracticeDesignState | null;
+    const design = userInput.design as PracticeDesignState | null;
 
-    logger.info("[HLD Eval] Raw user diagram:", JSON.stringify(diagram, null, 2));
+    logger.info("[HLD Eval] Raw user design:", JSON.stringify(design, null, 2));
 
     const highLevelDesignStep = (config.steps as unknown as Record<string, unknown>)
       .highLevelDesign as { requirements?: unknown[] } | undefined;
@@ -48,8 +48,8 @@ export const highLevelDesignService: EvaluationStrategy<HighLevelDesignInput> = 
       };
     }
 
-    const userAdjacencyList = buildAdjacencyList(diagram);
-    const userNodesMap = buildNodesMap(diagram);
+    const userAdjacencyList = buildAdjacencyList(design);
+    const userNodesMap = buildNodesMap(design);
     const solution = highLevelDesignStep.requirements[0] as PracticeDesignState;
     const solutionAdjacencyList = buildAdjacencyList(solution);
     const solutionNodesMap = buildNodesMap(solution);

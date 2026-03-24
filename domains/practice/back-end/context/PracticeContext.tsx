@@ -10,6 +10,8 @@ type PracticeContextValue = {
   stepSlug: string | null;
   stepType: string | null;
   loading: boolean;
+  isSignedIn: boolean;
+  openAuthModal: () => void;
 };
 
 const PracticeContext = createContext<PracticeContextValue | null>(null);

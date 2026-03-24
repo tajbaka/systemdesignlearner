@@ -5,7 +5,7 @@ import { PRACTICE_STEPS } from "../constants";
 import type { PracticeStepWithRoute } from "../types";
 import type { ProblemConfig } from "../types";
 import { calculateMaxVisitedStep as calculateMaxVisitedStepUtil } from "@/domains/practice/utils/access-control";
-import { stepStateStore, type ProblemState } from "../store/store";
+import { stepStateStore } from "../store/store";
 
 type UseStepperProps = {
   stepType: string | null;
@@ -19,41 +19,16 @@ type UseStepperResult = {
   steps: PracticeStepWithRoute[];
 };
 
-/** Map config step keys to store submission fields */
-const STEP_TO_STORE_KEY = {
-  functional: "functionalRequirements",
-  nonFunctional: "nonFunctionalRequirements",
-  api: "apiDesign",
-  highLevelDesign: "highLevelDesign",
-} as const;
-
-type StepKey = keyof typeof STEP_TO_STORE_KEY;
-type StoreKey = (typeof STEP_TO_STORE_KEY)[StepKey];
-
-/**
- * Derives step completion from the client-side store's evaluation submissions.
- * A step is complete when its submission exists and all results are complete.
- */
-function getStoreCompletedSteps(problemState: ProblemState): Record<string, boolean> {
-  const completed: Record<string, boolean> = {};
-
-  for (const [stepKey, storeKey] of Object.entries(STEP_TO_STORE_KEY) as [StepKey, StoreKey][]) {
-    const submission = problemState[storeKey].submission;
-    if (submission?.results) {
-      completed[stepKey] = submission.results.every((r) => r.complete);
-    }
-  }
-
-  return completed;
-}
-
 /**
  * Calculates max visited step by merging server-side completion (config)
- * with client-side completion (store submissions).
+ * with client-side step completion from the store.
+ *
+ * stepCompletion takes precedence when a step has been evaluated this session,
+ * otherwise falls back to server config.
  */
 function calculateMaxVisitedStep(
   config: ProblemConfig | null,
-  storeCompletedSteps: Record<string, boolean>
+  stepCompletion: Record<string, boolean>
 ): number {
   if (!config?.steps) {
     return 0;
@@ -65,7 +40,12 @@ function calculateMaxVisitedStep(
   }));
 
   return calculateMaxVisitedStepUtil(stepsArray, (step) => {
-    return step.completed === true || storeCompletedSteps[step.stepType] === true;
+    // Client stepCompletion takes precedence if set (evaluated this session)
+    if (stepCompletion[step.stepType] !== undefined) {
+      return stepCompletion[step.stepType];
+    }
+    // Fall back to server config
+    return step.completed === true;
   });
 }
 
@@ -78,10 +58,13 @@ function calculateMaxVisitedStep(
  * updates immediately without waiting for a server refresh.
  */
 export function useStepper({ stepType, config, slug }: UseStepperProps): UseStepperResult {
-  // Subscribe to the store to derive client-side step completion
-  const storeCompletedSteps = useStore(
+  // Track hydration state to show blank stepper until ready
+  const isHydrated = useStore(stepStateStore, (s) => !s.loading);
+
+  // Subscribe to stepCompletion from the store
+  const stepCompletion = useStore(
     stepStateStore,
-    useShallow((s) => getStoreCompletedSteps(s.getProblemState(slug)))
+    useShallow((s) => s.getProblemState(slug).stepCompletion)
   );
 
   // Get ordered practice steps directly from PRACTICE_STEPS
@@ -91,18 +74,22 @@ export function useStepper({ stepType, config, slug }: UseStepperProps): UseStep
 
   // Find activeStep based on PRACTICE_STEPS order
   const activeStep = useMemo(() => {
+    // Show blank stepper (no active step) during hydration
+    if (!isHydrated) return -1;
     if (!stepType) return -1;
 
     const step = PRACTICE_STEPS[stepType as keyof typeof PRACTICE_STEPS];
     if (!step) return -1;
 
     return steps.findIndex((s) => s.route === step.route);
-  }, [stepType, steps]);
+  }, [stepType, steps, isHydrated]);
 
-  // Calculate maxVisitedStep from both server config and client store
+  // Calculate maxVisitedStep from both server config and client stepCompletion
   const maxVisitedStep = useMemo(() => {
-    return calculateMaxVisitedStep(config, storeCompletedSteps);
-  }, [config, storeCompletedSteps]);
+    // Show blank stepper (all steps neutral) during hydration
+    if (!isHydrated) return -1;
+    return calculateMaxVisitedStep(config, stepCompletion);
+  }, [config, stepCompletion, isHydrated]);
 
   return { activeStep, maxVisitedStep, steps };
 }

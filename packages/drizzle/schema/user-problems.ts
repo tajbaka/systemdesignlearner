@@ -37,7 +37,13 @@ export const userProblems = pgTable(
     completedAt: timestamp("completed_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (table) => [uniqueIndex("idx_user_problems_unique").on(table.userId, table.problemId)]
+  (table) => [
+    uniqueIndex("idx_user_problems_unique").on(
+      table.userId,
+      table.problemId,
+      table.problemVersionId
+    ),
+  ]
 );
 
 // ============================================================================
@@ -45,17 +51,21 @@ export const userProblems = pgTable(
 // Tracks user's progress on individual steps within a problem
 // ============================================================================
 
-export const userProblemSteps = pgTable("user_problem_steps", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userProblemId: uuid("user_problem_id")
-    .notNull()
-    .references(() => userProblems.id, { onDelete: "cascade" }),
-  status: userProblemStepStatusEnum("status").notNull().default("in_progress"),
-  data: jsonb("data"), // Step-specific submission data
-  createdAt: timestamp("created_at", { withTimezone: true }),
-  completedAt: timestamp("completed_at", { withTimezone: true }),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
-});
+export const userProblemSteps = pgTable(
+  "user_problem_steps",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userProblemId: uuid("user_problem_id")
+      .notNull()
+      .references(() => userProblems.id, { onDelete: "cascade" }),
+    status: userProblemStepStatusEnum("status").notNull().default("in_progress"),
+    data: jsonb("data"), // Step-specific submission data
+    createdAt: timestamp("created_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
+  },
+  (table) => [uniqueIndex("idx_user_problem_steps_unique").on(table.userProblemId)]
+);
 
 // ============================================================================
 // Relations

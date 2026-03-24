@@ -14,7 +14,7 @@ interface UseAuthenticationOptions {
 }
 
 export default function useAuthentication({ slug, isOpen, onClose }: UseAuthenticationOptions) {
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn: clerkSignedIn, user } = useUser();
   const { signOut } = useClerk();
   const { signIn, isLoaded: signInLoaded, setActive } = useSignIn();
   const { signUp, isLoaded: signUpLoaded } = useSignUp();
@@ -25,8 +25,12 @@ export default function useAuthentication({ slug, isOpen, onClose }: UseAuthenti
   const [error, setError] = useState("");
   const [step, setStep] = useState<"start" | "verify">("start");
   const [isNewUser, setIsNewUser] = useState(false);
+  const [profileReady, setProfileReady] = useState(false);
 
   const isLoaded = signInLoaded && signUpLoaded;
+
+  // Only consider signed in when both Clerk auth AND our profile row exist
+  const isSignedIn = clerkSignedIn && profileReady;
 
   // Initialize session after authentication (for SSO callback)
   const initializeSession = useCallback(async () => {
@@ -35,6 +39,9 @@ export default function useAuthentication({ slug, isOpen, onClose }: UseAuthenti
     try {
       const res = await fetch("/api/v2/auth/session", { method: "POST" });
       const data = await res.json();
+      if (res.ok) {
+        setProfileReady(true);
+      }
       track("practice_auth_completed", {
         slug,
         provider: "clerk",
@@ -48,10 +55,13 @@ export default function useAuthentication({ slug, isOpen, onClose }: UseAuthenti
   }, [user, slug]);
 
   useEffect(() => {
-    if (isSignedIn) {
+    if (clerkSignedIn) {
       initializeSession();
+    } else {
+      // Reset profileReady when user signs out
+      setProfileReady(false);
     }
-  }, [isSignedIn, initializeSession]);
+  }, [clerkSignedIn, initializeSession]);
 
   // Reset state when modal closes
   useEffect(() => {

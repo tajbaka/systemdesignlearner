@@ -9,6 +9,7 @@ import type {
   ExtractedApiInfo,
 } from "../services/evaluation";
 import type { ApiDefinitionInput, TextRequirementInput } from "../services/evaluation/validation";
+import { checkExactSolutionMatch } from "../services/evaluation/solution-matcher";
 import { logger } from "@/lib/logger";
 import { generateEvaluation, generateApiEvaluation, generateExtraction } from "@/lib/gemini";
 
@@ -74,6 +75,17 @@ export function createPracticeController(services: Services) {
             : {}),
         })),
       };
+    }
+
+    // Check for exact solution matches — skip LLM if all requirements have matching solutions
+    const exactMatch = checkExactSolutionMatch(
+      validatedInput.textField.value,
+      requirements as Array<{ id: string; weight?: number; solutions?: Array<{ text: string }> }>
+    );
+
+    if (exactMatch) {
+      logger.info("All solutions matched — skipping LLM evaluation", { slug, step: stepType });
+      return exactMatch;
     }
 
     // Single-shot evaluation
@@ -371,7 +383,7 @@ export function createPracticeController(services: Services) {
 
       const [steps, userStepData] = await Promise.all([
         practice.problem.getSteps(problem.id),
-        userId ? practice.userProblem.getStepData(userId, problem.id) : null,
+        userId ? practice.userProblem.getStepData(userId, problem.id, currentVersion.id) : null,
       ]);
 
       return {
@@ -379,51 +391,6 @@ export function createPracticeController(services: Services) {
         currentVersion,
         steps,
         userStepData,
-      };
-    },
-
-    // ========================================================================
-    // Get Step
-    // ========================================================================
-    async getStep(userId: string, slug: string, stepType: StepType) {
-      const problem = await practice.problem.findBySlug(slug);
-      if (!problem) return { error: "PROBLEM_NOT_FOUND" as const };
-
-      const currentVersion = problem.versions[0];
-      if (!currentVersion) return { error: "VERSION_NOT_FOUND" as const };
-
-      const allSteps = await practice.problem.getSteps(problem.id);
-      const stepRecord = allSteps.find((s) => s.stepType === stepType);
-      if (!stepRecord) return { error: "STEP_NOT_FOUND" as const };
-
-      // Check access in parallel with getting user data
-      const [accessResult, userProblem] = await Promise.all([
-        practice.accessControl.checkStepAccess(userId, problem.id, stepRecord.order),
-        practice.userProblem.getOrCreate(userId, problem.id, currentVersion.id),
-      ]);
-
-      if (!accessResult.allowed) {
-        return {
-          error: "ACCESS_DENIED" as const,
-          details: {
-            currentStep: accessResult.targetStepOrder,
-            maxAllowedStep: accessResult.maxVisitedStep,
-          },
-        };
-      }
-
-      const userSteps = await practice.userProblem.getOrCreateSteps(userProblem.id);
-
-      // Touch user problem timestamp (fire and forget)
-      practice.userProblem.touch(userProblem.id);
-
-      return {
-        problem,
-        currentVersion,
-        stepRecord,
-        allSteps,
-        userProblem,
-        userSteps,
       };
     },
 
@@ -436,28 +403,14 @@ export function createPracticeController(services: Services) {
       stepType: StepType,
       data: Record<string, unknown>
     ) {
-      const problem = await practice.problem.findBySlug(slug);
-      if (!problem) return { error: "PROBLEM_NOT_FOUND" as const };
-
-      const currentVersion = problem.versions[0];
-      if (!currentVersion) return { error: "VERSION_NOT_FOUND" as const };
-
-      const userProblem = await practice.userProblem.getOrCreate(
-        userId,
-        problem.id,
-        currentVersion.id
-      );
-
-      const result = await practice.userProblem.saveStepData(userProblem.id, stepType, data);
-
-      return { data: result };
+      return practice.userProblem.save({ userId, slug, stepType, data });
     },
 
     // ========================================================================
     // Evaluate Step
     // ========================================================================
     async evaluateStep(
-      userId: string,
+      userId: string | null,
       userEmail: string | undefined,
       slug: string,
       stepType: StepType,
@@ -476,27 +429,38 @@ export function createPracticeController(services: Services) {
       const stepRecord = allSteps.find((s) => s.stepType === stepType);
       if (!stepRecord) return { error: "STEP_NOT_FOUND" as const };
 
-      // Access control
-      const accessResult = await practice.accessControl.checkStepAccess(
-        userId,
-        problem.id,
-        stepRecord.order
-      );
+      // Access control (skip for anonymous users - they can access any step)
+      if (userId !== null) {
+        const accessResult = await practice.accessControl.checkStepAccess(
+          userId,
+          problem.id,
+          currentVersion.id,
+          stepRecord.order
+        );
 
-      if (!accessResult.allowed) {
-        return {
-          error: "ACCESS_DENIED" as const,
-          details: {
-            currentStep: accessResult.targetStepOrder,
-            maxAllowedStep: accessResult.maxVisitedStep,
-          },
-        };
+        if (!accessResult.allowed) {
+          return {
+            error: "ACCESS_DENIED" as const,
+            details: {
+              currentStep: accessResult.targetStepOrder,
+              maxAllowedStep: accessResult.maxVisitedStep,
+            },
+          };
+        }
+
+        // Save input data first - this creates userProblem/userProblemSteps if needed
+        await practice.userProblem.save({
+          userId,
+          slug,
+          stepType,
+          data: input as Record<string, unknown>,
+        });
       }
 
       // Evaluate using internal orchestrator
       const evaluation = await evaluateStepInternal(
         {
-          userId,
+          userId: userId ?? "",
           userEmail,
           slug,
           stepType,
@@ -509,22 +473,75 @@ export function createPracticeController(services: Services) {
         currentVersion.description ?? ""
       );
 
-      // Persist evaluation results
-      const earnedScore = evaluation.score ?? 0;
-      const maxScore = stepRecord.scoreWeight;
+      // Persist evaluation results (skip for anonymous users)
+      if (userId !== null) {
+        const earnedScore = evaluation.score ?? 0;
+        const maxScore = stepRecord.scoreWeight;
 
-      await practice.userProblem.updateStepEvaluation({
+        await practice.userProblem.updateStepEvaluation({
+          userId,
+          problemId: problem.id,
+          versionId: currentVersion.id,
+          stepType,
+          evaluation,
+          earnedScore,
+          maxScore,
+          allSteps,
+        });
+      }
+
+      return { data: evaluation };
+    },
+
+    // ========================================================================
+    // Sync All Steps (bulk save cached evaluations after login)
+    // ========================================================================
+    async syncAllSteps(
+      userId: string,
+      slug: string,
+      stepEvaluations: Array<{
+        stepType: StepType;
+        evaluation: EvaluationResult | APIEvaluationResult;
+        inputData?: Record<string, unknown>;
+      }>
+    ) {
+      const problem = await practice.problem.findBySlug(slug);
+      if (!problem) return { error: "PROBLEM_NOT_FOUND" as const };
+
+      const currentVersion = problem.versions[0];
+      if (!currentVersion) return { error: "VERSION_NOT_FOUND" as const };
+
+      const allSteps = await practice.problem.getSteps(problem.id);
+
+      // Build step data with scores
+      const steps = stepEvaluations
+        .map(({ stepType, evaluation, inputData }) => {
+          const stepRecord = allSteps.find((s) => s.stepType === stepType);
+          if (!stepRecord) return null;
+
+          return {
+            stepType,
+            evaluation,
+            earnedScore: evaluation.score ?? 0,
+            maxScore: stepRecord.scoreWeight,
+            inputData,
+          };
+        })
+        .filter((s): s is NonNullable<typeof s> => s !== null);
+
+      if (steps.length === 0) {
+        return { data: { success: true, synced: 0 } };
+      }
+
+      await practice.userProblem.syncAllStepEvaluations({
         userId,
         problemId: problem.id,
         versionId: currentVersion.id,
-        stepType,
-        evaluation,
-        earnedScore,
-        maxScore,
-        allSteps,
+        steps,
+        allProblemSteps: allSteps,
       });
 
-      return { data: evaluation };
+      return { data: { success: true, synced: steps.length } };
     },
 
     // ========================================================================

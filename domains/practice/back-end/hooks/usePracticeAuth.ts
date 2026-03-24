@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import useAuthentication from "@/domains/hooks/useAuthentication";
 
 type UsePracticeAuthProps = {
@@ -30,12 +30,13 @@ export function usePracticeAuth({ slug }: UsePracticeAuthProps) {
     onClose: () => setIsAuthModalOpen(false),
   });
 
-  // Check authentication and show modal if not signed in
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      setIsAuthModalOpen(true);
-    }
-  }, [isLoaded, isSignedIn]);
+  const openAuthModal = useCallback(() => {
+    setIsAuthModalOpen(true);
+  }, []);
+
+  const closeAuthModal = useCallback(() => {
+    setIsAuthModalOpen(false);
+  }, []);
 
   return {
     isAuthModalOpen,
@@ -54,5 +55,7 @@ export function usePracticeAuth({ slug }: UsePracticeAuthProps) {
     handleCodeVerify,
     handleGoogleSignIn,
     setStep,
+    openAuthModal,
+    closeAuthModal,
   };
 }

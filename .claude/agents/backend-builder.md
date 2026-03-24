@@ -134,5 +134,11 @@ Tests in `__tests__/`, use `.test.ts`. Run: `npm test`
 
 1. `npm test` passes
 2. `npm run typecheck` passes
-3. **Do NOT commit** - stage changes with `git add` but leave them staged for user review
-4. Report: files changed, test coverage, blockers
+3. **Do NOT commit or merge** - leave changes in worktree for fullstack-reviewer to review
+4. Report:
+   - Worktree path (critical - fullstack-reviewer needs this)
+   - Files changed
+   - Test results
+   - Any blockers or concerns
+
+The fullstack-reviewer agent will review your work and merge if approved.

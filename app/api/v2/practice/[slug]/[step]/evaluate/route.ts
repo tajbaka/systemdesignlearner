@@ -27,9 +27,6 @@ export async function POST(
 ) {
   try {
     const profile = await userController.getProfile();
-    if (!profile) {
-      return NextResponse.json({ error: "Unauthorized - please sign in" }, { status: 401 });
-    }
 
     const { slug, step } = await params;
     logger.info("POST /api/v2/practice/[slug]/[step]/evaluate", { slug, step });
@@ -50,8 +47,8 @@ export async function POST(
     const { input, previousExtractions, changedEndpointIds } = parseResult.data;
 
     const result = await practiceController.evaluateStep(
-      profile.id,
-      profile.email ?? undefined,
+      profile?.id ?? null,
+      profile?.email ?? undefined,
       slug,
       step as StepType,
       input,

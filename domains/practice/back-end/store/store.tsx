@@ -78,6 +78,8 @@ export type ProblemState = {
   highLevelDesign: HighLevelDesign;
   score: Score;
   viewedTooltips: string[]; // Track which step tooltips have been viewed (stored as array for persistence)
+  needsSync: boolean; // Flag to trigger backend sync after auth
+  stepCompletion: Record<string, boolean>; // Explicit step completion status, updated only after evaluation
 };
 
 export interface StepStateStoreState {
@@ -102,7 +104,10 @@ export interface StepStateStoreState {
   setIsActionLoading: (isLoading: boolean) => void;
   setActionError: (error: string | null) => void;
   setViewedTooltip: (slug: string, stepType: string) => void;
+  setNeedsSync: (slug: string, needsSync: boolean) => void;
+  setStepCompletion: (slug: string, stepType: string, completed: boolean) => void;
   resetState: (slug: string) => void;
+  clearAllProblems: () => void;
 
   // Helper to get or initialize problem state (pure read — safe inside selectors)
   getProblemState: (slug: string) => ProblemState;
@@ -175,6 +180,8 @@ const createInitialProblemState = (): ProblemState => ({
     stepScores: [],
   },
   viewedTooltips: [],
+  needsSync: false,
+  stepCompletion: {},
 });
 
 const initialState: Omit<
@@ -189,7 +196,10 @@ const initialState: Omit<
   | "setIsActionLoading"
   | "setActionError"
   | "setViewedTooltip"
+  | "setNeedsSync"
+  | "setStepCompletion"
   | "resetState"
+  | "clearAllProblems"
   | "getProblemState"
   | "ensureProblemState"
 > = {
@@ -216,12 +226,19 @@ export const stepStateStore = create<StepStateStoreState>()(
           return createInitialProblemState();
         }
 
-        // Migrate old problem state if viewedTooltips is missing
+        // Migrate old problem state if fields are missing
+        let migrated = problemState;
         if (!problemState.viewedTooltips) {
-          return { ...problemState, viewedTooltips: [] };
+          migrated = { ...migrated, viewedTooltips: [] };
+        }
+        if (problemState.needsSync === undefined) {
+          migrated = { ...migrated, needsSync: false };
+        }
+        if (!problemState.stepCompletion) {
+          migrated = { ...migrated, stepCompletion: {} };
         }
 
-        return problemState;
+        return migrated;
       },
 
       // Ensure a problem slug is initialized in the store (call from effects, not selectors)
@@ -234,13 +251,30 @@ export const stepStateStore = create<StepStateStoreState>()(
               [slug]: createInitialProblemState(),
             },
           });
-        } else if (!state.problems[slug].viewedTooltips) {
-          set({
-            problems: {
-              ...state.problems,
-              [slug]: { ...state.problems[slug], viewedTooltips: [] },
-            },
-          });
+        } else {
+          // Migrate existing state if needed
+          let needsUpdate = false;
+          let updated = state.problems[slug];
+          if (!updated.viewedTooltips) {
+            updated = { ...updated, viewedTooltips: [] };
+            needsUpdate = true;
+          }
+          if (updated.needsSync === undefined) {
+            updated = { ...updated, needsSync: false };
+            needsUpdate = true;
+          }
+          if (!updated.stepCompletion) {
+            updated = { ...updated, stepCompletion: {} };
+            needsUpdate = true;
+          }
+          if (needsUpdate) {
+            set({
+              problems: {
+                ...state.problems,
+                [slug]: updated,
+              },
+            });
+          }
         }
       },
 
@@ -345,6 +379,37 @@ export const stepStateStore = create<StepStateStoreState>()(
         });
       },
 
+      setNeedsSync: (slug: string, needsSync: boolean) => {
+        const state = get();
+        const problemState = state.getProblemState(slug);
+        set({
+          problems: {
+            ...state.problems,
+            [slug]: {
+              ...problemState,
+              needsSync,
+            },
+          },
+        });
+      },
+
+      setStepCompletion: (slug: string, stepType: string, completed: boolean) => {
+        const state = get();
+        const problemState = state.getProblemState(slug);
+        set({
+          problems: {
+            ...state.problems,
+            [slug]: {
+              ...problemState,
+              stepCompletion: {
+                ...problemState.stepCompletion,
+                [stepType]: completed,
+              },
+            },
+          },
+        });
+      },
+
       resetState: (slug: string) => {
         const state = get();
         set({
@@ -353,6 +418,10 @@ export const stepStateStore = create<StepStateStoreState>()(
             [slug]: createInitialProblemState(),
           },
         });
+      },
+
+      clearAllProblems: () => {
+        set({ problems: {} });
       },
     }),
     {
@@ -369,19 +438,19 @@ export const stepStateStore = create<StepStateStoreState>()(
               ...problemState,
               functionalRequirements: {
                 ...problemState.functionalRequirements,
-                attempts: undefined, // Don't persist attempts
+                attempts: undefined,
               },
               nonFunctionalRequirements: {
                 ...problemState.nonFunctionalRequirements,
-                attempts: undefined, // Don't persist attempts
+                attempts: undefined,
               },
               apiDesign: {
                 ...problemState.apiDesign,
-                attempts: undefined, // Don't persist attempts
+                attempts: undefined,
               },
               highLevelDesign: {
                 ...problemState.highLevelDesign,
-                attempts: undefined, // Don't persist attempts
+                attempts: undefined,
               },
             },
           ])

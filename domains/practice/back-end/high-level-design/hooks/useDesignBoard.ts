@@ -11,7 +11,7 @@ type UseDesignBoardProps = {
   isReadOnly?: boolean;
   nodes: PlacedNode[];
   edges: Edge[];
-  onDiagramChange: (nodes: PlacedNode[], edges: Edge[]) => void;
+  onDesignChange: (nodes: PlacedNode[], edges: Edge[]) => void;
   solutionNodes?: Array<{ id: string; type: string; name: string; icon: string }>;
 };
 
@@ -19,7 +19,7 @@ export function useDesignBoard({
   isReadOnly = false,
   nodes,
   edges,
-  onDiagramChange,
+  onDesignChange,
   solutionNodes,
 }: UseDesignBoardProps) {
   // State for palette open/close
@@ -50,7 +50,7 @@ export function useDesignBoard({
     nodes,
     edges,
     selectedNodeId,
-    onDiagramChange,
+    onDesignChange,
     isReadOnly,
     typeToNameMap,
   });
@@ -166,10 +166,10 @@ export function useDesignBoard({
         x,
         y,
       };
-      onDiagramChange([...nodes, newNode], edges);
+      onDesignChange([...nodes, newNode], edges);
       return nodeId;
     },
-    [isReadOnly, nodes, edges, onDiagramChange, saveToHistory, typeToNameMap]
+    [isReadOnly, nodes, edges, onDesignChange, saveToHistory, typeToNameMap]
   );
 
   // Handlers for design interactions - wrapper functions that convert at the boundary
@@ -178,9 +178,9 @@ export function useDesignBoard({
       if (isReadOnly) return;
       saveToHistory();
       const edge = toEdge(boardEdge);
-      onDiagramChange(nodes, [...edges, edge]);
+      onDesignChange(nodes, [...edges, edge]);
     },
-    [isReadOnly, toEdge, nodes, edges, onDiagramChange, saveToHistory]
+    [isReadOnly, toEdge, nodes, edges, onDesignChange, saveToHistory]
   );
 
   const handleDrop = useCallback(
@@ -196,9 +196,9 @@ export function useDesignBoard({
       if (isReadOnly) return;
       // Don't save to history for node movements (only for add/delete)
       const updatedNodes = updatedBoardNodes.map(toPlacedNode);
-      onDiagramChange(updatedNodes, edges);
+      onDesignChange(updatedNodes, edges);
     },
-    [isReadOnly, toPlacedNode, edges, onDiagramChange]
+    [isReadOnly, toPlacedNode, edges, onDesignChange]
   );
 
   const handleEdgesChange = useCallback(
@@ -206,9 +206,9 @@ export function useDesignBoard({
       if (isReadOnly) return;
       saveToHistory();
       const updatedEdges = updatedBoardEdges.map(toEdge);
-      onDiagramChange(nodes, updatedEdges);
+      onDesignChange(nodes, updatedEdges);
     },
-    [isReadOnly, toEdge, nodes, onDiagramChange, saveToHistory]
+    [isReadOnly, toEdge, nodes, onDesignChange, saveToHistory]
   );
 
   const handleDeleteNode = useCallback(
@@ -217,12 +217,12 @@ export function useDesignBoard({
       saveToHistory();
       const updatedNodes = nodes.filter((node) => node.id !== nodeId);
       const updatedEdges = edges.filter((edge) => edge.from !== nodeId && edge.to !== nodeId);
-      onDiagramChange(updatedNodes, updatedEdges);
+      onDesignChange(updatedNodes, updatedEdges);
       if (selectedNodeId === nodeId) {
         setSelectedNodeId(null);
       }
     },
-    [isReadOnly, nodes, edges, onDiagramChange, selectedNodeId, saveToHistory]
+    [isReadOnly, nodes, edges, onDesignChange, selectedNodeId, saveToHistory]
   );
 
   const handleEdgeSelect = useCallback((edgeId: string | null) => {
@@ -260,12 +260,12 @@ export function useDesignBoard({
         return true;
       });
 
-      onDiagramChange(nodes, updatedEdges);
+      onDesignChange(nodes, updatedEdges);
       if (selectedEdgeId === edgeId) {
         setSelectedEdgeId(null);
       }
     },
-    [isReadOnly, nodes, edges, onDiagramChange, selectedEdgeId, saveToHistory]
+    [isReadOnly, nodes, edges, onDesignChange, selectedEdgeId, saveToHistory]
   );
 
   const handleRenameNode = useCallback(
@@ -280,9 +280,9 @@ export function useDesignBoard({
       const updatedNodes = nodes.map((n) =>
         n.id === nodeId ? { ...n, name: trimmedName as ComponentName } : n
       );
-      onDiagramChange(updatedNodes, edges);
+      onDesignChange(updatedNodes, edges);
     },
-    [isReadOnly, nodes, edges, onDiagramChange, saveToHistory]
+    [isReadOnly, nodes, edges, onDesignChange, saveToHistory]
   );
 
   const handleDragOver = useCallback((e: React.DragEvent) => {

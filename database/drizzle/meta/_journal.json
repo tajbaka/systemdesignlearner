@@ -15,6 +15,13 @@
       "when": 1771945327187,
       "tag": "0001_gigantic_riptide",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774302300909,
+      "tag": "0002_wandering_professor_monster",
+      "breakpoints": true
     }
   ]
 }
