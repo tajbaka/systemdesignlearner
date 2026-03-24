@@ -29,12 +29,9 @@ export function createPracticeServices(_deps: Deps) {
 
     // User problem state
     userProblem: {
-      getOrCreate: (userId: string, problemId: string, versionId: string) =>
-        userProblemService.getOrCreateUserProblem(userId, problemId, versionId),
-      getOrCreateSteps: (userProblemId: string) =>
-        userProblemService.getOrCreateUserProblemSteps(userProblemId),
-      saveStepData: userProblemService.saveStepData,
+      save: userProblemService.saveStepData,
       updateStepEvaluation: userProblemService.updateStepEvaluation,
+      syncAllStepEvaluations: userProblemService.syncAllStepEvaluations,
       getStepData: userProblemService.getStepData,
       touch: userProblemService.touchUserProblem,
     },

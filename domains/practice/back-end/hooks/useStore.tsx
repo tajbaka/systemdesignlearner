@@ -21,6 +21,7 @@ export type ScopedProblemState = ProblemState & {
   setIsActionLoading: (isLoading: boolean) => void;
   setActionError: (error: string | null) => void;
   setViewedTooltip: (stepType: string) => void;
+  setStepCompletion: (stepType: string, completed: boolean) => void;
   resetState: () => void;
 };
 
@@ -66,6 +67,8 @@ export default function useStepStore(slug: string): ScopedProblemState {
       setActionError: store.setActionError,
       setViewedTooltip: (stepType: string) =>
         stepStateStore.getState().setViewedTooltip(slug, stepType),
+      setStepCompletion: (stepType: string, completed: boolean) =>
+        stepStateStore.getState().setStepCompletion(slug, stepType, completed),
       resetState: () => stepStateStore.getState().resetState(slug),
     };
   }, [slug]);

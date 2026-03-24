@@ -16,8 +16,6 @@ import { FeedbackModal } from "../components/FeedbackModal";
 import { StepFeedbackModal } from "../StepFeedbackModal";
 import { useFeedbackModal } from "../hooks/useFeedbackModal";
 import { PRACTICE_STEPS } from "../constants";
-import { AuthModalDialog } from "@/domains/authentication/components/AuthModalDialog";
-import { usePracticeAuth } from "../hooks/usePracticeAuth";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useStepConfigStore } from "../store/stepConfigStore";
 import { usePractice } from "../context/PracticeContext";
@@ -42,25 +40,6 @@ export function BackendLayout({ children }: BackendLayoutProps) {
     leftButtonIcon,
     rightButtonIcon,
   } = useStepConfigStore();
-
-  const {
-    isAuthModalOpen,
-    email,
-    code,
-    step: authStep,
-    isAuthLoading,
-    isGoogleLoading,
-    error,
-    isLoaded,
-    isSignedIn,
-    user,
-    setEmail,
-    setCode,
-    handleEmailSubmit,
-    handleCodeVerify,
-    handleGoogleSignIn,
-    setStep: setAuthStep,
-  } = usePracticeAuth({ slug });
 
   const { activeStep, maxVisitedStep, steps } = useStepper({
     stepType,
@@ -202,25 +181,6 @@ export function BackendLayout({ children }: BackendLayoutProps) {
           </div>
         </footer>
       </div>
-
-      <AuthModalDialog
-        isOpen={isAuthModalOpen}
-        isSignedIn={Boolean(isSignedIn)}
-        userEmail={user?.primaryEmailAddress?.emailAddress}
-        email={email}
-        code={code}
-        step={authStep}
-        isLoading={isAuthLoading}
-        isGoogleLoading={isGoogleLoading}
-        error={error}
-        isLoaded={isLoaded}
-        onEmailChange={setEmail}
-        onCodeChange={setCode}
-        onEmailSubmit={handleEmailSubmit}
-        onCodeVerify={handleCodeVerify}
-        onGoogleSignIn={handleGoogleSignIn}
-        onBack={() => setAuthStep("start")}
-      />
     </>
   );
 }

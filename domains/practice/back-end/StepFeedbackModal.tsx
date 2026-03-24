@@ -1,7 +1,6 @@
 import { SolutionRevealBox } from "./components/SolutionRevealBox";
 import { SolutionAnswerBox } from "./components/SolutionAnswerBox";
 import { ItemsBox } from "./components/ItemsBox";
-import { LinkBox } from "./components/LinkBox";
 import { useSolutionReveal } from "./hooks/useSolutionReveal";
 import { useFeedbackModal } from "./hooks/useFeedbackModal";
 import type { ProblemConfig, StepHandlers } from "./types";

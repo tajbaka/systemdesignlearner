@@ -34,11 +34,8 @@ export async function POST(
   { params }: { params: Promise<{ slug: string; step: string }> }
 ) {
   try {
-    // 1. Authenticate
+    // 1. Authenticate (optional - allow anonymous evaluations)
     const profile = await userController.getProfile();
-    if (!profile) {
-      return NextResponse.json({ error: "Unauthorized - please sign in" }, { status: 401 });
-    }
 
     // 2. Validate params
     const { slug, step } = await params;
@@ -60,10 +57,10 @@ export async function POST(
 
     const { input, previousExtractions, changedEndpointIds } = parseResult.data;
 
-    // 4. Call controller
+    // 4. Call controller (pass null userId for anonymous users)
     const result = await practiceController.evaluateStep(
-      profile.id,
-      profile.email ?? undefined,
+      profile?.id ?? null,
+      profile?.email ?? undefined,
       slug,
       step as StepType,
       input,

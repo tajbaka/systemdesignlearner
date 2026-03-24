@@ -79,12 +79,12 @@ const stepDataLoaders: Record<string, StepDataLoader> = {
   },
 
   [STEPS.HIGH_LEVEL_DESIGN]: (slug, userStepData, state) => {
-    // Data format: { diagram: {...} }
+    // Data format: { design: {...} }
     const hldData = userStepData as {
-      diagram?: PracticeDesignState;
+      design?: PracticeDesignState;
     };
-    if (hldData.diagram) {
-      state.setHighLevelDesign(slug, { design: hldData.diagram });
+    if (hldData.design) {
+      state.setHighLevelDesign(slug, { design: hldData.design });
     }
   },
 };

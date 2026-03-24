@@ -36,7 +36,7 @@ export type ApiStepActions =
 export type HighLevelDesignStepActions =
   | "back"
   | "next"
-  | "updateDiagram"
+  | "updateDesign"
   | "continue"
   | "revise"
   | "insert"

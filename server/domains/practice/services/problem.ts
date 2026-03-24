@@ -130,39 +130,45 @@ export async function listProblemsWithProgress(userId?: string): Promise<Problem
     totalStepsMap.set(row.problemId, row.total);
   }
 
-  // 4. Optionally fetch user progress
+  // 4. Optionally fetch user progress (for current versions only)
   const statusMap = new Map<string, "in_progress" | "completed">();
   const completedStepsMap = new Map<string, number>();
 
   if (userId) {
-    const problemIds = problemsWithVersions.map((p) => p.id);
+    // Build map of problemId -> currentVersionId
+    const currentVersionIds = problemsWithVersions.map((p) => p.versions[0]?.id).filter(Boolean);
 
-    const userProblemsData = await db.query.userProblems.findMany({
-      where: and(eq(userProblems.userId, userId), inArray(userProblems.problemId, problemIds)),
-    });
-
-    for (const up of userProblemsData) {
-      statusMap.set(up.problemId, up.status);
-    }
-
-    const completedStepCounts = await db
-      .select({
-        problemId: userProblems.problemId,
-        completedCount: count(userProblemSteps.id),
-      })
-      .from(userProblemSteps)
-      .innerJoin(userProblems, eq(userProblemSteps.userProblemId, userProblems.id))
-      .where(
-        and(
+    if (currentVersionIds.length > 0) {
+      const userProblemsData = await db.query.userProblems.findMany({
+        where: and(
           eq(userProblems.userId, userId),
-          inArray(userProblems.problemId, problemIds),
-          eq(userProblemSteps.status, "completed")
-        )
-      )
-      .groupBy(userProblems.problemId);
+          inArray(userProblems.problemVersionId, currentVersionIds)
+        ),
+      });
 
-    for (const row of completedStepCounts) {
-      completedStepsMap.set(row.problemId, row.completedCount);
+      for (const up of userProblemsData) {
+        statusMap.set(up.problemId, up.status);
+      }
+
+      const completedStepCounts = await db
+        .select({
+          problemId: userProblems.problemId,
+          completedCount: count(userProblemSteps.id),
+        })
+        .from(userProblemSteps)
+        .innerJoin(userProblems, eq(userProblemSteps.userProblemId, userProblems.id))
+        .where(
+          and(
+            eq(userProblems.userId, userId),
+            inArray(userProblems.problemVersionId, currentVersionIds),
+            eq(userProblemSteps.status, "completed")
+          )
+        )
+        .groupBy(userProblems.problemId);
+
+      for (const row of completedStepCounts) {
+        completedStepsMap.set(row.problemId, row.completedCount);
+      }
     }
   }
 

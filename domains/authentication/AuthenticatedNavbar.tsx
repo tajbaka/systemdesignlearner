@@ -7,6 +7,7 @@ import { Navbar, type NavbarContent } from "@/components/navbar";
 import useAuthentication from "@/domains/hooks/useAuthentication";
 import { AuthModalDialog } from "@/domains/authentication/components/AuthModalDialog";
 import { UserMenu } from "@/components/UserMenu";
+import { stepStateStore } from "@/domains/practice/back-end/store/store";
 
 interface AuthenticatedNavbarProps {
   variant?: "dark" | "light";
@@ -98,6 +99,11 @@ export function AuthenticatedNavbar({
   };
 
   const handleSignOut = async () => {
+    // Clear Zustand store state first (before localStorage.clear)
+    // This prevents Zustand from immediately re-persisting the old state
+    stepStateStore.getState().clearAllProblems();
+    // Clear all localStorage to prevent data leaking between users
+    localStorage.clear();
     await signOut();
     closeUserMenu();
   };

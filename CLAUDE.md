@@ -10,6 +10,10 @@ Interactive system design playground with practice problems, learning articles, 
 - **Discriminated Unions**: Error handling via `{ data: T } | { error: Code }`
 - **Extend via Objects**: Use object maps/registries to add behavior, not switch/if chains
 
+## Workflow Rules
+
+- **No commits without review**: Do not commit changes until the user has reviewed them
+
 ## Project Structure
 
 ```

@@ -9,12 +9,20 @@ import { STEP_TYPES } from "@/domains/practice/lib/schemas/step-data";
 export async function getSession(userId: string, slug: string): Promise<GetSessionResponse | null> {
   const problem = await db.query.problems.findFirst({
     where: eq(problems.slug, slug),
+    with: { versions: { where: eq(problemVersions.isCurrent, true), limit: 1 } },
   });
 
   if (!problem) return null;
 
+  const currentVersion = problem.versions[0];
+  if (!currentVersion) return null;
+
   const userProblem = await db.query.userProblems.findFirst({
-    where: and(eq(userProblems.userId, userId), eq(userProblems.problemId, problem.id)),
+    where: and(
+      eq(userProblems.userId, userId),
+      eq(userProblems.problemId, problem.id),
+      eq(userProblems.problemVersionId, currentVersion.id)
+    ),
     with: {
       steps: true,
     },
@@ -104,7 +112,11 @@ export async function updateSession(params: UpdateSessionParams): Promise<Update
 
   // Get or create user problem
   let userProblem = await db.query.userProblems.findFirst({
-    where: and(eq(userProblems.userId, userId), eq(userProblems.problemId, problem.id)),
+    where: and(
+      eq(userProblems.userId, userId),
+      eq(userProblems.problemId, problem.id),
+      eq(userProblems.problemVersionId, currentVersion.id)
+    ),
   });
 
   const now = new Date();

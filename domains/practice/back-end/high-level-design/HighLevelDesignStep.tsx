@@ -25,8 +25,8 @@ export default function HighLevelDesignStep({
   const nodes = highLevelDesign?.design.nodes || [];
   const edges = highLevelDesign?.design.edges || [];
 
-  const handleDiagramChange = (newNodes: PlacedNode[], newEdges: Edge[]) => {
-    handlers[STEPS.HIGH_LEVEL_DESIGN]("updateDiagram", { nodes: newNodes, edges: newEdges });
+  const handleDesignChange = (newNodes: PlacedNode[], newEdges: Edge[]) => {
+    handlers[STEPS.HIGH_LEVEL_DESIGN]("updateDesign", { nodes: newNodes, edges: newEdges });
   };
 
   const solutionNodes = useMemo(() => {
@@ -54,7 +54,7 @@ export default function HighLevelDesignStep({
     isReadOnly: false,
     nodes,
     edges,
-    onDiagramChange: handleDiagramChange,
+    onDesignChange: handleDesignChange,
     solutionNodes,
   });
 

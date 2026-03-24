@@ -84,17 +84,29 @@ export default async function Page({ params }: Props) {
   const steps = await fetchSteps(slug, cookieHeader);
 
   if (steps) {
-    const maxVisitedStep = calculateMaxVisitedStep(
-      steps,
-      (s) => s.userStep?.status === "completed"
-    );
+    // Check if user has any step data (authenticated user with DB records)
+    const hasUserStepData = steps.some((s) => s.userStep !== null);
 
-    const currentStepConfig = Object.values(PRACTICE_STEPS).find((s) => s.route === step);
+    // Score step requires authentication - redirect to HLD if not logged in
+    if (step === "score" && !hasUserStepData) {
+      redirect(`/practice/${slug}/high-level-design`);
+    }
 
-    if (currentStepConfig && currentStepConfig.order > maxVisitedStep) {
-      const targetStep = Object.values(PRACTICE_STEPS).find((s) => s.order === maxVisitedStep);
-      if (targetStep) {
-        redirect(`/practice/${slug}/${targetStep.route}`);
+    // Only enforce server-side access control for authenticated users
+    // Anonymous users have progress tracked client-side in Zustand
+    if (hasUserStepData) {
+      const maxVisitedStep = calculateMaxVisitedStep(
+        steps,
+        (s) => s.userStep?.status === "completed"
+      );
+
+      const currentStepConfig = Object.values(PRACTICE_STEPS).find((s) => s.route === step);
+
+      if (currentStepConfig && currentStepConfig.order > maxVisitedStep) {
+        const targetStep = Object.values(PRACTICE_STEPS).find((s) => s.order === maxVisitedStep);
+        if (targetStep) {
+          redirect(`/practice/${slug}/${targetStep.route}`);
+        }
       }
     }
   }
