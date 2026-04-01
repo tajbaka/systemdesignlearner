@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const to = body.to || "antonio.coppe@gmail.com";
+    const to = body.to || "ariantajbakh@gmail.com";
 
     const result = await sendNewProblemNotification({
       to,

@@ -20,6 +20,7 @@ Read the original plan/requirements. What was supposed to be built?
 ### 2. Check Deliverables
 
 For each item in the plan:
+
 - [ ] File exists?
 - [ ] Feature implemented as specified?
 - [ ] Tests written as required?
@@ -45,11 +46,11 @@ Quickly read key files to confirm implementation matches intent - not deep revie
 
 ### Plan vs Implementation
 
-| Planned | Status | Notes |
-|---------|--------|-------|
-| Hints service | Done | `server/domains/practice/services/hints/` |
-| Hints API route | Done | `app/api/v2/practice/[slug]/hints/` |
-| useHints hook | Missing | Not created |
+| Planned         | Status  | Notes                                     |
+| --------------- | ------- | ----------------------------------------- |
+| Hints service   | Done    | `server/domains/practice/services/hints/` |
+| Hints API route | Done    | `app/api/v2/practice/[slug]/hints/`       |
+| useHints hook   | Missing | Not created                               |
 
 ### Verification
 
@@ -58,10 +59,12 @@ Quickly read key files to confirm implementation matches intent - not deep revie
 - Lint: PASS/FAIL
 
 ### Missing Items
+
 1. useHints hook not implemented
 2. HintsButton component missing tests
 
 ### Ready to Ship?
+
 YES - all planned items complete and working
 NO - [list what's missing]
 ```

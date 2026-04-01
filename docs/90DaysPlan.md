@@ -1,6 +1,6 @@
 # 6-Week B2B Pivot Plan
 
-> Goal: Build strong user traction and engagement signals to validate **System Design Sandbox** for a B2B pivot (bootcamps, enterprise training) within 6 weeks.
+> Goal: Build strong user traction and engagement signals to validate **System Design Learner** for a B2B pivot (bootcamps, enterprise training) within 6 weeks.
 
 ---
 

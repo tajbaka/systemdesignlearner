@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Unsubscribe | System Design Sandbox",
+  title: "Unsubscribe | System Design Learner",
   robots: { index: false, follow: false },
 };
 
@@ -41,7 +41,7 @@ export default async function UnsubscribePage({
           </>
         )}
         <Link href="/" className="text-sm text-emerald-500 hover:text-emerald-400 underline">
-          Back to System Design Sandbox
+          Back to System Design Learner
         </Link>
       </div>
     </div>

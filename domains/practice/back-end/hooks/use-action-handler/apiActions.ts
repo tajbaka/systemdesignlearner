@@ -3,6 +3,7 @@ import { STEPS } from "../../constants";
 import { stepStateStore } from "../../store/store";
 import practiceActions from "../../actions";
 import { getChangedFields, mergeEvaluationResults } from "../../api-design/changeDetection";
+import { reportActionError } from "./errorHandling";
 import type { HttpMethod } from "../../api-design/components/MethodSelect";
 import type { ApiDeps, StepHandler, EndpointItem } from "./types";
 
@@ -137,16 +138,14 @@ export function createApiHandler(deps: ApiDeps): StepHandler {
         track("practice_api_completed", { slug, score: mergedResponse.score });
         setModalOpen(true);
       } catch (error) {
-        console.error("Failed to save/evaluate API endpoints:", error);
-        track("practice_evaluation_error", {
+        reportActionError({
           slug,
           step: "api",
-          error: error instanceof Error ? error.message : "Unknown error",
+          error,
+          message: "Failed to save/evaluate API endpoints:",
+          setActionError,
         });
         setIsActionLoading(false);
-        setActionError(
-          error instanceof Error ? error.message : "Something went wrong. Please try again."
-        );
       }
       return;
     }
@@ -188,9 +187,7 @@ export function createApiHandler(deps: ApiDeps): StepHandler {
 
       setApiDesign({
         endpoints: updatedEndpoints,
-        submission: apiDesign.submission
-          ? { ...apiDesign.submission, results: [] }
-          : undefined,
+        submission: apiDesign.submission ? { ...apiDesign.submission, results: [] } : undefined,
       });
       return;
     }
@@ -201,9 +198,7 @@ export function createApiHandler(deps: ApiDeps): StepHandler {
 
       setApiDesign({
         endpoints: [...endpoints, newEndpoint],
-        submission: apiDesign.submission
-          ? { ...apiDesign.submission, results: [] }
-          : undefined,
+        submission: apiDesign.submission ? { ...apiDesign.submission, results: [] } : undefined,
       });
       return;
     }
@@ -214,9 +209,7 @@ export function createApiHandler(deps: ApiDeps): StepHandler {
 
       setApiDesign({
         endpoints: endpoints.filter((ep) => ep.id !== endpointId),
-        submission: apiDesign.submission
-          ? { ...apiDesign.submission, results: [] }
-          : undefined,
+        submission: apiDesign.submission ? { ...apiDesign.submission, results: [] } : undefined,
       });
       return;
     }

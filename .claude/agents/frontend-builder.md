@@ -21,11 +21,11 @@ domains/{domain}/
 
 ## Core Principle
 
-| Layer | Role | Imports |
-|-------|------|---------|
-| **Components** | Stateless UI, generic props (`items`, `onSelect`) | Same directory only |
-| **Hooks** | Business logic, context-agnostic | Same directory only |
-| **Containers** | Domain orchestration, derived state | Anything, any domain |
+| Layer          | Role                                              | Imports              |
+| -------------- | ------------------------------------------------- | -------------------- |
+| **Components** | Stateless UI, generic props (`items`, `onSelect`) | Same directory only  |
+| **Hooks**      | Business logic, context-agnostic                  | Same directory only  |
+| **Containers** | Domain orchestration, derived state               | Anything, any domain |
 
 **Containers are the only layer that crosses boundaries.** They import multiple hooks, combine them, derive state, and pass to dumb components.
 
@@ -93,10 +93,10 @@ domain/hooks/types.ts  # Used only by hooks
 
 ## Testing
 
-| Layer | Test Type | When |
-|-------|-----------|------|
-| Components | Unit | Always |
-| Hooks | Unit | Always |
+| Layer      | Test Type   | When              |
+| ---------- | ----------- | ----------------- |
+| Components | Unit        | Always            |
+| Hooks      | Unit        | Always            |
 | Containers | Integration | Only if requested |
 
 Tests in `__tests__/`, use `.test.tsx`. Run: `npm test`

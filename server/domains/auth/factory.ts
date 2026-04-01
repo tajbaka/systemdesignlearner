@@ -11,6 +11,7 @@ export function createAuthServices(_deps: Deps) {
     // Profile
     profile: {
       get: authService.getProfile,
+      getOrCreate: authService.getOrCreateProfile,
     },
 
     // Session (user progress tracking)

@@ -1,4 +1,4 @@
-# System Design Sandbox
+# System Design Learner
 
 Interactive system design playground with practice problems, learning articles, and AI-powered feedback.
 
@@ -37,17 +37,17 @@ packages/          # Shared packages (drizzle, etc.)
 
 ## Tech Stack
 
-| Layer      | Tech                                   |
-| ---------- | -------------------------------------- |
-| Framework  | Next.js 16.1 (App Router, Turbopack)   |
-| Language   | TypeScript 5 (strict mode)             |
-| UI         | React 19, Tailwind CSS 4, Framer Motion|
-| State      | Zustand, React Context                 |
-| Auth       | Clerk                                  |
-| Database   | PostgreSQL via Drizzle ORM (Supabase)  |
-| Validation | Zod                                    |
-| AI         | Google Gemini (@google/genai)          |
-| Testing    | Vitest + React Testing Library         |
+| Layer      | Tech                                    |
+| ---------- | --------------------------------------- |
+| Framework  | Next.js 16.1 (App Router, Turbopack)    |
+| Language   | TypeScript 5 (strict mode)              |
+| UI         | React 19, Tailwind CSS 4, Framer Motion |
+| State      | Zustand, React Context                  |
+| Auth       | Clerk                                   |
+| Database   | PostgreSQL via Drizzle ORM (Supabase)   |
+| Validation | Zod                                     |
+| AI         | Google Gemini (@google/genai)           |
+| Testing    | Vitest + React Testing Library          |
 
 ## Commands
 

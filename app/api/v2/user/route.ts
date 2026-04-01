@@ -10,19 +10,13 @@ import {
 
 export const runtime = "nodejs";
 
-// ============================================================================
-// GET /api/v2/user
-// ============================================================================
-
 export async function GET(request: NextRequest) {
   try {
-    // 1. Authenticate
     const profile = await userController.getProfile();
     if (!profile) {
       return NextResponse.json({ error: "Unauthorized - please sign in" }, { status: 401 });
     }
 
-    // 2. Validate query params
     const { searchParams } = new URL(request.url);
     const scenarioSlug = searchParams.get("scenarioSlug");
 
@@ -34,10 +28,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // 3. Call controller
     const result = await userController.getSession(profile.id, parseResult.data.scenarioSlug);
 
-    // 4. Handle result
     if ("error" in result) {
       return NextResponse.json(
         { error: "Problem not found", details: { slug: parseResult.data.scenarioSlug } },
@@ -53,19 +45,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ============================================================================
-// PATCH /api/v2/user
-// ============================================================================
-
 export async function PATCH(request: NextRequest) {
   try {
-    // 1. Authenticate
     const profile = await userController.getProfile();
     if (!profile) {
       return NextResponse.json({ error: "Unauthorized - please sign in" }, { status: 401 });
     }
 
-    // 2. Validate request body
     const body = await request.json();
     const parseResult = UpdateSessionRequestSchema.safeParse(body);
     if (!parseResult.success) {
@@ -77,7 +63,6 @@ export async function PATCH(request: NextRequest) {
 
     const { scenarioSlug, maxVisitedStep, currentStepType } = parseResult.data;
 
-    // 3. Call controller
     const result = await userController.updateSession({
       userId: profile.id,
       scenarioSlug,
@@ -85,7 +70,6 @@ export async function PATCH(request: NextRequest) {
       currentStepType,
     });
 
-    // 4. Handle result
     if ("error" in result) {
       return NextResponse.json(
         { error: "Problem not found", details: { slug: scenarioSlug } },

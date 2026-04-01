@@ -9,36 +9,25 @@ import type { StepType } from "@/server/domains/practice/services/user-problem";
 
 export const runtime = "nodejs";
 
-// ============================================================================
-// Request Schema
-// ============================================================================
-
 const SaveStepRequestSchema = z.object({
   data: z.record(z.string(), z.unknown()),
 });
-
-// ============================================================================
-// PATCH /api/v2/practice/[slug]/[step]
-// ============================================================================
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string; step: string }> }
 ) {
   try {
-    // 1. Authenticate
     const profile = await userController.getProfile();
     if (!profile) {
       return NextResponse.json({ error: "Unauthorized - please sign in" }, { status: 401 });
     }
 
-    // 2. Validate params
     const { slug, step } = await params;
     if (!isValidStep(step)) {
       return NextResponse.json({ error: "Invalid step type", details: { step } }, { status: 400 });
     }
 
-    // 3. Parse request body
     const body = await request.json();
     const parseResult = SaveStepRequestSchema.safeParse(body);
     if (!parseResult.success) {
@@ -48,7 +37,6 @@ export async function PATCH(
       );
     }
 
-    // 4. Call controller
     const result = await practiceController.saveStepData(
       profile.id,
       slug,
@@ -56,7 +44,6 @@ export async function PATCH(
       parseResult.data.data
     );
 
-    // 5. Handle result
     if ("error" in result) {
       switch (result.error) {
         case "PROBLEM_NOT_FOUND":

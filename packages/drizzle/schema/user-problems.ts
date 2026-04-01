@@ -38,7 +38,11 @@ export const userProblems = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [
-    uniqueIndex("idx_user_problems_unique").on(table.userId, table.problemId, table.problemVersionId),
+    uniqueIndex("idx_user_problems_unique").on(
+      table.userId,
+      table.problemId,
+      table.problemVersionId
+    ),
   ]
 );
 

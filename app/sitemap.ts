@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import articlesData from "@/domains/learn/articles.json";
 
-const BASE_URL = "https://www.systemdesignsandbox.com";
+const BASE_URL = "https://www.systemdesignlearner.com";
 
 const PRACTICE_SLUGS = [
   "url-shortener",

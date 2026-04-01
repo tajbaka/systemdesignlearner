@@ -2,11 +2,11 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | System Design Sandbox",
+  title: "Cookie Policy | System Design Learner",
   description:
-    "Cookie Policy for System Design Sandbox - How we use cookies and tracking technologies.",
+    "Cookie Policy for System Design Learner - How we use cookies and tracking technologies.",
   alternates: {
-    canonical: "https://www.systemdesignsandbox.com/cookies",
+    canonical: "https://www.systemdesignlearner.com/cookies",
   },
 };
 
@@ -38,7 +38,7 @@ export default function CookiesPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">2. How We Use Cookies</h2>
             <p className="text-muted-foreground leading-relaxed">
-              System Design Sandbox uses cookies and similar tracking technologies to provide,
+              System Design Learner uses cookies and similar tracking technologies to provide,
               improve, protect, and promote our Service. Below is a detailed breakdown of the types
               of cookies we use and their purposes.
             </p>
@@ -113,7 +113,7 @@ export default function CookiesPage() {
                 </p>
                 <p className="text-sm text-muted-foreground">Duration: 1 year</p>
                 <p className="text-sm text-muted-foreground">
-                  Provider: First-party (System Design Sandbox)
+                  Provider: First-party (System Design Learner)
                 </p>
               </div>
             </div>
@@ -303,10 +303,10 @@ export default function CookiesPage() {
             <p className="text-muted-foreground leading-relaxed">
               If you have questions about our use of cookies, please contact us at:{" "}
               <a
-                href="mailto:privacy@systemdesignsandbox.com"
+                href="mailto:privacy@systemdesignlearner.com"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                privacy@systemdesignsandbox.com
+                privacy@systemdesignlearner.com
               </a>
             </p>
           </section>

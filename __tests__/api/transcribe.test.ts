@@ -172,7 +172,7 @@ describe("/api/transcribe", () => {
     expect(sentFormData.get("language")).toBe("fr");
   });
 
-  it("allows requests from systemdesignsandbox.com", async () => {
+  it("allows requests from systemdesignlearner.com", async () => {
     globalThis.fetch = vi.fn(async () => ({
       ok: true,
       json: async () => ({ text: "test" }),
@@ -185,7 +185,7 @@ describe("/api/transcribe", () => {
     });
     formData.append("file", audioFile);
 
-    const request = createMockRequest(formData, "https://www.systemdesignsandbox.com");
+    const request = createMockRequest(formData, "https://www.systemdesignlearner.com");
     const response = await POST(request);
 
     expect(response.status).toBe(200);

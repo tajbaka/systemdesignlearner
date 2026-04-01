@@ -17,13 +17,82 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const assetRecoveryScript = String.raw`
+(() => {
+  const ASSET_RETRY_KEY = "asset_retry";
+  const CLERK_RETRY_KEY = "clerk_retry";
+  const LEGACY_CHUNK_RETRY_KEY = "chunk_retry";
+  const STABLE_LOAD_WINDOW_MS = 5000;
+  const recoverablePattern =
+    /ChunkLoadError|CSS_CHUNK_LOAD_FAILED|Loading chunk \d+ failed|Failed to load clerk\.browser\.js|Component spec missing|Failed to load scenario reference/i;
+
+  const clearRetryKeys = () => {
+    sessionStorage.removeItem(ASSET_RETRY_KEY);
+    sessionStorage.removeItem(CLERK_RETRY_KEY);
+    sessionStorage.removeItem(LEGACY_CHUNK_RETRY_KEY);
+  };
+
+  const scheduleRetryReset = () => {
+    window.setTimeout(clearRetryKeys, STABLE_LOAD_WINDOW_MS);
+  };
+
+  // Keep the one-shot guard during the failing reload, then clear it once the page
+  // has loaded successfully for a few seconds so future deploy mismatches can recover too.
+  if (
+    sessionStorage.getItem(ASSET_RETRY_KEY) ||
+    sessionStorage.getItem(CLERK_RETRY_KEY) ||
+    sessionStorage.getItem(LEGACY_CHUNK_RETRY_KEY)
+  ) {
+    if (document.readyState === "complete") {
+      scheduleRetryReset();
+    } else {
+      window.addEventListener("load", scheduleRetryReset, { once: true });
+    }
+  }
+
+  const reloadOnce = (storageKey) => {
+    if (sessionStorage.getItem(storageKey)) {
+      return false;
+    }
+
+    sessionStorage.setItem(storageKey, "1");
+    window.location.reload();
+    return true;
+  };
+
+  window.addEventListener(
+    "error",
+    (event) => {
+      const message = event.error?.message || event.message || "";
+      const target = event.target && "src" in event.target ? event.target : null;
+      const source = target?.src || "";
+      const isClerkError = /clerk\.browser\.js/i.test(message + source);
+
+      if (recoverablePattern.test(message) || (target && /clerk\.browser\.js/i.test(source))) {
+        reloadOnce(isClerkError ? CLERK_RETRY_KEY : ASSET_RETRY_KEY);
+      }
+    },
+    true
+  );
+
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason =
+      typeof event.reason === "string" ? event.reason : event.reason?.message || "";
+
+    if (recoverablePattern.test(reason) && reloadOnce(ASSET_RETRY_KEY)) {
+      event.preventDefault();
+    }
+  });
+})();
+`;
+
 // const fbPixel = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseUrl()),
   title: {
-    default: "System Design Interview Practice - Interactive Sandbox",
-    template: "%s | System Design Sandbox",
+    default: "System Design Interview Practice - Interactive Learner",
+    template: "%s | System Design Learner",
   },
   description:
     "Practice system design interviews with interactive scenarios. AI-powered feedback on distributed systems, scalability & architecture design.",
@@ -45,9 +114,9 @@ export const metadata: Metadata = {
     "software engineering",
     "interactive learning",
   ],
-  authors: [{ name: "System Design Sandbox" }],
-  creator: "System Design Sandbox",
-  publisher: "System Design Sandbox",
+  authors: [{ name: "System Design Learner" }],
+  creator: "System Design Learner",
+  publisher: "System Design Learner",
   robots: {
     index: true,
     follow: true,
@@ -62,16 +131,16 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://www.systemdesignsandbox.com",
-    siteName: "System Design Sandbox",
-    title: "System Design Interview Practice - Interactive Sandbox",
+    url: "https://www.systemdesignlearner.com",
+    siteName: "System Design Learner",
+    title: "System Design Interview Practice - Interactive Learner",
     description:
       "Practice system design interviews with interactive scenarios. AI-powered feedback on distributed systems, scalability & architecture design.",
     // images removed - child layouts will provide specific images
   },
   twitter: {
     card: "summary_large_image",
-    title: "System Design Interview Practice - Interactive Sandbox",
+    title: "System Design Interview Practice - Interactive Learner",
     description:
       "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
     // images removed - child layouts will provide specific images
@@ -85,7 +154,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "System Design Sandbox",
+    title: "System Design Learner",
   },
   formatDetection: {
     telephone: false,
@@ -110,6 +179,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider
+      clerkJSVersion={process.env.NEXT_PUBLIC_CLERK_JS_VERSION ?? "5.118.0"}
       signUpFallbackRedirectUrl="/sso-callback"
       signInFallbackRedirectUrl="/sso-callback"
       appearance={{
@@ -213,12 +283,11 @@ export default function RootLayout({
         },
       }}
     >
-      <html lang="en" className="h-full dark">
+      <html lang="en" className="h-full dark" suppressHydrationWarning>
         <head>
-          {/* Auto-reload once on ChunkLoadError (stale deployment chunks) */}
           <script
             dangerouslySetInnerHTML={{
-              __html: `!function(){window.addEventListener("error",function(e){var n=e.error&&e.error.name||"";if(n==="ChunkLoadError"||n==="CSS_CHUNK_LOAD_FAILED"||(e.message&&e.message.indexOf("ChunkLoadError")!==-1)){if(!sessionStorage.getItem("chunk_retry")){sessionStorage.setItem("chunk_retry","1");window.location.reload()}}})}()`,
+              __html: assetRecoveryScript,
             }}
           />
           {/* Facebook Pixel - Commented out */}
@@ -253,7 +322,10 @@ export default function RootLayout({
             </>
           )} */}
         </head>
-        <body className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}>
+        <body
+          className={`${geistSans.variable} ${geistMono.variable} antialiased h-full dark`}
+          suppressHydrationWarning
+        >
           <ScrollToTop />
           <PostHogProvider>
             <ThemeProvider>{children}</ThemeProvider>

@@ -10,7 +10,7 @@ export const maxDuration = 30; // Vercel function timeout
 const WHISPER_API_TIMEOUT_MS = 25000;
 
 /** Default allowed origins if ALLOWED_ORIGINS env var is not set */
-const DEFAULT_ALLOWED_ORIGINS = ["https://www.systemdesignsandbox.com"];
+const DEFAULT_ALLOWED_ORIGINS = ["https://www.systemdesignlearner.com"];
 
 type WhisperResponse = {
   text: string;

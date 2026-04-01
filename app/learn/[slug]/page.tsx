@@ -36,12 +36,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: config.description,
     authors: [{ name: config.author }],
     creator: config.author,
-    publisher: "System Design Sandbox",
+    publisher: "System Design Learner",
     openGraph: {
       type: "article",
       locale: "en_US",
       url,
-      siteName: "System Design Sandbox",
+      siteName: "System Design Learner",
       title: config.title,
       description: config.description,
       images: [

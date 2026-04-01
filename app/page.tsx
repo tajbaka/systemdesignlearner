@@ -7,14 +7,14 @@ const baseUrl = getBaseUrl();
 const ogImage = `${baseUrl}/desktop-url-shortener-practice.gif`;
 
 export const metadata: Metadata = {
-  title: "System Design Interview Practice - Interactive Sandbox",
+  title: "System Design Interview Practice - Interactive Learner",
   description:
     "Practice system design interviews with interactive scenarios. AI-powered feedback on distributed systems, scalability & architecture design.",
   alternates: {
-    canonical: "https://www.systemdesignsandbox.com",
+    canonical: "https://www.systemdesignlearner.com",
   },
   openGraph: {
-    title: "System Design Interview Practice - Interactive Sandbox",
+    title: "System Design Interview Practice - Interactive Learner",
     description:
       "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
     images: [
@@ -22,14 +22,14 @@ export const metadata: Metadata = {
         url: ogImage,
         width: 1200,
         height: 630,
-        alt: "System Design Sandbox - Interactive Architecture Playground",
+        alt: "System Design Learner - Interactive Architecture Learner",
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "System Design Interview Practice - Interactive Sandbox",
+    title: "System Design Interview Practice - Interactive Learner",
     description:
       "Practice system design interviews with interactive scenarios. AI-powered feedback on architecture design.",
     images: [ogImage],
@@ -129,10 +129,10 @@ export default function HomePage() {
       },
       {
         "@type": "Question",
-        name: "Is System Design Sandbox free to use?",
+        name: "Is System Design Learner free to use?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "Yes! System Design Sandbox is completely free. We provide interactive tutorials, practice scenarios, and instant feedback at no cost. Our mission is to make high-quality system design education accessible to everyone preparing for technical interviews.",
+          text: "Yes! System Design Learner is completely free. We provide interactive tutorials, practice scenarios, and instant feedback at no cost. Our mission is to make high-quality system design education accessible to everyone preparing for technical interviews.",
         },
       },
     ],

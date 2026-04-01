@@ -8,7 +8,7 @@ export function getBaseUrl(): string {
   if (isServer) {
     // In production, use the canonical domain
     if (process.env.VERCEL_ENV === "production") {
-      return "https://www.systemdesignsandbox.com";
+      return "https://www.systemdesignlearner.com";
     }
 
     // Check for Vercel deployment URL

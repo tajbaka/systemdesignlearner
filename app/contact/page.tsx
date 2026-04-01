@@ -3,16 +3,16 @@ import Link from "next/link";
 import { ORGANIZATION_SCHEMA, BASE_URL } from "@/lib/schemas";
 
 export const metadata: Metadata = {
-  title: "Contact | System Design Sandbox",
+  title: "Contact | System Design Learner",
   description:
-    "Get in touch with the System Design Sandbox team. Reach out for feedback, questions, or partnership inquiries.",
+    "Get in touch with the System Design Learner team. Reach out for feedback, questions, or partnership inquiries.",
   alternates: {
-    canonical: "https://www.systemdesignsandbox.com/contact",
+    canonical: "https://www.systemdesignlearner.com/contact",
   },
   openGraph: {
-    title: "Contact | System Design Sandbox",
+    title: "Contact | System Design Learner",
     description:
-      "Get in touch with the System Design Sandbox team. Reach out for feedback, questions, or partnership inquiries.",
+      "Get in touch with the System Design Learner team. Reach out for feedback, questions, or partnership inquiries.",
     type: "website",
   },
 };
@@ -21,9 +21,9 @@ export default function ContactPage() {
   const contactSchema = {
     "@context": "https://schema.org",
     "@type": "ContactPage",
-    name: "Contact System Design Sandbox",
+    name: "Contact System Design Learner",
     description:
-      "Get in touch with the System Design Sandbox team for feedback, questions, or partnership inquiries.",
+      "Get in touch with the System Design Learner team for feedback, questions, or partnership inquiries.",
     url: `${BASE_URL}/contact`,
     mainEntity: {
       ...ORGANIZATION_SCHEMA,
@@ -83,22 +83,22 @@ export default function ContactPage() {
                   <ul className="text-muted-foreground space-y-2">
                     <li>
                       <a
-                        href="https://www.instagram.com/systemdesignsandbox/"
+                        href="https://www.instagram.com/systemdesignlearner/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-emerald-400 hover:text-emerald-300 underline decoration-emerald-500/30 underline-offset-2 transition-colors"
                       >
-                        Instagram — @systemdesignsandbox
+                        Instagram — @systemdesignlearner
                       </a>
                     </li>
                     <li>
                       <a
-                        href="https://www.linkedin.com/in/antonio-coppe"
+                        href="https://www.linkedin.com/in/arian-taj/"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-emerald-400 hover:text-emerald-300 underline decoration-emerald-500/30 underline-offset-2 transition-colors"
                       >
-                        LinkedIn — Antonio Coppe
+                        LinkedIn — Arian Taj
                       </a>
                     </li>
                   </ul>

@@ -108,27 +108,29 @@ export async function getOrCreateUserProblem(
   problemId: string,
   versionId: string
 ): Promise<UserProblemRecord> {
-  const existing = await db.query.userProblems.findFirst({
-    where: and(
-      eq(userProblems.userId, userId),
-      eq(userProblems.problemId, problemId),
-      eq(userProblems.problemVersionId, versionId)
-    ),
-  });
-
-  if (existing) return existing as unknown as UserProblemRecord;
-
-  const [created] = await db
+  const now = new Date();
+  const [userProblem] = await db
     .insert(userProblems)
     .values({
       userId,
       problemId,
       problemVersionId: versionId,
       status: "in_progress",
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [userProblems.userId, userProblems.problemId, userProblems.problemVersionId],
+      set: {
+        updatedAt: now,
+      },
     })
     .returning();
 
-  return created as unknown as UserProblemRecord;
+  if (!userProblem) {
+    throw new Error("Failed to ensure user problem record");
+  }
+
+  return userProblem as unknown as UserProblemRecord;
 }
 
 /**

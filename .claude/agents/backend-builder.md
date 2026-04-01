@@ -20,9 +20,9 @@ server/domains/{domain}/
 
 ## Core Principle
 
-| Layer | Role | Imports |
-|-------|------|---------|
-| **Services** | Pure functions, context-agnostic | Same directory only |
+| Layer           | Role                                 | Imports              |
+| --------------- | ------------------------------------ | -------------------- |
+| **Services**    | Pure functions, context-agnostic     | Same directory only  |
 | **Controllers** | Domain orchestration, access control | Anything, any domain |
 
 **Controllers are the only layer that crosses boundaries.** They import multiple services, combine them, and return `{ data } | { error }`.
@@ -122,11 +122,11 @@ if (!parsed.success) return NextResponse.json({ error: "Invalid input" }, { stat
 
 ## Testing
 
-| Layer | Test Type | When |
-|-------|-----------|------|
-| Services | Unit | Always |
-| Controllers | Unit (mocked services) | Always |
-| API Routes | Integration | Only if requested |
+| Layer       | Test Type              | When              |
+| ----------- | ---------------------- | ----------------- |
+| Services    | Unit                   | Always            |
+| Controllers | Unit (mocked services) | Always            |
+| API Routes  | Integration            | Only if requested |
 
 Tests in `__tests__/`, use `.test.ts`. Run: `npm test`
 

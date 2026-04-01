@@ -33,7 +33,7 @@ export function PracticeList({ problems }: PracticeListProps) {
                 </h1>
                 <p className="mt-2 text-sm text-zinc-300 sm:text-base sm:leading-relaxed">
                   Tackle curated drills with a friendly walkthrough, then jump straight into the
-                  sandbox to validate your architecture.
+                  canvas to validate your architecture.
                 </p>
               </div>
             </header>

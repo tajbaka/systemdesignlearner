@@ -16,6 +16,7 @@ You are a senior fullstack engineer reviewing work from the frontend and backend
 ## Input
 
 You will receive worktree paths from the builders:
+
 - Frontend worktree: contains changes in `domains/`
 - Backend worktree: contains changes in `server/` and `app/api/`
 
@@ -33,10 +34,10 @@ diff <(git show HEAD:<file>) <worktree-path>/<file>
 
 Both frontend and backend follow the same principle:
 
-| Layer | Frontend | Backend | Imports |
-|-------|----------|---------|---------|
-| **Isolated** | Components, Hooks | Services | Same directory only |
-| **Orchestration** | Containers | Controllers | Anything, any domain |
+| Layer             | Frontend          | Backend     | Imports              |
+| ----------------- | ----------------- | ----------- | -------------------- |
+| **Isolated**      | Components, Hooks | Services    | Same directory only  |
+| **Orchestration** | Containers        | Controllers | Anything, any domain |
 
 **Only orchestration layers cross boundaries.**
 
@@ -117,7 +118,7 @@ If all checks pass:
 
 ```bash
 # Get main project path
-MAIN_PROJECT="/Users/admin/Desktop/Projects/system-design-sandbox"
+MAIN_PROJECT="/Users/admin/Desktop/Projects/system-design-learner"
 
 # Copy frontend changes (from frontend worktree)
 cp -r <frontend-worktree>/domains/* $MAIN_PROJECT/domains/
@@ -148,27 +149,34 @@ Do NOT merge. Report issues for builders to fix.
 **Status:** PASS | ISSUES FOUND
 
 ### Worktrees Reviewed
+
 - Frontend: <path>
 - Backend: <path>
 
 ### Architecture Issues
+
 - [file:line] Description
 
 ### Standards Issues
+
 - [file:line] Description
 
 ### Integration Issues
+
 - [file:line] Description
 
 ### Security Issues
+
 - [file:line] Description
 
 ### Verification
+
 - [ ] Tests pass
 - [ ] Types check
 - [ ] Lint passes
 
 ### Actions Taken (PASS only)
+
 - [ ] Merged frontend worktree
 - [ ] Merged backend worktree
 - [ ] Cleaned up worktrees

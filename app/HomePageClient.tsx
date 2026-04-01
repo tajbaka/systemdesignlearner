@@ -675,12 +675,12 @@ export function HomePageClient() {
             </div>
           </div>
 
-          {/* Step 4: Design Sandbox */}
+          {/* Step 4: Design Canvas */}
           <div className="border-b border-zinc-800">
             <div className="grid lg:grid-cols-2">
               <div className="flex flex-col p-8 lg:p-12 border-r border-zinc-800">
                 <p className="mb-2 font-mono text-xs font-medium text-emerald-400">STEP 04</p>
-                <h3 className="mb-4 text-3xl font-bold tracking-tight">Design Sandbox</h3>
+                <h3 className="mb-4 text-3xl font-bold tracking-tight">Design Canvas</h3>
                 <p className="text-lg text-zinc-400 leading-relaxed mb-6">
                   Build your architecture visually with drag-and-drop components. Connect services,
                   databases, caches, and load balancers. Run simulations to validate your design
@@ -941,7 +941,8 @@ export function HomePageClient() {
                 <CardHeader>
                   <CardTitle className="text-xl">Available Now</CardTitle>
                   <CardDescription>
-                    5 guided practice scenarios with sandbox environments to validate your designs.
+                    5 guided practice scenarios with interactive canvas environments to validate
+                    your designs.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -1119,7 +1120,7 @@ export function HomePageClient() {
 
             <details className="bg-zinc-800/40 border border-zinc-700 rounded-lg p-6 group">
               <summary className="cursor-pointer text-xl font-semibold text-white list-none flex items-center justify-between">
-                Is System Design Sandbox free to use?
+                Is System Design Learner free to use?
                 <svg
                   className="w-5 h-5 text-emerald-400 transition-transform group-open:rotate-180"
                   fill="none"
@@ -1135,7 +1136,7 @@ export function HomePageClient() {
                 </svg>
               </summary>
               <p className="mt-4 text-zinc-400 leading-relaxed">
-                Yes! System Design Sandbox is completely free. We provide interactive tutorials,
+                Yes! System Design Learner is completely free. We provide interactive tutorials,
                 practice scenarios, and instant feedback at no cost. Our mission is to make
                 high-quality system design education accessible to everyone preparing for technical
                 interviews.

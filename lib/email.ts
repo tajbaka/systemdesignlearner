@@ -79,7 +79,7 @@ export async function sendFeedbackConfirmation({
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: "Thank you for your feedback! - System Design Sandbox",
+      subject: "Thank you for your feedback! - System Design Learner",
       html: emailHtml,
     });
 
@@ -113,7 +113,7 @@ export async function sendNewsletterConfirmation({ to }: SendNewsletterConfirmat
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: "Welcome to System Design Sandbox Newsletter! 🎉",
+      subject: "Welcome to System Design Learner Newsletter! 🎉",
       html: emailHtml,
     });
 
@@ -165,7 +165,7 @@ export async function sendNewProblemNotification({
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: `New Challenge: ${problemTitle} - System Design Sandbox`,
+      subject: `New Challenge: ${problemTitle} - System Design Learner`,
       html: emailHtml,
       headers: {
         "List-Unsubscribe": `<${unsubscribeUrl}>`,
@@ -217,7 +217,7 @@ export async function sendProblemReminder({
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: `Reminder: ${problemTitle} is waiting for you - System Design Sandbox`,
+      subject: `Reminder: ${problemTitle} is waiting for you - System Design Learner`,
       html: emailHtml,
       headers: {
         "List-Unsubscribe": `<${unsubscribeUrl}>`,
@@ -269,7 +269,7 @@ export async function sendProblemLastReminder({
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: [to],
-      subject: `Last chance: ${problemTitle} - System Design Sandbox`,
+      subject: `Last chance: ${problemTitle} - System Design Learner`,
       html: emailHtml,
       headers: {
         "List-Unsubscribe": `<${unsubscribeUrl}>`,

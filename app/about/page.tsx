@@ -3,16 +3,16 @@ import Link from "next/link";
 import { ORGANIZATION_SCHEMA, BASE_URL } from "@/lib/schemas";
 
 export const metadata: Metadata = {
-  title: "About | System Design Sandbox",
+  title: "About | System Design Learner",
   description:
-    "Learn about System Design Sandbox — an interactive platform for practicing system design interviews with AI-powered feedback.",
+    "Learn about System Design Learner — an interactive platform for practicing system design interviews with AI-powered feedback.",
   alternates: {
-    canonical: "https://www.systemdesignsandbox.com/about",
+    canonical: "https://www.systemdesignlearner.com/about",
   },
   openGraph: {
-    title: "About | System Design Sandbox",
+    title: "About | System Design Learner",
     description:
-      "Learn about System Design Sandbox — an interactive platform for practicing system design interviews with AI-powered feedback.",
+      "Learn about System Design Learner — an interactive platform for practicing system design interviews with AI-powered feedback.",
     type: "website",
   },
 };
@@ -21,9 +21,9 @@ export default function AboutPage() {
   const aboutSchema = {
     "@context": "https://schema.org",
     "@type": "AboutPage",
-    name: "About System Design Sandbox",
+    name: "About System Design Learner",
     description:
-      "Learn about System Design Sandbox — an interactive platform for practicing system design interviews with AI-powered feedback.",
+      "Learn about System Design Learner — an interactive platform for practicing system design interviews with AI-powered feedback.",
     url: `${BASE_URL}/about`,
     mainEntity: {
       ...ORGANIZATION_SCHEMA,
@@ -46,7 +46,7 @@ export default function AboutPage() {
             &larr; Back to Home
           </Link>
 
-          <h1 className="text-4xl font-bold mb-2">About System Design Sandbox</h1>
+          <h1 className="text-4xl font-bold mb-2">About System Design Learner</h1>
           <p className="text-muted-foreground mb-8">
             Interactive system design interview practice for engineers
           </p>
@@ -55,7 +55,7 @@ export default function AboutPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">Our Mission</h2>
               <p className="text-muted-foreground leading-relaxed">
-                System Design Sandbox exists to make system design interview preparation accessible,
+                System Design Learner exists to make system design interview preparation accessible,
                 interactive, and effective. We believe the best way to learn system design is by
                 doing it — not just reading about it.
               </p>
@@ -94,7 +94,7 @@ export default function AboutPage() {
             <section>
               <h2 className="text-2xl font-semibold mb-4">Who Built This</h2>
               <p className="text-muted-foreground leading-relaxed">
-                System Design Sandbox was created by a software engineer who saw firsthand how
+                System Design Learner was created by a software engineer who saw firsthand how
                 difficult it is to practice system design without a structured environment. After
                 going through the interview process and finding no equivalent of LeetCode for system
                 design, the decision was clear: build one.

@@ -1,6 +1,7 @@
 import { track } from "@/lib/analytics";
 import { STEPS } from "../../constants";
 import practiceActions from "../../actions";
+import { reportActionError } from "./errorHandling";
 import type { NonFunctionalDeps, StepHandler } from "./types";
 
 export function createNonFunctionalHandler(deps: NonFunctionalDeps): StepHandler {
@@ -57,16 +58,14 @@ export function createNonFunctionalHandler(deps: NonFunctionalDeps): StepHandler
         track("practice_non_functional_completed", { slug, score: evaluationResponse.score });
         setModalOpen(true);
       } catch (error) {
-        console.error("Failed to save/evaluate non-functional requirements:", error);
-        track("practice_evaluation_error", {
+        reportActionError({
           slug,
           step: "non_functional",
-          error: error instanceof Error ? error.message : "Unknown error",
+          error,
+          message: "Failed to save/evaluate non-functional requirements:",
+          setActionError,
         });
         setIsActionLoading(false);
-        setActionError(
-          error instanceof Error ? error.message : "Something went wrong. Please try again."
-        );
       }
       return;
     }

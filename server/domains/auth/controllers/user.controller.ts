@@ -15,6 +15,13 @@ export function createUserController(services: Services) {
     },
 
     // ========================================================================
+    // Initialize Session
+    // ========================================================================
+    async initializeSession() {
+      return services.auth.profile.getOrCreate();
+    },
+
+    // ========================================================================
     // Get Session
     // ========================================================================
     async getSession(userId: string, slug: string) {

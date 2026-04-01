@@ -48,11 +48,11 @@ So where’s the equivalent for **System Design**?
 
 Sure, you can learn the fundamentals (CAP theorem, replication, queues, caching) or watch YouTube videos. But where do you actually **practice** system design problems you've never seen before, without being hand-held by a tutorial that ruins the challenge?
 
-### Enter: SystemDesignSandbox
+### Enter: systemdesignlearner
 
 You can learn the concepts anywhere; the fundamentals are the same across books and courses. But **only** this tool lets you _apply_ that knowledge in a structured, repeatable way.
 
-With **SystemDesignSandbox**, you can:
+With **systemdesignlearner**, you can:
 
 - Get a fresh system design prompt
 - Walk through each stage of your design

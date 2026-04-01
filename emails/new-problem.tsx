@@ -38,7 +38,7 @@ export const NewProblemEmail = ({
 }: NewProblemEmailProps) => {
   const previewText = `New Challenge: ${problemTitle}`;
   const difficulty = difficultyColors[problemDifficulty];
-  const practiceUrl = `https://www.systemdesignsandbox.com/practice/${problemSlug}`;
+  const practiceUrl = `https://www.systemdesignlearner.com/practice/${problemSlug}`;
 
   return (
     <Html>
@@ -82,7 +82,7 @@ export const NewProblemEmail = ({
       <Body style={main}>
         <Container style={container} className="container">
           <Section style={logoContainer}>
-            <Heading style={h1}>System Design Sandbox</Heading>
+            <Heading style={h1}>System Design Learner</Heading>
           </Section>
 
           <Heading style={h2} className="heading">
@@ -90,7 +90,7 @@ export const NewProblemEmail = ({
           </Heading>
 
           <Text style={text} className="text">
-            A new system design challenge has just been added to System Design Sandbox. Put your
+            A new system design challenge has just been added to System Design Learner. Put your
             skills to the test!
           </Text>
 
@@ -120,14 +120,14 @@ export const NewProblemEmail = ({
           <Text style={footer} className="text">
             Best regards,
             <br />
-            The System Design Sandbox Team
+            The System Design Learner Team
           </Text>
 
           <Section style={unsubscribeContainer}>
             <Text style={unsubscribeText}>
               You&rsquo;re receiving this email because you have an account at{" "}
-              <Link style={link} href="https://www.systemdesignsandbox.com/">
-                systemdesignsandbox.com
+              <Link style={link} href="https://www.systemdesignlearner.com/">
+                systemdesignlearner.com
               </Link>{" "}
               with the email address: {recipientEmail}
             </Text>

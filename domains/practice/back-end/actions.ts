@@ -20,10 +20,7 @@ type StepType = "functional" | "nonFunctional" | "api" | "highLevelDesign";
 // ============================================================================
 
 const functional = {
-  async save(
-    slug: string,
-    data: FunctionalRequirements
-  ): Promise<SaveStepResponse> {
+  async save(slug: string, data: FunctionalRequirements): Promise<SaveStepResponse> {
     const response = await fetch(`/api/v2/practice/${slug}/functional`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -59,10 +56,7 @@ const functional = {
 // ============================================================================
 
 const nonFunctional = {
-  async save(
-    slug: string,
-    data: NonFunctionalRequirements
-  ): Promise<SaveStepResponse> {
+  async save(slug: string, data: NonFunctionalRequirements): Promise<SaveStepResponse> {
     const response = await fetch(`/api/v2/practice/${slug}/nonFunctional`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -98,10 +92,7 @@ const nonFunctional = {
 // ============================================================================
 
 const api = {
-  async save(
-    slug: string,
-    endpoints: EndpointItem[]
-  ): Promise<SaveStepResponse> {
+  async save(slug: string, endpoints: EndpointItem[]): Promise<SaveStepResponse> {
     const response = await fetch(`/api/v2/practice/${slug}/api`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -109,7 +100,8 @@ const api = {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to save API endpoints");
+      const error = await response.json().catch(() => ({}) as { error?: string });
+      throw new Error(error.error || "Failed to save API endpoints");
     }
 
     return response.json();
@@ -152,10 +144,7 @@ const api = {
 // ============================================================================
 
 const highLevelDesign = {
-  async save(
-    slug: string,
-    design: PracticeDesignState
-  ): Promise<SaveStepResponse> {
+  async save(slug: string, design: PracticeDesignState): Promise<SaveStepResponse> {
     const response = await fetch(`/api/v2/practice/${slug}/highLevelDesign`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -224,7 +213,11 @@ const score = {
 // ============================================================================
 
 // Keys that map step types to their problem state properties (only those with submission)
-type StepDataKey = "functionalRequirements" | "nonFunctionalRequirements" | "apiDesign" | "highLevelDesign";
+type StepDataKey =
+  | "functionalRequirements"
+  | "nonFunctionalRequirements"
+  | "apiDesign"
+  | "highLevelDesign";
 const STEP_KEYS: Record<StepType, StepDataKey> = {
   functional: "functionalRequirements",
   nonFunctional: "nonFunctionalRequirements",

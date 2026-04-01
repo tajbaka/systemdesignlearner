@@ -1,6 +1,6 @@
 {
-  "name": "System Design Sandbox: Interactive Interview Prep",
-  "short_name": "SD Sandbox",
+  "name": "System Design Learner: Interactive Interview Prep",
+  "short_name": "SD Learner",
   "description": "Build, test, and optimize real-world system architectures. Learn by doing with interactive simulations of production scenarios.",
   "start_url": "/",
   "scope": "/",

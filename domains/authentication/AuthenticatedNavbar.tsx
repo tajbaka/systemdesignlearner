@@ -18,7 +18,7 @@ interface AuthenticatedNavbarProps {
 
 const defaultNavbarContent: NavbarContent = {
   logo: {
-    full: "System Design Sandbox",
+    full: "System Design Learner",
     short: "SDS",
     href: "/",
   },

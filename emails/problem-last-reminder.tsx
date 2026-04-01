@@ -34,7 +34,7 @@ export const ProblemLastReminderEmail = ({
 }: ProblemLastReminderEmailProps) => {
   const previewText = `Final reminder: ${problemTitle} is waiting for you`;
   const difficulty = difficultyColors[problemDifficulty];
-  const practiceUrl = `https://www.systemdesignsandbox.com/practice/${problemSlug}`;
+  const practiceUrl = `https://www.systemdesignlearner.com/practice/${problemSlug}`;
 
   return (
     <Html>
@@ -71,7 +71,7 @@ export const ProblemLastReminderEmail = ({
       <Body style={main}>
         <Container style={container} className="container">
           <Section style={logoContainer}>
-            <Heading style={h1}>System Design Sandbox</Heading>
+            <Heading style={h1}>System Design Learner</Heading>
           </Section>
 
           <Heading style={h2} className="heading">
@@ -111,14 +111,14 @@ export const ProblemLastReminderEmail = ({
           <Text style={footer} className="text">
             Thanks for reading,
             <br />
-            The System Design Sandbox Team
+            The System Design Learner Team
           </Text>
 
           <Section style={unsubscribeContainer}>
             <Text style={unsubscribeText}>
               You&rsquo;re receiving this email because you have an account at{" "}
-              <Link style={link} href="https://www.systemdesignsandbox.com/">
-                systemdesignsandbox.com
+              <Link style={link} href="https://www.systemdesignlearner.com/">
+                systemdesignlearner.com
               </Link>{" "}
               with the email address: {recipientEmail}
             </Text>

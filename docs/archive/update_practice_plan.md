@@ -6,9 +6,9 @@
 
 ## 0. Objectives & Guardrails
 
-- Ship a polished walkthrough for URL Shortener that captures functional + non-functional requirements, locks in the API, pushes users into the sandbox, and culminates in save/share.
+- Ship a polished walkthrough for URL Shortener that captures functional + non-functional requirements, locks in the API, pushes users into the canvas, and culminates in save/share.
 - Avoid bespoke UI per scenario. Introduce a step-driven layout shell that reads its configuration (labels, prompts, component reuse) from scenario metadata.
-- Keep the mobile sandbox untouched; only wrap it with navigation and panel filters.
+- Keep the mobile canvas untouched; only wrap it with navigation and panel filters.
 - Preserve fast iteration: no new backend work; wire auth gate to existing stubs.
 
 ---
@@ -25,8 +25,8 @@
   - `currentStep` (0–5).
   - `formData` keyed by step (reuse existing `ReqForm` state structure where possible).
   - `isAuthed` / `authSkipped` flags gate Step 5 → Step 6.
-  - `paletteFilters` derived from requirements answers (used by sandbox).
-- **Component reuse:** lean on existing cards, nav, sandbox modules. Only build thin wrappers where missing.
+  - `paletteFilters` derived from requirements answers (used by canvas).
+- **Component reuse:** lean on existing cards, nav, canvas modules. Only build thin wrappers where missing.
 
 ---
 
@@ -73,10 +73,10 @@
   - Seed with `POST /shorten`, `GET /:slug` but allow freeform additions.
   - Keep speech button accessible (ARIA) and reuse the same component from Steps 1–2.
 
-### Step 4 — High-Level Design (Sandbox)
+### Step 4 — High-Level Design (Canvas)
 
 - **Header:** `4 / 6`, label `High-Level Design`.
-- **Content:** embed existing mobile sandbox with:
+- **Content:** embed existing mobile canvas with:
   - Hidden top nav (wrap or prop).
   - Visible bottom toolbar, `+` button opens component palette.
   - Auto-center on load retouched (keep behavior).
@@ -85,7 +85,7 @@
 - **Footer:** `Back` | `Next` | `+` (button triggers palette open).
 - **Implementation notes:**
   - No redesign. Pass down filters via props.
-  - Ensure sandbox respects speech icon absence (not used here).
+  - Ensure canvas respects speech icon absence (not used here).
   - Persist board state in scenario context to feed scoring later.
 
 ### Step 5 — Auth Gate
@@ -108,10 +108,10 @@
 - **Content:** card with:
   - Score badge (reuse PASS badge styling).
   - Pass/fail or suggestions summary.
-  - Buttons: `Improve design` (returns to Sandbox step 4), `Share badge`.
+  - Buttons: `Improve design` (returns to Canvas step 4), `Share badge`.
   - Social row with LinkedIn share CTA.
   - Text `"Continue practice tomorrow for new systems."`
-- **Footer:** Buttons `Back to Sandbox` (step 4) and `Home`.
+- **Footer:** Buttons `Back to Canvas` (step 4) and `Home`.
 - **Implementation notes:**
   - Reuse existing review screen components—strip down to essentials.
   - `Share badge` triggers existing share flow.
@@ -126,7 +126,7 @@
 | 1    | `MobileLayoutWrapper`, card input container, bottom nav (single button) |
 | 2    | `ReqForm.tsx` row pattern, card container, bottom nav                   |
 | 3    | `BottomSheet.tsx`, scenario accordion styles, shared form inputs        |
-| 4    | Entire mobile sandbox module, palette bottom sheet                      |
+| 4    | Entire mobile canvas module, palette bottom sheet                       |
 | 5    | Landing `Button` components, `EmailCapture` styling                     |
 | 6    | Review/Score components, PASS badge visuals                             |
 
@@ -140,7 +140,7 @@ Speech-to-text icon only appears on Steps 1–2; hide elsewhere.
 - Step config defined as array:
   ```ts
   type StepConfig = {
-    id: "functional" | "nonFunctional" | "api" | "sandbox" | "auth" | "score";
+    id: "functional" | "nonFunctional" | "api" | "canvas" | "auth" | "score";
     label: string;
     component: React.ComponentType;
     nav: { back?: boolean; next?: boolean; extra?: "palette" | "home" };
@@ -160,7 +160,7 @@ Speech-to-text icon only appears on Steps 1–2; hide elsewhere.
 1. **Scaffold Layout Shell** — create provider, stepper component, footer nav states.
 2. **Steps 1–2** — port inputs into card wrapper, add speech icon placeholder (wire later).
 3. **Step 3** — build auto-suggest list + bottom sheet editor; ensure design tokens consistent.
-4. **Step 4 Integration** — embed sandbox, implement palette filtering (map requirements to component categories).
+4. **Step 4 Integration** — embed canvas, implement palette filtering (map requirements to component categories).
 5. **Steps 5–6** — hook into existing auth + scoring; confirm share button works.
 6. **Polish & QA** — mobile + desktop check, keyboard focus order, persistence.
 
@@ -171,7 +171,7 @@ Speech-to-text icon only appears on Steps 1–2; hide elsewhere.
 - Manual walkthrough on `/practice/url-shortener` covering:
   - Fresh user (all steps sequential, skip auth).
   - Returning authed user (auth gate auto-unlocked).
-  - Sandbox state persists when jumping back from Step 6 → Step 4.
+  - Canvas state persists when jumping back from Step 6 → Step 4.
 - Responsive checks for 320px width and desktop.
 - Accessibility: step indicator announced, buttons labelled, mic icon has `aria-pressed`.
 - Analytics hooks (if available): track step completions, share clicks.

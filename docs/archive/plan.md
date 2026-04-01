@@ -1,6 +1,6 @@
-# System Design Sandbox — Product & Implementation Plan (v2)
+# System Design Learner — Product & Implementation Plan (v2)
 
-> A complete roadmap to evolve the sandbox into a lovable, NeetCode-style platform with guided practice tracks, gamified feedback, shareability, analytics, and lightweight monetization — all bootstrapped without a backend first.
+> A complete roadmap to evolve the canvas into a lovable, NeetCode-style platform with guided practice tracks, gamified feedback, shareability, analytics, and lightweight monetization — all bootstrapped without a backend first.
 
 ---
 
@@ -244,7 +244,7 @@ Each ≈ 250 words + diagram, linked from hints.
 
 ---
 
-## 14) Sandbox UX Polish
+## 14) Canvas UX Polish
 
 **Goal:** Lower cognitive load.
 
@@ -298,7 +298,7 @@ Team leaderboard (later via Supabase).
 | K     | Auth / User State       | 2    | AuthContext.tsx, supabase.ts             |
 | L     | Leaderboard             | 1    | useLeaderboard.ts, LeaderboardCard.tsx   |
 | M     | Docs Primer             | 1-2  | /docs/\*.mdx                             |
-| N     | Sandbox UX Polish       | 1    | Simulator.tsx, ResultPanel.tsx           |
+| N     | Canvas UX Polish        | 1    | Simulator.tsx, ResultPanel.tsx           |
 | O     | PWA & Offline           | 1-2  | manifest.json, sw.js                     |
 | P     | Teams / Enterprise      | 2-3  | components/TeamShare.tsx, supabase.ts    |
 

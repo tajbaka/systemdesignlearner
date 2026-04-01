@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { AuthenticatedNavbar } from "@/domains/authentication/AuthenticatedNavbar";
 import { Footer } from "@/components/Footer";
+import { isRecoverableAssetError, shouldIgnoreClientError } from "@/lib/client-errors";
 
 type ErrorPageProps = {
   error: Error & { digest?: string };
@@ -13,16 +14,17 @@ type ErrorPageProps = {
 };
 
 export function ErrorPage({ error, reset, homeHref = "/" }: ErrorPageProps) {
-  const isChunkError =
-    error.name === "ChunkLoadError" ||
-    error.message?.includes("ChunkLoadError") ||
-    error.message?.includes("Loading chunk");
+  const isRecoverableError = isRecoverableAssetError(error);
 
   useEffect(() => {
-    console.error("ErrorPage:", error);
+    if (!shouldIgnoreClientError(error)) {
+      console.error("ErrorPage:", error);
+    }
   }, [error]);
 
   const handleReload = () => {
+    sessionStorage.removeItem("asset_retry");
+    sessionStorage.removeItem("clerk_retry");
     sessionStorage.removeItem("chunk_retry");
     window.location.reload();
   };
@@ -32,15 +34,16 @@ export function ErrorPage({ error, reset, homeHref = "/" }: ErrorPageProps) {
       <AuthenticatedNavbar />
       <main className="mx-auto flex w-full max-w-screen-xl flex-col gap-8 px-4 py-8 sm:px-6 md:gap-10 md:py-12 lg:px-8">
         <Card
-          className={`bg-zinc-900 ${isChunkError ? "border-amber-500/50" : "border-red-500/50"}`}
+          className={`bg-zinc-900 ${isRecoverableError ? "border-amber-500/50" : "border-red-500/50"}`}
         >
           <CardContent className="p-6 sm:p-8">
             <div className="text-center space-y-4">
-              {isChunkError ? (
+              {isRecoverableError ? (
                 <>
-                  <CardTitle className="text-2xl text-amber-400">Page update available</CardTitle>
+                  <CardTitle className="text-2xl text-amber-400">Reload required</CardTitle>
                   <CardDescription className="text-zinc-400">
-                    A newer version of this page is available. Reload to get the latest version.
+                    A stale asset or third-party script failed to load. Reload to recover with a
+                    fresh copy of the page.
                   </CardDescription>
                   <div className="flex gap-4 justify-center mt-6">
                     <Button onClick={handleReload} variant="default" size="lg">

@@ -2,11 +2,11 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | System Design Sandbox",
+  title: "Terms of Service | System Design Learner",
   description:
-    "Terms of Service for System Design Sandbox - Rules and guidelines for using our platform.",
+    "Terms of Service for System Design Learner - Rules and guidelines for using our platform.",
   alternates: {
-    canonical: "https://www.systemdesignsandbox.com/terms",
+    canonical: "https://www.systemdesignlearner.com/terms",
   },
 };
 
@@ -28,7 +28,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Agreement to Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
-              By accessing or using System Design Sandbox (&quot;the Service&quot;), you agree to be
+              By accessing or using System Design Learner (&quot;the Service&quot;), you agree to be
               bound by these Terms of Service (&quot;Terms&quot;). If you disagree with any part of
               these terms, you do not have permission to access the Service.
             </p>
@@ -37,7 +37,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
             <p className="text-muted-foreground leading-relaxed">
-              System Design Sandbox is an interactive learning platform that provides hands-on
+              System Design Learner is an interactive learning platform that provides hands-on
               practice with system design concepts through visual simulations and real-world
               scenarios. The Service includes practice exercises, design tools, and educational
               content.
@@ -95,8 +95,8 @@ export default function TermsPage() {
             <h2 className="text-2xl font-semibold mb-4">5. Intellectual Property</h2>
             <h3 className="text-xl font-semibold mb-3 mt-6">5.1 Our Content</h3>
             <p className="text-muted-foreground leading-relaxed">
-              The Service and its original content, features, and functionality are owned by System
-              Design Sandbox and are protected by international copyright, trademark, and other
+              The Service and its original content, features, and functionality are owned by System Design Learner
+              and are protected by international copyright, trademark, and other
               intellectual property laws.
             </p>
 
@@ -175,7 +175,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">10. Limitation of Liability</h2>
             <p className="text-muted-foreground leading-relaxed">
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, SYSTEM DESIGN SANDBOX SHALL NOT BE LIABLE FOR
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, SYSTEM DESIGN LEARNER SHALL NOT BE LIABLE FOR
               ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF
               PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA,
               USE, GOODWILL, OR OTHER INTANGIBLE LOSSES RESULTING FROM:
@@ -191,7 +191,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">11. Indemnification</h2>
             <p className="text-muted-foreground leading-relaxed">
-              You agree to indemnify, defend, and hold harmless System Design Sandbox and its
+              You agree to indemnify, defend, and hold harmless System Design Learner and its
               officers, directors, employees, and agents from any claims, damages, losses,
               liabilities, and expenses (including legal fees) arising from your use of the Service
               or violation of these Terms.
@@ -234,10 +234,10 @@ export default function TermsPage() {
             <p className="text-muted-foreground leading-relaxed">
               If you have any questions about these Terms, please contact us at:{" "}
               <a
-                href="mailto:legal@systemdesignsandbox.com"
+                href="mailto:legal@systemdesignlearner.com"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                legal@systemdesignsandbox.com
+                legal@systemdesignlearner.com
               </a>
             </p>
           </section>

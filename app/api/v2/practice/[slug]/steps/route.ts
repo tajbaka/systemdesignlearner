@@ -145,7 +145,10 @@ export async function POST(
       return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    logger.info("POST /api/v2/practice/[slug]/steps - Success", { slug, synced: result.data.synced });
+    logger.info("POST /api/v2/practice/[slug]/steps - Success", {
+      slug,
+      synced: result.data.synced,
+    });
     return NextResponse.json(result.data);
   } catch (error) {
     logger.error("POST /api/v2/practice/[slug]/steps - Error:", error);

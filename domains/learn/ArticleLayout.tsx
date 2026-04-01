@@ -24,7 +24,7 @@ interface ArticleLayoutProps {
 export function ArticleLayout({
   title,
   subtitle,
-  author = "System Design Sandbox",
+  author = "System Design Learner",
   date,
   readTime,
   description,

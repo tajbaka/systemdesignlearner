@@ -10,10 +10,6 @@ import type { StepType } from "@/server/domains/practice/services/user-problem";
 
 export const runtime = "nodejs";
 
-// ============================================================================
-// Request Schema
-// ============================================================================
-
 const EvaluateRequestSchema = z.object({
   input: z.unknown(),
   previousExtractions: z
@@ -25,19 +21,13 @@ const EvaluateRequestSchema = z.object({
   changedEndpointIds: z.array(z.string()).optional(),
 });
 
-// ============================================================================
-// POST /api/v2/practice/[slug]/[step]/evaluate
-// ============================================================================
-
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string; step: string }> }
 ) {
   try {
-    // 1. Authenticate (optional - allow anonymous evaluations)
     const profile = await userController.getProfile();
 
-    // 2. Validate params
     const { slug, step } = await params;
     logger.info("POST /api/v2/practice/[slug]/[step]/evaluate", { slug, step });
 
@@ -45,7 +35,6 @@ export async function POST(
       return NextResponse.json({ error: "Invalid step type", details: { step } }, { status: 400 });
     }
 
-    // 3. Parse request body
     const body = await request.json();
     const parseResult = EvaluateRequestSchema.safeParse(body);
     if (!parseResult.success) {
@@ -57,7 +46,6 @@ export async function POST(
 
     const { input, previousExtractions, changedEndpointIds } = parseResult.data;
 
-    // 4. Call controller (pass null userId for anonymous users)
     const result = await practiceController.evaluateStep(
       profile?.id ?? null,
       profile?.email ?? undefined,
@@ -68,7 +56,6 @@ export async function POST(
       changedEndpointIds
     );
 
-    // 5. Handle result
     if ("error" in result) {
       switch (result.error) {
         case "PROBLEM_NOT_FOUND":

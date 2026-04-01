@@ -1,5 +1,3 @@
-Antonio
-
 High Priority:
 System does not correctly pickup finished problems as completed the next day
 even with correct solution it does not let me go from step 1 to 2 if not made any changes (pass from yesterday)

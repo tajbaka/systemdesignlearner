@@ -8,13 +8,10 @@
  */
 
 /** Canonical production URL — use for JSON-LD `url` values and schema references. */
-export const BASE_URL = "https://www.systemdesignsandbox.com";
+export const BASE_URL = "https://www.systemdesignlearner.com";
 
 /** Social profile URLs referenced in sameAs and contact pages. */
-export const SOCIAL_LINKS = [
-  "https://www.instagram.com/systemdesignsandbox/",
-  "https://www.linkedin.com/in/antonio-coppe",
-] as const;
+export const SOCIAL_LINKS = ["https://www.instagram.com/systemdesignlearner/"] as const;
 
 /**
  * Schema.org Organization — the single source of truth used by every page
@@ -22,7 +19,7 @@ export const SOCIAL_LINKS = [
  */
 export const ORGANIZATION_SCHEMA = {
   "@type": "Organization" as const,
-  name: "System Design Sandbox",
+  name: "System Design Learner",
   url: BASE_URL,
   logo: `${BASE_URL}/logo-512x512.png`,
   description: "Interactive system design interview practice platform with AI-powered feedback",
@@ -32,7 +29,7 @@ export const ORGANIZATION_SCHEMA = {
 
 export const AUTHOR_SCHEMA = {
   "@type": "Person" as const,
-  name: "Antonio Coppe",
-  url: "https://www.linkedin.com/in/antonio-coppe",
+  name: "Arian Taj",
+  url: "https://www.linkedin.com/in/arian-taj/",
   jobTitle: "Software Engineer",
 } as const;

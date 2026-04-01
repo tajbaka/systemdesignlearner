@@ -1,9 +1,12 @@
 "use client";
 
 import NextError from "next/error";
+import { shouldIgnoreClientError } from "@/lib/client-errors";
 
 export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
-  console.error("Global error:", error);
+  if (!shouldIgnoreClientError(error)) {
+    console.error("Global error:", error);
+  }
 
   return (
     <html>

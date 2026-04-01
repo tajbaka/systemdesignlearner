@@ -23,11 +23,11 @@ User-agent: Amazonbot
 Allow: /
 
 # LLM context files
-# https://www.systemdesignsandbox.com/llms.txt
-# https://www.systemdesignsandbox.com/llms-full.txt
+# https://www.systemdesignlearner.com/llms.txt
+# https://www.systemdesignlearner.com/llms-full.txt
 
 # Host
-Host: https://www.systemdesignsandbox.com
+Host: https://www.systemdesignlearner.com
 
 # Sitemaps
-Sitemap: https://www.systemdesignsandbox.com/sitemap.xml
+Sitemap: https://www.systemdesignlearner.com/sitemap.xml

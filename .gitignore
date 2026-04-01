@@ -52,6 +52,7 @@ next-env.d.ts
 
 # Analytics exports
 /Google-Search-Console/
+/posthog-backup/
 
 # Backup files
 *.backup
@@ -59,3 +60,7 @@ next-env.d.ts
 # Supabase temp files
 supabase/.temp/
 test-payloads/
+
+*.dump
+
+*.planning

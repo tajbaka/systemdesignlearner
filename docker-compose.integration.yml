@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    ports:
+      - "54329:5432"
+    environment:
+      POSTGRES_DB: system_design_learner_integration
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d system_design_learner_integration"]
+      interval: 2s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - integration-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  integration-postgres-data:

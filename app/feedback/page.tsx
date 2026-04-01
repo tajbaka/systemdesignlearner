@@ -97,10 +97,10 @@ export default function FeedbackPage() {
           <p className="text-sm text-zinc-400">
             Prefer email? Reach us at{" "}
             <a
-              href="mailto:support@systemdesignsandbox.com"
+              href="mailto:support@systemdesignlearner.com"
               className="text-emerald-400 hover:text-emerald-300 underline"
             >
-              support@systemdesignsandbox.com
+              support@systemdesignlearner.com
             </a>
           </p>
         </div>

@@ -2,6 +2,7 @@ import { track } from "@/lib/analytics";
 import { STEPS } from "../../constants";
 import { stepStateStore } from "../../store/store";
 import practiceActions from "../../actions";
+import { reportActionError } from "./errorHandling";
 import type { HighLevelDesignDeps, StepHandler, PracticeDesignState } from "./types";
 
 export function createHighLevelDesignHandler(deps: HighLevelDesignDeps): StepHandler {
@@ -67,16 +68,14 @@ export function createHighLevelDesignHandler(deps: HighLevelDesignDeps): StepHan
         track("practice_high_level_design_completed", { slug, score: evaluationResponse.score });
         setModalOpen(true);
       } catch (error) {
-        console.error("Failed to save/evaluate high-level design:", error);
-        track("practice_evaluation_error", {
+        reportActionError({
           slug,
           step: "high_level_design",
-          error: error instanceof Error ? error.message : "Unknown error",
+          error,
+          message: "Failed to save/evaluate high-level design:",
+          setActionError,
         });
         setIsActionLoading(false);
-        setActionError(
-          error instanceof Error ? error.message : "Something went wrong. Please try again."
-        );
       }
       return;
     }

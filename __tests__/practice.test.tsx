@@ -20,7 +20,7 @@
 //         functional: true,
 //         nonFunctional: true,
 //         api: true,
-//         sandbox: false,
+//         canvas: false,
 //         score: false,
 //       },
 //       updatedAt: Date.now(),

@@ -74,9 +74,7 @@
         "profiles_clerk_user_id_unique": {
           "name": "profiles_clerk_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "clerk_user_id"
-          ]
+          "columns": ["clerk_user_id"]
         }
       },
       "policies": {},
@@ -175,12 +173,8 @@
           "name": "problem_steps_problem_id_problems_id_fk",
           "tableFrom": "problem_steps",
           "tableTo": "problems",
-          "columnsFrom": [
-            "problem_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["problem_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -295,12 +289,8 @@
           "name": "problem_versions_problem_id_problems_id_fk",
           "tableFrom": "problem_versions",
           "tableTo": "problems",
-          "columnsFrom": [
-            "problem_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["problem_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -357,9 +347,7 @@
         "problems_slug_unique": {
           "name": "problems_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -439,12 +427,8 @@
           "name": "user_problem_steps_user_problem_id_user_problems_id_fk",
           "tableFrom": "user_problem_steps",
           "tableTo": "user_problems",
-          "columnsFrom": [
-            "user_problem_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_problem_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -547,12 +531,8 @@
           "name": "user_problems_user_id_profiles_id_fk",
           "tableFrom": "user_problems",
           "tableTo": "profiles",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -560,12 +540,8 @@
           "name": "user_problems_problem_id_problems_id_fk",
           "tableFrom": "user_problems",
           "tableTo": "problems",
-          "columnsFrom": [
-            "problem_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["problem_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -573,12 +549,8 @@
           "name": "user_problems_problem_version_id_problem_versions_id_fk",
           "tableFrom": "user_problems",
           "tableTo": "problem_versions",
-          "columnsFrom": [
-            "problem_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["problem_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -594,45 +566,27 @@
     "public.difficulty": {
       "name": "difficulty",
       "schema": "public",
-      "values": [
-        "easy",
-        "medium",
-        "hard"
-      ]
+      "values": ["easy", "medium", "hard"]
     },
     "public.problem_category": {
       "name": "problem_category",
       "schema": "public",
-      "values": [
-        "backend",
-        "frontend"
-      ]
+      "values": ["backend", "frontend"]
     },
     "public.problem_step": {
       "name": "problem_step",
       "schema": "public",
-      "values": [
-        "functional",
-        "nonFunctional",
-        "api",
-        "highLevelDesign"
-      ]
+      "values": ["functional", "nonFunctional", "api", "highLevelDesign"]
     },
     "public.user_problem_status": {
       "name": "user_problem_status",
       "schema": "public",
-      "values": [
-        "in_progress",
-        "completed"
-      ]
+      "values": ["in_progress", "completed"]
     },
     "public.user_problem_step_status": {
       "name": "user_problem_step_status",
       "schema": "public",
-      "values": [
-        "in_progress",
-        "completed"
-      ]
+      "values": ["in_progress", "completed"]
     }
   },
   "schemas": {},

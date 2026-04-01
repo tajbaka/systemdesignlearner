@@ -88,10 +88,10 @@ const nextConfig: NextConfig = {
         has: [
           {
             type: "host",
-            value: "systemdesignsandbox.com",
+            value: "systemdesignlearner.com",
           },
         ],
-        destination: "https://www.systemdesignsandbox.com/:path*",
+        destination: "https://www.systemdesignlearner.com/:path*",
         permanent: true,
       },
       // Clean up ghost URLs that Google has crawled as 404

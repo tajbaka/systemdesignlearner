@@ -1,6 +1,7 @@
 import { track } from "@/lib/analytics";
 import { STEPS } from "../../constants";
 import practiceActions from "../../actions";
+import { reportActionError } from "./errorHandling";
 import type { FunctionalDeps, StepHandler } from "./types";
 
 export function createFunctionalHandler(deps: FunctionalDeps): StepHandler {
@@ -57,16 +58,14 @@ export function createFunctionalHandler(deps: FunctionalDeps): StepHandler {
         track("practice_functional_completed", { slug, score: evaluationResponse.score });
         setModalOpen(true);
       } catch (error) {
-        console.error("Failed to save/evaluate functional requirements:", error);
-        track("practice_evaluation_error", {
+        reportActionError({
           slug,
           step: "functional",
-          error: error instanceof Error ? error.message : "Unknown error",
+          error,
+          message: "Failed to save/evaluate functional requirements:",
+          setActionError,
         });
         setIsActionLoading(false);
-        setActionError(
-          error instanceof Error ? error.message : "Something went wrong. Please try again."
-        );
       }
       return;
     }

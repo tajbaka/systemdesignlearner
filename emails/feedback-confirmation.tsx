@@ -64,7 +64,7 @@ export const FeedbackConfirmationEmail = ({
       <Body style={main}>
         <Container style={container} className="container">
           <Section style={logoContainer}>
-            <Heading style={h1}>System Design Sandbox</Heading>
+            <Heading style={h1}>System Design Learner</Heading>
           </Section>
 
           <Heading style={h2} className="heading">
@@ -86,25 +86,25 @@ export const FeedbackConfirmationEmail = ({
           </Section>
 
           <Text style={text} className="text">
-            Our team reviews all feedback carefully and uses it to improve System Design Sandbox. If
+            Our team reviews all feedback carefully and uses it to improve System Design Learner. If
             you&rsquo;ve opted in to be contacted, we may reach out to you for follow-up questions
             or clarification.
           </Text>
 
           <Section style={buttonContainer}>
-            <Link style={button} className="button" href="https://www.systemdesignsandbox.com/">
-              Return to System Design Sandbox
+            <Link style={button} className="button" href="https://www.systemdesignlearner.com/">
+              Return to System Design Learner
             </Link>
           </Section>
 
           <Text style={footer} className="text">
             Best regards,
             <br />
-            The System Design Sandbox Team
+            The System Design Learner Team
           </Text>
 
           <Text style={footerNote}>
-            This email was sent because you submitted feedback on System Design Sandbox. If you have
+            This email was sent because you submitted feedback on System Design Learner. If you have
             questions, feel free to reply to this email.
           </Text>
         </Container>

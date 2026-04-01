@@ -16,7 +16,7 @@ interface NewsletterConfirmationEmailProps {
 }
 
 export const NewsletterConfirmationEmail = ({ email }: NewsletterConfirmationEmailProps) => {
-  const previewText = `Welcome to System Design Sandbox Newsletter!`;
+  const previewText = `Welcome to System Design Learner Newsletter!`;
 
   return (
     <Html>
@@ -56,7 +56,7 @@ export const NewsletterConfirmationEmail = ({ email }: NewsletterConfirmationEma
       <Body style={main}>
         <Container style={container} className="container">
           <Section style={logoContainer}>
-            <Heading style={h1}>System Design Sandbox</Heading>
+            <Heading style={h1}>System Design Learner</Heading>
           </Section>
 
           <Heading style={h2} className="heading">
@@ -64,7 +64,7 @@ export const NewsletterConfirmationEmail = ({ email }: NewsletterConfirmationEma
           </Heading>
 
           <Text style={text} className="text">
-            Thank you for subscribing to System Design Sandbox updates!
+            Thank you for subscribing to System Design Learner updates!
           </Text>
 
           <Text style={text} className="text">
@@ -91,7 +91,7 @@ export const NewsletterConfirmationEmail = ({ email }: NewsletterConfirmationEma
           </Text>
 
           <Section style={buttonContainer}>
-            <Link style={button} className="button" href="https://www.systemdesignsandbox.com/play">
+            <Link style={button} className="button" href="https://www.systemdesignlearner.com/play">
               Start Designing
             </Link>
           </Section>
@@ -99,14 +99,14 @@ export const NewsletterConfirmationEmail = ({ email }: NewsletterConfirmationEma
           <Text style={footer} className="text">
             Best regards,
             <br />
-            The System Design Sandbox Team
+            The System Design Learner Team
           </Text>
 
           <Section style={unsubscribeContainer}>
             <Text style={unsubscribeText}>
               You&rsquo;re receiving this email because you subscribed at{" "}
-              <Link style={link} href="https://www.systemdesignsandbox.com/">
-                systemdesignsandbox.com
+              <Link style={link} href="https://www.systemdesignlearner.com/">
+                systemdesignlearner.com
               </Link>{" "}
               with the email address: {email}
             </Text>

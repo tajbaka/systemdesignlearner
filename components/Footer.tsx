@@ -88,7 +88,7 @@ export function Footer() {
               <div className="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">SD</span>
               </div>
-              <span className="text-xl font-bold text-white">System Design Sandbox</span>
+              <span className="text-xl font-bold text-white">System Design Learner</span>
             </div>
             <p className="text-zinc-400 text-sm leading-relaxed max-w-md mb-4">
               Practice system design interviews with AI-powered feedback. Build realistic
@@ -98,7 +98,7 @@ export function Footer() {
             {/* Contact Info */}
             <div className="mb-6">
               <a
-                href="mailto:hello@systemdesignsandbox.com"
+                href="mailto:hello@systemdesignlearner.com"
                 className="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-emerald-400 transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +109,7 @@ export function Footer() {
                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                   />
                 </svg>
-                hello@systemdesignsandbox.com
+                hello@systemdesignlearner.com
               </a>
             </div>
           </div>
@@ -144,7 +144,7 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="mailto:hello@systemdesignsandbox.com"
+                  href="mailto:hello@systemdesignlearner.com"
                   className="text-zinc-400 hover:text-white transition-colors text-sm"
                 >
                   Contact
@@ -160,7 +160,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:support@systemdesignsandbox.com"
+                  href="mailto:support@systemdesignlearner.com"
                   className="text-zinc-400 hover:text-white transition-colors text-sm"
                 >
                   Help
@@ -258,7 +258,7 @@ export function Footer() {
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-zinc-800">
           <p className="text-zinc-500 text-sm text-center sm:text-left">
-            © {new Date().getFullYear()} System Design Sandbox.
+            © {new Date().getFullYear()} System Design Learner.
           </p>
         </div>
       </div>

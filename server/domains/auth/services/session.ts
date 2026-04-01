@@ -3,6 +3,36 @@ import { eq, and } from "drizzle-orm";
 import type { GetSessionResponse, StepRecord } from "@/domains/practice/lib/schemas/step-data";
 import { STEP_TYPES } from "@/domains/practice/lib/schemas/step-data";
 
+async function ensureUserProblem(
+  userId: string,
+  problemId: string,
+  problemVersionId: string,
+  now: Date
+) {
+  const [userProblem] = await db
+    .insert(userProblems)
+    .values({
+      userId,
+      problemId,
+      problemVersionId,
+      status: "in_progress",
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [userProblems.userId, userProblems.problemId, userProblems.problemVersionId],
+      set: {
+        updatedAt: now,
+      },
+    })
+    .returning();
+
+  if (!userProblem) {
+    throw new Error("Failed to ensure user problem record");
+  }
+
+  return userProblem;
+}
+
 /**
  * Fetch a user's session and step data for a given problem slug.
  */
@@ -110,29 +140,8 @@ export async function updateSession(params: UpdateSessionParams): Promise<Update
 
   if (!currentVersion) return null;
 
-  // Get or create user problem
-  let userProblem = await db.query.userProblems.findFirst({
-    where: and(
-      eq(userProblems.userId, userId),
-      eq(userProblems.problemId, problem.id),
-      eq(userProblems.problemVersionId, currentVersion.id)
-    ),
-  });
-
   const now = new Date();
-
-  if (!userProblem) {
-    const [created] = await db
-      .insert(userProblems)
-      .values({
-        userId,
-        problemId: problem.id,
-        problemVersionId: currentVersion.id,
-        status: "in_progress",
-      })
-      .returning();
-    userProblem = created;
-  }
+  const userProblem = await ensureUserProblem(userId, problem.id, currentVersion.id, now);
 
   // Get or create user problem step to store metadata
   const userProblemStep = await db.query.userProblemSteps.findFirst({

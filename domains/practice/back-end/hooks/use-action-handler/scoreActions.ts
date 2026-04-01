@@ -2,6 +2,7 @@ import { track } from "@/lib/analytics";
 import { STEPS } from "../../constants";
 import { stepStateStore } from "../../store/store";
 import practiceActions from "../../actions";
+import { reportActionError } from "./errorHandling";
 import type { ScoreDeps, StepHandler } from "./types";
 
 export function createScoreHandler(deps: ScoreDeps): StepHandler {
@@ -42,15 +43,13 @@ export function createScoreHandler(deps: ScoreDeps): StepHandler {
           track("practice_pass_first", { slug, totalScore });
         }
       } catch (error) {
-        console.error("Failed to fetch score:", error);
-        track("practice_evaluation_error", {
+        reportActionError({
           slug,
           step: "score",
-          error: error instanceof Error ? error.message : "Unknown error",
+          error,
+          message: "Failed to fetch score:",
+          setActionError,
         });
-        setActionError(
-          error instanceof Error ? error.message : "Something went wrong. Please try again."
-        );
       }
       return;
     }

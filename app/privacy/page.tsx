@@ -2,11 +2,11 @@ import { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | System Design Sandbox",
+  title: "Privacy Policy | System Design Learner",
   description:
-    "Privacy Policy for System Design Sandbox - How we collect, use, and protect your data.",
+    "Privacy Policy for System Design Learner - How we collect, use, and protect your data.",
   alternates: {
-    canonical: "https://www.systemdesignsandbox.com/privacy",
+    canonical: "https://www.systemdesignlearner.com/privacy",
   },
 };
 
@@ -28,10 +28,10 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Welcome to System Design Sandbox (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;).
+              Welcome to System Design Learner (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;).
               We respect your privacy and are committed to protecting your personal data. This
               privacy policy explains how we collect, use, disclose, and safeguard your information
-              when you visit our website systemdesignsandbox.com and use our services.
+              when you visit our website systemdesignlearner.com and use our services.
             </p>
           </section>
 
@@ -265,10 +265,10 @@ export default function PrivacyPage() {
             <p className="text-muted-foreground leading-relaxed mb-3">
               To exercise your CCPA rights, please contact us at{" "}
               <a
-                href="mailto:privacy@systemdesignsandbox.com"
+                href="mailto:privacy@systemdesignlearner.com"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                privacy@systemdesignsandbox.com
+                privacy@systemdesignlearner.com
               </a>{" "}
               with the subject line &quot;California Privacy Rights Request.&quot; We will verify
               your identity before processing your request and respond within 45 days.
@@ -323,10 +323,10 @@ export default function PrivacyPage() {
             <p className="text-muted-foreground leading-relaxed">
               If you have any questions about this Privacy Policy, please contact us at:{" "}
               <a
-                href="mailto:privacy@systemdesignsandbox.com"
+                href="mailto:privacy@systemdesignlearner.com"
                 className="text-blue-400 hover:text-blue-300 underline"
               >
-                privacy@systemdesignsandbox.com
+                privacy@systemdesignlearner.com
               </a>
             </p>
           </section>

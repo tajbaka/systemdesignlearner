@@ -1,7 +1,7 @@
 import { createHmac } from "crypto";
 
 // Always use production URL — emails land in real inboxes regardless of environment
-const BASE_URL = "https://www.systemdesignsandbox.com";
+const BASE_URL = "https://www.systemdesignlearner.com";
 
 function getSecret(): string {
   const secret = process.env.UNSUBSCRIBE_SECRET || process.env.CLERK_SECRET_KEY;
