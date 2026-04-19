@@ -92,9 +92,13 @@ See `CLAUDE.md` for the architectural conventions (domain-driven, discriminated-
 
 Private & Proprietary — see [LICENSE](./LICENSE).
 
-## Author
+## Authors
 
 Built by **Arian Taj**
 
 - GitHub: [@tajbaka](https://github.com/tajbaka)
 - LinkedIn: [arian-taj](https://www.linkedin.com/in/arian-taj/)
+
+And **Antonio Coppe**
+
+- LinkedIn: [antonio-coppe](https://www.linkedin.com/in/antonio-coppe/)
